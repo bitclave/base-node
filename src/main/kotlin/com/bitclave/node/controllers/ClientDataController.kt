@@ -3,7 +3,6 @@ package com.bitclave.node.controllers
 import org.springframework.web.bind.annotation.*
 import java.util.concurrent.CompletableFuture
 
-
 @RestController
 @RequestMapping("/client/{id}/")
 class ClientDataController {
