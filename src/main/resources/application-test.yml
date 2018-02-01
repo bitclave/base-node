@@ -1,0 +1,15 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: bitclave
+
+server:
+  port: 8080
+
+account:
+  salt: 'e9ab754fd120d684537d57f314d51213ce5acef8ff6974e299674ef0f0a3cf111f0d26ed602db946739da44e5acef8ff6974e299674ef0f0a3cf111f08210fb76a7621d7a8f07728372b10a975f36d8e37'
