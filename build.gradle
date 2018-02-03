@@ -28,6 +28,10 @@ compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
 
+configurations {
+    jar.archiveName = 'base-node.jar'
+}
+
 repositories {
     mavenCentral()
 }
