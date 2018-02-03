@@ -46,9 +46,9 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
-    runtime('org.postgresql:postgresql')
+    runtime 'org.postgresql:postgresql'
     
-    testCompile('org.springframework.boot:spring-boot-starter-test')
+    testCompile 'org.springframework.boot:spring-boot-starter-test'
 }
 
 compileJava.dependsOn(processResources)
