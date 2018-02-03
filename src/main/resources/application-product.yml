@@ -4,8 +4,5 @@ spring:
     username: ${JDBC_DATABASE_USERNAME}
     password: ${JDBC_DATABASE_PASSWORD}
 
-server:
-  port: 5000
-
 account:
   salt: 'e9a4fd12599674ef0f0acef8ff6974e2b7da4483cf111f0d26ed602db9467390d684537d57f314d51213ce5a210fb76a7621d7a8f07728372b10a975f36d8e37'
