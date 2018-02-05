@@ -8,8 +8,8 @@ import java.util.concurrent.CompletableFuture
 @RequestMapping("/client/{id}/")
 class ClientDataController {
 
-    val firstClientData: Map<String, String> = hashMapOf("firstName" to "My First Name",
-            "secondName" to "My Second Name")
+    val firstClientData: Map<String, String> = hashMapOf("firstName" to "Adam",
+            "lastName" to "Base")
 
     @RequestMapping(method = [RequestMethod.GET])
     fun getData(@PathVariable("id") clientId: String): CompletableFuture<Map<String, String>> {
