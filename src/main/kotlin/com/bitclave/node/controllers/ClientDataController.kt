@@ -7,12 +7,13 @@ import java.util.concurrent.CompletableFuture
 @RequestMapping("/client/{id}/")
 class ClientDataController {
 
+    val result: Map<String, String> = hashMapOf("firstName" to "My First Name",
+            "secondName" to "My Second Name")
+    val emptyResult: Map<String, String> = HashMap()
+
     @RequestMapping(method = [RequestMethod.GET])
     fun getData(@PathVariable("id") clientId: String): CompletableFuture<Map<String, String>> {
-        val result: Map<String, String> = hashMapOf("firstName" to "My First Name",
-                "secondName" to "My Second Name");
-
-        return CompletableFuture.completedFuture(result)
+        return CompletableFuture.completedFuture(if ("first" == clientId) result else emptyResult);
     }
 
     @RequestMapping(method = [RequestMethod.PATCH])
