@@ -1,26 +1,22 @@
 package com.bitclave.node.controllers
 
+import com.bitclave.node.services.ClientDataService
 import org.springframework.web.bind.annotation.*
-import java.util.*
 import java.util.concurrent.CompletableFuture
 
 @RestController
 @RequestMapping("/client/{id}/")
-class ClientDataController {
-
-    val firstClientData: Map<String, String> = hashMapOf("firstName" to "Adam",
-            "lastName" to "Base")
+class ClientDataController(private val clientDataService: ClientDataService) {
 
     @RequestMapping(method = [RequestMethod.GET])
     fun getData(@PathVariable("id") clientId: String): CompletableFuture<Map<String, String>> {
-        return CompletableFuture.completedFuture(
-                if ("first" == clientId) firstClientData else Collections.emptyMap());
+        return clientDataService.getData(clientId)
     }
 
     @RequestMapping(method = [RequestMethod.PATCH])
     fun updateData(@PathVariable("id") clientId: String, @RequestBody
     data: Map<String, String>): CompletableFuture<Map<String, String>> {
-        return CompletableFuture.completedFuture(data)
+        return clientDataService.updateData(clientId, data)
     }
 
 }

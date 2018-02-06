@@ -9,9 +9,9 @@ import javax.persistence.Transient
 @Entity
 data class Account(
         @Id val id: String = "",
-        @Column(length = 784) val publicKey: String = "",
+        @Column(length = 256) val publicKey: String = "",
         @Transient val hash: String = ""
 ) {
     @JsonIgnore
-    fun isValid(): Boolean = hash.length == 64 && publicKey.length == 392
+    fun isValid(): Boolean = hash.length == 64 && publicKey.length == 66
 }

@@ -6,8 +6,8 @@ import org.springframework.stereotype.Component
 @Component
 class PostgresAccountRepositoryImpl(val repository: AccountCrudRepository) : AccountRepository {
 
-    override fun saveAccount(id: String, publicKey: String): Boolean {
-        return repository.save(Account(id, publicKey)) != null
+    override fun saveAccount(id: String, publicKey: String) {
+        repository.save(Account(id, publicKey)) ?: throw RuntimeException("data not saved")
     }
 
     override fun findById(id: String): Account? {
