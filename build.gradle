@@ -37,21 +37,18 @@ configurations {
     jar.archiveName = 'base-node.jar'
 }
 
-// https://github.com/web3j/web3j-maven-plugin
-// https://github.com/dkorotych/gradle-maven-exec-plugin
 task compileSolidity(type: MavenExec) {
+    // https://github.com/web3j/web3j-maven-plugin
+    // https://github.com/dkorotych/gradle-maven-exec-plugin
     mavenexec {
-        workingDir buildDir
-        goals 'web3j:generate-sources'
+        workingDir projectDir
+        goals 'org.web3j:web3j-maven-plugin:generate-sources'
         options {
+            file = file('pom-for-generation.xml')
             define = [
                 'packageName'        : 'com.bitclave.node.solidity',
                 'sourceDestination'  : 'src/main/java/generated',
-                'nativeJavaType'     : 'true'//,
-                //'soliditySourceFiles': [
-                //    'directory': 'src/main/resources',
-                //    'includes' : ['**/*.sol']
-                //]
+                'nativeJavaType'     : 'true'
             ]
         }
     }
