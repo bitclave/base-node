@@ -1,7 +1,9 @@
 package com.bitclave.node.controllers
 
 import com.bitclave.node.repository.models.Account
+import com.bitclave.node.repository.models.SignedRequest
 import com.bitclave.node.services.AccountService
+import javassist.tools.web.BadHttpRequest
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import java.util.concurrent.CompletableFuture
@@ -10,15 +12,29 @@ import java.util.concurrent.CompletableFuture
 @RequestMapping("/")
 class AuthController(private val accountService: AccountService) {
 
-    @RequestMapping(method = [RequestMethod.POST], value = ["signUp"])
+    @RequestMapping(method = [RequestMethod.POST], value = ["registration"])
     @ResponseStatus(value = HttpStatus.CREATED)
-    fun signUp(@RequestBody account: Account): CompletableFuture<Account> {
-        return accountService.registrationClient(account)
+    fun registration(@RequestBody request: SignedRequest<Account>): CompletableFuture<Account> {
+        return accountService.checkSigMessage(request)
+                .thenApply { pk ->
+                    if (pk != request.data?.publicKey) {
+                        throw BadHttpRequest()
+                    }
+                    pk
+                }
+                .thenCompose { accountService.registrationClient(request.data!!) }
     }
 
-    @RequestMapping(method = [RequestMethod.POST], value = ["signIn"])
-    fun signIn(@RequestBody account: Account): CompletableFuture<Account> {
-        return accountService.authorization(account)
+    @RequestMapping(method = [RequestMethod.POST], value = ["exist"])
+    fun existAccount(@RequestBody request: SignedRequest<Account>): CompletableFuture<Account> {
+        return accountService.checkSigMessage(request)
+                .thenApply { pk ->
+                    if (pk != request.data?.publicKey) {
+                        throw BadHttpRequest()
+                    }
+                    pk
+                }
+                .thenCompose { accountService.existAccount(request.data!!) }
     }
 
 }

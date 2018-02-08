@@ -3,9 +3,14 @@ package com.bitclave.node.services
 import com.bitclave.node.configuration.properties.AccountProperties
 import com.bitclave.node.repository.account.AccountRepository
 import com.bitclave.node.repository.models.Account
+import com.bitclave.node.repository.models.SignedRequest
+import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.errors.AlreadyRegisteredException
+import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
-import com.bitclave.node.utils.Sha3Utils
+import com.bitclave.node.utils.MessageSignerHelper
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import javassist.tools.web.BadHttpRequest
 import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
@@ -14,33 +19,54 @@ import java.util.concurrent.CompletableFuture
 class AccountService(private val accountRepository: AccountRepository,
         private val accountProperties: AccountProperties) {
 
+    private val GSON: Gson = GsonBuilder().disableHtmlEscaping().create()
+
+    fun checkSigMessage(request: SignedRequest<*>): CompletableFuture<String> {
+        return MessageSignerHelper.getMessageSignature(GSON.toJson(request.data), request.sig)
+                .thenApply { publicKey ->
+                    if (publicKey != request.pk) {
+                        throw AccessDeniedException()
+                    }
+
+                    publicKey
+                }
+    }
+
+    fun accountBySigMessage(request: SignedRequest<*>): CompletableFuture<Account> {
+        return checkSigMessage(request)
+                .thenApply(accountRepository::findByPublicKey)
+                .thenApply { account: Account? ->
+                    if (account == null) {
+                        throw NotFoundException()
+                    }
+
+                    if (request.data == null) {
+                        throw BadArgumentException()
+                    }
+                    account
+                }
+    }
+
     fun registrationClient(account: Account): CompletableFuture<Account> {
         return CompletableFuture.supplyAsync {
             if (!account.isValid()) {
                 throw BadHttpRequest()
             }
 
-            val clientId = generateClientId(accountProperties.salt, account.hash)
-
-            if (accountRepository.findById(clientId) != null) {
+            if (accountRepository.findByPublicKey(account.publicKey) != null) {
                 throw AlreadyRegisteredException()
             }
 
-            accountRepository.saveAccount(clientId, account.publicKey)
+            accountRepository.saveAccount(account.publicKey)
 
-            Account(clientId)
+            account
         }
     }
 
-    fun authorization(account: Account): CompletableFuture<Account> {
+    fun existAccount(account: Account): CompletableFuture<Account> {
         return CompletableFuture.supplyAsync {
-            val clientId = generateClientId(accountProperties.salt, account.hash)
-            accountRepository.findById(clientId) ?: throw NotFoundException()
+            accountRepository.findByPublicKey(account.publicKey) ?: throw NotFoundException()
         }
-    }
-
-    private fun generateClientId(salt: String, hash: String): String {
-        return Sha3Utils.stringToSha3Hex("$salt$hash")
     }
 
 }

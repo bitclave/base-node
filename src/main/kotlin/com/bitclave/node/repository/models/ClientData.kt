@@ -7,6 +7,6 @@ import javax.persistence.Id
 
 @Entity
 data class ClientData(
-        @Id val id: String = "",
+        @Id val publicKey: String = "",
         @ElementCollection(fetch = FetchType.EAGER) val data: Map<String, String> = HashMap()
 ) {}

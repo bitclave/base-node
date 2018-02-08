@@ -7,4 +7,8 @@ import org.springframework.transaction.annotation.Transactional
 
 @Repository
 @Transactional
-interface AccountCrudRepository : CrudRepository<Account, String> {}
+interface AccountCrudRepository : CrudRepository<Account, String> {
+
+    fun findByPublicKey(key: String): Account?
+
+}

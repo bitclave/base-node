@@ -8,12 +8,12 @@ import org.springframework.stereotype.Component
 class PostgresClientDataRepositoryImpl(val repository: ClientDataCrudRepository) :
         ClientDataRepository {
 
-    override fun getData(id: String): Map<String, String> {
-        return repository.findOne(id)?.data ?: emptyMap();
+    override fun getData(publicKey: String): Map<String, String> {
+        return repository.findOne(publicKey)?.data ?: emptyMap()
     }
 
-    override fun updateData(id: String, data: Map<String, String>) {
-        repository.save(ClientData(id, data)) ?: throw DataNotSaved()
+    override fun updateData(publicKey: String, data: Map<String, String>) {
+        repository.save(ClientData(publicKey, data)) ?: throw DataNotSaved()
     }
 
 }

@@ -4,14 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.Id
-import javax.persistence.Transient
 
 @Entity
 data class Account(
-        @Id val id: String = "",
-        @Column(length = 256) val publicKey: String = "",
-        @Transient val hash: String = ""
+        @Column(length = 256, unique = true) @Id val publicKey: String = ""
 ) {
     @JsonIgnore
-    fun isValid(): Boolean = hash.length == 64 && publicKey.length == 66
+    fun isValid(): Boolean = publicKey.length == 66
 }
