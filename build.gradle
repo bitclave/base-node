@@ -46,8 +46,8 @@ task compileSolidity(type: MavenExec) {
         options {
             file = file('pom-for-generation.xml')
             define = [
-                'packageName'        : 'com.bitclave.node.solidity',
-                'sourceDestination'  : 'src/main/java/generated',
+                'packageName'        : 'com.bitclave.node.solidity.generated',
+                'sourceDestination'  : 'src/main/java',
                 'nativeJavaType'     : 'true'
             ]
         }
