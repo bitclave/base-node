@@ -14,6 +14,7 @@ class CorsConfig {
         return object : WebMvcConfigurerAdapter() {
             override fun addCorsMappings(registry: CorsRegistry?) {
                 registry!!.addMapping("/**")
+                        .allowedMethods("HEAD", "GET", "PUT", "POST", "DELETE", "PATCH");
             }
         }
     }
