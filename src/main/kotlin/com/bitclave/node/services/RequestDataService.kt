@@ -26,7 +26,7 @@ class RequestDataService(private val requestDataRepository: RequestDataRepositor
                         throw BadArgumentException()
                     }
 
-            result;
+            result
         })
     }
 

@@ -16,8 +16,7 @@ import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
 
 @Service
-class AccountService(private val accountRepository: AccountRepository,
-        private val accountProperties: AccountProperties) {
+class AccountService(private val accountRepository: AccountRepository) {
 
     private val GSON: Gson = GsonBuilder().disableHtmlEscaping().create()
 
