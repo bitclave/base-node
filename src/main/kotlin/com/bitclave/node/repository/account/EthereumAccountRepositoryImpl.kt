@@ -11,8 +11,11 @@ class EthereumAccountRepositoryImpl(val contract: AccountContract) : AccountRepo
         contract.registerPublicKey(publicKey).send()
     }
 
-    override fun findByPublicKey(key: String): Account? {
-        return Account(key)
+    override fun findByPublicKey(publicKey: String): Account? {
+        if (contract.isRegisteredPublicKey(publicKey).send()) {
+            return Account(publicKey)
+        }
+        return null
     }
 
 }

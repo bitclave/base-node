@@ -58,23 +58,23 @@ contract AccountContract is IStorageContractClient {
         storageContract.set(uint256(sha3(publicKeyField, publicKey)), 1);
     }
 
-    function infoLength(uint256 hash) public returns(uint) {
-        return storageContract.length(uint256(sha3(infoField, hash)));
+    function infoLength(string publicKey, uint256 hash) public constant returns(uint) {
+        return storageContract.length(uint256(sha3(publicKey, infoField, hash)));
     }
 
-    function info(uint256 hash, uint index) public returns(bytes32) {
-        return bytes32(storageContract.get(uint256(sha3(infoField, hash)) + index));
+    function info(string publicKey, uint256 hash, uint index) public constant returns(bytes32) {
+        return bytes32(storageContract.get(uint256(sha3(publicKey, infoField, hash)) + index));
     }
 
-    function setInfo(uint256 hash, uint index, bytes32 value) public {
-        storageContract.set(uint256(sha3(infoField, hash)) + index, uint256(value));
+    function setInfo(string publicKey, uint256 hash, uint index, bytes32 value) public {
+        storageContract.set(uint256(sha3(publicKey, infoField, hash)) + index, uint256(value));
     }
 
-    function setInfos(uint256 hash, bytes32[] values) public {
+    function setInfos(string publicKey, uint256 hash, bytes32[] values) public {
         for (uint i = 0; i < values.length; i++) {
-            storageContract.set(uint256(sha3(infoField, hash)) + i, uint256(values[i]));
+            storageContract.set(uint256(sha3(publicKey, infoField, hash)) + i, uint256(values[i]));
         }
-        storageContract.erase(uint256(sha3(infoField, hash)) + values.length);
+        storageContract.erase(uint256(sha3(publicKey, infoField, hash)) + values.length);
     }
 
 }
