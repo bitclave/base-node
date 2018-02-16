@@ -49,6 +49,7 @@ task compileSolidity(type: JavaExec) {
     solidityGenerator.packageName = "com.bitclave.node.solidity.generated"
     solidityGenerator.sourceDestination = pathMain + "/java/"
     solidityGenerator.soliditySourceFiles = path
+    solidityGenerator.nativeJavaType = true
 
     solidityGenerator.execute()
 }
