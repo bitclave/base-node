@@ -24,6 +24,6 @@ class AccountRepositoryStrategy(
 
     override fun saveAccount(publicKey: String) = repository.saveAccount(publicKey)
 
-    override fun findByPublicKey(key: String): Account? = repository.findByPublicKey(key)
+    override fun findByPublicKey(publicKey: String): Account? = repository.findByPublicKey(publicKey)
 
 }

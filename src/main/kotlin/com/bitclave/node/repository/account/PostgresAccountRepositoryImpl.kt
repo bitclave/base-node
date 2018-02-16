@@ -13,8 +13,8 @@ class PostgresAccountRepositoryImpl(val repository: AccountCrudRepository) : Acc
         repository.save(Account(publicKey)) ?: throw DataNotSaved()
     }
 
-    override fun findByPublicKey(key: String): Account? {
-        return repository.findByPublicKey(key)
+    override fun findByPublicKey(publicKey: String): Account? {
+        return repository.findByPublicKey(publicKey)
     }
 
 }
