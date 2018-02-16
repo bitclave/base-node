@@ -5,7 +5,7 @@ import com.bitclave.node.solidity.generated.AccountContract
 import org.springframework.stereotype.Component
 
 @Component
-class EthereumAccountRepositoryImpl(val contract: AccountContract) : AccountRepository {
+class EthAccountRepositoryImpl(val contract: AccountContract) : AccountRepository {
 
     override fun saveAccount(publicKey: String) {
         contract.registerPublicKey(publicKey).send()

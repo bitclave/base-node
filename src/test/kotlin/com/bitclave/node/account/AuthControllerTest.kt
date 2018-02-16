@@ -8,6 +8,11 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
+/*
+import com.bitclave.node.configuration.properties.EthereumProperties
+import org.junit.runner.RunWith
+import org.junit.Test
+*/
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
@@ -22,8 +27,9 @@ import com.bitclave.node.repository.data.ClientDataRepository
 
 // Ethereum Implementation
 import com.bitclave.node.solidity.generated.AccountContract
-import com.bitclave.node.repository.account.EthereumAccountRepositoryImpl
-import com.bitclave.node.repository.data.EthereumClientDataRepositoryImpl
+import com.bitclave.node.repository.account.EthAccountRepositoryImpl
+import com.bitclave.node.repository.data.EthClientDataRepositoryImpl
+import org.junit.Before
 import org.web3j.crypto.Credentials
 import org.web3j.protocol.http.HttpService
 import org.web3j.protocol.Web3j
@@ -37,20 +43,22 @@ import org.web3j.tx.ManagedTransaction.GAS_PRICE
 @AutoConfigureMockMvc
 class AuthControllerTest {
 /*
-    var accountRepository: AccountRepository? = null
-    var clientDataRepository: ClientDataRepository? = null
+    private lateinit var accountRepository: AccountRepository
+    private lateinit var clientDataRepository: ClientDataRepository
 
     // Ethereum Implementation
+    @Before
     fun before() {
-        val web3 = Web3j.build(HttpService())  // defaults to http://localhost:8545
+        val web3 = Web3j.build(HttpService(EthereumProperties().nodeUrl))
         val credentials = Credentials.create("c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3") // First PrivKey from ganache-cli
         val accountContract = AccountContract.deploy(web3, credentials, GAS_PRICE, GAS_LIMIT, "0x0").send()
-        accountRepository = EthereumAccountRepositoryImpl(accountContract)
-        clientDataRepository = EthereumClientDataRepositoryImpl(accountContract)
+        accountRepository = EthAccountRepositoryImpl(accountContract)
+        clientDataRepository = EthClientDataRepositoryImpl(accountContract)
     }
 
-    //@Test
-    fun whenCalled_shouldReturnHello() {
+    @Test
+    fun whenCalledShouldReturnHello() {
+        accountRepository.findByPublicKey("123");
         //assertNotNull(result)
         //assertEquals(result?.statusCode, HttpStatus.OK)
         //assertEquals(result?.body, "hello world")
