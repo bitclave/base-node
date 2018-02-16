@@ -1,14 +1,18 @@
 package com.bitclave.node.services
 
-import com.bitclave.node.repository.account.AccountRepository
-import com.bitclave.node.repository.data.ClientDataRepository
+import com.bitclave.node.repository.RepositoryType
+import com.bitclave.node.repository.data.ClientDataRepositoryStrategy
 import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
 
 @Service
 class ClientProfileDataService(
-        private val clientDataRepository: ClientDataRepository
+        private val clientDataRepository: ClientDataRepositoryStrategy
 ) {
+
+    init {
+        clientDataRepository.changeStrategy(RepositoryType.POSTGRES)
+    }
 
     fun getData(publicKey: String): CompletableFuture<Map<String, String>> {
         return CompletableFuture.supplyAsync({

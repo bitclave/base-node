@@ -2,9 +2,11 @@ package com.bitclave.node.repository.request
 
 import com.bitclave.node.repository.models.RequestData
 import com.bitclave.node.services.errors.DataNotSaved
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 
 @Component
+@Qualifier("postgres")
 class PostgresRequestDataRepositoryImpl(val repository: RequestDataCrudRepository) :
         RequestDataRepository {
 

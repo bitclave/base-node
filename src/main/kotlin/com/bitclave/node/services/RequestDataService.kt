@@ -1,13 +1,18 @@
 package com.bitclave.node.services
 
+import com.bitclave.node.repository.RepositoryType
 import com.bitclave.node.repository.models.RequestData
-import com.bitclave.node.repository.request.RequestDataRepository
+import com.bitclave.node.repository.request.RequestDataRepositoryStrategy
 import com.bitclave.node.services.errors.BadArgumentException
 import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
 
 @Service
-class RequestDataService(private val requestDataRepository: RequestDataRepository) {
+class RequestDataService(private val requestDataRepository: RequestDataRepositoryStrategy) {
+
+    init {
+        requestDataRepository.changeStrategy(RepositoryType.POSTGRES)
+    }
 
     fun getRequestByStatus(fromPk: String?, toPk: String?,
                            state: RequestData.RequestDataState): CompletableFuture<List<RequestData>> {

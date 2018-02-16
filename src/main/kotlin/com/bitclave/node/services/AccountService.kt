@@ -1,7 +1,9 @@
 package com.bitclave.node.services
 
 import com.bitclave.node.configuration.properties.AccountProperties
+import com.bitclave.node.repository.RepositoryType
 import com.bitclave.node.repository.account.AccountRepository
+import com.bitclave.node.repository.account.AccountRepositoryStrategy
 import com.bitclave.node.repository.models.Account
 import com.bitclave.node.repository.models.SignedRequest
 import com.bitclave.node.services.errors.AccessDeniedException
@@ -16,9 +18,13 @@ import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
 
 @Service
-class AccountService(private val accountRepository: AccountRepository) {
+class AccountService(private val accountRepository: AccountRepositoryStrategy) {
 
     private val GSON: Gson = GsonBuilder().disableHtmlEscaping().create()
+
+    init {
+        accountRepository.changeStrategy(RepositoryType.POSTGRES)
+    }
 
     fun checkSigMessage(request: SignedRequest<*>): CompletableFuture<String> {
         return MessageSignerHelper.getMessageSignature(GSON.toJson(request.data), request.sig)
