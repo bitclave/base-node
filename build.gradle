@@ -43,9 +43,10 @@ task compileSolidity(type: JavaExec) {
     def fields = solidityGenerator.class.declaredFields
     def path = new FileSet()
     def pathMain = projectDir.toString().replaceAll("\\\\", "/") + "/src/main"
-    System.out.println(pathMain)
-    path.setDirectory(pathMain + "/resources/")
+
     fields.each { it.setAccessible(true) }
+
+    path.setDirectory(pathMain + "/resources/")
     solidityGenerator.packageName = "com.bitclave.node.solidity.generated"
     solidityGenerator.sourceDestination = pathMain + "/java/"
     solidityGenerator.soliditySourceFiles = path
