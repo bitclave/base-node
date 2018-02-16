@@ -7,7 +7,7 @@ import com.bitclave.node.solidity.generated.AccountContract
 import org.springframework.stereotype.Component
 
 @Component
-class EthereumClientDataRepositoryImpl(val repository: AccountContract) :
+class EthereumClientDataRepositotyImpl(val repository: AccountContract) :
         ClientDataRepository {
 
     companion object {
