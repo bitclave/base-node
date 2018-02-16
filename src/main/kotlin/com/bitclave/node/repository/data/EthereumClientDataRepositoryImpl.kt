@@ -3,9 +3,7 @@ package com.bitclave.node.repository.data
 import java.math.BigInteger
 
 import com.bitclave.node.utils.Sha3Utils
-import com.bitclave.node.repository.models.ClientData
 import com.bitclave.node.solidity.generated.AccountContract
-import com.bitclave.node.services.errors.DataNotSaved
 import org.springframework.stereotype.Component
 
 @Component
@@ -22,7 +20,7 @@ class EthereumClientDataRepositoryImpl(val repository: AccountContract) :
         var i = BigInteger.valueOf(0)
         while (true) {
             val item = repository.info(publicKey, hash, i).send().toString()
-            if (item.length == 0) {
+            if (item.isEmpty()) {
                 break
             }
             value += item

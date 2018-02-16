@@ -16,11 +16,46 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
+/*
+import com.bitclave.node.repository.account.AccountRepository
+import com.bitclave.node.repository.data.ClientDataRepository
+
+// Ethereum Implementation
+import com.bitclave.node.solidity.generated.AccountContract
+import com.bitclave.node.repository.account.EthereumAccountRepositoryImpl
+import com.bitclave.node.repository.data.EthereumClientDataRepositoryImpl
+import org.web3j.crypto.Credentials
+import org.web3j.protocol.http.HttpService
+import org.web3j.protocol.Web3j
+import org.web3j.tx.Contract.GAS_LIMIT
+import org.web3j.tx.ManagedTransaction.GAS_PRICE
+*/
+
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
 @SpringBootTest
 @AutoConfigureMockMvc
 class AuthControllerTest {
+/*
+    var accountRepository: AccountRepository? = null
+    var clientDataRepository: ClientDataRepository? = null
+
+    // Ethereum Implementation
+    fun before() {
+        val web3 = Web3j.build(HttpService())  // defaults to http://localhost:8545
+        val credentials = Credentials.create("c87509a1c067bbde78beb793e6fa76530b6382a4c0241e5e4a9ec0a0f44dc0d3") // First PrivKey from ganache-cli
+        val accountContract = AccountContract.deploy(web3, credentials, GAS_PRICE, GAS_LIMIT, "0x0").send()
+        accountRepository = EthereumAccountRepositoryImpl(accountContract)
+        clientDataRepository = EthereumClientDataRepositoryImpl(accountContract)
+    }
+
+    //@Test
+    fun whenCalled_shouldReturnHello() {
+        //assertNotNull(result)
+        //assertEquals(result?.statusCode, HttpStatus.OK)
+        //assertEquals(result?.body, "hello world")
+    }
+*/
 
     protected val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
 
