@@ -55,10 +55,6 @@ task compileSolidity(type: JavaExec) {
     solidityGenerator.execute()
 }
 
-compileJava.doFirst {
-    tasks.compileSolidity.execute()
-}
-
 repositories {
     mavenCentral()
     maven { url 'https://dl.bintray.com/ethereum/maven/' }
