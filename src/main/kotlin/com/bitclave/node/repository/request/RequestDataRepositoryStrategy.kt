@@ -26,7 +26,7 @@ class RequestDataRepositoryStrategy(
             repository.getByFrom(from, state)
 
     override fun getByTo(to: String, state: RequestData.RequestDataState): List<RequestData> =
-            getByTo(to, state)
+            repository.getByTo(to, state)
 
     override fun getByFromAndTo(from: String, to: String,
                                 state: RequestData.RequestDataState): List<RequestData> =
