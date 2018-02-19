@@ -9,7 +9,10 @@ import org.springframework.stereotype.Component
 @Component
 class AccountRepositoryStrategy(
         @Qualifier("postgres")
-        private val postgres: PostgresAccountRepositoryImpl
+        private val postgres: PostgresAccountRepositoryImpl,
+
+        @Qualifier("ethereum")
+        private val ethereum: EthAccountRepositoryImpl
 
 ) : RepositoryStrategy, AccountRepository {
 
@@ -18,7 +21,7 @@ class AccountRepositoryStrategy(
     override fun changeStrategy(type: RepositoryType) {
         repository = when (type) {
             RepositoryType.POSTGRES -> postgres
-            RepositoryType.ETHEREUM -> postgres
+            RepositoryType.ETHEREUM -> ethereum
         }
     }
 
