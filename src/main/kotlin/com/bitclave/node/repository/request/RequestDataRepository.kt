@@ -8,7 +8,11 @@ interface RequestDataRepository {
 
     fun getByTo(to: String, state: RequestData.RequestDataState): List<RequestData>
 
-    fun getByFromAndTo(from: String, to: String, state: RequestData.RequestDataState): List<RequestData>
+    fun getByFromAndTo(
+            from: String,
+            to: String,
+            state: RequestData.RequestDataState
+    ): List<RequestData>
 
     fun findById(id: Long): RequestData?
 

@@ -18,7 +18,12 @@ class PostgresRequestDataRepositoryImpl(val repository: RequestDataCrudRepositor
         return repository.findByToPkAndState(to, state)
     }
 
-    override fun getByFromAndTo(from: String, to: String, state: RequestData.RequestDataState): List<RequestData> {
+    override fun getByFromAndTo(
+            from: String,
+            to: String,
+            state: RequestData.RequestDataState
+    ): List<RequestData> {
+
         return repository.findByFromPkAndToPkAndState(from, to, state)
     }
 

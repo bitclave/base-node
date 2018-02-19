@@ -24,7 +24,11 @@ class ClientProfileService(
         })
     }
 
-    fun updateData(publicKey: String, data: Map<String, String>): CompletableFuture<Map<String, String>> {
+    fun updateData(
+            publicKey: String,
+            data: Map<String, String>
+    ): CompletableFuture<Map<String, String>> {
+
         return CompletableFuture.supplyAsync({
             clientDataRepository.updateData(publicKey, data)
             data

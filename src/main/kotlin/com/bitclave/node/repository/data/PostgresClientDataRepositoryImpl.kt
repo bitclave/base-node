@@ -7,8 +7,9 @@ import org.springframework.stereotype.Component
 
 @Component
 @Qualifier("postgres")
-class PostgresClientDataRepositoryImpl(val repository: ClientDataCrudRepository) :
-        ClientDataRepository {
+class PostgresClientDataRepositoryImpl(
+        val repository: ClientDataCrudRepository
+) : ClientDataRepository {
 
     override fun getData(publicKey: String): Map<String, String> {
         return repository.findOne(publicKey)?.data ?: emptyMap()

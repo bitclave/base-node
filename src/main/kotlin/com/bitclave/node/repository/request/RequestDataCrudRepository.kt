@@ -13,6 +13,10 @@ interface RequestDataCrudRepository : CrudRepository<RequestData, Long> {
 
     fun findByToPkAndState(to: String, state: RequestData.RequestDataState): List<RequestData>
 
-    fun findByFromPkAndToPkAndState(from: String, to: String, state: RequestData.RequestDataState): List<RequestData>
+    fun findByFromPkAndToPkAndState(
+            from: String,
+            to: String,
+            state: RequestData.RequestDataState
+    ): List<RequestData>
 
 }
