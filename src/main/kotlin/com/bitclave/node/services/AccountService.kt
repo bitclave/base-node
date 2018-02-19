@@ -1,8 +1,7 @@
 package com.bitclave.node.services
 
-import com.bitclave.node.configuration.properties.AccountProperties
+import com.bitclave.node.extensions.validateSig
 import com.bitclave.node.repository.RepositoryType
-import com.bitclave.node.repository.account.AccountRepository
 import com.bitclave.node.repository.account.AccountRepositoryStrategy
 import com.bitclave.node.repository.models.Account
 import com.bitclave.node.repository.models.SignedRequest
@@ -10,9 +9,6 @@ import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.errors.AlreadyRegisteredException
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
-import com.bitclave.node.utils.MessageSignerHelper
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import javassist.tools.web.BadHttpRequest
 import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
@@ -20,20 +16,18 @@ import java.util.concurrent.CompletableFuture
 @Service
 class AccountService(private val accountRepository: AccountRepositoryStrategy) {
 
-    private val GSON: Gson = GsonBuilder().disableHtmlEscaping().create()
-
     init {
         accountRepository.changeStrategy(RepositoryType.POSTGRES)
     }
 
     fun checkSigMessage(request: SignedRequest<*>): CompletableFuture<String> {
-        return MessageSignerHelper.getMessageSignature(GSON.toJson(request.data), request.sig)
-                .thenApply { publicKey ->
-                    if (publicKey != request.pk) {
+        return request.validateSig()
+                .thenApply { isValid ->
+                    if (!isValid) {
                         throw AccessDeniedException()
                     }
 
-                    publicKey
+                    request.pk
                 }
     }
 
