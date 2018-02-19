@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
 
 @Service
-class ClientProfileDataService(
+class ClientProfileService(
         private val clientDataRepository: ClientDataRepositoryStrategy
 ) {
 

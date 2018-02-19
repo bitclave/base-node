@@ -1,4 +1,4 @@
-package com.bitclave.node
+package com.bitclave.node.account
 
 import com.bitclave.node.extensions.signMessage
 import com.bitclave.node.repository.RepositoryType
