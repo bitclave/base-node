@@ -14,8 +14,12 @@ class RequestDataService(private val requestDataRepository: RequestDataRepositor
         requestDataRepository.changeStrategy(RepositoryType.POSTGRES)
     }
 
-    fun getRequestByStatus(fromPk: String?, toPk: String?,
-                           state: RequestData.RequestDataState): CompletableFuture<List<RequestData>> {
+    fun getRequestByStatus(
+            fromPk: String?,
+            toPk: String?,
+            state: RequestData.RequestDataState
+    ): CompletableFuture<List<RequestData>> {
+
         return CompletableFuture.supplyAsync({
             val result: List<RequestData> =
                     if (fromPk == null && toPk != null) {
@@ -49,8 +53,12 @@ class RequestDataService(private val requestDataRepository: RequestDataRepositor
         })
     }
 
-    fun response(id: Long, publicKey: String,
-                 data: String?): CompletableFuture<RequestData.RequestDataState> {
+    fun response(
+            id: Long,
+            publicKey: String,
+            data: String?
+    ): CompletableFuture<RequestData.RequestDataState> {
+
         return CompletableFuture.supplyAsync({
             val original = requestDataRepository.findById(id)
 

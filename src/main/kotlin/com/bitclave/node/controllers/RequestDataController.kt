@@ -22,8 +22,8 @@ class RequestDataController(private val accountService: AccountService,
     fun getRequestByState(
             @PathVariable("fromPk", required = false) fromPk: String?,
             @PathVariable("toPk", required = false) toPk: String?,
-            @PathVariable("state") state: RequestData.RequestDataState)
-            : CompletableFuture<List<RequestData>> {
+            @PathVariable("state") state: RequestData.RequestDataState
+    ): CompletableFuture<List<RequestData>> {
 
         return requestDataService.getRequestByStatus(fromPk, toPk, state)
     }
@@ -37,8 +37,11 @@ class RequestDataController(private val accountService: AccountService,
     }
 
     @RequestMapping(method = [RequestMethod.PATCH], value = ["{id}/"])
-    fun response(@PathVariable("id") requestId: Long,
-                 @RequestBody request: SignedRequest<String>): CompletableFuture<RequestData.RequestDataState> {
+    fun response(
+            @PathVariable("id") requestId: Long,
+            @RequestBody request: SignedRequest<String>
+    ): CompletableFuture<RequestData.RequestDataState> {
+
         return accountService.accountBySigMessage(request)
                 .thenCompose { account: Account ->
                     requestDataService.response(requestId, account.publicKey, request.data)
