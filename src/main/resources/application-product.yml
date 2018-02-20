@@ -19,10 +19,15 @@ ethereum:
 
     account:
       address: ${ACCOUNT_CONTRACT_ADDRESS}
-      gasPrice: '100000000'
-      gasLimit: '100000000'
+      gasPrice: '8000000'
+      gasLimit: '8000000'
+
+    clientData:
+      address: '0x0'
+      gasPrice: '8000000'
+      gasLimit: '8000000'
 
     storage:
-          address: '0x0'
-          gasPrice: '100000000'
-          gasLimit: '100000000'
+      address: '0x0'
+      gasPrice: '8000000'
+      gasLimit: '8000000'

@@ -14,6 +14,7 @@ data class EthereumProperties(
 
 data class EthereumContracts(
         var account: EthereumContractData = EthereumContractData(),
+        var clientData: EthereumContractData = EthereumContractData(),
         var storage: EthereumContractData = EthereumContractData()
 )
 

@@ -24,6 +24,8 @@ class ClientDataRepositoryStrategy(
         }
     }
 
+    override fun allKeys(): Array<String> = repository.allKeys()
+
     override fun getData(publicKey: String): Map<String, String> = repository.getData(publicKey)
 
 

@@ -2,6 +2,29 @@ pragma solidity ^0.4.0;
 
 //import './src/main/resources/StorageContract.sol';
 
+contract Ownable {
+    address public owner;
+
+    event OwnershipTransferred(address indexed previousOwner, address indexed newOwner);
+
+    function Ownable() public {
+        owner = msg.sender;
+    }
+
+    modifier onlyOwner() {
+        require(msg.sender == owner);
+        _;
+    }
+
+    function transferOwnership(address newOwner) public onlyOwner {
+        require(newOwner != address(0));
+        OwnershipTransferred(owner, newOwner);
+        owner = newOwner;
+    }
+}
+
+//
+
 contract IStorageContractClient {
 
     uint256 public storageIdentifier;
@@ -38,13 +61,12 @@ contract StorageContract {
 
 }
 
-contract AccountContract is IStorageContractClient {
+contract AccountContract is Ownable, IStorageContractClient {
 
     StorageContract public storageContract;
 
     uint256 constant public storageIdentifier = uint256(sha3("AccountContract"));
     uint256 constant public publicKeyField = uint256(sha3("publicKeyField"));
-    uint256 constant public infoField = uint256(sha3("infoField"));
 
     function AccountContract(StorageContract _storageContract) public {
         storageContract = (_storageContract != address(0)) ? _storageContract : new StorageContract();
@@ -54,8 +76,35 @@ contract AccountContract is IStorageContractClient {
         return storageContract.get(uint256(sha3(publicKeyField, publicKey))) != 0;
     }
 
-    function registerPublicKey(string publicKey) public {
+    function registerPublicKey(string publicKey) public onlyOwner {
+        require(!isRegisteredPublicKey(publicKey));
         storageContract.set(uint256(sha3(publicKeyField, publicKey)), 1);
+    }
+
+}
+
+contract ClientDataContract is Ownable, IStorageContractClient {
+
+    StorageContract public storageContract;
+
+    uint256 constant public storageIdentifier = uint256(sha3("ClientDataContract"));
+    uint256 constant public infoField = uint256(sha3("infoField"));
+
+    bytes32[] public keys;
+    mapping(bytes32 => uint) public indexOfKey; // Starts from 1
+
+    function keysCount() public constant returns(uint) {
+        return keys.length;
+    }
+
+    function addKey(bytes32 key) public onlyOwner {
+        require(indexOfKey[key] == 0);
+        keys.push(key);
+        indexOfKey[key] = keys.length; // Incremented by 1
+    }
+
+    function ClientDataContract(StorageContract _storageContract) public {
+        storageContract = (_storageContract != address(0)) ? _storageContract : new StorageContract();
     }
 
     function infoLength(string publicKey, uint256 hash) public constant returns(uint) {
@@ -66,11 +115,11 @@ contract AccountContract is IStorageContractClient {
         return bytes32(storageContract.get(uint256(sha3(publicKey, infoField, hash)) + index));
     }
 
-    function setInfo(string publicKey, uint256 hash, uint index, bytes32 value) public {
+    function setInfo(string publicKey, uint256 hash, uint index, bytes32 value) public onlyOwner {
         storageContract.set(uint256(sha3(publicKey, infoField, hash)) + index, uint256(value));
     }
 
-    function setInfos(string publicKey, uint256 hash, bytes32[] values) public {
+    function setInfos(string publicKey, uint256 hash, bytes32[] values) public onlyOwner {
         for (uint i = 0; i < values.length; i++) {
             storageContract.set(uint256(sha3(publicKey, infoField, hash)) + i, uint256(values[i]));
         }
