@@ -53,7 +53,8 @@ class EthClientDataRepositoryImpl(
             val oldValue = readValueForKey(publicKey, entry.key)
 
             if (oldValue != entry.value) {
-                val validValue = entry.value.padEnd(32, Character.MIN_VALUE)
+                var padLength = ((entry.value.length + 32 - 1) / 32) * 32
+                val validValue = entry.value.padEnd(padLength, Character.MIN_VALUE)
 
                 val arr = validValue.toByteArray()
                         .asList()

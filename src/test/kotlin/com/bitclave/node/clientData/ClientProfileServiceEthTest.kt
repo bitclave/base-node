@@ -32,6 +32,8 @@ class ClientProfileServiceEthTest : ClientProfileServiceTest() {
                 contractStorage.address
         ).send()
 
+        //assert(contractClientData.address == clientDataContract.contractAddress)
+
         clientDataContract.addKey("name".padEnd(32, Character.MIN_VALUE).toByteArray()).send()
         clientDataContract.addKey("age".padEnd(32, Character.MIN_VALUE).toByteArray()).send()
 

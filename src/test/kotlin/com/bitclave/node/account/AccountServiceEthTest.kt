@@ -24,13 +24,15 @@ class AccountServiceEthTest : AccountServiceTest() {
 
         web3Provider.ethSnapshot()
 
-        AccountContract.deploy(
+        val accountContract = AccountContract.deploy(
                 web3Provider.web3,
                 web3Provider.credentials,
                 contractAccount.gasPrice,
                 contractAccount.gasLimit,
                 contractStorage.address
         ).send()
+
+        //assert(contractAccount.address == accountContract.contractAddress)
 
         strategy.changeStrategy(RepositoryType.ETHEREUM)
     }
