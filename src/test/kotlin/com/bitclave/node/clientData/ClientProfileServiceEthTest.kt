@@ -24,13 +24,16 @@ class ClientProfileServiceEthTest : ClientProfileServiceTest() {
 
         web3Provider.ethSnapshot()
 
-        ClientDataContract.deploy(
+        val clientDataContract = ClientDataContract.deploy(
                 web3Provider.web3,
                 web3Provider.credentials,
                 contractClientData.gasPrice,
                 contractClientData.gasLimit,
                 contractStorage.address
         ).send()
+
+        clientDataContract.addKey("name".padEnd(32, Character.MIN_VALUE).toByteArray()).send()
+        clientDataContract.addKey("age".padEnd(32, Character.MIN_VALUE).toByteArray()).send()
 
         strategy.changeStrategy(RepositoryType.ETHEREUM)
     }

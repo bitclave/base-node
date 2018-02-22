@@ -19,7 +19,7 @@ class EthClientDataRepositoryImpl(
 
     var allKeysArr: Array<String> = emptyArray()
 
-    private val contractData = ethereumProperties.contracts.account
+    private val contractData = ethereumProperties.contracts.clientData
 
     private val contract = ClientDataContract.load(
             contractData.address,
@@ -32,7 +32,9 @@ class EthClientDataRepositoryImpl(
     override fun allKeys(): Array<String> {
         if (allKeysArr.isEmpty()) {
             allKeysArr = (0..(contract.keysCount().send().toLong() - 1))
-                    .map { contract.keys(BigInteger.valueOf(it)).send() }
+                    .map {
+                        contract.keys(BigInteger.valueOf(it)).send()
+                    }
                     .map {
                         it.toString(Charset.defaultCharset())
                           .trim(Character.MIN_VALUE)
@@ -42,25 +44,16 @@ class EthClientDataRepositoryImpl(
     }
 
     override fun getData(publicKey: String): Map<String, String> {
-        val map = HashMap<String, String>()
-        for (key in allKeys()) {
-            map[key] = readValueForKey(publicKey, key)
-        }
-        return map
+        return allKeys().map { it to readValueForKey(publicKey, it) } .toMap()
     }
 
     override fun updateData(publicKey: String, data: Map<String, String>) {
-        var hash: BigInteger
-        var oldValue: String
-        var validValue: String
-
         for (entry in data) {
-            hash = BigInteger(entry.key.sha3().hex(), 16)
-            oldValue = readValueForKey(publicKey, entry.key)
+            val hash = BigInteger(entry.key.sha3().hex(), 16)
+            val oldValue = readValueForKey(publicKey, entry.key)
 
             if (oldValue != entry.value) {
-
-                validValue = entry.value.padEnd(32, Character.MIN_VALUE)
+                val validValue = entry.value.padEnd(32, Character.MIN_VALUE)
 
                 val arr = validValue.toByteArray()
                         .asList()
