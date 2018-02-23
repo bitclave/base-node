@@ -22,7 +22,7 @@ ethereum:
       gasLimit: '8000000'
 
     clientData:
-      address: '0x69bd17ead2202072ae4a117b036305a94ccf2e06'
+      address: '0xec8be1a5630364292e56d01129e8ee8a9578d7d8'
       gasPrice: '8000000'
       gasLimit: '8000000'
 

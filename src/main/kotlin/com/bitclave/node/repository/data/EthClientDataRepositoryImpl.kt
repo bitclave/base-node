@@ -44,7 +44,11 @@ class EthClientDataRepositoryImpl(
     }
 
     override fun getData(publicKey: String): Map<String, String> {
-        return allKeys().map { it to readValueForKey(publicKey, it) } .toMap()
+        return allKeys().map {
+            it to readValueForKey(publicKey, it)
+        }.toMap().filter {
+            !it.value.isEmpty()
+        }
     }
 
     override fun updateData(publicKey: String, data: Map<String, String>) {
