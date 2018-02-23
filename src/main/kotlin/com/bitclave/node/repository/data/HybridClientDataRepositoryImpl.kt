@@ -1,6 +1,6 @@
 package com.bitclave.node.repository.data
 
-import com.bitclave.node.configuration.properties.EthereumProperties
+import com.bitclave.node.configuration.properties.HybridProperties
 import com.bitclave.node.extensions.hex
 import com.bitclave.node.extensions.sha3
 import com.bitclave.node.repository.Web3Provider
@@ -11,15 +11,15 @@ import java.math.BigInteger
 import java.nio.charset.Charset
 
 @Component
-@Qualifier("ethereum")
-class EthClientDataRepositoryImpl(
+@Qualifier("hybrid")
+class HybridClientDataRepositoryImpl(
         private val web3Provider: Web3Provider,
-        private val ethereumProperties: EthereumProperties
+        private val hybridProperties: HybridProperties
 ) : ClientDataRepository {
 
     var allKeysArr: Array<String> = emptyArray()
 
-    private val contractData = ethereumProperties.contracts.clientData
+    private val contractData = hybridProperties.contracts.clientData
 
     private val contract = ClientDataContract.load(
             contractData.address,

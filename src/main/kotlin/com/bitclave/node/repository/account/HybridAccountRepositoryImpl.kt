@@ -1,6 +1,6 @@
 package com.bitclave.node.repository.account
 
-import com.bitclave.node.configuration.properties.EthereumProperties
+import com.bitclave.node.configuration.properties.HybridProperties
 import com.bitclave.node.repository.Web3Provider
 import com.bitclave.node.repository.models.Account
 import com.bitclave.node.solidity.generated.AccountContract
@@ -8,13 +8,13 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 
 @Component
-@Qualifier("ethereum")
-class EthAccountRepositoryImpl(
+@Qualifier("hybrid")
+class HybridAccountRepositoryImpl(
         private val web3Provider: Web3Provider,
-        private val ethereumProperties: EthereumProperties
+        private val hybridProperties: HybridProperties
 ) : AccountRepository {
 
-    private val contractData = ethereumProperties.contracts.account
+    private val contractData = hybridProperties.contracts.account
 
     private var contract = AccountContract.load(
             contractData.address,

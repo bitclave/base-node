@@ -10,7 +10,7 @@ spring:
     username: ${JDBC_DATABASE_USERNAME}
     password: ${JDBC_DATABASE_PASSWORD}
 
-ethereum:
+hybrid:
   nodeUrl: https://ropsten.infura.io/
   ownerPrivateKey: ${OWNER_PRIVATE_KEY}
 

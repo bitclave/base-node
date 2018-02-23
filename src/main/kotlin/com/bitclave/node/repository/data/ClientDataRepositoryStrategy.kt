@@ -10,8 +10,8 @@ class ClientDataRepositoryStrategy(
         @Qualifier("postgres")
         private val postgres: PostgresClientDataRepositoryImpl,
 
-        @Qualifier("ethereum")
-        private val ethereum: EthClientDataRepositoryImpl
+        @Qualifier("hybrid")
+        private val hybrid: HybridClientDataRepositoryImpl
 
 ) : RepositoryStrategy, ClientDataRepository {
 
@@ -20,7 +20,7 @@ class ClientDataRepositoryStrategy(
     override fun changeStrategy(type: RepositoryType) {
         repository = when (type) {
             RepositoryType.POSTGRES -> postgres
-            RepositoryType.ETHEREUM -> ethereum
+            RepositoryType.HYBRID -> hybrid
         }
     }
 

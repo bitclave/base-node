@@ -1,6 +1,6 @@
-package com.bitclave.node.clientData
+package com.bitclave.node.account
 
-import com.bitclave.node.configuration.properties.EthereumProperties
+import com.bitclave.node.configuration.properties.HybridProperties
 import com.bitclave.node.repository.RepositoryType
 import com.bitclave.node.repository.Web3Provider
 import com.bitclave.node.solidity.generated.AccountContract
@@ -9,22 +9,22 @@ import org.junit.After
 import org.junit.Before
 import org.springframework.beans.factory.annotation.Autowired
 
-class ClientProfileServiceEthTest : ClientProfileServiceTest() {
+class AccountServiceHybridTest : AccountServiceTest() {
 
     @Autowired
     private lateinit var web3Provider: Web3Provider
     @Autowired
-    private lateinit var ethereumProperties: EthereumProperties
+    private lateinit var hybridProperties: HybridProperties
 
     @Before
     override fun setup() {
         super.setup()
 
-        val contractAccount = ethereumProperties.contracts.account
-        val contractClientData = ethereumProperties.contracts.clientData
-        val contractStorage = ethereumProperties.contracts.storage
+        val contractAccount = hybridProperties.contracts.account
+        val contractClientData = hybridProperties.contracts.clientData
+        val contractStorage = hybridProperties.contracts.storage
 
-        web3Provider.ethSnapshot()
+        web3Provider.hybridSnapshot()
 
         val accountContract = AccountContract.deploy(
                 web3Provider.web3,
@@ -48,12 +48,12 @@ class ClientProfileServiceEthTest : ClientProfileServiceTest() {
         clientDataContract.addKey("name".padEnd(32, Character.MIN_VALUE).toByteArray()).send()
         clientDataContract.addKey("age".padEnd(32, Character.MIN_VALUE).toByteArray()).send()
 
-        strategy.changeStrategy(RepositoryType.ETHEREUM)
+        strategy.changeStrategy(RepositoryType.HYBRID)
     }
 
     @After
-    fun revertEthState() {
-        web3Provider.ethRevert()
+    fun revertHybridState() {
+        web3Provider.hybridRevert()
     }
 
 }

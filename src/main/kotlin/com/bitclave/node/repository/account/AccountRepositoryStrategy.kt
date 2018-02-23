@@ -11,8 +11,8 @@ class AccountRepositoryStrategy(
         @Qualifier("postgres")
         private val postgres: PostgresAccountRepositoryImpl,
 
-        @Qualifier("ethereum")
-        private val ethereum: EthAccountRepositoryImpl
+        @Qualifier("hybrid")
+        private val hybrid: HybridAccountRepositoryImpl
 
 ) : RepositoryStrategy, AccountRepository {
 
@@ -21,7 +21,7 @@ class AccountRepositoryStrategy(
     override fun changeStrategy(type: RepositoryType) {
         repository = when (type) {
             RepositoryType.POSTGRES -> postgres
-            RepositoryType.ETHEREUM -> ethereum
+            RepositoryType.HYBRID -> hybrid
         }
     }
 

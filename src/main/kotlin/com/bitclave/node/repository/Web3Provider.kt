@@ -1,6 +1,6 @@
 package com.bitclave.node.repository
 
-import com.bitclave.node.configuration.properties.EthereumProperties
+import com.bitclave.node.configuration.properties.HybridProperties
 import org.springframework.stereotype.Component
 import org.web3j.crypto.Credentials
 import org.web3j.protocol.Web3j
@@ -9,33 +9,33 @@ import org.web3j.protocol.core.Response
 import org.web3j.protocol.http.HttpService
 
 @Component
-class Web3Provider(private val ethereumProperties: EthereumProperties) {
+class Web3Provider(private val hybridProperties: HybridProperties) {
 
-    private val service = HttpService(ethereumProperties.nodeUrl)
+    private val service = HttpService(hybridProperties.nodeUrl)
 
     val web3: Web3j = Web3j.build(service)
 
-    val credentials: Credentials = Credentials.create(ethereumProperties.ownerPrivateKey)
+    val credentials: Credentials = Credentials.create(hybridProperties.ownerPrivateKey)
 
-    fun ethRevert() {
-        Request<Int, EthRevert>(
+    fun hybridRevert() {
+        Request<Int, HybridRevert>(
                 "evm_revert",
                 arrayListOf(1),
                 service,
-                EthRevert::class.java
+                HybridRevert::class.java
         ).send()
     }
 
-    fun ethSnapshot() {
-        Request<String, EthSnapshot>(
+    fun hybridSnapshot() {
+        Request<String, HybridSnapshot>(
                 "evm_snapshot",
                 emptyList(),
                 service,
-                EthSnapshot::class.java
+                HybridSnapshot::class.java
         ).send()
     }
 
-    private class EthRevert : Response<Boolean>()
-    private class EthSnapshot : Response<String>()
+    private class HybridRevert : Response<Boolean>()
+    private class HybridSnapshot : Response<String>()
 
 }

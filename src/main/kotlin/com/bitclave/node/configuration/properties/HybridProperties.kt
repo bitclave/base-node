@@ -5,20 +5,20 @@ import org.springframework.stereotype.Component
 import java.math.BigInteger
 
 @Component
-@ConfigurationProperties("ethereum")
-data class EthereumProperties(
+@ConfigurationProperties("hybrid")
+data class HybridProperties(
         var nodeUrl: String = "",
         var ownerPrivateKey: String = "",
-        var contracts: EthereumContracts = EthereumContracts()
+        var contracts: HybridContracts = HybridContracts()
 )
 
-data class EthereumContracts(
-        var account: EthereumContractData = EthereumContractData(),
-        var clientData: EthereumContractData = EthereumContractData(),
-        var storage: EthereumContractData = EthereumContractData()
+data class HybridContracts(
+        var account: HybridContractData = HybridContractData(),
+        var clientData: HybridContractData = HybridContractData(),
+        var storage: HybridContractData = HybridContractData()
 )
 
-data class EthereumContractData(
+data class HybridContractData(
         var address: String = "",
         var gasPrice: BigInteger = BigInteger.ZERO,
         var gasLimit: BigInteger = BigInteger.ZERO)
