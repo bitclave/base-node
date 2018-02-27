@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 
 @Component
-@Qualifier("AccountRepository")
 class AccountRepositoryStrategy(
         @Qualifier("postgres")
         private val postgres: PostgresAccountRepositoryImpl
