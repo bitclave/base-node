@@ -1,1 +1,2 @@
 [![Build Status](https://travis-ci.org/bitclave/base-node.svg?branch=develop)](https://travis-ci.org/bitclave/base-node)
+[![Coverage Status](https://coveralls.io/repos/github/bitclave/base-node/badge.svg)](https://coveralls.io/github/bitclave/base-node)
