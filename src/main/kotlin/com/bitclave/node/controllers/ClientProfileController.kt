@@ -1,5 +1,6 @@
 package com.bitclave.node.controllers
 
+import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.Account
 import com.bitclave.node.repository.models.SignedRequest
 import com.bitclave.node.services.AccountService
@@ -10,7 +11,8 @@ import java.util.concurrent.CompletableFuture
 @RestController
 @RequestMapping("/client/")
 class ClientProfileController(private val accountService: AccountService,
-                              private val profileService: ClientProfileService) {
+                              private val profileService: ClientProfileService) :
+        AbstractController() {
 
     /**
      * Returns encrypted data of the user that is identified by the given ID (Public Key).
@@ -21,10 +23,12 @@ class ClientProfileController(private val accountService: AccountService,
      */
     @RequestMapping(method = [RequestMethod.GET], value = ["{pk}/"])
     fun getData(
-            @PathVariable("pk") publicKey: String
+            @PathVariable("pk") publicKey: String,
+            @RequestHeader("Strategy", required = false)
+            strategy: RepositoryStrategyType
     ): CompletableFuture<Map<String, String>> {
 
-        return profileService.getData(publicKey)
+        return profileService.getData(publicKey, strategy)
     }
 
     /**
@@ -44,12 +48,17 @@ class ClientProfileController(private val accountService: AccountService,
      */
     @RequestMapping(method = [RequestMethod.PATCH])
     fun updateData(
-            @RequestBody request: SignedRequest<Map<String, String>>
+            @RequestBody request: SignedRequest<Map<String, String>>,
+            @RequestHeader("Strategy", required = false) strategy: String?
     ): CompletableFuture<Map<String, String>> {
 
-        return accountService.accountBySigMessage(request)
+        return accountService.accountBySigMessage(request, getStrategyType(strategy))
                 .thenCompose { account: Account ->
-                    profileService.updateData(account.publicKey, request.data!!)
+                    profileService.updateData(
+                            account.publicKey,
+                            request.data!!,
+                            getStrategyType(strategy)
+                    )
                 }
     }
 

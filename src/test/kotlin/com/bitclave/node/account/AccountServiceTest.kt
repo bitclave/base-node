@@ -1,7 +1,7 @@
 package com.bitclave.node.account
 
 import com.bitclave.node.extensions.signMessage
-import com.bitclave.node.repository.RepositoryType
+import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.account.AccountCrudRepository
 import com.bitclave.node.repository.account.AccountRepositoryStrategy
 import com.bitclave.node.repository.account.PostgresAccountRepositoryImpl
@@ -34,14 +34,16 @@ class AccountServiceTest {
     protected val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
 
     protected lateinit var account: Account
+    protected lateinit var strategy: RepositoryStrategyType
 
     @Before
     fun setup() {
         account = Account(publicKey)
         val postgres = PostgresAccountRepositoryImpl(accountCrudRepository)
-        val strategy = AccountRepositoryStrategy(postgres)
-        accountService = AccountService(strategy)
-        strategy.changeStrategy(RepositoryType.POSTGRES)
+        val repositoryStrategy = AccountRepositoryStrategy(postgres)
+        accountService = AccountService(repositoryStrategy)
+
+        strategy = RepositoryStrategyType.POSTGRES
     }
 
     @Test
@@ -55,25 +57,25 @@ class AccountServiceTest {
 
     @Test
     fun accountBySigMessage() {
-        accountService.registrationClient(account).get()
+        accountService.registrationClient(account, strategy).get()
         val request = SignedRequest("Hello", publicKey)
         request.signMessage(privateKey)
 
-        val account = accountService.accountBySigMessage(request).get()
+        val account = accountService.accountBySigMessage(request, strategy).get()
         Assertions.assertThat(account.publicKey).isEqualTo(publicKey)
     }
 
     @Test
     fun registration() {
-        val regAccount = accountService.registrationClient(account).get()
+        val regAccount = accountService.registrationClient(account, strategy).get()
         Assertions.assertThat(regAccount.publicKey).isEqualTo(publicKey)
     }
 
     @Test(expected = AlreadyRegisteredException::class)
     fun isAlreadyRegistered() {
-        accountService.registrationClient(account).get()
+        accountService.registrationClient(account, strategy).get()
         try {
-            accountService.registrationClient(account).get()
+            accountService.registrationClient(account, strategy).get()
         } catch (e: Exception) {
             throw e.cause!!
         }
@@ -81,15 +83,15 @@ class AccountServiceTest {
 
     @Test
     fun existAccount() {
-        accountService.registrationClient(account).get()
-        val existAccount = accountService.existAccount(account).get()
+        accountService.registrationClient(account, strategy).get()
+        val existAccount = accountService.existAccount(account, strategy).get()
         Assertions.assertThat(existAccount.publicKey).isEqualTo(publicKey)
     }
 
     @Test(expected = NotFoundException::class)
     fun notExistAccount() {
         try {
-            accountService.existAccount(account).get()
+            accountService.existAccount(account, strategy).get()
         } catch (e: Exception) {
             throw e.cause!!
         }

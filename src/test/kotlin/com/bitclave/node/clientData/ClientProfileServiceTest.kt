@@ -1,6 +1,6 @@
 package com.bitclave.node.clientData
 
-import com.bitclave.node.repository.RepositoryType
+import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.data.ClientDataCrudRepository
 import com.bitclave.node.repository.data.ClientDataRepositoryStrategy
 import com.bitclave.node.repository.data.PostgresClientDataRepositoryImpl
@@ -28,26 +28,29 @@ class ClientProfileServiceTest {
     protected val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
 
     protected lateinit var data: Map<String, String>
+    protected lateinit var strategy: RepositoryStrategyType
+
     @Before
     fun setup() {
         data = mapOf("name" to "my name")
 
         val postgres = PostgresClientDataRepositoryImpl(clientDataCrudRepository)
-        val strategy = ClientDataRepositoryStrategy(postgres)
-        clientProfileService = ClientProfileService(strategy)
-        strategy.changeStrategy(RepositoryType.POSTGRES)
+        val repositoryStrategy = ClientDataRepositoryStrategy(postgres)
+        clientProfileService = ClientProfileService(repositoryStrategy)
+
+        strategy = RepositoryStrategyType.POSTGRES
     }
 
     @Test
     fun getData() {
         updateData()
-        val resultData = clientProfileService.getData(publicKey).get()
+        val resultData = clientProfileService.getData(publicKey, strategy).get()
         Assertions.assertThat(resultData).isEqualTo(data)
     }
 
     @Test
     fun updateData() {
-        val resultData = clientProfileService.updateData(publicKey, data).get()
+        val resultData = clientProfileService.updateData(publicKey, data, strategy).get()
         Assertions.assertThat(resultData).isEqualTo(data)
     }
 

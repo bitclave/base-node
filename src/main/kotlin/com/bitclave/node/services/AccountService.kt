@@ -1,8 +1,9 @@
 package com.bitclave.node.services
 
 import com.bitclave.node.extensions.validateSig
-import com.bitclave.node.repository.RepositoryType
-import com.bitclave.node.repository.account.AccountRepositoryStrategy
+import com.bitclave.node.repository.RepositoryStrategy
+import com.bitclave.node.repository.RepositoryStrategyType
+import com.bitclave.node.repository.account.AccountRepository
 import com.bitclave.node.repository.models.Account
 import com.bitclave.node.repository.models.SignedRequest
 import com.bitclave.node.services.errors.AccessDeniedException
@@ -13,11 +14,7 @@ import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
 
 @Service
-class AccountService(private val accountRepository: AccountRepositoryStrategy) {
-
-    init {
-        accountRepository.changeStrategy(RepositoryType.POSTGRES)
-    }
+class AccountService(private val accountRepository: RepositoryStrategy<AccountRepository>) {
 
     fun checkSigMessage(request: SignedRequest<*>): CompletableFuture<String> {
         return request.validateSig()
@@ -30,9 +27,9 @@ class AccountService(private val accountRepository: AccountRepositoryStrategy) {
                 }
     }
 
-    fun accountBySigMessage(request: SignedRequest<*>): CompletableFuture<Account> {
+    fun accountBySigMessage(request: SignedRequest<*>, strategy: RepositoryStrategyType): CompletableFuture<Account> {
         return checkSigMessage(request)
-                .thenApply(accountRepository::findByPublicKey)
+                .thenApply(accountRepository.changeStrategy(strategy)::findByPublicKey)
                 .thenApply { account: Account? ->
                     if (account == null) {
                         throw NotFoundException()
@@ -45,25 +42,28 @@ class AccountService(private val accountRepository: AccountRepositoryStrategy) {
                 }
     }
 
-    fun registrationClient(account: Account): CompletableFuture<Account> {
+    fun registrationClient(account: Account, strategy: RepositoryStrategyType): CompletableFuture<Account> {
         return CompletableFuture.supplyAsync {
             if (!account.isValid()) {
                 throw BadArgumentException()
             }
-
-            if (accountRepository.findByPublicKey(account.publicKey) != null) {
+            accountRepository.changeStrategy(strategy)
+            if (accountRepository.changeStrategy(strategy)
+                            .findByPublicKey(account.publicKey) != null) {
                 throw AlreadyRegisteredException()
             }
 
-            accountRepository.saveAccount(account.publicKey)
+            accountRepository.changeStrategy(strategy)
+                    .saveAccount(account.publicKey)
 
             account
         }
     }
 
-    fun existAccount(account: Account): CompletableFuture<Account> {
+    fun existAccount(account: Account, strategy: RepositoryStrategyType): CompletableFuture<Account> {
         return CompletableFuture.supplyAsync {
-            accountRepository.findByPublicKey(account.publicKey) ?: throw NotFoundException()
+            accountRepository.changeStrategy(strategy)
+                    .findByPublicKey(account.publicKey) ?: throw NotFoundException()
         }
     }
 

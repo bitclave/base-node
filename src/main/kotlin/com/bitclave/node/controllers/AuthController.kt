@@ -10,7 +10,7 @@ import java.util.concurrent.CompletableFuture
 
 @RestController()
 @RequestMapping("/")
-class AuthController(private val accountService: AccountService) {
+class AuthController(private val accountService: AccountService) : AbstractController() {
 
     /**
      * Creates a new user in the system, based on the provided information.
@@ -27,7 +27,10 @@ class AuthController(private val accountService: AccountService) {
      */
     @RequestMapping(method = [RequestMethod.POST], value = ["registration"])
     @ResponseStatus(value = HttpStatus.CREATED)
-    fun registration(@RequestBody request: SignedRequest<Account>): CompletableFuture<Account> {
+    fun registration(@RequestBody request: SignedRequest<Account>,
+                     @RequestHeader("Strategy", required = false) strategy: String?):
+            CompletableFuture<Account> {
+
         return accountService.checkSigMessage(request)
                 .thenApply { pk ->
                     if (pk != request.data?.publicKey) {
@@ -35,7 +38,9 @@ class AuthController(private val accountService: AccountService) {
                     }
                     pk
                 }
-                .thenCompose { accountService.registrationClient(request.data!!) }
+                .thenCompose {
+                    accountService.registrationClient(request.data!!, getStrategyType(strategy))
+                }
     }
 
     /**
@@ -51,7 +56,10 @@ class AuthController(private val accountService: AccountService) {
      *              {@link NotFoundException} - 404
      */
     @RequestMapping(method = [RequestMethod.POST], value = ["exist"])
-    fun existAccount(@RequestBody request: SignedRequest<Account>): CompletableFuture<Account> {
+    fun existAccount(@RequestBody request: SignedRequest<Account>,
+                     @RequestHeader("Strategy", required = false) strategy: String?):
+            CompletableFuture<Account> {
+
         return accountService.checkSigMessage(request)
                 .thenApply { pk ->
                     if (pk != request.data?.publicKey) {
@@ -59,7 +67,9 @@ class AuthController(private val accountService: AccountService) {
                     }
                     pk
                 }
-                .thenCompose { accountService.existAccount(request.data!!) }
+                .thenCompose {
+                    accountService.existAccount(request.data!!, getStrategyType(strategy))
+                }
     }
 
 }

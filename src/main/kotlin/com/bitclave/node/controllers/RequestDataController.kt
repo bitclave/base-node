@@ -11,7 +11,8 @@ import java.util.concurrent.CompletableFuture
 @RestController
 @RequestMapping("/request/")
 class RequestDataController(private val accountService: AccountService,
-                            private val requestDataService: RequestDataService) {
+                            private val requestDataService: RequestDataService) :
+        AbstractController() {
 
     /**
      * Returns a list of outstanding data access requests,
@@ -28,17 +29,18 @@ class RequestDataController(private val accountService: AccountService,
      */
     @RequestMapping(method = [RequestMethod.GET],
             value = [
-                "from/{fromPk}/state/{state}/",
+                "/from/{fromPk}/state/{state}/",
                 "to/{toPk}/state/{state}/",
                 "from/{fromPk}/to/{toPk}/state/{state}/"
             ])
     fun getRequestByState(
             @PathVariable("fromPk", required = false) fromPk: String?,
             @PathVariable("toPk", required = false) toPk: String?,
-            @PathVariable("state") state: RequestData.RequestDataState
+            @PathVariable("state") state: RequestData.RequestDataState,
+            @RequestHeader("Strategy", required = false) strategy: String?
     ): CompletableFuture<List<RequestData>> {
 
-        return requestDataService.getRequestByStatus(fromPk, toPk, state)
+        return requestDataService.getRequestByStatus(fromPk, toPk, state, getStrategyType(strategy))
     }
 
     /**
@@ -53,10 +55,17 @@ class RequestDataController(private val accountService: AccountService,
      *              {@link DataNotSaved} - 500
      */
     @RequestMapping(method = [RequestMethod.POST])
-    fun request(@RequestBody request: SignedRequest<RequestData>): CompletableFuture<Long> {
-        return accountService.accountBySigMessage(request)
+    fun request(@RequestBody request: SignedRequest<RequestData>,
+                @RequestHeader("Strategy", required = false) strategy: String?):
+            CompletableFuture<Long> {
+
+        return accountService.accountBySigMessage(request, getStrategyType(strategy))
                 .thenCompose { account: Account ->
-                    requestDataService.request(account.publicKey, request.data!!)
+                    requestDataService.request(
+                            account.publicKey,
+                            request.data!!,
+                            getStrategyType(strategy)
+                    )
                 }
     }
 
@@ -74,12 +83,18 @@ class RequestDataController(private val accountService: AccountService,
     @RequestMapping(method = [RequestMethod.PATCH], value = ["{id}/"])
     fun response(
             @PathVariable("id") requestId: Long,
-            @RequestBody request: SignedRequest<String>
+            @RequestBody request: SignedRequest<String>,
+            @RequestHeader("Strategy", required = false) strategy: String?
     ): CompletableFuture<RequestData.RequestDataState> {
 
-        return accountService.accountBySigMessage(request)
+        return accountService.accountBySigMessage(request, getStrategyType(strategy))
                 .thenCompose { account: Account ->
-                    requestDataService.response(requestId, account.publicKey, request.data)
+                    requestDataService.response(
+                            requestId,
+                            account.publicKey,
+                            request.data,
+                            getStrategyType(strategy)
+                    )
                 }
     }
 

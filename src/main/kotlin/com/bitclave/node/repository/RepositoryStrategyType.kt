@@ -1,6 +1,6 @@
 package com.bitclave.node.repository
 
-enum class RepositoryType {
+enum class RepositoryStrategyType {
 
     POSTGRES,
     ETHEREUM

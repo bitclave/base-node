@@ -1,6 +1,7 @@
 package com.bitclave.node.requestData
 
 import com.bitclave.node.extensions.toJsonString
+import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.RequestData
 import com.bitclave.node.repository.models.SignedRequest
 import org.junit.Before
@@ -38,6 +39,7 @@ class RequestDataControllerTest {
 
         httpHeaders.set("Accept", "application/json")
         httpHeaders.set("Content-Type", "application/json")
+        httpHeaders.set("Strategy", RepositoryStrategyType.POSTGRES.name)
     }
 
     @Test fun `get request by state`() {
