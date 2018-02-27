@@ -127,3 +127,138 @@ contract ClientDataContract is Ownable, IStorageContractClient {
     }
 
 }
+
+contract RequestDataContract is Ownable, IStorageContractClient {
+
+    StorageContract public storageContract;
+
+    uint256 constant public storageIdentifier = uint256(keccak256("RequestDataContract"));
+
+    enum RequestDataState {
+        UNDEFINED,
+        AWAIT,
+        ACCEPT,
+        REJECT
+    }
+
+    struct RequestData {
+        uint id;
+        uint256 fromPkX;
+        uint256 fromPkY;
+        uint256 toPkX;
+        uint256 toPkY;
+        bytes requestData;
+        bytes responseData;
+        RequestDataState state;
+    }
+
+    function RequestDataContract(StorageContract _storageContract) public {
+        storageContract = (_storageContract != address(0)) ? _storageContract : new StorageContract();
+    }
+
+    uint public nextId = 1;
+    RequestData[] public requests;
+    mapping(uint => uint) public indexOfRequestId; // Incremented values
+
+    struct ItemsAndLookupEntry {
+        uint[] items;
+        mapping(uint => uint) lookup;
+    }
+
+    mapping(uint256 => mapping(uint => ItemsAndLookupEntry)) idsByFrom; // [PkX][state]
+    mapping(uint256 => mapping(uint => ItemsAndLookupEntry)) idsByTo; // [PkX][state]
+    mapping(uint256 => mapping(uint256 => mapping(uint => ItemsAndLookupEntry))) idsByFromAndTo; // [PkX][PkX][state]
+
+    // Lengths
+
+    function getByFromCount(uint256 fromPkX, uint state) public constant returns(uint) {
+        return idsByFrom[fromPkX][state].items.length;
+    }
+
+    function getByToCount(uint256 toPkX, uint state) public constant returns(uint) {
+        return idsByTo[toPkX][state].items.length;
+    }
+
+    function getByFromAndToCount(uint256 fromPkX, uint256 toPkX, uint state) public constant returns(uint) {
+        return idsByFromAndTo[fromPkX][toPkX][state].items.length;
+    }
+
+    // Public methods
+
+    function getByFrom(uint256 fromPkX, uint state, uint index) public constant returns(uint) {
+        return idsByFrom[fromPkX][state].items[index];
+    }
+
+    function getByTo(uint256 toPkX, uint state, uint index) public constant returns(uint) {
+        return idsByTo[toPkX][state].items[index];
+    }
+
+    function getByFromAndTo(uint256 fromPkX, uint256 toPkX, uint state, uint index) public constant returns(uint) {
+        return idsByFromAndTo[fromPkX][toPkX][state].items[index];
+    }
+
+    function findById(uint id) public constant
+        returns(uint request_id,
+                uint256 fromPkX,
+                uint256 fromPkY,
+                uint256 toPkX,
+                uint256 toPkY,
+                bytes requestData,
+                bytes responseData,
+                uint state)
+    {
+        uint index = indexOfRequestId[id];
+        require(index > 0);
+        index--;
+        RequestData data = requests[index];
+        return (data.id, data.fromPkX, data.fromPkY, data.toPkX, data.toPkY, data.requestData, data.responseData, uint(data.state));
+    }
+
+    function updateData(
+        uint id,
+        uint256 fromPkX,
+        uint256 fromPkY,
+        uint256 toPkX,
+        uint256 toPkY,
+        bytes requestData,
+        bytes responseData,
+        uint state) public onlyOwner
+    {
+        if (id == 0) {
+            id = nextId++;
+            requests.push(RequestData(id, fromPkX, fromPkY, toPkX, toPkY, requestData, responseData, RequestDataState(state)));
+            indexOfRequestId[id] = requests.length; // Incremented index
+            return;
+        }
+
+        uint index = indexOfRequestId[id];
+        require(index > 0);
+        index--;
+
+        uint oldState = uint(requests[index].state);
+        if (state != oldState) {
+            moveId(id, idsByFrom[fromPkX][oldState], idsByFrom[fromPkX][state]);
+            moveId(id, idsByTo[toPkX][oldState], idsByTo[toPkX][state]);
+            moveId(id, idsByFromAndTo[fromPkX][toPkX][oldState], idsByFromAndTo[fromPkX][toPkX][state]);
+        }
+
+        requests[index] = RequestData(id, fromPkX, fromPkY, toPkX, toPkY, requestData, responseData, RequestDataState(state));
+    }
+
+    // Private methods
+
+    function moveId(uint id, ItemsAndLookupEntry storage fromEntry, ItemsAndLookupEntry storage toEntry) internal {
+        uint index = fromEntry.lookup[id];
+        require(index > 0);
+        index--;
+
+        delete fromEntry.lookup[id];
+        fromEntry.items[index] = fromEntry.items[fromEntry.items.length - 1];
+        fromEntry.items.length--;
+        fromEntry.lookup[fromEntry.items[index]] = index + 1; // Incremented index
+
+        toEntry.items.push(id);
+        toEntry.lookup[id] = toEntry.items.length; // Incremented index
+    }
+
+}
