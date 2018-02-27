@@ -12,6 +12,6 @@ cache:
   directories:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
-    
-script:
-  - ./gradlew test
+
+after_success:
+  - ./gradlew test jacocoTestReport coveralls
