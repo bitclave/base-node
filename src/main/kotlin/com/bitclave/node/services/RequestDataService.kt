@@ -1,35 +1,36 @@
 package com.bitclave.node.services
 
-import com.bitclave.node.repository.RepositoryType
+import com.bitclave.node.repository.RepositoryStrategy
+import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.RequestData
-import com.bitclave.node.repository.request.RequestDataRepositoryStrategy
+import com.bitclave.node.repository.request.RequestDataRepository
 import com.bitclave.node.services.errors.BadArgumentException
 import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
 
 @Service
-class RequestDataService(private val requestDataRepository: RequestDataRepositoryStrategy) {
-
-    init {
-        requestDataRepository.changeStrategy(RepositoryType.POSTGRES)
-    }
+class RequestDataService(private val requestDataRepository: RepositoryStrategy<RequestDataRepository>) {
 
     fun getRequestByStatus(
             fromPk: String?,
             toPk: String?,
-            state: RequestData.RequestDataState
+            state: RequestData.RequestDataState,
+            strategy: RepositoryStrategyType
     ): CompletableFuture<List<RequestData>> {
 
         return CompletableFuture.supplyAsync({
             val result: List<RequestData> =
                     if (fromPk == null && toPk != null) {
-                        requestDataRepository.getByTo(toPk, state)
+                        requestDataRepository.changeStrategy(strategy)
+                                .getByTo(toPk, state)
 
                     } else if (fromPk != null && toPk == null) {
-                        requestDataRepository.getByFrom(fromPk, state)
+                        requestDataRepository.changeStrategy(strategy)
+                                .getByFrom(fromPk, state)
 
                     } else if (fromPk != null && toPk != null) {
-                        requestDataRepository.getByFromAndTo(fromPk, toPk, state)
+                        requestDataRepository.changeStrategy(strategy)
+                                .getByFromAndTo(fromPk, toPk, state)
 
                     } else {
                         throw BadArgumentException()
@@ -39,7 +40,7 @@ class RequestDataService(private val requestDataRepository: RequestDataRepositor
         })
     }
 
-    fun request(clientPk: String, data: RequestData): CompletableFuture<Long> {
+    fun request(clientPk: String, data: RequestData, strategy: RepositoryStrategyType): CompletableFuture<Long> {
         return CompletableFuture.supplyAsync({
             val request = RequestData(
                     -1,
@@ -49,18 +50,21 @@ class RequestDataService(private val requestDataRepository: RequestDataRepositor
                     "",
                     RequestData.RequestDataState.AWAIT
             )
-            requestDataRepository.updateData(request).id
+            requestDataRepository.changeStrategy(strategy)
+                    .updateData(request).id
         })
     }
 
     fun response(
             id: Long,
             publicKey: String,
-            data: String?
+            data: String?,
+            strategy: RepositoryStrategyType
     ): CompletableFuture<RequestData.RequestDataState> {
 
         return CompletableFuture.supplyAsync({
-            val original = requestDataRepository.findById(id)
+            val original = requestDataRepository.changeStrategy(strategy)
+                    .findById(id)
 
             if (original == null || original.toPk != publicKey) {
                 throw BadArgumentException()
@@ -80,7 +84,8 @@ class RequestDataService(private val requestDataRepository: RequestDataRepositor
                     state
             )
 
-            requestDataRepository.updateData(result)
+            requestDataRepository.changeStrategy(strategy)
+                    .updateData(result)
 
             state
         })

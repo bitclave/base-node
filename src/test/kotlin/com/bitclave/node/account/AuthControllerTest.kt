@@ -1,6 +1,7 @@
 package com.bitclave.node.account
 
 import com.bitclave.node.extensions.toJsonString
+import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.Account
 import com.bitclave.node.repository.models.SignedRequest
 import org.junit.Before
@@ -38,6 +39,7 @@ class AuthControllerTest {
 
         httpHeaders.set("Accept", "application/json")
         httpHeaders.set("Content-Type", "application/json")
+        httpHeaders.set("Strategy", RepositoryStrategyType.POSTGRES.name)
     }
 
     @Test

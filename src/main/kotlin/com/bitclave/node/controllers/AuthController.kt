@@ -10,11 +10,27 @@ import java.util.concurrent.CompletableFuture
 
 @RestController()
 @RequestMapping("/")
-class AuthController(private val accountService: AccountService) {
+class AuthController(private val accountService: AccountService) : AbstractController() {
 
+    /**
+     * Creates a new user in the system, based on the provided information.
+     * The API will verify that the request is cryptographically signed by the owner of the public key.
+     * @param request is {@link SignedRequest} where client sends {@link Account} and
+     * signature of the message.
+     *
+     * @return {@link Account}, Http status - 201.
+     *
+     * @exception   {@link AccessDeniedException} - 403
+     *              {@link BadArgumentException} - 400
+     *              {@link AlreadyRegisteredException} - 409
+     *              {@link DataNotSaved} - 500
+     */
     @RequestMapping(method = [RequestMethod.POST], value = ["registration"])
     @ResponseStatus(value = HttpStatus.CREATED)
-    fun registration(@RequestBody request: SignedRequest<Account>): CompletableFuture<Account> {
+    fun registration(@RequestBody request: SignedRequest<Account>,
+                     @RequestHeader("Strategy", required = false) strategy: String?):
+            CompletableFuture<Account> {
+
         return accountService.checkSigMessage(request)
                 .thenApply { pk ->
                     if (pk != request.data?.publicKey) {
@@ -22,11 +38,28 @@ class AuthController(private val accountService: AccountService) {
                     }
                     pk
                 }
-                .thenCompose { accountService.registrationClient(request.data!!) }
+                .thenCompose {
+                    accountService.registrationClient(request.data!!, getStrategyType(strategy))
+                }
     }
 
+    /**
+     * Verifies if the specified account already exists in the system.
+     * The API will verify that the request is cryptographically signed by
+     * the owner of the public key.
+     * @param request is {@link SignedRequest} where client sends {@link Account}
+     * and signature of the message.
+     *
+     * @return {@link Account}, Http status - 200.
+     *
+     * @exception   {@link AccessDeniedException} - 403
+     *              {@link NotFoundException} - 404
+     */
     @RequestMapping(method = [RequestMethod.POST], value = ["exist"])
-    fun existAccount(@RequestBody request: SignedRequest<Account>): CompletableFuture<Account> {
+    fun existAccount(@RequestBody request: SignedRequest<Account>,
+                     @RequestHeader("Strategy", required = false) strategy: String?):
+            CompletableFuture<Account> {
+
         return accountService.checkSigMessage(request)
                 .thenApply { pk ->
                     if (pk != request.data?.publicKey) {
@@ -34,7 +67,9 @@ class AuthController(private val accountService: AccountService) {
                     }
                     pk
                 }
-                .thenCompose { accountService.existAccount(request.data!!) }
+                .thenCompose {
+                    accountService.existAccount(request.data!!, getStrategyType(strategy))
+                }
     }
 
 }

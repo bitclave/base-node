@@ -1,6 +1,7 @@
 package com.bitclave.node.clientData
 
-import com.bitclave.node.repository.RepositoryType
+import com.bitclave.node.repository.RepositoryStrategyType
+import com.bitclave.node.repository.data.ClientDataCrudRepository
 import com.bitclave.node.repository.data.ClientDataRepositoryStrategy
 import com.bitclave.node.services.ClientProfileService
 import org.assertj.core.api.Assertions
@@ -20,30 +21,30 @@ import org.springframework.test.context.junit4.SpringRunner
 class ClientProfileServiceTest {
 
     @Autowired
-    protected lateinit var strategy: ClientDataRepositoryStrategy
-    @Autowired
     protected lateinit var clientProfileService: ClientProfileService
 
     protected val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
 
     protected lateinit var data: Map<String, String>
+    protected lateinit var strategy: RepositoryStrategyType
 
     @Before
     fun setup() {
         data = mapOf("name" to "my name")
-        strategy.changeStrategy(RepositoryType.POSTGRES)
+
+        strategy = RepositoryStrategyType.POSTGRES
     }
 
     @Test
     fun `get client raw data by public key`() {
         `update client data by public key`()
-        val resultData = clientProfileService.getData(publicKey).get()
+        val resultData = clientProfileService.getData(publicKey, strategy).get()
         Assertions.assertThat(resultData).isEqualTo(data)
     }
 
     @Test
     fun `update client data by public key`() {
-        clientProfileService.updateData(publicKey, data).get()
+        clientProfileService.updateData(publicKey, data, strategy).get()
     }
 
 }

@@ -1,6 +1,6 @@
 package com.bitclave.node.requestData
 
-import com.bitclave.node.repository.RepositoryType
+import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.RequestData
 import com.bitclave.node.repository.request.PostgresRequestDataRepositoryImpl
 import com.bitclave.node.repository.request.RequestDataCrudRepository
@@ -33,13 +33,16 @@ class RequestDataServiceTest {
     protected val RESPONSE_DATA: String = "RESPONSE_DATA"
     protected lateinit var request: RequestData
 
+    protected lateinit var strategy: RepositoryStrategyType
+
     @Before fun setup() {
         request = RequestData(1, "", to, REQUEST_DATA)
 
         val postgres = PostgresRequestDataRepositoryImpl(requestDataCrudRepository)
-        val strategy = RequestDataRepositoryStrategy(postgres)
-        requestDataService = RequestDataService(strategy)
-        strategy.changeStrategy(RepositoryType.POSTGRES)
+        val repositoryStrategy = RequestDataRepositoryStrategy(postgres)
+        requestDataService = RequestDataService(repositoryStrategy)
+
+        strategy = RepositoryStrategyType.POSTGRES
     }
 
     @Test fun `get request by state and from`() {
@@ -48,7 +51,8 @@ class RequestDataServiceTest {
         val resultRequests = requestDataService.getRequestByStatus(
                 from,
                 null,
-                RequestData.RequestDataState.AWAIT
+                RequestData.RequestDataState.AWAIT,
+                strategy
         ).get()
 
         Assertions.assertThat(resultRequests.size).isEqualTo(1)
@@ -62,7 +66,8 @@ class RequestDataServiceTest {
         val resultRequests = requestDataService.getRequestByStatus(
                 null,
                 to,
-                RequestData.RequestDataState.AWAIT
+                RequestData.RequestDataState.AWAIT,
+                strategy
         ).get()
 
         Assertions.assertThat(resultRequests.size).isEqualTo(1)
@@ -76,7 +81,8 @@ class RequestDataServiceTest {
         val resultRequests = requestDataService.getRequestByStatus(
                 from,
                 to,
-                RequestData.RequestDataState.AWAIT
+                RequestData.RequestDataState.AWAIT,
+                strategy
         ).get()
 
         Assertions.assertThat(resultRequests.size).isEqualTo(1)
@@ -89,7 +95,8 @@ class RequestDataServiceTest {
         val resultRequests = requestDataService.getRequestByStatus(
                 from,
                 to,
-                RequestData.RequestDataState.ACCEPT
+                RequestData.RequestDataState.ACCEPT,
+                strategy
         ).get()
 
         Assertions.assertThat(resultRequests.size).isEqualTo(1)
@@ -103,7 +110,8 @@ class RequestDataServiceTest {
         val resultRequests = requestDataService.getRequestByStatus(
                 from,
                 to,
-                RequestData.RequestDataState.REJECT
+                RequestData.RequestDataState.REJECT,
+                strategy
         ).get()
 
         Assertions.assertThat(resultRequests.size).isEqualTo(1)
@@ -125,19 +133,19 @@ class RequestDataServiceTest {
     }
 
     @Test fun `create request to client`() {
-        val id = requestDataService.request(from, request).get()
+        val id = requestDataService.request(from, request, strategy).get()
         Assertions.assertThat(id).isEqualTo(1)
     }
 
     @Test fun `create response to client with accept`() {
         `create request to client`()
-        val state = requestDataService.response(1, to, RESPONSE_DATA).get()
+        val state = requestDataService.response(1, to, RESPONSE_DATA, strategy).get()
         Assertions.assertThat(state).isEqualTo(RequestData.RequestDataState.ACCEPT)
     }
 
     @Test fun `create response to client with reject`() {
         `create request to client`()
-        val state = requestDataService.response(1, to, null).get()
+        val state = requestDataService.response(1, to, null, strategy).get()
         Assertions.assertThat(state).isEqualTo(RequestData.RequestDataState.REJECT)
     }
 

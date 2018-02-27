@@ -1,7 +1,7 @@
 package com.bitclave.node.repository.data
 
 import com.bitclave.node.repository.RepositoryStrategy
-import com.bitclave.node.repository.RepositoryType
+import com.bitclave.node.repository.RepositoryStrategyType
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 
@@ -13,23 +13,13 @@ class ClientDataRepositoryStrategy(
         @Qualifier("hybrid")
         private val hybrid: HybridClientDataRepositoryImpl
 
-) : RepositoryStrategy, ClientDataRepository {
+) : RepositoryStrategy<ClientDataRepository> {
 
-    private var repository: ClientDataRepository = postgres
-
-    override fun changeStrategy(type: RepositoryType) {
-        repository = when (type) {
-            RepositoryType.POSTGRES -> postgres
-            RepositoryType.HYBRID -> hybrid
+    override fun changeStrategy(type: RepositoryStrategyType): ClientDataRepository {
+        return when (type) {
+            RepositoryStrategyType.POSTGRES -> postgres
+            RepositoryStrategyType.HYBRID -> hybrid
         }
     }
-
-    override fun allKeys(): Array<String> = repository.allKeys()
-
-    override fun getData(publicKey: String): Map<String, String> = repository.getData(publicKey)
-
-
-    override fun updateData(publicKey: String, data: Map<String, String>) =
-            repository.updateData(publicKey, data)
 
 }

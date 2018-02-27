@@ -1,7 +1,7 @@
 package com.bitclave.node.repository
 
-interface RepositoryStrategy {
+interface RepositoryStrategy<T> {
 
-    fun changeStrategy(type: RepositoryType)
+    fun changeStrategy(type: RepositoryStrategyType): T
 
 }
