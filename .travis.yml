@@ -1,3 +1,4 @@
+sudo: required
 language: java
 
 jdk:
@@ -12,3 +13,5 @@ cache:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
     
+script:
+  - ./gradlew test
