@@ -9,7 +9,6 @@ import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.errors.AlreadyRegisteredException
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
-import javassist.tools.web.BadHttpRequest
 import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
 
@@ -49,7 +48,7 @@ class AccountService(private val accountRepository: AccountRepositoryStrategy) {
     fun registrationClient(account: Account): CompletableFuture<Account> {
         return CompletableFuture.supplyAsync {
             if (!account.isValid()) {
-                throw BadHttpRequest()
+                throw BadArgumentException()
             }
 
             if (accountRepository.findByPublicKey(account.publicKey) != null) {

@@ -10,6 +10,13 @@ import java.util.concurrent.CompletableFuture
 @RequestMapping("/dev/bot/")
 class BotController {
 
+    /**
+     * Returns ID (Public Key) of the bot, where bot is identified by it’s name.
+     * @param name - name of the bot (example Adam).
+     *
+     * @return String ID (Public Key) of the bot, specified by name.
+     * if name is not found then empty String is returned. Http status - 200.
+     */
     @RequestMapping(method = [RequestMethod.GET], value = ["{name}"])
     fun getPublicKey(@PathVariable("name") name: String): CompletableFuture<String> {
         return CompletableFuture.completedFuture(
