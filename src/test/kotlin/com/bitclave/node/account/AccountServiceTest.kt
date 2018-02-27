@@ -2,9 +2,6 @@ package com.bitclave.node.account
 
 import com.bitclave.node.extensions.signMessage
 import com.bitclave.node.repository.RepositoryStrategyType
-import com.bitclave.node.repository.account.AccountCrudRepository
-import com.bitclave.node.repository.RepositoryType
-import com.bitclave.node.repository.account.AccountRepositoryStrategy
 import com.bitclave.node.repository.models.Account
 import com.bitclave.node.repository.models.SignedRequest
 import com.bitclave.node.services.AccountService

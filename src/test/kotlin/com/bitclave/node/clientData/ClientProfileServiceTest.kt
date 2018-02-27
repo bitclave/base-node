@@ -1,8 +1,6 @@
 package com.bitclave.node.clientData
 
 import com.bitclave.node.repository.RepositoryStrategyType
-import com.bitclave.node.repository.data.ClientDataCrudRepository
-import com.bitclave.node.repository.data.ClientDataRepositoryStrategy
 import com.bitclave.node.services.ClientProfileService
 import org.assertj.core.api.Assertions
 import org.junit.Before

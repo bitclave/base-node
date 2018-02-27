@@ -1,7 +1,7 @@
 package com.bitclave.node.clientData
 
 import com.bitclave.node.configuration.properties.HybridProperties
-import com.bitclave.node.repository.RepositoryType
+import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.Web3Provider
 import com.bitclave.node.solidity.generated.AccountContract
 import com.bitclave.node.solidity.generated.ClientDataContract
@@ -48,7 +48,7 @@ class ClientProfileServiceHybridTest : ClientProfileServiceTest() {
         clientDataContract.addKey("name".padEnd(32, Character.MIN_VALUE).toByteArray()).send()
         clientDataContract.addKey("age".padEnd(32, Character.MIN_VALUE).toByteArray()).send()
 
-        strategy.changeStrategy(RepositoryType.HYBRID)
+        strategy = RepositoryStrategyType.HYBRID
     }
 
     @After
