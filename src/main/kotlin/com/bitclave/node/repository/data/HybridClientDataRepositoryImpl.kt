@@ -1,6 +1,7 @@
 package com.bitclave.node.repository.data
 
 import com.bitclave.node.configuration.properties.HybridProperties
+import com.bitclave.node.extensions.fromHex
 import com.bitclave.node.extensions.hex
 import com.bitclave.node.extensions.sha3
 import com.bitclave.node.repository.Web3Provider
@@ -53,7 +54,6 @@ class HybridClientDataRepositoryImpl(
 
     override fun updateData(publicKey: String, data: Map<String, String>) {
         for (entry in data) {
-            val hash = BigInteger(entry.key.sha3().hex(), 16)
             val oldValue = readValueForKey(publicKey, entry.key)
 
             if (oldValue != entry.value) {
@@ -64,17 +64,16 @@ class HybridClientDataRepositoryImpl(
                         .asList()
                         .chunked(32)
                         .map { it.toByteArray() }
-                contract.setInfos(publicKey, hash, arr).send()
+                contract.setInfos(publicKey, entry.key.padEnd(32, Character.MIN_VALUE).toByteArray(), arr).send()
             }
         }
     }
 
     private fun readValueForKey(publicKey: String, key: String): String {
         val stringBuilder = StringBuilder()
-        val hash = BigInteger(key.sha3().hex(), 16)
         var i = BigInteger.valueOf(0)
         while (true) {
-            val item = contract.info(publicKey, hash, i)
+            val item = contract.info(publicKey, key.padEnd(32, Character.MIN_VALUE).toByteArray(), i)
                     .send()
                     .toString(Charset.defaultCharset())
                     .trim(Character.MIN_VALUE)

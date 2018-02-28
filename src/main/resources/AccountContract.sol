@@ -107,23 +107,29 @@ contract ClientDataContract is Ownable, IStorageContractClient {
         storageContract = (_storageContract != address(0)) ? _storageContract : new StorageContract();
     }
 
-    function infoLength(string publicKey, uint256 hash) public constant returns(uint) {
-        return storageContract.length(uint256(keccak256(publicKey, infoField, hash)));
+    function infoLength(string publicKey, bytes32 key) public constant returns(uint) {
+        return storageContract.length(uint256(keccak256(publicKey, infoField, key)));
     }
 
-    function info(string publicKey, uint256 hash, uint index) public constant returns(bytes32) {
-        return bytes32(storageContract.get(uint256(keccak256(publicKey, infoField, hash)) + index));
+    function info(string publicKey, bytes32 key, uint index) public constant returns(bytes32) {
+        return bytes32(storageContract.get(uint256(keccak256(publicKey, infoField, key)) + index));
     }
 
-    function setInfo(string publicKey, uint256 hash, uint index, bytes32 value) public onlyOwner {
-        storageContract.set(uint256(keccak256(publicKey, infoField, hash)) + index, uint256(value));
-    }
-
-    function setInfos(string publicKey, uint256 hash, bytes32[] values) public onlyOwner {
-        for (uint i = 0; i < values.length; i++) {
-            storageContract.set(uint256(keccak256(publicKey, infoField, hash)) + i, uint256(values[i]));
+    function setInfo(string publicKey, bytes32 key, uint index, bytes32 value) public onlyOwner {
+        if (indexOfKey[key] == 0) {
+            addKey(key);
         }
-        storageContract.erase(uint256(keccak256(publicKey, infoField, hash)) + values.length);
+        storageContract.set(uint256(keccak256(publicKey, infoField, key)) + index, uint256(value));
+    }
+
+    function setInfos(string publicKey, bytes32 key, bytes32[] values) public onlyOwner {
+        if (indexOfKey[key] == 0) {
+            addKey(key);
+        }
+        for (uint i = 0; i < values.length; i++) {
+            storageContract.set(uint256(keccak256(publicKey, infoField, key)) + i, uint256(values[i]));
+        }
+        storageContract.erase(uint256(keccak256(publicKey, infoField, key)) + values.length);
     }
 
 }
