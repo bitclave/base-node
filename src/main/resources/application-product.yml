@@ -27,6 +27,11 @@ hybrid:
       gasPrice: '8000000'
       gasLimit: '8000000'
 
+    requestData:
+      address: '0x0'
+      gasPrice: '8000000'
+      gasLimit: '8000000'
+
     storage:
       address: '0x0'
       gasPrice: '8000000'

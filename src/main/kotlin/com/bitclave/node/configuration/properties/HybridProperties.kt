@@ -15,6 +15,7 @@ data class HybridProperties(
 data class HybridContracts(
         var account: HybridContractData = HybridContractData(),
         var clientData: HybridContractData = HybridContractData(),
+        var requestData: HybridContractData = HybridContractData(),
         var storage: HybridContractData = HybridContractData()
 )
 

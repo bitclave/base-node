@@ -1,4 +1,4 @@
-package com.bitclave.node.account
+package com.bitclave.node.requestData
 
 import com.bitclave.node.configuration.properties.HybridProperties
 import com.bitclave.node.repository.RepositoryStrategyType
@@ -10,7 +10,7 @@ import org.junit.After
 import org.junit.Before
 import org.springframework.beans.factory.annotation.Autowired
 
-class AccountServiceHybridTest : AccountServiceTest() {
+class RequestDataServiceHybridTest : RequestDataServiceTest() {
 
     @Autowired
     private lateinit var web3Provider: Web3Provider

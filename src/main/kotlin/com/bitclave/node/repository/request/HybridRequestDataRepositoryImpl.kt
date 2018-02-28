@@ -1,11 +1,22 @@
 package com.bitclave.node.repository.request
 
+import com.bitclave.node.extensions.fromHex
 import com.bitclave.node.repository.models.RequestData
 import com.bitclave.node.solidity.generated.RequestDataContract
-import com.bitclave.node.services.errors.DataNotSaved
+import org.bouncycastle.jce.ECNamedCurveTable
 import org.web3j.tuples.generated.Tuple8
 import java.math.BigInteger
 import java.nio.charset.Charset
+import org.bouncycastle.jce.ECPointUtil
+import org.bouncycastle.jce.spec.ECNamedCurveSpec
+import org.bouncycastle.jce.provider.BouncyCastleProvider
+import java.security.KeyFactory
+import java.security.spec.InvalidKeySpecException
+import java.security.NoSuchAlgorithmException
+import java.security.PublicKey
+import java.security.interfaces.ECPublicKey
+import java.security.spec.ECPublicKeySpec
+
 
 class HybridRequestDataRepositoryImpl(val contract: RequestDataContract) :
         RequestDataRepository {
@@ -103,6 +114,17 @@ class HybridRequestDataRepositoryImpl(val contract: RequestDataContract) :
         if (publicKey.length == 130) {
             return BigInteger(publicKey.substring(66, 64), 16)
         }
-        return BigInteger.valueOf(0) //TODO: Uncompress public key
+        return getPublicKeyFromBytes(publicKey.fromHex()).w.affineY
+    }
+
+    // https://stackoverflow.com/a/26159150/440168
+    @Throws(NoSuchAlgorithmException::class, InvalidKeySpecException::class)
+    private fun getPublicKeyFromBytes(pubKey: ByteArray): ECPublicKey {
+        val spec = ECNamedCurveTable.getParameterSpec("prime256v1")
+        val kf = KeyFactory.getInstance("ECDSA", BouncyCastleProvider())
+        val params = ECNamedCurveSpec("prime256v1", spec.curve, spec.g, spec.n)
+        val point = ECPointUtil.decodePoint(params.curve, pubKey)
+        val pubKeySpec = ECPublicKeySpec(point, params)
+        return kf.generatePublic(pubKeySpec) as ECPublicKey
     }
 }
