@@ -54,6 +54,7 @@ class ClientProfileServiceHybridTest : ClientProfileServiceTest() {
 
         assert(contractAccount.address == accountContract.contractAddress)
         assert(contractClientData.address == clientDataContract.contractAddress)
+        assert(contractRequestData.address == requestDataContract.contractAddress)
 
         clientDataContract.addKey("name".padEnd(32, Character.MIN_VALUE).toByteArray()).send()
         clientDataContract.addKey("age".padEnd(32, Character.MIN_VALUE).toByteArray()).send()

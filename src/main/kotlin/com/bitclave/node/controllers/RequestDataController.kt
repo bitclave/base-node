@@ -5,6 +5,10 @@ import com.bitclave.node.repository.models.RequestData
 import com.bitclave.node.repository.models.SignedRequest
 import com.bitclave.node.services.AccountService
 import com.bitclave.node.services.RequestDataService
+import io.swagger.annotations.ApiOperation
+import io.swagger.annotations.ApiParam
+import io.swagger.annotations.ApiResponse
+import io.swagger.annotations.ApiResponses
 import org.springframework.web.bind.annotation.*
 import java.util.concurrent.CompletableFuture
 
@@ -27,6 +31,15 @@ class RequestDataController(private val accountService: AccountService,
      *
      * @exception {@link BadArgumentException} - 400
      */
+    @ApiOperation("Returns a list of outstanding data access requests,\n" +
+            "where data access requests meet the provided search criteria.\n" +
+            "API called must provided one of fromPk or toPk.",
+            response = RequestData::class, responseContainer = "List")
+    @ApiResponses(value = [
+        (ApiResponse(code = 200, message = "Success", response = RequestData::class,
+                responseContainer = "List")),
+        (ApiResponse(code = 400, message = "BadArgumentException"))
+    ])
     @RequestMapping(method = [RequestMethod.GET],
             value = [
                 "/from/{fromPk}/state/{state}/",
@@ -34,10 +47,23 @@ class RequestDataController(private val accountService: AccountService,
                 "from/{fromPk}/to/{toPk}/state/{state}/"
             ])
     fun getRequestByState(
-            @PathVariable("fromPk", required = false) fromPk: String?,
-            @PathVariable("toPk", required = false) toPk: String?,
-            @PathVariable("state") state: RequestData.RequestDataState,
-            @RequestHeader("Strategy", required = false) strategy: String?
+            @ApiParam("Optional if use toPk. Public key of the user " +
+                    "that issued data access request.", required = false)
+            @PathVariable("fromPk", required = false)
+            fromPk: String?,
+
+            @ApiParam("Optional if use fromPk. Public key of the user that is expected to\n" +
+                    "approve data access request to his personal data.", required = false)
+            @PathVariable("toPk", required = false)
+            toPk: String?,
+
+            @ApiParam("state of request", required = true)
+            @PathVariable("state")
+            state: RequestData.RequestDataState,
+
+            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+            @RequestHeader("Strategy", required = false)
+            strategy: String?
     ): CompletableFuture<List<RequestData>> {
 
         return requestDataService.getRequestByStatus(fromPk, toPk, state, getStrategyType(strategy))
@@ -45,19 +71,35 @@ class RequestDataController(private val accountService: AccountService,
 
     /**
      * Create request for get private client data.
-     * @param {@link SignedRequest} with {@link RequestData}.
+     * @param request info of request for privacy client data
      *
      * @return id of created request.
      *
-     * @exception   {@link AccessDeniedException} - 403
+     * @exception   {@link BadArgumentException} - 400
+     *              {@link AccessDeniedException} - 403
      *              {@link NotFoundException} - 404
-     *              {@link BadArgumentException} - 400
      *              {@link DataNotSaved} - 500
      */
+    @ApiOperation("Creates a new user in the system, based on the provided information.\n" +
+            "The API will verify that the request is cryptographically signed by the owner of the public key.",
+            response = Long::class)
+    @ApiResponses(value = [
+        (ApiResponse(code = 200, message = "Success", response = Long::class)),
+        (ApiResponse(code = 400, message = "BadArgumentException")),
+        (ApiResponse(code = 403, message = "AccessDeniedException")),
+        (ApiResponse(code = 404, message = "NotFoundException")),
+        (ApiResponse(code = 500, message = "DataNotSaved"))
+    ])
     @RequestMapping(method = [RequestMethod.POST])
-    fun request(@RequestBody request: SignedRequest<RequestData>,
-                @RequestHeader("Strategy", required = false) strategy: String?):
-            CompletableFuture<Long> {
+    fun request(
+            @ApiParam("info of request for privacy client data", required = true)
+            @RequestBody
+            request: SignedRequest<RequestData>,
+
+            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+            @RequestHeader("Strategy", required = false)
+            strategy: String?
+    ): CompletableFuture<Long> {
 
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
                 .thenCompose { account: Account ->
@@ -70,21 +112,39 @@ class RequestDataController(private val accountService: AccountService,
     }
 
     /**
-     * Creates data access request to a specific user for a specific personal data.
-     * @param {@link SignedRequest} with {@link RequestData}.
+     * Creates a response to a previously submitted data access request.
+     * @param id of request
+     * @param {@link SignedRequest} with encrypted data
      *
-     * @return id of the created data access request.
+     * @return state of request {@link RequestData.RequestDataState}
      *
-     * @exception   {@link AccessDeniedException} - 403
+     * @exception   {@link BadArgumentException} - 400
+     *              {@link AccessDeniedException} - 403
      *              {@link NotFoundException} - 404
-     *              {@link BadArgumentException} - 400
      *              {@link DataNotSaved} - 500
      */
+
+    @ApiOperation("Creates a response to a previously submitted data access request.",
+            response = RequestData.RequestDataState::class)
+    @ApiResponses(value = [
+        (ApiResponse(code = 200, message = "Success", response = RequestData.RequestDataState::class)),
+        (ApiResponse(code = 400, message = "BadArgumentException")),
+        (ApiResponse(code = 403, message = "AccessDeniedException")),
+        (ApiResponse(code = 404, message = "NotFoundException")),
+        (ApiResponse(code = 500, message = "DataNotSaved"))
+    ])
     @RequestMapping(method = [RequestMethod.PATCH], value = ["{id}/"])
     fun response(
-            @PathVariable("id") requestId: Long,
+            @ApiParam("id of request", required = true)
+            @PathVariable("id")
+            requestId: Long,
+
+            @ApiParam("SignedRequest with encrypted data", required = true)
             @RequestBody request: SignedRequest<String>,
-            @RequestHeader("Strategy", required = false) strategy: String?
+
+            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+            @RequestHeader("Strategy", required = false)
+            strategy: String?
     ): CompletableFuture<RequestData.RequestDataState> {
 
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
