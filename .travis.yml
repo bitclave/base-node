@@ -17,7 +17,7 @@ install:
   - npm install -g ganache-cli
 
 before_script:
-  - start-ganache.sh > /dev/null &
+  - ./start-ganache.sh > /dev/null &
   - sleep 5
 
 after_success:
