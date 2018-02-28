@@ -7,6 +7,7 @@ import com.bitclave.node.clientData.ClientProfileControllerTest
 import com.bitclave.node.clientData.ClientProfileServiceHybridTest
 import com.bitclave.node.clientData.ClientProfileServiceTest
 import com.bitclave.node.requestData.RequestDataControllerTest
+import com.bitclave.node.requestData.RequestDataServiceHybridTest
 import com.bitclave.node.requestData.RequestDataServiceTest
 import org.junit.runner.RunWith
 import org.junit.runners.Suite
@@ -19,6 +20,7 @@ import org.junit.runners.Suite
     ClientProfileControllerTest::class,
     ClientProfileServiceTest::class,
     ClientProfileServiceHybridTest::class,
+    RequestDataServiceHybridTest::class,
     RequestDataControllerTest::class,
     RequestDataServiceTest::class
 ])
