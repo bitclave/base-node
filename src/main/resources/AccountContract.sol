@@ -216,7 +216,7 @@ contract RequestDataContract is Ownable, IStorageContractClient {
         uint index = indexOfRequestId[id];
         require(index > 0);
         index--;
-        RequestData data = requests[index];
+        RequestData storage data = requests[index];
         return (data.id, data.fromPkX, data.fromPkY, data.toPkX, data.toPkY, data.requestData, data.responseData, uint(data.state));
     }
 
@@ -265,6 +265,34 @@ contract RequestDataContract is Ownable, IStorageContractClient {
 
         toEntry.items.push(id);
         toEntry.lookup[id] = toEntry.items.length; // Incremented index
+    }
+
+}
+
+contract FacadeContract is Ownable {
+
+    StorageContract public storageContract;
+    AccountContract public account;
+    ClientDataContract public clientData;
+    RequestDataContract public requestData;
+
+    function FacadeContract() public {
+        storageContract = new StorageContract();
+        account = new AccountContract(storageContract);
+        clientData = new ClientDataContract(storageContract);
+        requestData = new RequestDataContract(storageContract);
+    }
+
+    function setAccount(address _account) public onlyOwner {
+        account = AccountContract(_account);
+    }
+
+    function setClientData(address _clientData) public onlyOwner {
+        clientData = ClientDataContract(_clientData);
+    }
+
+    function setRequestData(address _requestData) public onlyOwner {
+        requestData = RequestDataContract(_requestData);
     }
 
 }

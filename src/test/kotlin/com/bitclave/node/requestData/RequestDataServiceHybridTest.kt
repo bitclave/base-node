@@ -5,6 +5,7 @@ import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.Web3Provider
 import com.bitclave.node.solidity.generated.AccountContract
 import com.bitclave.node.solidity.generated.ClientDataContract
+import com.bitclave.node.solidity.generated.FacadeContract
 import com.bitclave.node.solidity.generated.RequestDataContract
 import org.junit.After
 import org.junit.Before
@@ -28,33 +29,22 @@ class RequestDataServiceHybridTest : RequestDataServiceTest() {
 
         web3Provider.hybridSnapshot()
 
-        val accountContract = AccountContract.deploy(
+        val facadeContract = FacadeContract.deploy(
                 web3Provider.web3,
                 web3Provider.credentials,
                 contractAccount.gasPrice,
-                contractAccount.gasLimit,
-                contractStorage.address
+                contractAccount.gasLimit
         ).send()
 
-        val clientDataContract = ClientDataContract.deploy(
-                web3Provider.web3,
-                web3Provider.credentials,
-                contractClientData.gasPrice,
-                contractClientData.gasLimit,
-                contractStorage.address
-        ).send()
+        val storageAddress = facadeContract.storageContract().send()
+        val accountAddress = facadeContract.account().send()
+        val clientDataAddress = facadeContract.clientData().send()
+        val requestDataAddress = facadeContract.requestData().send()
 
-        val requestDataContract = RequestDataContract.deploy(
-                web3Provider.web3,
-                web3Provider.credentials,
-                contractClientData.gasPrice,
-                contractClientData.gasLimit,
-                contractStorage.address
-        ).send()
-
-        assert(contractAccount.address == accountContract.contractAddress)
-        assert(contractClientData.address == clientDataContract.contractAddress)
-        assert(contractRequestData.address == requestDataContract.contractAddress)
+        assert(contractStorage.address == storageAddress)
+        assert(contractAccount.address == accountAddress)
+        assert(contractClientData.address == clientDataAddress)
+        assert(contractRequestData.address == requestDataAddress)
 
         strategy = RepositoryStrategyType.HYBRID
     }
