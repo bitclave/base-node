@@ -15,7 +15,7 @@ class RequestDataRepositoryStrategy(
     override fun changeStrategy(type: RepositoryStrategyType): RequestDataRepository {
         return when (type) {
             RepositoryStrategyType.POSTGRES -> postgres
-            RepositoryStrategyType.ETHEREUM -> postgres
+            RepositoryStrategyType.HYBRID -> postgres
         }
     }
 

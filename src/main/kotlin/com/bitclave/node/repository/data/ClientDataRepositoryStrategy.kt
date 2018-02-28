@@ -15,7 +15,7 @@ class ClientDataRepositoryStrategy(
     override fun changeStrategy(type: RepositoryStrategyType): ClientDataRepository {
         return when (type) {
             RepositoryStrategyType.POSTGRES -> postgres
-            RepositoryStrategyType.ETHEREUM -> postgres
+            RepositoryStrategyType.HYBRID -> postgres
         }
     }
 

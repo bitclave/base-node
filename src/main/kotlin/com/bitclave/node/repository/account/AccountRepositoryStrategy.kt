@@ -15,7 +15,7 @@ class AccountRepositoryStrategy(
     override fun changeStrategy(type: RepositoryStrategyType): AccountRepository {
         return when (type) {
             RepositoryStrategyType.POSTGRES -> postgres
-            RepositoryStrategyType.ETHEREUM -> postgres
+            RepositoryStrategyType.HYBRID -> postgres
         }
     }
 
