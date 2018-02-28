@@ -13,6 +13,9 @@ cache:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
 
+install:
+  - npm install -g ganache-cli
+
 before_script:
   - start-ganache.sh > /dev/null &
   - sleep 5
