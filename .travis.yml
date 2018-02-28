@@ -13,5 +13,9 @@ cache:
     - $HOME/.gradle/caches/
     - $HOME/.gradle/wrapper/
 
+before_script:
+  - start-ganache.sh > /dev/null &
+  - sleep 5
+
 after_success:
   - ./gradlew jacocoTestReport coveralls
