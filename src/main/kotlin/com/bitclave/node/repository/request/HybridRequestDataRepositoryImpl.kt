@@ -1,7 +1,11 @@
 package com.bitclave.node.repository.request
 
+import com.bitclave.node.configuration.properties.HybridProperties
 import com.bitclave.node.extensions.fromHex
+import com.bitclave.node.repository.Web3Provider
 import com.bitclave.node.repository.models.RequestData
+import com.bitclave.node.solidity.generated.ClientDataContract
+import com.bitclave.node.solidity.generated.NameServiceContract
 import com.bitclave.node.solidity.generated.RequestDataContract
 import org.bouncycastle.jce.ECNamedCurveTable
 import org.web3j.tuples.generated.Tuple8
@@ -18,8 +22,32 @@ import java.security.interfaces.ECPublicKey
 import java.security.spec.ECPublicKeySpec
 
 
-class HybridRequestDataRepositoryImpl(val contract: RequestDataContract) :
-        RequestDataRepository {
+class HybridRequestDataRepositoryImpl(
+        private val web3Provider: Web3Provider,
+        private val hybridProperties: HybridProperties
+) : RequestDataRepository {
+
+    private val nameServiceData = hybridProperties.contracts.nameService
+    private var nameServiceContract: NameServiceContract
+    private var contract: RequestDataContract
+
+    init {
+        nameServiceContract = NameServiceContract.load(
+                nameServiceData.address,
+                web3Provider.web3,
+                web3Provider.credentials,
+                nameServiceData.gasPrice,
+                nameServiceData.gasLimit
+        )
+
+        contract = RequestDataContract.load(
+                nameServiceContract.addressOfName("requestData").send(),
+                web3Provider.web3,
+                web3Provider.credentials,
+                nameServiceData.gasPrice,
+                nameServiceData.gasLimit
+        )
+    }
 
     override fun getByFrom(from: String, state: RequestData.RequestDataState): List<RequestData> {
         val count = contract.getByFromCount(publicKeyX(from), state.ordinal.toBigInteger()).send().toLong()

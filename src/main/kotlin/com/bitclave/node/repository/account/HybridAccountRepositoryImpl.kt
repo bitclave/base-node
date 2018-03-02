@@ -4,6 +4,7 @@ import com.bitclave.node.configuration.properties.HybridProperties
 import com.bitclave.node.repository.Web3Provider
 import com.bitclave.node.repository.models.Account
 import com.bitclave.node.solidity.generated.AccountContract
+import com.bitclave.node.solidity.generated.NameServiceContract
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 
@@ -14,15 +15,27 @@ class HybridAccountRepositoryImpl(
         private val hybridProperties: HybridProperties
 ) : AccountRepository {
 
-    private val contractData = hybridProperties.contracts.account
+    private val nameServiceData = hybridProperties.contracts.nameService
+    private lateinit var nameServiceContract: NameServiceContract
+    private lateinit var contract: AccountContract
 
-    private var contract = AccountContract.load(
-            contractData.address,
-            web3Provider.web3,
-            web3Provider.credentials,
-            contractData.gasPrice,
-            contractData.gasLimit
-    )
+    init {
+        nameServiceContract = NameServiceContract.load(
+                nameServiceData.address,
+                web3Provider.web3,
+                web3Provider.credentials,
+                nameServiceData.gasPrice,
+                nameServiceData.gasLimit
+        )
+
+        contract = AccountContract.load(
+                nameServiceContract.addressOfName("account").send(),
+                web3Provider.web3,
+                web3Provider.credentials,
+                nameServiceData.gasPrice,
+                nameServiceData.gasLimit
+        )
+    }
 
     override fun saveAccount(publicKey: String) {
         contract.registerPublicKey(publicKey).send()

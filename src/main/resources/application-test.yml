@@ -14,24 +14,7 @@ hybrid:
   ownerPrivateKey: '0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501200'
 
   contracts:
-    dnsAddress: '0x0f5ea0a652e851678ebf77b69484bfcd31f9459b'
-
-    account:
-      address: '0x630a848b5839c8183f31c526fad8721c7aa07bbb'
-      gasPrice: '8000000'
-      gasLimit: '8000000'
-
-    clientData:
-      address: '0xbfeaf7ba913150b930f124aed2961438838eaadd'
-      gasPrice: '8000000'
-      gasLimit: '8000000'
-
-    requestData:
-      address: '0x5124eeeb4599199c053c56be12536b4910cf54b8'
-      gasPrice: '8000000'
-      gasLimit: '8000000'
-
-    storage:
-      address: '0xc43d6f54bcf3e58981c175b135ffc8c035547f3b'
+    nameService:
+      address: '0x0f5ea0a652e851678ebf77b69484bfcd31f9459b'
       gasPrice: '8000000'
       gasLimit: '8000000'

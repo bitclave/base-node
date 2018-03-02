@@ -269,30 +269,27 @@ contract RequestDataContract is Ownable, IStorageContractClient {
 
 }
 
-contract FacadeContract is Ownable {
+contract NameServiceContract is Ownable {
 
-    StorageContract public storageContract;
-    AccountContract public account;
-    ClientDataContract public clientData;
-    RequestDataContract public requestData;
+    string[] public names;
+    mapping(bytes32 => uint) private indexOfNameHash; // Incremented indexes
+    mapping(bytes32 => address) private addressOfNameHash;
 
-    function FacadeContract() public {
-        storageContract = new StorageContract();
-        account = new AccountContract(storageContract);
-        clientData = new ClientDataContract(storageContract);
-        requestData = new RequestDataContract(storageContract);
+    function incrementedIndexOfName(string name) public constant returns(uint) {
+        return indexOfNameHash[keccak256(name)];
     }
 
-    function setAccount(address _account) public onlyOwner {
-        account = AccountContract(_account);
+    function addressOfName(string name) public constant returns(address) {
+        return addressOfNameHash[keccak256(name)];
     }
 
-    function setClientData(address _clientData) public onlyOwner {
-        clientData = ClientDataContract(_clientData);
-    }
-
-    function setRequestData(address _requestData) public onlyOwner {
-        requestData = RequestDataContract(_requestData);
+    function setAddressOf(string name, address addr) public onlyOwner {
+        bytes32 nameHash = keccak256(name);
+        if (indexOfNameHash[nameHash] == 0) {
+            names.push(name);
+            indexOfNameHash[nameHash] = names.length; // Incremented
+        }
+        addressOfNameHash[nameHash] = addr;
     }
 
 }
