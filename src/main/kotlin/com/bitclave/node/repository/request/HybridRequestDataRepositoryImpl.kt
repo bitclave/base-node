@@ -2,6 +2,8 @@ package com.bitclave.node.repository.request
 
 import com.bitclave.node.configuration.properties.HybridProperties
 import com.bitclave.node.extensions.fromHex
+import com.bitclave.node.extensions.hex
+import com.bitclave.node.extensions.sha3
 import com.bitclave.node.repository.Web3Provider
 import com.bitclave.node.repository.models.RequestData
 import com.bitclave.node.solidity.generated.NameServiceContract
@@ -105,7 +107,7 @@ class HybridRequestDataRepositoryImpl(
     }
 
     override fun updateData(request: RequestData): RequestData {
-        contract.updateData(
+        val tx = contract.updateData(
                 request.id.toBigInteger(),
                 publicKeyX(request.fromPk),
                 publicKeyY(request.fromPk),
@@ -113,7 +115,23 @@ class HybridRequestDataRepositoryImpl(
                 publicKeyY(request.toPk),
                 request.requestData.toByteArray(),
                 request.responseData.toByteArray(),
-                request.state.ordinal.toBigInteger())
+                request.state.ordinal.toBigInteger()).send()
+
+        for (log in tx.logs) {
+            val xx = log.topics[0].substring(2)
+            val yy = "RequestDataCreated(uint256)".sha3().hex()
+            if (log.topics[0].substring(2) == "RequestDataCreated(uint256)".sha3().hex()) {
+                return RequestData(
+                        log.topics[1].substring(2).toLong(16),
+                        request.fromPk,
+                        request.toPk,
+                        request.requestData,
+                        request.responseData,
+                        request.state
+                )
+            }
+        }
+
         return request
     }
 

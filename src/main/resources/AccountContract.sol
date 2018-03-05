@@ -165,6 +165,9 @@ contract RequestDataContract is Ownable, IStorageContractClient {
     uint public nextId = 1;
     RequestData[] public requests;
     mapping(uint => uint) public indexOfRequestId; // Incremented values
+    event RequestDataCreated(uint indexed requestId);
+    event RequestDataAccepted(uint indexed requestId);
+    event RequestDataRejected(uint indexed requestId);
 
     struct ItemsAndLookupEntry {
         uint[] items;
@@ -176,6 +179,10 @@ contract RequestDataContract is Ownable, IStorageContractClient {
     mapping(uint256 => mapping(uint256 => mapping(uint => ItemsAndLookupEntry))) idsByFromAndTo; // [PkX][PkX][state]
 
     // Lengths
+
+    function requestsCount() public constant returns(uint) {
+        return requests.length;
+    }
 
     function getByFromCount(uint256 fromPkX, uint state) public constant returns(uint) {
         return idsByFrom[fromPkX][state].items.length;
@@ -220,12 +227,6 @@ contract RequestDataContract is Ownable, IStorageContractClient {
         return (data.id, data.fromPkX, data.fromPkY, data.toPkX, data.toPkY, data.requestData, data.responseData, uint(data.state));
     }
 
-    function isValidPublicKey(uint256 pkX, uint256 pkY) public constant returns(bool) {
-        // (y^2 == x^3 + 7) mod m
-        uint256 m = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F;
-        return mulmod(pkY, pkY, m) == addmod(mulmod(pkX, mulmod(pkX, pkX, m), m), 7, m);
-    }
-
     function updateData(
         uint id,
         uint256 fromPkX,
@@ -236,13 +237,14 @@ contract RequestDataContract is Ownable, IStorageContractClient {
         bytes responseData,
         uint state) public onlyOwner
     {
-        require(isValidPublicKey(fromPkX, fromPkY));
-        require(isValidPublicKey(toPkX, toPkY));
+        //require(isValidPublicKey(fromPkX, fromPkY));
+        //require(isValidPublicKey(toPkX, toPkY));
 
         if (id == 0) {
             id = nextId++;
             requests.push(RequestData(id, fromPkX, fromPkY, toPkX, toPkY, requestData, responseData, RequestDataState(state)));
             indexOfRequestId[id] = requests.length; // Incremented index
+            RequestDataCreated(id);
             return;
         }
 
@@ -255,12 +257,24 @@ contract RequestDataContract is Ownable, IStorageContractClient {
             moveId(id, idsByFrom[fromPkX][oldState], idsByFrom[fromPkX][state]);
             moveId(id, idsByTo[toPkX][oldState], idsByTo[toPkX][state]);
             moveId(id, idsByFromAndTo[fromPkX][toPkX][oldState], idsByFromAndTo[fromPkX][toPkX][state]);
+            if (state == uint(RequestDataState.ACCEPT)) {
+                RequestDataAccepted(id);
+            } else
+            if (state == uint(RequestDataState.REJECT)) {
+                RequestDataRejected(id);
+            }
         }
 
         requests[index] = RequestData(id, fromPkX, fromPkY, toPkX, toPkY, requestData, responseData, RequestDataState(state));
     }
 
     // Private methods
+
+    function isValidPublicKey(uint256 pkX, uint256 pkY) public constant returns(bool) {
+        // (y^2 == x^3 + 7) mod m
+        uint256 m = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F;
+        return mulmod(pkY, pkY, m) == addmod(mulmod(pkX, mulmod(pkX, pkX, m), m), 7, m);
+    }
 
     function moveId(uint id, ItemsAndLookupEntry storage fromEntry, ItemsAndLookupEntry storage toEntry) internal {
         uint index = fromEntry.lookup[id];

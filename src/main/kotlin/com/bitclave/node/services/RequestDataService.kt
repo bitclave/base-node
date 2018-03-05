@@ -43,7 +43,7 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
     fun request(clientPk: String, data: RequestData, strategy: RepositoryStrategyType): CompletableFuture<Long> {
         return CompletableFuture.supplyAsync({
             val request = RequestData(
-                    -1,
+                    0,
                     clientPk,
                     data.toPk,
                     data.requestData,
