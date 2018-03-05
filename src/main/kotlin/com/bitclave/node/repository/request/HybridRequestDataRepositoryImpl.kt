@@ -149,9 +149,9 @@ class HybridRequestDataRepositoryImpl(
     // https://stackoverflow.com/a/26159150/440168
     @Throws(NoSuchAlgorithmException::class, InvalidKeySpecException::class)
     private fun getPublicKeyFromBytes(pubKey: ByteArray): ECPublicKey {
-        val spec = ECNamedCurveTable.getParameterSpec("prime256v1")
+        val spec = ECNamedCurveTable.getParameterSpec("secp256k1")
         val kf = KeyFactory.getInstance("ECDSA", BouncyCastleProvider())
-        val params = ECNamedCurveSpec("prime256v1", spec.curve, spec.g, spec.n)
+        val params = ECNamedCurveSpec("secp256k1", spec.curve, spec.g, spec.n)
         val point = ECPointUtil.decodePoint(params.curve, pubKey)
         val pubKeySpec = ECPublicKeySpec(point, params)
         return kf.generatePublic(pubKeySpec) as ECPublicKey
