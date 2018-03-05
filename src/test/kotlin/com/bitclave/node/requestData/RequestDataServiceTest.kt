@@ -1,7 +1,10 @@
 package com.bitclave.node.requestData
 
+import com.bitclave.node.configuration.properties.HybridProperties
 import com.bitclave.node.repository.RepositoryStrategyType
+import com.bitclave.node.repository.Web3Provider
 import com.bitclave.node.repository.models.RequestData
+import com.bitclave.node.repository.request.HybridRequestDataRepositoryImpl
 import com.bitclave.node.repository.request.PostgresRequestDataRepositoryImpl
 import com.bitclave.node.repository.request.RequestDataCrudRepository
 import com.bitclave.node.repository.request.RequestDataRepositoryStrategy
@@ -23,6 +26,11 @@ import org.springframework.test.context.junit4.SpringRunner
 class RequestDataServiceTest {
 
     @Autowired
+    private lateinit var web3Provider: Web3Provider
+    @Autowired
+    private lateinit var hybridProperties: HybridProperties
+
+    @Autowired
     protected lateinit var requestDataCrudRepository: RequestDataCrudRepository
     protected lateinit var requestDataService: RequestDataService
 
@@ -39,7 +47,9 @@ class RequestDataServiceTest {
         request = RequestData(1, "", to, REQUEST_DATA)
 
         val postgres = PostgresRequestDataRepositoryImpl(requestDataCrudRepository)
-        val repositoryStrategy = RequestDataRepositoryStrategy(postgres)
+        val hybrid = HybridRequestDataRepositoryImpl(web3Provider, hybridProperties)
+
+        val repositoryStrategy = RequestDataRepositoryStrategy(postgres, hybrid)
         requestDataService = RequestDataService(repositoryStrategy)
 
         strategy = RepositoryStrategyType.POSTGRES

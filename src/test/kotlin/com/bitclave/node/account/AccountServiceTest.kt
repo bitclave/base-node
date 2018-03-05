@@ -1,7 +1,13 @@
 package com.bitclave.node.account
 
+import com.bitclave.node.configuration.properties.HybridProperties
 import com.bitclave.node.extensions.signMessage
 import com.bitclave.node.repository.RepositoryStrategyType
+import com.bitclave.node.repository.Web3Provider
+import com.bitclave.node.repository.account.AccountCrudRepository
+import com.bitclave.node.repository.account.AccountRepositoryStrategy
+import com.bitclave.node.repository.account.HybridAccountRepositoryImpl
+import com.bitclave.node.repository.account.PostgresAccountRepositoryImpl
 import com.bitclave.node.repository.models.Account
 import com.bitclave.node.repository.models.SignedRequest
 import com.bitclave.node.services.AccountService
@@ -24,6 +30,13 @@ import org.springframework.test.context.junit4.SpringRunner
 class AccountServiceTest {
 
     @Autowired
+    private lateinit var web3Provider: Web3Provider
+    @Autowired
+    private lateinit var hybridProperties: HybridProperties
+
+    @Autowired
+    private lateinit var accountCrudRepository: AccountCrudRepository
+
     protected lateinit var accountService: AccountService
 
     protected val privateKey = "c9574c6138fe689946e4f0273e848a8219a6652288273dc6cf291e09517d0abd"
@@ -35,6 +48,11 @@ class AccountServiceTest {
     @Before
     fun setup() {
         account = Account(publicKey)
+        val postgres = PostgresAccountRepositoryImpl(accountCrudRepository)
+        val hybrid = HybridAccountRepositoryImpl(web3Provider, hybridProperties)
+        val repositoryStrategy = AccountRepositoryStrategy(postgres, hybrid)
+
+        accountService = AccountService(repositoryStrategy)
 
         strategy = RepositoryStrategyType.POSTGRES
     }

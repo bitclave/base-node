@@ -4,32 +4,33 @@ import com.bitclave.node.configuration.properties.HybridProperties
 import com.bitclave.node.extensions.fromHex
 import com.bitclave.node.repository.Web3Provider
 import com.bitclave.node.repository.models.RequestData
-import com.bitclave.node.solidity.generated.ClientDataContract
 import com.bitclave.node.solidity.generated.NameServiceContract
 import com.bitclave.node.solidity.generated.RequestDataContract
 import org.bouncycastle.jce.ECNamedCurveTable
+import org.bouncycastle.jce.ECPointUtil
+import org.bouncycastle.jce.provider.BouncyCastleProvider
+import org.bouncycastle.jce.spec.ECNamedCurveSpec
+import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.stereotype.Component
 import org.web3j.tuples.generated.Tuple8
 import java.math.BigInteger
 import java.nio.charset.Charset
-import org.bouncycastle.jce.ECPointUtil
-import org.bouncycastle.jce.spec.ECNamedCurveSpec
-import org.bouncycastle.jce.provider.BouncyCastleProvider
 import java.security.KeyFactory
-import java.security.spec.InvalidKeySpecException
 import java.security.NoSuchAlgorithmException
-import java.security.PublicKey
 import java.security.interfaces.ECPublicKey
 import java.security.spec.ECPublicKeySpec
+import java.security.spec.InvalidKeySpecException
 
-
+@Component
+@Qualifier("hybrid")
 class HybridRequestDataRepositoryImpl(
         private val web3Provider: Web3Provider,
         private val hybridProperties: HybridProperties
 ) : RequestDataRepository {
 
     private val nameServiceData = hybridProperties.contracts.nameService
-    private var nameServiceContract: NameServiceContract
-    private var contract: RequestDataContract
+    private lateinit var nameServiceContract: NameServiceContract
+    private lateinit var contract: RequestDataContract
 
     init {
         nameServiceContract = NameServiceContract.load(
@@ -118,7 +119,7 @@ class HybridRequestDataRepositoryImpl(
 
     // Private
 
-    private fun tupleToRequestData(tuple: Tuple8<BigInteger,BigInteger,BigInteger,BigInteger,BigInteger,ByteArray,ByteArray,BigInteger>): RequestData {
+    private fun tupleToRequestData(tuple: Tuple8<BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, ByteArray, ByteArray, BigInteger>): RequestData {
         return RequestData(
                 tuple.value1.toLong(),
                 "04"

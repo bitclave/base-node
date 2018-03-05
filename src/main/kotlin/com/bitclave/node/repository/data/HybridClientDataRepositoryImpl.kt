@@ -1,11 +1,7 @@
 package com.bitclave.node.repository.data
 
 import com.bitclave.node.configuration.properties.HybridProperties
-import com.bitclave.node.extensions.fromHex
-import com.bitclave.node.extensions.hex
-import com.bitclave.node.extensions.sha3
 import com.bitclave.node.repository.Web3Provider
-import com.bitclave.node.solidity.generated.AccountContract
 import com.bitclave.node.solidity.generated.ClientDataContract
 import com.bitclave.node.solidity.generated.NameServiceContract
 import org.springframework.beans.factory.annotation.Qualifier
@@ -52,7 +48,7 @@ class HybridClientDataRepositoryImpl(
                     }
                     .map {
                         it.toString(Charset.defaultCharset())
-                          .trim(Character.MIN_VALUE)
+                                .trim(Character.MIN_VALUE)
                     }.toTypedArray()
         }
         return allKeysArr

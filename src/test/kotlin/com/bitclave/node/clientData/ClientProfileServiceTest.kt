@@ -1,6 +1,12 @@
 package com.bitclave.node.clientData
 
+import com.bitclave.node.configuration.properties.HybridProperties
 import com.bitclave.node.repository.RepositoryStrategyType
+import com.bitclave.node.repository.Web3Provider
+import com.bitclave.node.repository.data.ClientDataCrudRepository
+import com.bitclave.node.repository.data.ClientDataRepositoryStrategy
+import com.bitclave.node.repository.data.HybridClientDataRepositoryImpl
+import com.bitclave.node.repository.data.PostgresClientDataRepositoryImpl
 import com.bitclave.node.services.ClientProfileService
 import org.assertj.core.api.Assertions
 import org.junit.Before
@@ -19,6 +25,12 @@ import org.springframework.test.context.junit4.SpringRunner
 class ClientProfileServiceTest {
 
     @Autowired
+    private lateinit var clientDataCrudRepository: ClientDataCrudRepository
+    @Autowired
+    private lateinit var web3Provider: Web3Provider
+    @Autowired
+    private lateinit var hybridProperties: HybridProperties
+
     protected lateinit var clientProfileService: ClientProfileService
 
     protected val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
@@ -28,6 +40,12 @@ class ClientProfileServiceTest {
 
     @Before
     fun setup() {
+        val postgres = PostgresClientDataRepositoryImpl(clientDataCrudRepository)
+        val hybrid = HybridClientDataRepositoryImpl(web3Provider, hybridProperties)
+        val dataClientRepositoryStrategy = ClientDataRepositoryStrategy(postgres, hybrid)
+
+        clientProfileService = ClientProfileService(dataClientRepositoryStrategy)
+
         data = mapOf("name" to "my name")
 
         strategy = RepositoryStrategyType.POSTGRES
