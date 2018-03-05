@@ -220,6 +220,12 @@ contract RequestDataContract is Ownable, IStorageContractClient {
         return (data.id, data.fromPkX, data.fromPkY, data.toPkX, data.toPkY, data.requestData, data.responseData, uint(data.state));
     }
 
+    function isValidPublicKey(uint256 pkX, uint256 pkY) public constant returns(bool) {
+        // (y^2 == x^3 + 7) mod m
+        uint256 m = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F;
+        return mulmod(pkY, pkY, m) == addmod(mulmod(pkX, mulmod(pkX, pkX, m), m), 7, m);
+    }
+
     function updateData(
         uint id,
         uint256 fromPkX,
@@ -230,6 +236,9 @@ contract RequestDataContract is Ownable, IStorageContractClient {
         bytes responseData,
         uint state) public onlyOwner
     {
+        require(isValidPublicKey(fromPkX, fromPkY));
+        require(isValidPublicKey(toPkX, toPkY));
+
         if (id == 0) {
             id = nextId++;
             requests.push(RequestData(id, fromPkX, fromPkY, toPkX, toPkY, requestData, responseData, RequestDataState(state)));
