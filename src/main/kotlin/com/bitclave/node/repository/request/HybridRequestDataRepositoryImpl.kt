@@ -8,6 +8,8 @@ import com.bitclave.node.repository.Web3Provider
 import com.bitclave.node.repository.models.RequestData
 import com.bitclave.node.solidity.generated.NameServiceContract
 import com.bitclave.node.solidity.generated.RequestDataContract
+import org.bitcoinj.core.ECKey
+import org.bitcoinj.core.ECKey.CURVE
 import org.bouncycastle.jce.ECNamedCurveTable
 import org.bouncycastle.jce.ECPointUtil
 import org.bouncycastle.jce.provider.BouncyCastleProvider
@@ -20,6 +22,7 @@ import java.nio.charset.Charset
 import java.security.KeyFactory
 import java.security.NoSuchAlgorithmException
 import java.security.interfaces.ECPublicKey
+import java.security.spec.ECPoint
 import java.security.spec.ECPublicKeySpec
 import java.security.spec.InvalidKeySpecException
 
@@ -53,10 +56,16 @@ class HybridRequestDataRepositoryImpl(
     }
 
     override fun getByFrom(from: String, state: RequestData.RequestDataState): List<RequestData> {
-        val count = contract.getByFromCount(publicKeyX(from), state.ordinal.toBigInteger()).send().toLong()
+        val ecPointFrom = getEcPoint(from)
+
+        val count = contract.getByFromCount(ecPointFrom.affineX, state.ordinal.toBigInteger()).send().toLong()
         return (0..(count - 1))
                 .map {
-                    contract.getByFrom(publicKeyX(from), state.ordinal.toBigInteger(), it.toBigInteger()).send()
+                    contract.getByFrom(
+                            ecPointFrom.affineX,
+                            state.ordinal.toBigInteger(),
+                            it.toBigInteger()
+                    ).send()
                 }
                 .map {
                     contract.findById(it).send()
@@ -68,10 +77,21 @@ class HybridRequestDataRepositoryImpl(
     }
 
     override fun getByTo(to: String, state: RequestData.RequestDataState): List<RequestData> {
-        val count = contract.getByToCount(publicKeyX(to), state.ordinal.toBigInteger()).send().toLong()
+        val ecPointTo = getEcPoint(to)
+
+        val count = contract.getByToCount(
+                ecPointTo.affineX,
+                state.ordinal.toBigInteger()
+        )
+                .send()
+                .toLong()
         return (0..(count - 1))
                 .map {
-                    contract.getByFrom(publicKeyX(to), state.ordinal.toBigInteger(), it.toBigInteger()).send()
+                    contract.getByFrom(
+                            ecPointTo.affineX,
+                            state.ordinal.toBigInteger(),
+                            it.toBigInteger()
+                    ).send()
                 }
                 .map {
                     contract.findById(it).send()
@@ -88,10 +108,24 @@ class HybridRequestDataRepositoryImpl(
             state: RequestData.RequestDataState
     ): List<RequestData> {
 
-        val count = contract.getByFromAndToCount(publicKeyX(from), publicKeyX(to), state.ordinal.toBigInteger()).send().toLong()
+        val ecPointFrom = getEcPoint(from)
+        val ecPointTo = getEcPoint(to)
+
+        val count = contract.getByFromAndToCount(
+                ecPointFrom.affineX,
+                ecPointTo.affineX,
+                state.ordinal.toBigInteger()
+        )
+                .send()
+                .toLong()
         return (0..(count - 1))
                 .map {
-                    contract.getByFromAndTo(publicKeyX(from), publicKeyX(to), state.ordinal.toBigInteger(), it.toBigInteger()).send()
+                    contract.getByFromAndTo(
+                            ecPointFrom.affineX,
+                            ecPointTo.affineX,
+                            state.ordinal.toBigInteger(),
+                            it.toBigInteger()
+                    ).send()
                 }
                 .map {
                     contract.findById(it).send()
@@ -107,45 +141,46 @@ class HybridRequestDataRepositoryImpl(
     }
 
     override fun updateData(request: RequestData): RequestData {
-        val tx = contract.updateData(
-                request.id.toBigInteger(),
-                publicKeyX(request.fromPk),
-                publicKeyY(request.fromPk),
-                publicKeyX(request.toPk),
-                publicKeyY(request.toPk),
-                request.requestData.toByteArray(),
-                request.responseData.toByteArray(),
-                request.state.ordinal.toBigInteger()).send()
+        val ecPointFrom = getEcPoint(request.fromPk)
+        val ecPointTo = getEcPoint(request.toPk)
 
-        for (log in tx.logs) {
-            val xx = log.topics[0].substring(2)
-            val yy = "RequestDataCreated(uint256)".sha3().hex()
-            if (log.topics[0].substring(2) == "RequestDataCreated(uint256)".sha3().hex()) {
-                return RequestData(
-                        log.topics[1].substring(2).toLong(16),
-                        request.fromPk,
-                        request.toPk,
-                        request.requestData,
-                        request.responseData,
-                        request.state
-                )
+        try {
+            val tx = contract.updateData(
+                    request.id.toBigInteger(),
+                    ecPointFrom.affineX,
+                    ecPointFrom.affineY,
+                    ecPointTo.affineX,
+                    ecPointTo.affineY,
+                    request.requestData.toByteArray(),
+                    request.responseData.toByteArray(),
+                    request.state.ordinal.toBigInteger()
+            ).send()
+
+            for (log in tx.logs) {
+                if (log.topics[0].substring(2) == "RequestDataCreated(uint256)".sha3().hex()) {
+                    return RequestData(
+                            log.topics[1].substring(2).toLong(16),
+                            request.fromPk,
+                            request.toPk,
+                            request.requestData,
+                            request.responseData,
+                            request.state
+                    )
+                }
             }
+        } catch (e: Exception) {
+            System.out.println(e.localizedMessage)
         }
+
 
         return request
     }
 
-    // Private
-
     private fun tupleToRequestData(tuple: Tuple8<BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, ByteArray, ByteArray, BigInteger>): RequestData {
         return RequestData(
                 tuple.value1.toLong(),
-                "04"
-                        + tuple.value2.toString(16).padStart(32, '0')
-                        + tuple.value3.toString(16).padStart(32, '0'),
-                "04"
-                        + tuple.value4.toString(16).padStart(32, '0')
-                        + tuple.value5.toString(16).padStart(32, '0'),
+                publicKeyFromPoint(tuple.value2, tuple.value3),
+                publicKeyFromPoint(tuple.value4, tuple.value5),
                 tuple.value6.toString(Charset.defaultCharset())
                         .trim(Character.MIN_VALUE),
                 tuple.value7.toString(Charset.defaultCharset())
@@ -153,15 +188,14 @@ class HybridRequestDataRepositoryImpl(
                 RequestData.RequestDataState.values()[tuple.value8.toInt()])
     }
 
-    private fun publicKeyX(publicKey: String): BigInteger {
-        return BigInteger(publicKey.substring(2, 64), 16)
+    private fun publicKeyFromPoint(x: BigInteger, y: BigInteger): String {
+        return ECKey.fromPublicOnly(
+                CURVE.curve.createPoint(x, y).getEncoded(true)
+        ).publicKeyAsHex
     }
 
-    private fun publicKeyY(publicKey: String): BigInteger {
-        if (publicKey.length == 130) {
-            return BigInteger(publicKey.substring(66, 64), 16)
-        }
-        return getPublicKeyFromBytes(publicKey.fromHex()).w.affineY
+    private fun getEcPoint(publicKey: String): ECPoint {
+        return getPublicKeyFromBytes(publicKey.fromHex()).w
     }
 
     // https://stackoverflow.com/a/26159150/440168
@@ -172,6 +206,7 @@ class HybridRequestDataRepositoryImpl(
         val params = ECNamedCurveSpec("secp256k1", spec.curve, spec.g, spec.n)
         val point = ECPointUtil.decodePoint(params.curve, pubKey)
         val pubKeySpec = ECPublicKeySpec(point, params)
+
         return kf.generatePublic(pubKeySpec) as ECPublicKey
     }
 }

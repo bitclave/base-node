@@ -144,7 +144,7 @@ class RequestDataServiceTest {
 
     @Test fun `create request to client`() {
         val id = requestDataService.request(from, request, strategy).get()
-        Assertions.assertThat(id).isEqualTo(1)
+        Assertions.assertThat(id).isEqualTo(1L)
     }
 
     @Test fun `create response to client with accept`() {
