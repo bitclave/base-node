@@ -52,7 +52,7 @@ class RequestDataServiceTest {
         val repositoryStrategy = RequestDataRepositoryStrategy(postgres, hybrid)
         requestDataService = RequestDataService(repositoryStrategy)
 
-        strategy = RepositoryStrategyType.POSTGRES
+        strategy = RepositoryStrategyType.HYBRID
     }
 
     @Test fun `get request by state and from`() {
