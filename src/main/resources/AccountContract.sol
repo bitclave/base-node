@@ -174,8 +174,8 @@ contract RequestDataContract is Ownable, IStorageContractClient {
         mapping(uint => uint) lookup;
     }
 
-    mapping(uint256 => mapping(uint => ItemsAndLookupEntry)) idsByFrom; // [PkX][state]
     mapping(uint256 => mapping(uint => ItemsAndLookupEntry)) idsByTo; // [PkX][state]
+    mapping(uint256 => mapping(uint => ItemsAndLookupEntry)) idsByFrom; // [PkX][state]
     mapping(uint256 => mapping(uint256 => mapping(uint => ItemsAndLookupEntry))) idsByFromAndTo; // [PkX][PkX][state]
 
     // Lengths
@@ -184,12 +184,12 @@ contract RequestDataContract is Ownable, IStorageContractClient {
         return requests.length;
     }
 
-    function getByFromCount(uint256 fromPkX, uint state) public constant returns(uint) {
-        return idsByFrom[fromPkX][state].items.length;
-    }
-
     function getByToCount(uint256 toPkX, uint state) public constant returns(uint) {
         return idsByTo[toPkX][state].items.length;
+    }
+
+    function getByFromCount(uint256 fromPkX, uint state) public constant returns(uint) {
+        return idsByFrom[fromPkX][state].items.length;
     }
 
     function getByFromAndToCount(uint256 fromPkX, uint256 toPkX, uint state) public constant returns(uint) {
@@ -198,12 +198,12 @@ contract RequestDataContract is Ownable, IStorageContractClient {
 
     // Public methods
 
-    function getByFrom(uint256 fromPkX, uint state, uint index) public constant returns(uint) {
-        return idsByFrom[fromPkX][state].items[index];
-    }
-
     function getByTo(uint256 toPkX, uint state, uint index) public constant returns(uint) {
         return idsByTo[toPkX][state].items[index];
+    }
+
+    function getByFrom(uint256 fromPkX, uint state, uint index) public constant returns(uint) {
+        return idsByFrom[fromPkX][state].items[index];
     }
 
     function getByFromAndTo(uint256 fromPkX, uint256 toPkX, uint state, uint index) public constant returns(uint) {
@@ -281,10 +281,13 @@ contract RequestDataContract is Ownable, IStorageContractClient {
         require(index > 0);
         index--;
 
-        delete fromEntry.lookup[id];
-        fromEntry.items[index] = fromEntry.items[fromEntry.items.length - 1];
+        uint lastId = fromEntry.items[fromEntry.items.length - 1];
+        fromEntry.items[index] = lastId;
         fromEntry.items.length--;
-        fromEntry.lookup[fromEntry.items[index]] = index + 1; // Incremented index
+        delete fromEntry.lookup[id];
+        if (fromEntry.items.length > 0) {
+            fromEntry.lookup[lastId] = index + 1; // Incremented index
+        }
 
         toEntry.items.push(id);
         toEntry.lookup[id] = toEntry.items.length; // Incremented index
