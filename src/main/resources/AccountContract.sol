@@ -244,6 +244,12 @@ contract RequestDataContract is Ownable, IStorageContractClient {
             id = nextId++;
             requests.push(RequestData(id, fromPkX, fromPkY, toPkX, toPkY, requestData, responseData, RequestDataState(state)));
             indexOfRequestId[id] = requests.length; // Incremented index
+            idsByTo[toPkX][state].items.push(id);
+            idsByTo[toPkX][state].lookup[id] = idsByTo[toPkX][state].items.length;
+            idsByFrom[fromPkX][state].items.push(id);
+            idsByFrom[fromPkX][state].lookup[id] = idsByFrom[fromPkX][state].items.length;
+            idsByFromAndTo[fromPkX][toPkX][state].items.push(id);
+            idsByFromAndTo[fromPkX][toPkX][state].lookup[id] = idsByFromAndTo[fromPkX][toPkX][state].items.length;
             RequestDataCreated(id);
             return;
         }
@@ -252,20 +258,22 @@ contract RequestDataContract is Ownable, IStorageContractClient {
         require(index > 0);
         index--;
 
-        uint oldState = uint(requests[index].state);
-        if (state != oldState) {
-            moveId(id, idsByFrom[fromPkX][oldState], idsByFrom[fromPkX][state]);
-            moveId(id, idsByTo[toPkX][oldState], idsByTo[toPkX][state]);
-            moveId(id, idsByFromAndTo[fromPkX][toPkX][oldState], idsByFromAndTo[fromPkX][toPkX][state]);
-            if (state == uint(RequestDataState.ACCEPT)) {
-                RequestDataAccepted(id);
-            } else
-            if (state == uint(RequestDataState.REJECT)) {
-                RequestDataRejected(id);
-            }
-        }
+        RequestDataState newState = RequestDataState(state);
+        RequestDataState oldState = requests[index].state;
+        require(oldState == RequestDataState.AWAIT && newState != oldState);
 
-        requests[index] = RequestData(id, fromPkX, fromPkY, toPkX, toPkY, requestData, responseData, RequestDataState(state));
+        requests[index].responseData = responseData;
+        requests[index].state = newState;
+        moveId(id, idsByTo[toPkX][uint(oldState)], idsByTo[toPkX][state]);
+        moveId(id, idsByFrom[fromPkX][uint(oldState)], idsByFrom[fromPkX][state]);
+        moveId(id, idsByFromAndTo[fromPkX][toPkX][uint(oldState)], idsByFromAndTo[fromPkX][toPkX][state]);
+
+        if (newState == RequestDataState.ACCEPT) {
+            RequestDataAccepted(id);
+        } else
+        if (newState == RequestDataState.REJECT) {
+            RequestDataRejected(id);
+        }
     }
 
     // Private methods
@@ -277,16 +285,16 @@ contract RequestDataContract is Ownable, IStorageContractClient {
     }
 
     function moveId(uint id, ItemsAndLookupEntry storage fromEntry, ItemsAndLookupEntry storage toEntry) internal {
-        uint index = fromEntry.lookup[id];
-        require(index > 0);
-        index--;
+        uint fromIndex = fromEntry.lookup[id];
+        require(fromIndex > 0);
+        fromIndex--;
 
         uint lastId = fromEntry.items[fromEntry.items.length - 1];
-        fromEntry.items[index] = lastId;
+        fromEntry.items[fromIndex] = lastId;
         fromEntry.items.length--;
         delete fromEntry.lookup[id];
         if (fromEntry.items.length > 0) {
-            fromEntry.lookup[lastId] = index + 1; // Incremented index
+            fromEntry.lookup[lastId] = fromIndex + 1; // Incremented index
         }
 
         toEntry.items.push(id);
