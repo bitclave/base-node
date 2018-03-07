@@ -20,6 +20,4 @@ fun SignedRequest<*>.validateSig(): CompletableFuture<Boolean> {
     })
 }
 
-fun SignedRequest<*>.toJsonString(): String {
-    return GSON.toJson(this)
-}
+fun SignedRequest<*>.toJsonString(): String = GSON.toJson(this)

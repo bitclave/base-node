@@ -1,14 +1,19 @@
+import org.apache.maven.shared.model.fileset.FileSet
+import org.web3j.mavenplugin.JavaClassGeneratorMojo
+
 buildscript {
     ext {
         kotlinVersion = '1.2.30'
         springBootVersion = '1.5.9.RELEASE'
     }
     repositories {
-        maven { url "https://plugins.gradle.org/m2/" }
         mavenCentral()
+        maven { url 'https://dl.bintray.com/ethereum/maven/' }
+        maven { url 'https://plugins.gradle.org/m2/' }
     }
     dependencies {
         classpath("org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.8.2")
+        classpath("org.web3j:web3j-maven-plugin:0.1.4")
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}")
         classpath("org.jetbrains.kotlin:kotlin-allopen:${kotlinVersion}")
@@ -52,11 +57,32 @@ coveralls {
     sourceDirs += ['src/main/kotlin']
 }
 
+task compileSolidity(type: JavaExec) {
+    def solidityGenerator = new JavaClassGeneratorMojo()
+    def fields = solidityGenerator.class.declaredFields
+    def path = new FileSet()
+    def pathMain = projectDir.toString().replaceAll("\\\\", "/") + "/src/main"
+
+    fields.each { it.setAccessible(true) }
+
+    path.setDirectory(pathMain + "/resources/")
+    solidityGenerator.packageName = "com.bitclave.node.solidity.generated"
+    solidityGenerator.sourceDestination = pathMain + "/java/"
+    solidityGenerator.soliditySourceFiles = path
+    solidityGenerator.nativeJavaType = true
+
+    solidityGenerator.execute()
+}
+
 repositories {
     mavenCentral()
+    maven { url 'https://dl.bintray.com/ethereum/maven/' }
+    maven { url 'https://plugins.gradle.org/m2/' }
 }
 
 dependencies {
+    compile 'org.web3j:core:3.3.1'
+
     compile 'org.springframework.boot:spring-boot-starter-web'
     compile 'org.springframework.boot:spring-boot-configuration-processor'
 

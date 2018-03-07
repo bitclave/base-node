@@ -6,6 +6,6 @@ interface AccountRepository {
 
     fun saveAccount(publicKey: String)
 
-    fun findByPublicKey(key: String): Account?
+    fun findByPublicKey(publicKey: String): Account?
 
 }

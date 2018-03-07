@@ -4,7 +4,7 @@ import javax.persistence.*
 
 @Entity
 data class RequestData(
-        @Id @GeneratedValue(strategy = GenerationType.TABLE) val id: Long = -1,
+        @GeneratedValue(strategy = GenerationType.TABLE) @Id val id: Long = 0,
         val fromPk: String = "",
         val toPk: String = "",
         @Column(length = 2000) val requestData: String = "",

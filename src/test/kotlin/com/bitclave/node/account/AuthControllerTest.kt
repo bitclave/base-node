@@ -43,7 +43,7 @@ class AuthControllerTest {
     }
 
     @Test
-    fun registration() {
+    fun `check registarion`() {
         this.mvc.perform(post("/registration")
                 .content(requestAccount.toJsonString())
                 .headers(httpHeaders))
@@ -51,7 +51,7 @@ class AuthControllerTest {
     }
 
     @Test
-    fun existAccount() {
+    fun `check account is exist`() {
         this.mvc.perform(post("/exist")
                 .content(requestAccount.toJsonString())
                 .headers(httpHeaders))

@@ -8,14 +8,17 @@ import org.springframework.stereotype.Component
 @Component
 class AccountRepositoryStrategy(
         @Qualifier("postgres")
-        private val postgres: PostgresAccountRepositoryImpl
+        private val postgres: PostgresAccountRepositoryImpl,
+
+        @Qualifier("hybrid")
+        private val hybrid: HybridAccountRepositoryImpl
 
 ) : RepositoryStrategy<AccountRepository> {
 
     override fun changeStrategy(type: RepositoryStrategyType): AccountRepository {
         return when (type) {
             RepositoryStrategyType.POSTGRES -> postgres
-            RepositoryStrategyType.HYBRID -> postgres
+            RepositoryStrategyType.HYBRID -> hybrid
         }
     }
 
