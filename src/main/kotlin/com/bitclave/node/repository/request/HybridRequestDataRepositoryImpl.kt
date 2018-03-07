@@ -87,7 +87,7 @@ class HybridRequestDataRepositoryImpl(
                 .toLong()
         return (0..(count - 1))
                 .map {
-                    contract.getByFrom(
+                    contract.getByTo(
                             ecPointTo.affineX,
                             state.ordinal.toBigInteger(),
                             it.toBigInteger()
