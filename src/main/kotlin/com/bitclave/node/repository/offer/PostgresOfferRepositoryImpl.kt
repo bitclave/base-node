@@ -13,6 +13,15 @@ class PostgresOfferRepositoryImpl(val repository: OfferCrudRepository) : OfferRe
         return repository.save(offer) ?: throw DataNotSaved()
     }
 
+    override fun deleteOffer(id: Long, owner: String): Long {
+        val count = repository.deleteByIdAndOwner(id, owner)
+        if (count > 0) {
+            return id
+        }
+
+        return 0
+    }
+
     override fun findByOwner(owner: String): List<Offer> {
         return repository.findByOwner(owner)
     }

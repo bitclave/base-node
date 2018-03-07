@@ -11,6 +11,8 @@ interface OfferCrudRepository : CrudRepository<Offer, Long> {
 
     fun findByOwner(owner: String): List<Offer>
 
+    fun deleteByIdAndOwner(id: Long, owner: String): Long
+
     fun findByIdAndOwner(id: Long, owner: String): Offer?
 
 }

@@ -1,8 +1,8 @@
-package com.bitclave.node.offer
+package com.bitclave.node.search
 
 import com.bitclave.node.extensions.toJsonString
 import com.bitclave.node.repository.RepositoryStrategyType
-import com.bitclave.node.repository.models.Offer
+import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.models.SignedRequest
 import org.junit.Before
 import org.junit.Test
@@ -21,66 +21,55 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 @RunWith(SpringRunner::class)
 @SpringBootTest
 @AutoConfigureMockMvc
-class OfferControllerTest {
+class SearchRequestControllerTest {
 
     @Autowired
     private lateinit var mvc: MockMvc
 
     private val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
-    protected lateinit var requestOffer: SignedRequest<Offer>
-    protected lateinit var requestOfferId: SignedRequest<Long>
+    protected lateinit var requestSearch: SignedRequest<SearchRequest>
+    protected lateinit var requestSearchId: SignedRequest<Long>
     private var httpHeaders: HttpHeaders = HttpHeaders()
 
-    private val offer = Offer(
+    private val searchRequest = SearchRequest(
             0,
             publicKey,
-            "is desc",
-            "is title",
-            "is image url",
-            mapOf("car" to "true", "color" to "red"),
-            mapOf("age" to "18", "salary" to "1000"),
-            mapOf("age" to Offer.CompareAction.MORE_OR_EQUAL, "salary" to Offer.CompareAction.MORE_OR_EQUAL))
+            mapOf("car" to "true", "color" to "red")
+    )
 
     @Before fun setup() {
-        requestOffer = SignedRequest<Offer>(offer, publicKey)
-        requestOfferId = SignedRequest<Long>(1, publicKey)
+        requestSearch = SignedRequest(searchRequest, publicKey)
+        requestSearchId = SignedRequest(1, publicKey)
 
         httpHeaders.set("Accept", "application/json")
         httpHeaders.set("Content-Type", "application/json")
         httpHeaders.set("Strategy", RepositoryStrategyType.POSTGRES.name)
     }
 
-    @Test fun `create offer`() {
-        this.mvc.perform(put("/client/$publicKey/offer/")
-                .content(requestOffer.toJsonString())
+    @Test fun `create search request`() {
+        this.mvc.perform(post("/client/$publicKey/search/")
+                .content(requestSearch.toJsonString())
+                .headers(httpHeaders))
+                .andExpect(status().isCreated)
+    }
+
+    @Test fun `delete search request`() {
+        this.mvc.perform(delete("/client/$publicKey/search/1/")
+                .content(requestSearchId.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }
 
-    @Test fun `update offer`() {
-        this.mvc.perform(put("/client/$publicKey/offer/1/")
-                .content(requestOffer.toJsonString())
+    @Test fun `get search request by owner`() {
+        this.mvc.perform(get("/client/$publicKey/search/")
+                .content(requestSearch.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }
 
-    @Test fun `delete offer`() {
-        this.mvc.perform(delete("/client/$publicKey/offer/1/")
-                .content(requestOfferId.toJsonString())
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
-    }
-
-    @Test fun `get offer by owner`() {
-        this.mvc.perform(get("/client/$publicKey/offer/")
-                .content(requestOffer.toJsonString())
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
-    }
-
-    @Test fun `get offer by owner and id`() {
-        this.mvc.perform(get("/client/$publicKey/offer/1/")
-                .content(requestOffer.toJsonString())
+    @Test fun `get search request by owner and id`() {
+        this.mvc.perform(get("/client/$publicKey/search/1/")
+                .content(requestSearch.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }

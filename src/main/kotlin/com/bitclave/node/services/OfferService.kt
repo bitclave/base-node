@@ -5,6 +5,7 @@ import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.Offer
 import com.bitclave.node.repository.offer.OfferRepository
 import com.bitclave.node.services.errors.BadArgumentException
+import com.bitclave.node.services.errors.NotFoundException
 import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
 
@@ -38,6 +39,21 @@ class OfferService(
 
             offerRepository.changeStrategy(strategy).saveOffer(putOffer)
 
+        })
+    }
+
+    fun deleteOffer(
+            id: Long,
+            owner: String,
+            strategy: RepositoryStrategyType
+    ): CompletableFuture<Long> {
+
+        return CompletableFuture.supplyAsync({
+            val deletedId = offerRepository.changeStrategy(strategy).deleteOffer(id, owner)
+            if (deletedId == 0L) {
+                throw NotFoundException()
+            }
+            return@supplyAsync deletedId
         })
     }
 
