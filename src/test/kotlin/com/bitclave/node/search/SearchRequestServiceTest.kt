@@ -1,8 +1,11 @@
 package com.bitclave.node.search
 
+import com.bitclave.node.configuration.properties.HybridProperties
 import com.bitclave.node.repository.RepositoryStrategyType
+import com.bitclave.node.repository.Web3Provider
 import com.bitclave.node.repository.account.AccountCrudRepository
 import com.bitclave.node.repository.account.AccountRepositoryStrategy
+import com.bitclave.node.repository.account.HybridAccountRepositoryImpl
 import com.bitclave.node.repository.account.PostgresAccountRepositoryImpl
 import com.bitclave.node.repository.models.Account
 import com.bitclave.node.repository.models.SearchRequest
@@ -28,6 +31,11 @@ import org.springframework.test.context.junit4.SpringRunner
 class SearchRequestServiceTest {
 
     @Autowired
+    private lateinit var web3Provider: Web3Provider
+    @Autowired
+    private lateinit var hybridProperties: HybridProperties
+
+    @Autowired
     protected lateinit var accountCrudRepository: AccountCrudRepository
 
     @Autowired
@@ -47,7 +55,8 @@ class SearchRequestServiceTest {
 
     @Before fun setup() {
         val postgres = PostgresAccountRepositoryImpl(accountCrudRepository)
-        val repositoryStrategy = AccountRepositoryStrategy(postgres)
+        val hybrid = HybridAccountRepositoryImpl(web3Provider, hybridProperties)
+        val repositoryStrategy = AccountRepositoryStrategy(postgres, hybrid)
         val accountService = AccountService(repositoryStrategy)
         val searchRequestRepository = PostgresSearchRequestRepositoryImpl(searchRequestCrudRepository)
         val requestRepositoryStrategy = SearchRequestRepositoryStrategy(searchRequestRepository)

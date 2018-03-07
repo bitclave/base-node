@@ -11,6 +11,10 @@ class PostgresClientDataRepositoryImpl(
         val repository: ClientDataCrudRepository
 ) : ClientDataRepository {
 
+    override fun allKeys(): Array<String> {
+        return emptyArray()
+    }
+
     override fun getData(publicKey: String): Map<String, String> {
         return repository.findOne(publicKey)?.data ?: emptyMap()
     }

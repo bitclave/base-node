@@ -1,7 +1,7 @@
 spring:
   jpa:
     hibernate:
-      ddl-auto: update
+      ddlAuto: update
 
   datasource:
     driverClassName: org.postgresql.Driver
@@ -9,3 +9,13 @@ spring:
     url: ${JDBC_DATABASE_URL}
     username: ${JDBC_DATABASE_USERNAME}
     password: ${JDBC_DATABASE_PASSWORD}
+
+hybrid:
+  nodeUrl: https://ropsten.infura.io/
+  ownerPrivateKey: ${OWNER_PRIVATE_KEY}
+
+  contracts:
+    nameService:
+      address: ${DNS_CONTRACT_ADDRESS}
+      gasPrice: '8000000'
+      gasLimit: '8000000'

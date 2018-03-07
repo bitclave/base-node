@@ -1,8 +1,11 @@
 package com.bitclave.node.clientData
 
+import com.bitclave.node.configuration.properties.HybridProperties
 import com.bitclave.node.repository.RepositoryStrategyType
+import com.bitclave.node.repository.Web3Provider
 import com.bitclave.node.repository.data.ClientDataCrudRepository
 import com.bitclave.node.repository.data.ClientDataRepositoryStrategy
+import com.bitclave.node.repository.data.HybridClientDataRepositoryImpl
 import com.bitclave.node.repository.data.PostgresClientDataRepositoryImpl
 import com.bitclave.node.services.ClientProfileService
 import org.assertj.core.api.Assertions
@@ -22,7 +25,12 @@ import org.springframework.test.context.junit4.SpringRunner
 class ClientProfileServiceTest {
 
     @Autowired
-    protected lateinit var clientDataCrudRepository: ClientDataCrudRepository
+    private lateinit var clientDataCrudRepository: ClientDataCrudRepository
+    @Autowired
+    private lateinit var web3Provider: Web3Provider
+    @Autowired
+    private lateinit var hybridProperties: HybridProperties
+
     protected lateinit var clientProfileService: ClientProfileService
 
     protected val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
@@ -32,26 +40,27 @@ class ClientProfileServiceTest {
 
     @Before
     fun setup() {
-        data = mapOf("name" to "my name")
-
         val postgres = PostgresClientDataRepositoryImpl(clientDataCrudRepository)
-        val repositoryStrategy = ClientDataRepositoryStrategy(postgres)
-        clientProfileService = ClientProfileService(repositoryStrategy)
+        val hybrid = HybridClientDataRepositoryImpl(web3Provider, hybridProperties)
+        val dataClientRepositoryStrategy = ClientDataRepositoryStrategy(postgres, hybrid)
+
+        clientProfileService = ClientProfileService(dataClientRepositoryStrategy)
+
+        data = mapOf("name" to "my name")
 
         strategy = RepositoryStrategyType.POSTGRES
     }
 
     @Test
-    fun getData() {
-        updateData()
+    fun `get client raw data by public key`() {
+        `update client data by public key`()
         val resultData = clientProfileService.getData(publicKey, strategy).get()
         Assertions.assertThat(resultData).isEqualTo(data)
     }
 
     @Test
-    fun updateData() {
-        val resultData = clientProfileService.updateData(publicKey, data, strategy).get()
-        Assertions.assertThat(resultData).isEqualTo(data)
+    fun `update client data by public key`() {
+        clientProfileService.updateData(publicKey, data, strategy).get()
     }
 
 }

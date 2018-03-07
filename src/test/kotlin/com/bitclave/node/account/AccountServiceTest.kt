@@ -1,9 +1,12 @@
 package com.bitclave.node.account
 
+import com.bitclave.node.configuration.properties.HybridProperties
 import com.bitclave.node.extensions.signMessage
 import com.bitclave.node.repository.RepositoryStrategyType
+import com.bitclave.node.repository.Web3Provider
 import com.bitclave.node.repository.account.AccountCrudRepository
 import com.bitclave.node.repository.account.AccountRepositoryStrategy
+import com.bitclave.node.repository.account.HybridAccountRepositoryImpl
 import com.bitclave.node.repository.account.PostgresAccountRepositoryImpl
 import com.bitclave.node.repository.models.Account
 import com.bitclave.node.repository.models.SignedRequest
@@ -27,7 +30,13 @@ import org.springframework.test.context.junit4.SpringRunner
 class AccountServiceTest {
 
     @Autowired
-    protected lateinit var accountCrudRepository: AccountCrudRepository
+    private lateinit var web3Provider: Web3Provider
+    @Autowired
+    private lateinit var hybridProperties: HybridProperties
+
+    @Autowired
+    private lateinit var accountCrudRepository: AccountCrudRepository
+
     protected lateinit var accountService: AccountService
 
     protected val privateKey = "c9574c6138fe689946e4f0273e848a8219a6652288273dc6cf291e09517d0abd"
@@ -40,14 +49,16 @@ class AccountServiceTest {
     fun setup() {
         account = Account(publicKey)
         val postgres = PostgresAccountRepositoryImpl(accountCrudRepository)
-        val repositoryStrategy = AccountRepositoryStrategy(postgres)
+        val hybrid = HybridAccountRepositoryImpl(web3Provider, hybridProperties)
+        val repositoryStrategy = AccountRepositoryStrategy(postgres, hybrid)
+
         accountService = AccountService(repositoryStrategy)
 
         strategy = RepositoryStrategyType.POSTGRES
     }
 
     @Test
-    fun checkSigMessage() {
+    fun `check signature of signed message`() {
         val request = SignedRequest("Hello", publicKey)
         request.signMessage(privateKey)
 
@@ -56,7 +67,7 @@ class AccountServiceTest {
     }
 
     @Test
-    fun accountBySigMessage() {
+    fun `get account by signature of message`() {
         accountService.registrationClient(account, strategy).get()
         val request = SignedRequest("Hello", publicKey)
         request.signMessage(privateKey)
@@ -66,13 +77,13 @@ class AccountServiceTest {
     }
 
     @Test
-    fun registration() {
+    fun `register new client`() {
         val regAccount = accountService.registrationClient(account, strategy).get()
         Assertions.assertThat(regAccount.publicKey).isEqualTo(publicKey)
     }
 
     @Test(expected = AlreadyRegisteredException::class)
-    fun isAlreadyRegistered() {
+    fun `expect error - already registered client`() {
         accountService.registrationClient(account, strategy).get()
         try {
             accountService.registrationClient(account, strategy).get()
@@ -82,14 +93,14 @@ class AccountServiceTest {
     }
 
     @Test
-    fun existAccount() {
+    fun `check client already registered`() {
         accountService.registrationClient(account, strategy).get()
         val existAccount = accountService.existAccount(account, strategy).get()
         Assertions.assertThat(existAccount.publicKey).isEqualTo(publicKey)
     }
 
     @Test(expected = NotFoundException::class)
-    fun notExistAccount() {
+    fun `expect error - client not existed`() {
         try {
             accountService.existAccount(account, strategy).get()
         } catch (e: Exception) {
