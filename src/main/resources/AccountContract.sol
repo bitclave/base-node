@@ -237,8 +237,8 @@ contract RequestDataContract is Ownable, IStorageContractClient {
         bytes responseData,
         uint state) public onlyOwner
     {
-        //require(isValidPublicKey(fromPkX, fromPkY));
-        //require(isValidPublicKey(toPkX, toPkY));
+        require(isValidPublicKey(fromPkX, fromPkY));
+        require(isValidPublicKey(toPkX, toPkY));
 
         if (id == 0) {
             id = nextId++;
