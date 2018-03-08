@@ -77,6 +77,8 @@ class HybridClientDataRepositoryImpl(
                 contract.setInfos(publicKey, entry.key.padEnd(32, Character.MIN_VALUE).toByteArray(), arr).send()
             }
         }
+        allKeysArr = emptyArray()
+        getData(publicKey)
     }
 
     private fun readValueForKey(publicKey: String, key: String): String {
