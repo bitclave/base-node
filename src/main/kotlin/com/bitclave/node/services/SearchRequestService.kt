@@ -22,7 +22,7 @@ class SearchRequestService(
         return CompletableFuture.supplyAsync({
             val createSearchRequest = SearchRequest(
                     0,
-                    searchRequest.owner,
+                    owner,
                     searchRequest.tags
             )
 
@@ -63,8 +63,11 @@ class SearchRequestService(
                 }
                 return@supplyAsync emptyList<SearchRequest>()
 
-            } else {
+            } else if (owner != "0x0") {
                 return@supplyAsync repository.findByOwner(owner)
+
+            } else {
+                return@supplyAsync repository.findAll()
             }
         })
     }

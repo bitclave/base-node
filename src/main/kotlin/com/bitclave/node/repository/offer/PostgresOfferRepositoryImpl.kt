@@ -30,4 +30,10 @@ class PostgresOfferRepositoryImpl(val repository: OfferCrudRepository) : OfferRe
         return repository.findByIdAndOwner(id, owner)
     }
 
+    override fun findAll(): List<Offer> {
+        return repository.findAll()
+                .asSequence()
+                .toList()
+    }
+
 }

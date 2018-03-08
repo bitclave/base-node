@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 
 @Component
-@Profile("test")
+@Profile("test", "local")
 class ContractDeployer(
         private val web3Provider: Web3Provider,
         private val hybridProperties: HybridProperties
