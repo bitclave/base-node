@@ -89,7 +89,7 @@ class SearchRequestController(
         (ApiResponse(code = 403, message = "AccessDeniedException")),
         (ApiResponse(code = 404, message = "NotFoundException"))
     ])
-    @RequestMapping(method = [RequestMethod.DELETE], value = ["{id}/"])
+    @RequestMapping(method = [RequestMethod.DELETE], value = ["{id}"])
     fun deleteSearchRequest(
             @ApiParam("id of existed search request.")
             @PathVariable(value = "id")
@@ -133,7 +133,7 @@ class SearchRequestController(
     @ApiResponses(value = [
         (ApiResponse(code = 200, message = "Success", response = List::class))
     ])
-    @RequestMapping(method = [RequestMethod.GET], value = ["/", "{id}/"])
+    @RequestMapping(method = [RequestMethod.GET], value = ["/", "{id}"])
     fun getSearchRequests(
             @ApiParam("owner who create search requests")
             @PathVariable("owner")

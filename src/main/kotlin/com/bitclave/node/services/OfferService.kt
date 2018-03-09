@@ -66,7 +66,7 @@ class OfferService(
         return CompletableFuture.supplyAsync({
             val repository = offerRepository.changeStrategy(strategy)
 
-            if (id > 0) {
+            if (id > 0 && owner != "0x0") {
                 val offer = repository.findByIdAndOwner(id, owner)
 
                 if (offer != null) {
@@ -74,8 +74,11 @@ class OfferService(
                 }
                 return@supplyAsync emptyList<Offer>()
 
-            } else {
+            } else if (owner != "0x0") {
                 return@supplyAsync repository.findByOwner(owner)
+
+            } else {
+                return@supplyAsync repository.findAll()
             }
         })
     }

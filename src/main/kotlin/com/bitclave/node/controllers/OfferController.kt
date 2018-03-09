@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*
 import java.util.concurrent.CompletableFuture
 
 @RestController
-@RequestMapping("client/{owner}/offer/")
+@RequestMapping("client/{owner}/offer")
 class OfferController(
         private val accountService: AccountService,
         private val offerService: OfferService
@@ -44,7 +44,7 @@ class OfferController(
         (ApiResponse(code = 403, message = "AccessDeniedException")),
         (ApiResponse(code = 500, message = "DataNotSaved"))
     ])
-    @RequestMapping(method = [RequestMethod.PUT], value = ["/", "{id}/"])
+    @RequestMapping(method = [RequestMethod.PUT], value = ["/", "{id}"])
     fun putOffer(
             @ApiParam("Optional id of already created a offer. Use for update offer")
             @PathVariable(value = "id", required = false)
@@ -101,7 +101,7 @@ class OfferController(
         (ApiResponse(code = 403, message = "AccessDeniedException")),
         (ApiResponse(code = 404, message = "NotFoundException"))
     ])
-    @RequestMapping(method = [RequestMethod.DELETE], value = ["{id}/"])
+    @RequestMapping(method = [RequestMethod.DELETE], value = ["{id}"])
     fun deleteOffer(
             @ApiParam("id of existed offer.")
             @PathVariable(value = "id")
@@ -143,10 +143,10 @@ class OfferController(
     @ApiResponses(value = [
         (ApiResponse(code = 200, message = "Success", response = List::class))
     ])
-    @RequestMapping(method = [RequestMethod.GET], value = ["/", "{id}/"])
+    @RequestMapping(method = [RequestMethod.GET], value = ["/", "{id}"])
     fun getOffer(
-            @ApiParam("owner who create offer(s)")
-            @PathVariable("owner")
+            @ApiParam("owner who create offer(s)", required = false)
+            @PathVariable("owner", required = false)
             owner: String,
 
             @ApiParam("Optional id of already created a offer.")

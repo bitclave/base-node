@@ -32,4 +32,10 @@ class PostgresSearchRequestRepositoryImpl(
         return repository.findByIdAndOwner(id, owner)
     }
 
+    override fun findAll(): List<SearchRequest> {
+        return repository.findAll()
+                .asSequence()
+                .toList()
+    }
+
 }

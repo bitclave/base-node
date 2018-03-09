@@ -12,4 +12,6 @@ interface SearchRequestRepository {
 
     fun findByIdAndOwner(id: Long, owner: String): SearchRequest?
 
+    fun findAll(): List<SearchRequest>
+
 }

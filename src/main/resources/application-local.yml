@@ -1,7 +1,7 @@
 spring:
   jpa:
     hibernate:
-      ddlAuto: update
+      ddlAuto: create-drop
 
   datasource:
     driverClassName: org.postgresql.Driver
