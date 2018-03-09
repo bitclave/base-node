@@ -5,10 +5,10 @@ import javax.persistence.*
 @Entity
 data class Offer(
         @GeneratedValue(strategy = GenerationType.TABLE) @Id val id: Long = 0,
-        val owner: String = "",
-        val description: String = "",
-        val title: String = "",
-        val imageUrl: String = "",
+        @Column(length = 256) val owner: String = "",
+        @Column(length = 512) val description: String = "",
+        @Column(length = 256) val title: String = "",
+        @Column(length = 512) val imageUrl: String = "",
         @ElementCollection(fetch = FetchType.EAGER) val tags: Map<String, String> = HashMap(),
         @ElementCollection(fetch = FetchType.EAGER) val compare: Map<String, String> = HashMap(),
         @ElementCollection(fetch = FetchType.EAGER) val rules: Map<String, CompareAction> = HashMap()
