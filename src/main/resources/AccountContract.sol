@@ -83,15 +83,21 @@ contract AccountContract is Ownable, IStorageContractClient {
 
 }
 
-contract ClientDataContract is Ownable, IStorageContractClient {
+contract ClientDataContract is Ownable {
 
-    StorageContract public storageContract;
+    struct ClientData {
+        mapping(bytes32 => string) valueForKey;
+        mapping(bytes32 => uint) allKeysIndexes; // Incremented
+        bytes32[] allKeys;
+    }
 
-    uint256 constant public storageIdentifier = uint256(keccak256("ClientDataContract"));
-    uint256 constant public infoField = uint256(keccak256("infoField"));
+    mapping(uint256 => ClientData) dict;
 
     bytes32[] public keys;
     mapping(bytes32 => uint) public indexOfKey; // Starts from 1
+
+    function ClientDataContract(StorageContract _storageContract) public {
+    }
 
     function keysCount() public constant returns(uint) {
         return keys.length;
@@ -103,33 +109,44 @@ contract ClientDataContract is Ownable, IStorageContractClient {
         indexOfKey[key] = keys.length; // Incremented by 1
     }
 
-    function ClientDataContract(StorageContract _storageContract) public {
-        storageContract = (_storageContract != address(0)) ? _storageContract : new StorageContract();
+    function info(uint256 publicKeyX, bytes32 key) public constant onlyOwner returns(string) {
+        return dict[publicKeyX].valueForKey[key];
     }
 
-    function infoLength(string publicKey, bytes32 key) public constant returns(uint) {
-        return storageContract.length(uint256(keccak256(publicKey, infoField, key)));
+    function clientKeys(uint256 publicKeyX, uint index) public constant onlyOwner returns(bytes32) {
+        return dict[publicKeyX].allKeys[index];
     }
 
-    function info(string publicKey, bytes32 key, uint index) public constant returns(bytes32) {
-        return bytes32(storageContract.get(uint256(keccak256(publicKey, infoField, key)) + index));
+    function clientKeysCount(uint256 publicKeyX) public constant onlyOwner returns(uint) {
+        return dict[publicKeyX].allKeys.length;
     }
 
-    function setInfo(string publicKey, bytes32 key, uint index, bytes32 value) public onlyOwner {
+    function setInfo(uint256 publicKeyX, bytes32 key, string value) public onlyOwner {
         if (indexOfKey[key] == 0) {
             addKey(key);
         }
-        storageContract.set(uint256(keccak256(publicKey, infoField, key)) + index, uint256(value));
+
+        ClientData storage clientData = dict[publicKeyX];
+        if (clientData.allKeysIndexes[key] == 0) {
+            clientData.allKeys.push(key);
+            clientData.allKeysIndexes[key] = clientData.allKeys.length;
+        }
+        clientData.valueForKey[key] = value;
     }
 
-    function setInfos(string publicKey, bytes32 key, bytes32[] values) public onlyOwner {
-        if (indexOfKey[key] == 0) {
-            addKey(key);
+    function deleteInfo(uint256 publicKeyX, bytes32 key, string value) public onlyOwner {
+        ClientData storage clientData = dict[publicKeyX];
+        uint index = clientData.allKeysIndexes[key];
+        require(index > 0);
+        index--;
+
+        clientData.allKeys[index] = clientData.allKeys[clientData.allKeys.length - 1];
+        clientData.allKeys.length--;
+        delete clientData.allKeysIndexes[key];
+        delete clientData.valueForKey[key];
+        if (clientData.allKeys.length > 0) {
+            clientData.allKeysIndexes[clientData.allKeys[index]] = index;
         }
-        for (uint i = 0; i < values.length; i++) {
-            storageContract.set(uint256(keccak256(publicKey, infoField, key)) + i, uint256(values[i]));
-        }
-        storageContract.erase(uint256(keccak256(publicKey, infoField, key)) + values.length);
     }
 
 }

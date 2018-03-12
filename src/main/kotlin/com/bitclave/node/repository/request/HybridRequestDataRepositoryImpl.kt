@@ -1,30 +1,17 @@
 package com.bitclave.node.repository.request
 
 import com.bitclave.node.configuration.properties.HybridProperties
-import com.bitclave.node.extensions.fromHex
-import com.bitclave.node.extensions.hex
-import com.bitclave.node.extensions.sha3
+import com.bitclave.node.extensions.*
 import com.bitclave.node.repository.Web3Provider
 import com.bitclave.node.repository.models.RequestData
 import com.bitclave.node.solidity.generated.NameServiceContract
 import com.bitclave.node.solidity.generated.RequestDataContract
-import org.bitcoinj.core.ECKey
-import org.bitcoinj.core.ECKey.CURVE
-import org.bouncycastle.jce.ECNamedCurveTable
-import org.bouncycastle.jce.ECPointUtil
-import org.bouncycastle.jce.provider.BouncyCastleProvider
-import org.bouncycastle.jce.spec.ECNamedCurveSpec
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import org.web3j.tuples.generated.Tuple8
 import java.math.BigInteger
 import java.nio.charset.Charset
-import java.security.KeyFactory
-import java.security.NoSuchAlgorithmException
-import java.security.interfaces.ECPublicKey
 import java.security.spec.ECPoint
-import java.security.spec.ECPublicKeySpec
-import java.security.spec.InvalidKeySpecException
 
 @Component
 @Qualifier("hybrid")
@@ -56,7 +43,7 @@ class HybridRequestDataRepositoryImpl(
     }
 
     override fun getByFrom(from: String, state: RequestData.RequestDataState): List<RequestData> {
-        val ecPointFrom = getEcPoint(from)
+        val ecPointFrom = from.ecPoint()
 
         val count = contract.getByFromCount(ecPointFrom.affineX, state.ordinal.toBigInteger()).send().toLong()
         return (0..(count - 1))
@@ -77,7 +64,7 @@ class HybridRequestDataRepositoryImpl(
     }
 
     override fun getByTo(to: String, state: RequestData.RequestDataState): List<RequestData> {
-        val ecPointTo = getEcPoint(to)
+        val ecPointTo = to.ecPoint()
 
         val count = contract.getByToCount(
                 ecPointTo.affineX,
@@ -108,8 +95,8 @@ class HybridRequestDataRepositoryImpl(
             state: RequestData.RequestDataState
     ): List<RequestData> {
 
-        val ecPointFrom = getEcPoint(from)
-        val ecPointTo = getEcPoint(to)
+        val ecPointFrom = from.ecPoint()
+        val ecPointTo = to.ecPoint()
 
         val count = contract.getByFromAndToCount(
                 ecPointFrom.affineX,
@@ -141,8 +128,8 @@ class HybridRequestDataRepositoryImpl(
     }
 
     override fun updateData(request: RequestData): RequestData {
-        val ecPointFrom = getEcPoint(request.fromPk)
-        val ecPointTo = getEcPoint(request.toPk)
+        val ecPointFrom = request.fromPk.ecPoint()
+        val ecPointTo = request.toPk.ecPoint()
 
         try {
             val tx = contract.updateData(
@@ -179,8 +166,8 @@ class HybridRequestDataRepositoryImpl(
     private fun tupleToRequestData(tuple: Tuple8<BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, ByteArray, ByteArray, BigInteger>): RequestData {
         return RequestData(
                 tuple.value1.toLong(),
-                publicKeyFromPoint(tuple.value2, tuple.value3),
-                publicKeyFromPoint(tuple.value4, tuple.value5),
+                ECPoint(tuple.value2, tuple.value3).compressedString(),
+                ECPoint(tuple.value4, tuple.value5).compressedString(),
                 tuple.value6.toString(Charset.defaultCharset())
                         .trim(Character.MIN_VALUE),
                 tuple.value7.toString(Charset.defaultCharset())
@@ -188,25 +175,4 @@ class HybridRequestDataRepositoryImpl(
                 RequestData.RequestDataState.values()[tuple.value8.toInt()])
     }
 
-    private fun publicKeyFromPoint(x: BigInteger, y: BigInteger): String {
-        return ECKey.fromPublicOnly(
-                CURVE.curve.createPoint(x, y).getEncoded(true)
-        ).publicKeyAsHex
-    }
-
-    private fun getEcPoint(publicKey: String): ECPoint {
-        return getPublicKeyFromBytes(publicKey.fromHex()).w
-    }
-
-    // https://stackoverflow.com/a/26159150/440168
-    @Throws(NoSuchAlgorithmException::class, InvalidKeySpecException::class)
-    private fun getPublicKeyFromBytes(pubKey: ByteArray): ECPublicKey {
-        val spec = ECNamedCurveTable.getParameterSpec("secp256k1")
-        val kf = KeyFactory.getInstance("ECDSA", BouncyCastleProvider())
-        val params = ECNamedCurveSpec("secp256k1", spec.curve, spec.g, spec.n)
-        val point = ECPointUtil.decodePoint(params.curve, pubKey)
-        val pubKeySpec = ECPublicKeySpec(point, params)
-
-        return kf.generatePublic(pubKeySpec) as ECPublicKey
-    }
 }

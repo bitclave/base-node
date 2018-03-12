@@ -1,12 +1,12 @@
 package com.bitclave.node.repository.data
 
 import com.bitclave.node.configuration.properties.HybridProperties
+import com.bitclave.node.extensions.ecPoint
 import com.bitclave.node.repository.Web3Provider
 import com.bitclave.node.solidity.generated.ClientDataContract
 import com.bitclave.node.solidity.generated.NameServiceContract
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
-import java.math.BigInteger
 import java.nio.charset.Charset
 
 @Component
@@ -42,59 +42,43 @@ class HybridClientDataRepositoryImpl(
 
     override fun allKeys(): Array<String> {
         if (allKeysArr.isEmpty()) {
-            allKeysArr = (0..(contract.keysCount().send().toLong() - 1))
+            val keysCount = contract.keysCount().send().toLong()
+            allKeysArr = (0..(keysCount - 1))
                     .map {
-                        contract.keys(BigInteger.valueOf(it)).send()
-                    }
-                    .map {
-                        it.toString(Charset.defaultCharset())
-                                .trim(Character.MIN_VALUE)
+                        deserializeKey(contract.keys(it.toBigInteger()).send())
                     }.toTypedArray()
         }
         return allKeysArr
     }
 
     override fun getData(publicKey: String): Map<String, String> {
-        return allKeys().map {
-            it to readValueForKey(publicKey, it)
-        }.toMap().filter {
-            !it.value.isEmpty()
-        }
+        val ecPoint = publicKey.ecPoint()
+        val keysCount = contract.clientKeysCount(ecPoint.affineX).send().toLong()
+        return (0..(keysCount - 1)).map {
+            val key = contract.clientKeys(ecPoint.affineX, it.toBigInteger()).send()
+            val value = contract.info(ecPoint.affineX, key).send()
+            deserializeKey(key) to value
+        }.toMap<String,String>()
     }
 
     override fun updateData(publicKey: String, data: Map<String, String>) {
+        val ecPoint = publicKey.ecPoint()
+
         for (entry in data) {
-            val oldValue = readValueForKey(publicKey, entry.key)
-
+            val oldValue = contract.info(ecPoint.affineX, serializeKey(entry.key)).send();
             if (oldValue != entry.value) {
-                var padLength = ((entry.value.length + 32 - 1) / 32) * 32
-                val validValue = entry.value.padEnd(padLength, Character.MIN_VALUE)
-
-                val arr = validValue.toByteArray()
-                        .asList()
-                        .chunked(32)
-                        .map { it.toByteArray() }
-                contract.setInfos(publicKey, entry.key.padEnd(32, Character.MIN_VALUE).toByteArray(), arr).send()
+                contract.setInfo(ecPoint.affineX, serializeKey(entry.key), entry.value).send()
             }
         }
     }
 
-    private fun readValueForKey(publicKey: String, key: String): String {
-        val stringBuilder = StringBuilder()
-        var i = BigInteger.valueOf(0)
-        while (true) {
-            val item = contract.info(publicKey, key.padEnd(32, Character.MIN_VALUE).toByteArray(), i)
-                    .send()
-                    .toString(Charset.defaultCharset())
-                    .trim(Character.MIN_VALUE)
+    private fun serializeKey(key: String): ByteArray {
+        return key.padEnd(32, Character.MIN_VALUE).toByteArray();
+    }
 
-            if (item.isEmpty()) {
-                break
-            }
-            stringBuilder.append(item)
-            i++
-        }
-        return stringBuilder.toString()
+    private fun deserializeKey(keyData: ByteArray): String {
+        return keyData.toString(Charset.defaultCharset())
+                .trim(Character.MIN_VALUE)
     }
 
 }
