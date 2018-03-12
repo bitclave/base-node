@@ -15,4 +15,6 @@ interface OfferCrudRepository : CrudRepository<Offer, Long> {
 
     fun findByIdAndOwner(id: Long, owner: String): Offer?
 
+    fun findById(id: Long): Offer?
+
 }

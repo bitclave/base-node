@@ -26,6 +26,10 @@ class PostgresOfferRepositoryImpl(val repository: OfferCrudRepository) : OfferRe
         return repository.findByOwner(owner)
     }
 
+    override fun findById(id: Long): Offer? {
+        return repository.findById(id)
+    }
+
     override fun findByIdAndOwner(id: Long, owner: String): Offer? {
         return repository.findByIdAndOwner(id, owner)
     }

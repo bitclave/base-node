@@ -10,6 +10,8 @@ interface OfferRepository {
 
     fun findByOwner(owner: String): List<Offer>
 
+    fun findById(id: Long): Offer?
+
     fun findByIdAndOwner(id: Long, owner: String): Offer?
 
     fun findAll(): List<Offer>

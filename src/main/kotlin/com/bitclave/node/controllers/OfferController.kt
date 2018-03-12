@@ -46,13 +46,13 @@ class OfferController(
     ])
     @RequestMapping(method = [RequestMethod.PUT], value = ["/", "{id}"])
     fun putOffer(
-            @ApiParam("Optional id of already created a offer. Use for update offer")
-            @PathVariable(value = "id", required = false)
-            id: Long?,
-
             @ApiParam("public key owner of offer")
             @PathVariable(value = "owner")
             owner: String,
+
+            @ApiParam("Optional id of already created a offer. Use for update offer")
+            @PathVariable(value = "id", required = false)
+            id: Long?,
 
             @ApiParam("where client sends Offer and signature of the message.", required = true)
             @RequestBody
@@ -103,13 +103,13 @@ class OfferController(
     ])
     @RequestMapping(method = [RequestMethod.DELETE], value = ["{id}"])
     fun deleteOffer(
-            @ApiParam("id of existed offer.")
-            @PathVariable(value = "id")
-            id: Long,
-
             @ApiParam("public key owner of offer")
             @PathVariable(value = "owner")
             owner: String,
+
+            @ApiParam("id of existed offer.")
+            @PathVariable(value = "id")
+            id: Long,
 
             @ApiParam("where client sends Offer id and signature of the message.", required = true)
             @RequestBody
@@ -145,8 +145,8 @@ class OfferController(
     ])
     @RequestMapping(method = [RequestMethod.GET], value = ["/", "{id}"])
     fun getOffer(
-            @ApiParam("owner who create offer(s)", required = false)
-            @PathVariable("owner", required = false)
+            @ApiParam("owner who create offer(s)", required = true)
+            @PathVariable("owner", required = true)
             owner: String,
 
             @ApiParam("Optional id of already created a offer.")
