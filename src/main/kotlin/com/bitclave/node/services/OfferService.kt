@@ -27,6 +27,20 @@ class OfferService(
                 checkOffer ?: throw BadArgumentException()
             }
 
+            if (offer.compare.isEmpty() ||
+                    offer.compare.size != offer.rules.size ||
+                    offer.description.isEmpty() ||
+                    offer.title.isEmpty() ||
+                    offer.tags.isEmpty()) {
+                throw BadArgumentException()
+            }
+
+            for (item: String in offer.compare.keys) {
+                if (!offer.rules.containsKey(item)) {
+                    throw BadArgumentException()
+                }
+            }
+
             val putOffer = Offer(id,
                     owner,
                     offer.description,
