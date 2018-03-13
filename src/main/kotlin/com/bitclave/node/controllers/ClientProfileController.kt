@@ -28,7 +28,7 @@ class ClientProfileController(private val accountService: AccountService,
     @ApiOperation("Returns encrypted data of the user that is identified by the given ID (Public Key).",
             response = Map::class)
     @ApiResponses(value = [
-        (ApiResponse(code = 200, message = "Success", response = Map::class))
+        ApiResponse(code = 200, message = "Success", response = Map::class)
     ])
     @RequestMapping(method = [RequestMethod.GET], value = ["{pk}/"])
     fun getData(
@@ -63,11 +63,11 @@ class ClientProfileController(private val accountService: AccountService,
             "the request is cryptographically signed by the owner of the public key.",
             response = Map::class)
     @ApiResponses(value = [
-        (ApiResponse(code = 200, message = "Success", response = Map::class)),
-        (ApiResponse(code = 400, message = "BadArgumentException")),
-        (ApiResponse(code = 403, message = "AccessDeniedException")),
-        (ApiResponse(code = 404, message = "NotFoundException")),
-        (ApiResponse(code = 500, message = "DataNotSaved"))
+        ApiResponse(code = 200, message = "Success", response = Map::class),
+        ApiResponse(code = 400, message = "BadArgumentException"),
+        ApiResponse(code = 403, message = "AccessDeniedException"),
+        ApiResponse(code = 404, message = "NotFoundException"),
+        ApiResponse(code = 500, message = "DataNotSaved")
     ])
     @RequestMapping(method = [RequestMethod.PATCH])
     fun updateData(

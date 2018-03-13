@@ -38,11 +38,11 @@ class OfferController(
             "The API will verify that the request is cryptographically signed by the owner of the public key.",
             response = Offer::class)
     @ApiResponses(value = [
-        (ApiResponse(code = 200, message = "Updated", response = Offer::class)),
-        (ApiResponse(code = 201, message = "Created", response = Offer::class)),
-        (ApiResponse(code = 400, message = "BadArgumentException")),
-        (ApiResponse(code = 403, message = "AccessDeniedException")),
-        (ApiResponse(code = 500, message = "DataNotSaved"))
+        ApiResponse(code = 200, message = "Updated", response = Offer::class),
+        ApiResponse(code = 201, message = "Created", response = Offer::class),
+        ApiResponse(code = 400, message = "BadArgumentException"),
+        ApiResponse(code = 403, message = "AccessDeniedException"),
+        ApiResponse(code = 500, message = "DataNotSaved")
     ])
     @RequestMapping(method = [RequestMethod.PUT], value = ["/", "{id}"])
     fun putOffer(
@@ -96,10 +96,10 @@ class OfferController(
             "The API will verify that the request is cryptographically signed by the owner of the public key.",
             response = Long::class)
     @ApiResponses(value = [
-        (ApiResponse(code = 200, message = "Deleted", response = Long::class)),
-        (ApiResponse(code = 400, message = "BadArgumentException")),
-        (ApiResponse(code = 403, message = "AccessDeniedException")),
-        (ApiResponse(code = 404, message = "NotFoundException"))
+        ApiResponse(code = 200, message = "Deleted", response = Long::class),
+        ApiResponse(code = 400, message = "BadArgumentException"),
+        ApiResponse(code = 403, message = "AccessDeniedException"),
+        ApiResponse(code = 404, message = "NotFoundException")
     ])
     @RequestMapping(method = [RequestMethod.DELETE], value = ["{id}"])
     fun deleteOffer(
@@ -141,7 +141,7 @@ class OfferController(
             "get already created offers", response = Offer::class, responseContainer = "List"
     )
     @ApiResponses(value = [
-        (ApiResponse(code = 200, message = "Success", response = List::class))
+        ApiResponse(code = 200, message = "Success", response = List::class)
     ])
     @RequestMapping(method = [RequestMethod.GET], value = ["/", "{id}"])
     fun getOffer(

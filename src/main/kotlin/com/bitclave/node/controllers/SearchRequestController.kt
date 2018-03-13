@@ -37,10 +37,10 @@ class SearchRequestController(
             "The API will verify that the request is cryptographically signed by the owner of the public key.",
             response = SearchRequest::class)
     @ApiResponses(value = [
-        (ApiResponse(code = 201, message = "Created", response = SearchRequest::class)),
-        (ApiResponse(code = 400, message = "BadArgumentException")),
-        (ApiResponse(code = 403, message = "AccessDeniedException")),
-        (ApiResponse(code = 500, message = "DataNotSaved"))
+        ApiResponse(code = 201, message = "Created", response = SearchRequest::class),
+        ApiResponse(code = 400, message = "BadArgumentException"),
+        ApiResponse(code = 403, message = "AccessDeniedException"),
+        ApiResponse(code = 500, message = "DataNotSaved")
     ])
     @RequestMapping(method = [RequestMethod.POST])
     @ResponseStatus(value = HttpStatus.CREATED)
@@ -84,10 +84,10 @@ class SearchRequestController(
             "The API will verify that the request is cryptographically signed by the owner of the public key.",
             response = Long::class)
     @ApiResponses(value = [
-        (ApiResponse(code = 200, message = "Deleted", response = Long::class)),
-        (ApiResponse(code = 400, message = "BadArgumentException")),
-        (ApiResponse(code = 403, message = "AccessDeniedException")),
-        (ApiResponse(code = 404, message = "NotFoundException"))
+        ApiResponse(code = 200, message = "Deleted", response = Long::class),
+        ApiResponse(code = 400, message = "BadArgumentException"),
+        ApiResponse(code = 403, message = "AccessDeniedException"),
+        ApiResponse(code = 404, message = "NotFoundException")
     ])
     @RequestMapping(method = [RequestMethod.DELETE], value = ["{id}"])
     fun deleteSearchRequest(
@@ -131,7 +131,7 @@ class SearchRequestController(
             responseContainer = "List"
     )
     @ApiResponses(value = [
-        (ApiResponse(code = 200, message = "Success", response = List::class))
+        ApiResponse(code = 200, message = "Success", response = List::class)
     ])
     @RequestMapping(method = [RequestMethod.GET], value = ["/", "{id}"])
     fun getSearchRequests(

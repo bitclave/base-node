@@ -36,9 +36,9 @@ class RequestDataController(private val accountService: AccountService,
             "API called must provided one of fromPk or toPk.",
             response = RequestData::class, responseContainer = "List")
     @ApiResponses(value = [
-        (ApiResponse(code = 200, message = "Success", response = RequestData::class,
-                responseContainer = "List")),
-        (ApiResponse(code = 400, message = "BadArgumentException"))
+        ApiResponse(code = 200, message = "Success", response = RequestData::class,
+                responseContainer = "List"),
+        ApiResponse(code = 400, message = "BadArgumentException")
     ])
     @RequestMapping(method = [RequestMethod.GET],
             value = [
@@ -84,11 +84,11 @@ class RequestDataController(private val accountService: AccountService,
             "The API will verify that the request is cryptographically signed by the owner of the public key.",
             response = Long::class)
     @ApiResponses(value = [
-        (ApiResponse(code = 200, message = "Success", response = Long::class)),
-        (ApiResponse(code = 400, message = "BadArgumentException")),
-        (ApiResponse(code = 403, message = "AccessDeniedException")),
-        (ApiResponse(code = 404, message = "NotFoundException")),
-        (ApiResponse(code = 500, message = "DataNotSaved"))
+        ApiResponse(code = 200, message = "Success", response = Long::class),
+        ApiResponse(code = 400, message = "BadArgumentException"),
+        ApiResponse(code = 403, message = "AccessDeniedException"),
+        ApiResponse(code = 404, message = "NotFoundException"),
+        ApiResponse(code = 500, message = "DataNotSaved")
     ])
     @RequestMapping(method = [RequestMethod.POST])
     fun request(
@@ -127,11 +127,11 @@ class RequestDataController(private val accountService: AccountService,
     @ApiOperation("Creates a response to a previously submitted data access request.",
             response = RequestData.RequestDataState::class)
     @ApiResponses(value = [
-        (ApiResponse(code = 200, message = "Success", response = RequestData.RequestDataState::class)),
-        (ApiResponse(code = 400, message = "BadArgumentException")),
-        (ApiResponse(code = 403, message = "AccessDeniedException")),
-        (ApiResponse(code = 404, message = "NotFoundException")),
-        (ApiResponse(code = 500, message = "DataNotSaved"))
+        ApiResponse(code = 200, message = "Success", response = RequestData.RequestDataState::class),
+        ApiResponse(code = 400, message = "BadArgumentException"),
+        ApiResponse(code = 403, message = "AccessDeniedException"),
+        ApiResponse(code = 404, message = "NotFoundException"),
+        ApiResponse(code = 500, message = "DataNotSaved")
     ])
     @RequestMapping(method = [RequestMethod.PATCH], value = ["{id}/"])
     fun response(
