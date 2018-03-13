@@ -53,7 +53,7 @@ class OfferShareService(
                     clientId,
                     offer.owner,
                     data.clientResponse,
-                    BigDecimal.ZERO,
+                    BigDecimal.ZERO.toString(),
                     false
             )
             offerShareRepository.changeStrategy(strategy)
@@ -80,7 +80,7 @@ class OfferShareService(
                     originShareData.clientId,
                     originShareData.offerOwner,
                     originShareData.clientResponse,
-                    worth,
+                    worth.toString(),
                     true
             )
 

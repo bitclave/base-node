@@ -33,7 +33,13 @@ class OfferShareControllerTest {
     private var httpHeaders: HttpHeaders = HttpHeaders()
 
     @Before fun setup() {
-        shareDataRequest = SignedRequest(OfferShareData(1, publicKey, "", publicKey, BigDecimal.ONE), publicKey)
+        shareDataRequest = SignedRequest(OfferShareData(
+                1,
+                publicKey,
+                "",
+                publicKey,
+                BigDecimal.ONE.toString()
+        ), publicKey)
         worthRequest = SignedRequest(BigDecimal.TEN, publicKey)
 
         httpHeaders.set("Accept", "application/json")

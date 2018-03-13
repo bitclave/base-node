@@ -123,7 +123,7 @@ class OfferShareServiceTest {
         assertThat(shareData.clientId == accountClient.publicKey)
         assertThat(shareData.offerId == 1L)
         assertThat(shareData.clientResponse == SHARE_DATA_RESPONSE)
-        assertThat(shareData.worth == BigDecimal.ZERO)
+        assertThat(BigDecimal(shareData.worth) == BigDecimal.ZERO)
         assertThat(shareData.offerOwner == accountBusiness.publicKey)
     }
 
@@ -156,7 +156,7 @@ class OfferShareServiceTest {
         assertThat(shareData.clientId == accountClient.publicKey)
         assertThat(shareData.offerId == 1L)
         assertThat(shareData.clientResponse == SHARE_DATA_RESPONSE)
-        assertThat(shareData.worth == BigDecimal.TEN)
+        assertThat(BigDecimal(shareData.worth) == BigDecimal.TEN)
         assertThat(shareData.offerOwner == accountBusiness.publicKey)
     }
 

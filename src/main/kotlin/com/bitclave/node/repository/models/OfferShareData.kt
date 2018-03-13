@@ -13,6 +13,6 @@ data class OfferShareData(
         @Id val clientId: String = "",
         @Id val offerOwner: String = "",
         @Column(length = 2000) val clientResponse: String = "",
-        val worth: BigDecimal = BigDecimal.ZERO,
+        val worth: String = BigDecimal.ZERO.toString(),
         val accepted: Boolean = false
 )
