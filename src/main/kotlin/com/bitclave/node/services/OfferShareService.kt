@@ -45,13 +45,13 @@ class OfferShareService(
                 throw DuplicateException()
             }
 
-            offerRepository.changeStrategy(strategy).findById(data.offerId)
+            val offer = offerRepository.changeStrategy(strategy).findById(data.offerId)
                     ?: throw BadArgumentException()
 
             val shareData = OfferShareData(
                     data.offerId,
                     clientId,
-                    data.offerOwner,
+                    offer.owner,
                     data.clientResponse,
                     BigDecimal.ZERO,
                     false

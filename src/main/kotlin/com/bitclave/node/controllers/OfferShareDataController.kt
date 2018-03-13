@@ -32,14 +32,17 @@ class OfferShareDataController(
         ApiResponse(code = 200, message = "Success", response = OfferShareData::class,
                 responseContainer = "List")
     ])
-    @RequestMapping(method = [RequestMethod.GET], value = ["owner/{owner}/accepted/{accepted}"])
+    @RequestMapping(method = [RequestMethod.GET], value = [
+        "owner/{owner}/accepted/{accepted}",
+        "owner/{owner}"
+    ])
     fun getShareData(
-            @ApiParam("id of offer owner", required = false)
+            @ApiParam("id of offer owner")
             @PathVariable("owner")
             offerOwner: String,
 
             @ApiParam("accepted or not", required = false)
-            @PathVariable("accepted")
+            @PathVariable("accepted", required = false)
             accepted: Boolean?,
 
             @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
@@ -72,6 +75,7 @@ class OfferShareDataController(
         ApiResponse(code = 500, message = "DataNotSaved")
     ])
     @RequestMapping(method = [RequestMethod.POST])
+    @ResponseStatus(HttpStatus.CREATED)
     fun share(
             @ApiParam("shared data for offer", required = true)
             @RequestBody
@@ -100,7 +104,6 @@ class OfferShareDataController(
      *              {@link NotFoundException} - 404
      *              {@link DataNotSaved} - 500
      */
-
     @ApiOperation("Creates a response to a previously submitted data access request.")
     @ApiResponses(value = [
         ApiResponse(code = 202, message = "Accepted"),
