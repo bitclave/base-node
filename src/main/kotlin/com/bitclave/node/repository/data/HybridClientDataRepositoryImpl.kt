@@ -1,7 +1,7 @@
 package com.bitclave.node.repository.data
 
 import com.bitclave.node.configuration.properties.HybridProperties
-import com.bitclave.node.extensions.ecPoint
+import com.bitclave.node.extensions.ECPoint
 import com.bitclave.node.repository.Web3Provider
 import com.bitclave.node.solidity.generated.ClientDataContract
 import com.bitclave.node.solidity.generated.NameServiceContract
@@ -52,7 +52,7 @@ class HybridClientDataRepositoryImpl(
     }
 
     override fun getData(publicKey: String): Map<String, String> {
-        val ecPoint = publicKey.ecPoint()
+        val ecPoint = ECPoint(publicKey)
         val keysCount = contract.clientKeysCount(ecPoint.affineX).send().toLong()
         return (0..(keysCount - 1)).map {
             val key = contract.clientKeys(ecPoint.affineX, it.toBigInteger()).send()
@@ -62,7 +62,7 @@ class HybridClientDataRepositoryImpl(
     }
 
     override fun updateData(publicKey: String, data: Map<String, String>) {
-        val ecPoint = publicKey.ecPoint()
+        val ecPoint = ECPoint(publicKey)
 
         for (entry in data) {
             val oldValue = contract.info(ecPoint.affineX, serializeKey(entry.key)).send();
