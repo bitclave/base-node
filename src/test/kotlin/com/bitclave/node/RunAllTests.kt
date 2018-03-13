@@ -13,6 +13,8 @@ import com.bitclave.node.requestData.RequestDataServiceHybridTest
 import com.bitclave.node.requestData.RequestDataServiceTest
 import com.bitclave.node.search.SearchRequestControllerTest
 import com.bitclave.node.search.SearchRequestServiceTest
+import com.bitclave.node.share.OfferShareControllerTest
+import com.bitclave.node.share.OfferShareServiceTest
 import org.junit.runner.RunWith
 import org.junit.runners.Suite
 
@@ -30,6 +32,8 @@ import org.junit.runners.Suite
     OfferControllerTest::class,
     OfferServiceTest::class,
     SearchRequestControllerTest::class,
-    SearchRequestServiceTest::class
+    SearchRequestServiceTest::class,
+    OfferShareControllerTest::class,
+    OfferShareServiceTest::class
 ])
 class RunAllTests
