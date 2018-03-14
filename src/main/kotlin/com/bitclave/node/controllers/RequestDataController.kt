@@ -9,11 +9,12 @@ import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import java.util.concurrent.CompletableFuture
 
 @RestController
-@RequestMapping("/request/")
+@RequestMapping("/data/")
 class RequestDataController(private val accountService: AccountService,
                             private val requestDataService: RequestDataService) :
         AbstractController() {
@@ -42,9 +43,9 @@ class RequestDataController(private val accountService: AccountService,
     ])
     @RequestMapping(method = [RequestMethod.GET],
             value = [
-                "/from/{fromPk}/state/{state}/",
-                "to/{toPk}/state/{state}/",
-                "from/{fromPk}/to/{toPk}/state/{state}/"
+                "request/from/{fromPk}/state/{state}/",
+                "request/to/{toPk}/state/{state}/",
+                "request/from/{fromPk}/to/{toPk}/state/{state}/"
             ])
     fun getRequestByState(
             @ApiParam("Optional if use toPk. Public key of the user " +
@@ -80,17 +81,16 @@ class RequestDataController(private val accountService: AccountService,
      *              {@link NotFoundException} - 404
      *              {@link DataNotSaved} - 500
      */
-    @ApiOperation("Creates a new user in the system, based on the provided information.\n" +
-            "The API will verify that the request is cryptographically signed by the owner of the public key.",
-            response = Long::class)
+    @ApiOperation("Create request for get private client data.", response = Long::class)
     @ApiResponses(value = [
-        ApiResponse(code = 200, message = "Success", response = Long::class),
+        ApiResponse(code = 201, message = "Created", response = Long::class),
         ApiResponse(code = 400, message = "BadArgumentException"),
         ApiResponse(code = 403, message = "AccessDeniedException"),
         ApiResponse(code = 404, message = "NotFoundException"),
         ApiResponse(code = 500, message = "DataNotSaved")
     ])
-    @RequestMapping(method = [RequestMethod.POST])
+    @RequestMapping(method = [RequestMethod.POST], value = ["request/"])
+    @ResponseStatus(HttpStatus.CREATED)
     fun request(
             @ApiParam("info of request for privacy client data", required = true)
             @RequestBody
@@ -133,7 +133,7 @@ class RequestDataController(private val accountService: AccountService,
         ApiResponse(code = 404, message = "NotFoundException"),
         ApiResponse(code = 500, message = "DataNotSaved")
     ])
-    @RequestMapping(method = [RequestMethod.PATCH], value = ["{id}/"])
+    @RequestMapping(method = [RequestMethod.PATCH], value = ["request/{id}/"])
     fun response(
             @ApiParam("id of request", required = true)
             @PathVariable("id")
@@ -153,6 +153,47 @@ class RequestDataController(private val accountService: AccountService,
                             requestId,
                             account.publicKey,
                             request.data,
+                            getStrategyType(strategy)
+                    )
+                }
+    }
+
+    /**
+     * Grant access for get private client data.
+     * @param request info of request for privacy client data
+     *
+     * @return id of created request.
+     *
+     * @exception   {@link BadArgumentException} - 400
+     *              {@link AccessDeniedException} - 403
+     *              {@link NotFoundException} - 404
+     *              {@link DataNotSaved} - 500
+     */
+    @ApiOperation("Grant access for get private client data.", response = Long::class)
+    @ApiResponses(value = [
+        ApiResponse(code = 201, message = "Created", response = Long::class),
+        ApiResponse(code = 400, message = "BadArgumentException"),
+        ApiResponse(code = 403, message = "AccessDeniedException"),
+        ApiResponse(code = 404, message = "NotFoundException"),
+        ApiResponse(code = 500, message = "DataNotSaved")
+    ])
+    @RequestMapping(method = [RequestMethod.POST], value = ["grant/request/"])
+    @ResponseStatus(HttpStatus.CREATED)
+    fun grantAccess(
+            @ApiParam("info of request for privacy client data", required = true)
+            @RequestBody
+            request: SignedRequest<RequestData>,
+
+            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+            @RequestHeader("Strategy", required = false)
+            strategy: String?
+    ): CompletableFuture<Long> {
+
+        return accountService.accountBySigMessage(request, getStrategyType(strategy))
+                .thenCompose { account: Account ->
+                    requestDataService.grantAccess(
+                            account.publicKey,
+                            request.data!!,
                             getStrategyType(strategy)
                     )
                 }

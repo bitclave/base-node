@@ -14,7 +14,7 @@ import java.math.BigDecimal
 import java.util.concurrent.CompletableFuture
 
 @RestController
-@RequestMapping("share/")
+@RequestMapping("/data/")
 class OfferShareDataController(
         private val accountService: AccountService,
         private val offerShareData: OfferShareService)
@@ -33,8 +33,8 @@ class OfferShareDataController(
                 responseContainer = "List")
     ])
     @RequestMapping(method = [RequestMethod.GET], value = [
-        "owner/{owner}/accepted/{accepted}",
-        "owner/{owner}"
+        "offer/owner/{owner}/accepted/{accepted}",
+        "offer/owner/{owner}"
     ])
     fun getShareData(
             @ApiParam("id of offer owner")
@@ -54,7 +54,7 @@ class OfferShareDataController(
     }
 
     /**
-     * Share data for offer.
+     * Grant access data for offer.
      * @param request info of request for privacy client data
      *
      * @return id of created request.
@@ -65,7 +65,7 @@ class OfferShareDataController(
      *              {@link DuplicateException} - 409
      *              {@link DataNotSaved} - 500
      */
-    @ApiOperation("Share data for offer")
+    @ApiOperation("Grant access data for offer")
     @ApiResponses(value = [
         ApiResponse(code = 201, message = "Created"),
         ApiResponse(code = 400, message = "BadArgumentException"),
@@ -74,10 +74,10 @@ class OfferShareDataController(
         ApiResponse(code = 409, message = "DuplicateException"),
         ApiResponse(code = 500, message = "DataNotSaved")
     ])
-    @RequestMapping(method = [RequestMethod.POST])
+    @RequestMapping(method = [RequestMethod.POST], value = ["grant/offer"])
     @ResponseStatus(HttpStatus.CREATED)
-    fun share(
-            @ApiParam("shared data for offer", required = true)
+    fun grantAccess(
+            @ApiParam("Grant access data for offer", required = true)
             @RequestBody
             request: SignedRequest<OfferShareData>,
 
@@ -88,7 +88,7 @@ class OfferShareDataController(
 
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
                 .thenAcceptAsync({
-                    offerShareData.share(it.publicKey, request.data!!, getStrategyType(strategy))
+                    offerShareData.grantAccess(it.publicKey, request.data!!, getStrategyType(strategy))
                 })
     }
 

@@ -48,27 +48,27 @@ class OfferShareControllerTest {
     }
 
     @Test fun `create share data`() {
-        this.mvc.perform(post("/share/")
+        this.mvc.perform(post("/data/grant/offer")
                 .content(shareDataRequest.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isCreated)
     }
 
     @Test fun `accept shared data`() {
-        this.mvc.perform(patch("/share/offer/1/client/$publicKey")
+        this.mvc.perform(patch("/data/offer/1/client/$publicKey")
                 .content(worthRequest.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isAccepted)
     }
 
     @Test fun `get share data by owner`() {
-        this.mvc.perform(get("/share/owner/$publicKey/")
+        this.mvc.perform(get("/data/offer/owner/$publicKey/")
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }
 
     @Test fun `get share data by owner and accepted`() {
-        this.mvc.perform(get("/share/owner/$publicKey/accepted/true")
+        this.mvc.perform(get("/data/offer/owner/$publicKey/accepted/true")
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }

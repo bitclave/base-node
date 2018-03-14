@@ -95,7 +95,7 @@ class OfferShareServiceTest {
                 "",
                 SHARE_DATA_RESPONSE
         )
-        offerShareService.share(accountClient.publicKey, originShareData, strategy).get()
+        offerShareService.grantAccess(accountClient.publicKey, originShareData, strategy).get()
     }
 
     @Test fun `should be business accept share data`() {

@@ -32,7 +32,12 @@ class OfferShareService(
         })
     }
 
-    fun share(clientId: String, data: OfferShareData, strategy: RepositoryStrategyType): CompletableFuture<Void> {
+    fun grantAccess(
+            clientId: String,
+            data: OfferShareData,
+            strategy: RepositoryStrategyType
+    ): CompletableFuture<Void> {
+
         return CompletableFuture.runAsync({
             if (data.clientId != clientId ||
                     data.clientResponse.isEmpty() ||

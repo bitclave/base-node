@@ -43,31 +43,38 @@ class RequestDataControllerTest {
     }
 
     @Test fun `get request by state`() {
-        this.mvc.perform(get("/request/from/$from/state/${RequestData.RequestDataState.AWAIT}/")
+        this.mvc.perform(get("/data/request/from/$from/state/${RequestData.RequestDataState.AWAIT}/")
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
 
-        this.mvc.perform(get("/request/from/$from/to/$to/state/${RequestData.RequestDataState.AWAIT}/")
+        this.mvc.perform(get("/data/request/from/$from/to/$to/state/${RequestData.RequestDataState.AWAIT}/")
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
 
-        this.mvc.perform(get("/request/to/$to/state/${RequestData.RequestDataState.AWAIT}/")
+        this.mvc.perform(get("/data/request/to/$to/state/${RequestData.RequestDataState.AWAIT}/")
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }
 
     @Test fun `create request for client`() {
-        this.mvc.perform(post("/request/")
+        this.mvc.perform(post("/data/request/")
                 .content(requestDataRequest.toJsonString())
+                .headers(httpHeaders))
+                .andExpect(status().isCreated)
+    }
+
+    @Test fun `create response for client`() {
+        this.mvc.perform(patch("/data/request/1/")
+                .content(requestDataResponse.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }
 
-    @Test fun `create response for client`() {
-        this.mvc.perform(patch("/request/1/")
-                .content(requestDataResponse.toJsonString())
+    @Test fun `grant access for client`() {
+        this.mvc.perform(post("/data/grant/request/")
+                .content(requestDataRequest.toJsonString())
                 .headers(httpHeaders))
-                .andExpect(status().isOk)
+                .andExpect(status().isCreated)
     }
 
 }
