@@ -29,6 +29,8 @@ class BotController {
         return CompletableFuture.completedFuture(
                 if ("Adam".equals(name, true))
                     "038d4a758b58137ee47993ca434c1b797096536ada167b942f7d251ed1fc50c1c1"
+                else if ("Base".equals(name, true))
+                    "BA5E"
                 else
                     ""
         )
