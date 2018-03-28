@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*
 import java.util.concurrent.CompletableFuture
 
 @RestController
-@RequestMapping("/request/")
+@RequestMapping("/data/request/")
 class RequestDataController(private val accountService: AccountService,
                             private val requestDataService: RequestDataService) :
         AbstractController() {
@@ -80,7 +80,7 @@ class RequestDataController(private val accountService: AccountService,
      *              {@link NotFoundException} - 404
      *              {@link DataNotSaved} - 500
      */
-    @ApiOperation("Creates a new user in the system, based on the provided information.\n" +
+    @ApiOperation("Creates a new DATA REQUEST, based on the provided information.\n" +
             "The API will verify that the request is cryptographically signed by the owner of the public key.",
             response = Long::class)
     @ApiResponses(value = [
