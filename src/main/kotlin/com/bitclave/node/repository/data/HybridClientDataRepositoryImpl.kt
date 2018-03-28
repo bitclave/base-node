@@ -70,6 +70,8 @@ class HybridClientDataRepositoryImpl(
                 contract.setInfo(ecPoint.affineX, serializeKey(entry.key), entry.value).send()
             }
         }
+        allKeysArr = emptyArray()
+        getData(publicKey)
     }
 
     private fun serializeKey(key: String): ByteArray {
