@@ -116,4 +116,15 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
         })
     }
 
+    fun deleteAccount(
+            publicKey: String,
+            strategy: RepositoryStrategyType
+    ): CompletableFuture<Long> {
+
+        return CompletableFuture.supplyAsync({
+            requestDataRepository.changeStrategy(strategy)
+                    .deleteAccount(publicKey)
+        })
+    }
+
 }

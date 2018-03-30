@@ -3,7 +3,10 @@ package com.bitclave.node.controllers
 import com.bitclave.node.repository.models.Account
 import com.bitclave.node.repository.models.SignedRequest
 import com.bitclave.node.services.AccountService
+import com.bitclave.node.services.ClientProfileService
+import com.bitclave.node.services.RequestDataService
 import com.bitclave.node.services.errors.AccessDeniedException
+import com.bitclave.node.services.errors.BadArgumentException
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
@@ -14,7 +17,9 @@ import java.util.concurrent.CompletableFuture
 
 @RestController()
 @RequestMapping("/")
-class AuthController(private val accountService: AccountService) : AbstractController() {
+class AuthController(private val accountService: AccountService,
+                     private val profileService: ClientProfileService,
+                     private val requestDataService: RequestDataService) : AbstractController() {
 
     /**
      * Creates a new user in the system, based on the provided information.
@@ -106,5 +111,57 @@ class AuthController(private val accountService: AccountService) : AbstractContr
                     accountService.existAccount(request.data!!, getStrategyType(strategy))
                 }
     }
+
+
+    /**
+    * Verifies if the specified account already exists in the system.
+    * The API will verify that the request is cryptographically signed by
+    * the owner of the public key.
+    * @param request is {@link SignedRequest} where client sends {@link Account}
+    * and signature of the message.
+    *
+    * @return {@link Account}, Http status - 200.
+    *
+    * @exception   {@link AccessDeniedException} - 403
+    *              {@link NotFoundException} - 404
+    */
+/**/
+    @ApiOperation("Delete a user from the system.\n" +
+            "The API will verify that the request is cryptographically signed by the owner of the public key.",
+            response = Long::class)
+    @ApiResponses(value = [
+        ApiResponse(code = 200, message = "Success", response = Account::class),
+        ApiResponse(code = 403, message = "AccessDeniedException"),
+        ApiResponse(code = 404, message = "NotFoundException")
+    ])
+    @RequestMapping(method = [RequestMethod.DELETE], value =  ["delete"])
+    fun deleteUser(
+            @ApiParam("where client sends Account and signature of the message.", required = true)
+            @RequestBody
+            request: SignedRequest<Account>,
+
+            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+            @RequestHeader("Strategy", required = false)
+            strategy: String?):
+            CompletableFuture<Long> {
+
+        return accountService.checkSigMessage(request)
+                .thenApply { pk ->
+                    if (pk != request.data?.publicKey) {
+                        throw AccessDeniedException()
+                    }
+                    pk
+                }
+                .thenCompose {
+                    accountService.deleteAccount(request.data!!, getStrategyType(strategy))
+                    .thenCompose {
+                        profileService.deleteAccount(request.data.publicKey, getStrategyType(strategy))
+                        .thenCompose {
+                            requestDataService.deleteAccount(request.data.publicKey, getStrategyType(strategy))
+                        }
+                    }
+                }
+    }
+/**/
 
 }

@@ -23,4 +23,9 @@ class PostgresClientDataRepositoryImpl(
         repository.save(ClientData(publicKey, data)) ?: throw DataNotSaved()
     }
 
+    override fun deleteAccount(publicKey: String): Long
+    {
+        if (repository.exists(publicKey)) repository.delete(publicKey);
+        return 1L
+    }
 }

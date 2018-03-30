@@ -3,6 +3,7 @@ package com.bitclave.node.repository.account
 import com.bitclave.node.configuration.properties.HybridProperties
 import com.bitclave.node.repository.Web3Provider
 import com.bitclave.node.repository.models.Account
+import com.bitclave.node.services.errors.DataNotSaved
 import com.bitclave.node.solidity.generated.AccountContract
 import com.bitclave.node.solidity.generated.NameServiceContract
 import org.springframework.beans.factory.annotation.Qualifier
@@ -39,6 +40,10 @@ class HybridAccountRepositoryImpl(
 
     override fun saveAccount(publicKey: String) {
         contract.registerPublicKey(publicKey).send()
+    }
+
+    override fun deleteAccount(publicKey: String) {
+        throw DataNotSaved()
     }
 
     override fun findByPublicKey(publicKey: String): Account? {

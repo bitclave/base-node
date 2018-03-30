@@ -3,6 +3,7 @@ package com.bitclave.node.repository.data
 import com.bitclave.node.configuration.properties.HybridProperties
 import com.bitclave.node.extensions.ECPoint
 import com.bitclave.node.repository.Web3Provider
+import com.bitclave.node.services.errors.DataNotSaved
 import com.bitclave.node.solidity.generated.ClientDataContract
 import com.bitclave.node.solidity.generated.NameServiceContract
 import org.springframework.beans.factory.annotation.Qualifier
@@ -72,6 +73,11 @@ class HybridClientDataRepositoryImpl(
         }
         allKeysArr = emptyArray()
         getData(publicKey)
+    }
+
+    override fun deleteAccount(publicKey: String): Long
+    {
+        throw DataNotSaved();
     }
 
     private fun serializeKey(key: String): ByteArray {

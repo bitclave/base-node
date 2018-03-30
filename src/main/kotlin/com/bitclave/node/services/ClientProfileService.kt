@@ -35,4 +35,15 @@ class ClientProfileService(
         })
     }
 
+    fun deleteAccount(
+            publicKey: String,
+            strategy: RepositoryStrategyType
+    ): CompletableFuture<Long> {
+
+        return CompletableFuture.supplyAsync({
+            clientDataRepository.changeStrategy(strategy)
+                    .deleteAccount(publicKey)
+        })
+    }
+
 }
