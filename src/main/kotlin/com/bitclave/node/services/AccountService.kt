@@ -70,7 +70,7 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
     fun deleteAccount(account: Account, strategy: RepositoryStrategyType): CompletableFuture<Long> {
         return CompletableFuture.supplyAsync {
             accountRepository.changeStrategy(strategy)
-                    .deleteAccount(account.publicKey) ?: throw NotFoundException()
+                    .deleteAccount(account.publicKey) //?: throw NotFoundException()
             111L;
         }
     }

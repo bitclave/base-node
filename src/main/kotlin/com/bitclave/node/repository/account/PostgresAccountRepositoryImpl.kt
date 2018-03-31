@@ -16,7 +16,7 @@ class PostgresAccountRepositoryImpl(val repository: AccountCrudRepository) : Acc
 
     override fun deleteAccount(publicKey: String) {
         repository.findByPublicKey(publicKey) ?: throw NotFoundException();
-        repository.delete(Account(publicKey)) ?: throw DataNotSaved();
+        repository.delete(Account(publicKey));// ?: throw DataNotSaved();
     }
 
     override fun findByPublicKey(publicKey: String): Account? {
