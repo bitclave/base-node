@@ -14,6 +14,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
@@ -53,6 +54,13 @@ class AuthControllerTest {
     @Test
     fun `check account is exist`() {
         this.mvc.perform(post("/exist")
+                .content(requestAccount.toJsonString())
+                .headers(httpHeaders))
+                .andExpect(status().isOk)
+    }
+    @Test
+    fun `delete account`() {
+        this.mvc.perform(delete("/delete")
                 .content(requestAccount.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
