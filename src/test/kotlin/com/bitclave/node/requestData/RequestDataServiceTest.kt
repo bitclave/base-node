@@ -181,4 +181,31 @@ class RequestDataServiceTest {
         Assertions.assertThat(state).isEqualTo(RequestData.RequestDataState.REJECT)
     }
 
+    @Test fun `delete response and requests by From and To`() {
+        var id = requestDataService.request(from, request, strategy).get()
+        Assertions.assertThat(id).isEqualTo(1L)
+
+        val requestTo = RequestData(0, "", from, REQUEST_DATA)
+        id = requestDataService.request(to, requestTo, strategy).get()
+        Assertions.assertThat(id).isEqualTo(2L)
+
+        requestDataService.deleteRequestsAndResponses(from, strategy).get()
+        var resultList = requestDataService.getRequestByStatus(
+                from,
+                to,
+                RequestData.RequestDataState.AWAIT,
+                strategy
+        ).get()
+        Assertions.assertThat(resultList.size).isEqualTo(0)
+
+        resultList = requestDataService.getRequestByStatus(
+                to,
+                from,
+                RequestData.RequestDataState.AWAIT,
+                strategy
+        ).get()
+        Assertions.assertThat(resultList.size).isEqualTo(0)
+    }
+
+
 }

@@ -7,4 +7,8 @@ import org.springframework.transaction.annotation.Transactional
 
 @Repository
 @Transactional
-interface ClientDataCrudRepository : CrudRepository<ClientData, String> {}
+interface ClientDataCrudRepository : CrudRepository<ClientData, String> {
+
+    fun deleteByPublicKey(key: String): Long
+
+}

@@ -8,6 +8,8 @@ interface OfferRepository {
 
     fun deleteOffer(id: Long, owner: String): Long
 
+    fun deleteOffers(owner: String): Long
+
     fun findByOwner(owner: String): List<Offer>
 
     fun findById(id: Long): Offer?

@@ -46,6 +46,16 @@ class SearchRequestService(
         })
     }
 
+    fun deleteSearchRequests(
+            owner: String,
+            strategy: RepositoryStrategyType
+    ): CompletableFuture<Void> {
+
+        return CompletableFuture.runAsync({
+            repository.changeStrategy(strategy).deleteSearchRequests(owner)
+        })
+    }
+
     fun getSearchRequests(
             id: Long,
             owner: String,

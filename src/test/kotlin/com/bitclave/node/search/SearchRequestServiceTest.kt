@@ -94,6 +94,24 @@ class SearchRequestServiceTest {
         assertThat(savedListResult.size).isEqualTo(0)
     }
 
+    @Test fun `should delete all existed search request`() {
+        `should be create new search request`()
+        `should be create new search request`()
+        `should be create new search request`()
+
+        var savedListResult = searchRequestService.getSearchRequests(0, account.publicKey, strategy).get()
+        assertThat(savedListResult.size).isEqualTo(3)
+        assertThat(savedListResult[0]).isEqualToIgnoringGivenFields(searchRequest, "id")
+        assertThat(savedListResult[1]).isEqualToIgnoringGivenFields(searchRequest, "id")
+        assertThat(savedListResult[2]).isEqualToIgnoringGivenFields(searchRequest, "id")
+
+        searchRequestService.deleteSearchRequests(account.publicKey, strategy).get()
+
+
+        savedListResult = searchRequestService.getSearchRequests(0, account.publicKey, strategy).get()
+        assertThat(savedListResult.size).isEqualTo(0)
+    }
+
     @Test fun `should return search requests by id and owner`() {
         `should be create new search request`()
         `should be create new search request`()

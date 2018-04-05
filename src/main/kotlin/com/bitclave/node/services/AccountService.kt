@@ -27,7 +27,11 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
                 }
     }
 
-    fun accountBySigMessage(request: SignedRequest<*>, strategy: RepositoryStrategyType): CompletableFuture<Account> {
+    fun accountBySigMessage(
+            request: SignedRequest<*>,
+            strategy: RepositoryStrategyType
+    ): CompletableFuture<Account> {
+
         return checkSigMessage(request)
                 .thenApply(accountRepository.changeStrategy(strategy)::findByPublicKey)
                 .thenApply { account: Account? ->
@@ -67,12 +71,11 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
         }
     }
 
-    fun deleteAccount(account: Account, strategy: RepositoryStrategyType): CompletableFuture<Long> {
-        return CompletableFuture.supplyAsync {
+    fun deleteAccount(clientId: String, strategy: RepositoryStrategyType): CompletableFuture<Void> {
+        return CompletableFuture.runAsync({
             accountRepository.changeStrategy(strategy)
-                    .deleteAccount(account.publicKey) //?: throw NotFoundException()
-            111L;
-        }
+                    .deleteAccount(clientId)
+        })
     }
 
 }

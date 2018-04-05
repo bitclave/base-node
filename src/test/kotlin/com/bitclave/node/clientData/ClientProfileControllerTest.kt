@@ -31,8 +31,7 @@ class ClientProfileControllerTest {
     protected lateinit var requestAccount: SignedRequest<Map<String, String>>
     private var httpHeaders: HttpHeaders = HttpHeaders()
 
-    @Before
-    fun setup() {
+    @Before fun setup() {
         requestAccount = SignedRequest(emptyMap(), publicKey)
 
         httpHeaders.set("Accept", "application/json")
@@ -40,15 +39,13 @@ class ClientProfileControllerTest {
         httpHeaders.set("Strategy", RepositoryStrategyType.POSTGRES.name)
     }
 
-    @Test
-    fun getData() {
+    @Test fun getData() {
         this.mvc.perform(get("/client/$publicKey/")
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }
 
-    @Test
-    fun updateData() {
+    @Test fun updateData() {
         this.mvc.perform(patch("/client/")
                 .content(requestAccount.toJsonString())
                 .headers(httpHeaders))

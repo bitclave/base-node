@@ -35,15 +35,9 @@ class PostgresRequestDataRepositoryImpl(val repository: RequestDataCrudRepositor
         return repository.save(request) ?: throw DataNotSaved()
     }
 
-    override fun deleteAccount(publicKey: String): Long
-    {
-        for (l in repository.findByFromPk(publicKey))
-            repository.delete(l);
-
-        for (l in repository.findByToPk(publicKey))
-            repository.delete(l);
-
-        return 1L
+    override fun deleteByFromAndTo(publicKey: String) {
+        repository.delete(repository.findByFromPk(publicKey))
+        repository.delete(repository.findByToPk(publicKey))
     }
 
 

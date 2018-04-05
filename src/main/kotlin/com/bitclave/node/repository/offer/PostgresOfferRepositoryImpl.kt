@@ -22,6 +22,10 @@ class PostgresOfferRepositoryImpl(val repository: OfferCrudRepository) : OfferRe
         return 0
     }
 
+    override fun deleteOffers(owner: String): Long {
+        return repository.deleteByOwner(owner)
+    }
+
     override fun findByOwner(owner: String): List<Offer> {
         return repository.findByOwner(owner)
     }
