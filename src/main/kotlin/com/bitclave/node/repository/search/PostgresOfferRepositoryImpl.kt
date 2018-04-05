@@ -24,6 +24,10 @@ class PostgresSearchRequestRepositoryImpl(
         return 0
     }
 
+    override fun deleteSearchRequests(owner: String): Long {
+        return repository.deleteByOwner(owner)
+    }
+
     override fun findByOwner(owner: String): List<SearchRequest> {
         return repository.findByOwner(owner)
     }

@@ -33,8 +33,7 @@ class AuthControllerTest {
     protected lateinit var requestAccount: SignedRequest<Account>
     private var httpHeaders: HttpHeaders = HttpHeaders()
 
-    @Before
-    fun setup() {
+    @Before fun setup() {
         account = Account(publicKey)
         requestAccount = SignedRequest<Account>(account, publicKey)
 
@@ -43,23 +42,20 @@ class AuthControllerTest {
         httpHeaders.set("Strategy", RepositoryStrategyType.POSTGRES.name)
     }
 
-    @Test
-    fun `check registarion`() {
+    @Test fun `check registarion`() {
         this.mvc.perform(post("/registration")
                 .content(requestAccount.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isCreated)
     }
 
-    @Test
-    fun `check account is exist`() {
+    @Test fun `check account is exist`() {
         this.mvc.perform(post("/exist")
                 .content(requestAccount.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }
-    @Test
-    fun `delete account`() {
+    @Test fun `delete account`() {
         this.mvc.perform(delete("/delete")
                 .content(requestAccount.toJsonString())
                 .headers(httpHeaders))

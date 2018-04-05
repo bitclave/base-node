@@ -8,6 +8,6 @@ interface ClientDataRepository {
 
     fun updateData(publicKey: String, data: Map<String, String>)
 
-    fun deleteAccount(publicKey: String): Long
+    fun deleteData(publicKey: String)
 
 }

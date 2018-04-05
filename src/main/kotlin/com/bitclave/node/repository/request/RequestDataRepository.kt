@@ -18,6 +18,6 @@ interface RequestDataRepository {
 
     fun updateData(request: RequestData): RequestData
 
-    fun deleteAccount(publicKey: String): Long;
+    fun deleteByFromAndTo(publicKey: String)
 
 }

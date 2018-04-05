@@ -32,9 +32,8 @@ class BotControllerTest {
 
     private var httpHeaders: HttpHeaders = HttpHeaders()
 
-    @Test
-    fun `check Adams name`() {
-        var  result: MvcResult = this.mvc.perform(get("/dev/bot/adam")
+    @Test fun `check Adams name`() {
+        val result: MvcResult = this.mvc.perform(get("/dev/bot/adam")
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
                 .andReturn()

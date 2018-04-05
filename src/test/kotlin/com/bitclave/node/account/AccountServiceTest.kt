@@ -45,8 +45,7 @@ class AccountServiceTest {
     protected lateinit var account: Account
     protected lateinit var strategy: RepositoryStrategyType
 
-    @Before
-    fun setup() {
+    @Before fun setup() {
         account = Account(publicKey)
         val postgres = PostgresAccountRepositoryImpl(accountCrudRepository)
         val hybrid = HybridAccountRepositoryImpl(web3Provider, hybridProperties)
@@ -57,8 +56,7 @@ class AccountServiceTest {
         strategy = RepositoryStrategyType.POSTGRES
     }
 
-    @Test
-    fun `check signature of signed message`() {
+    @Test fun `check signature of signed message`() {
         val request = SignedRequest("Hello", publicKey)
         request.signMessage(privateKey)
 
@@ -66,8 +64,7 @@ class AccountServiceTest {
         Assertions.assertThat(signPublicKey).isEqualTo(publicKey)
     }
 
-    @Test
-    fun `get account by signature of message`() {
+    @Test fun `get account by signature of message`() {
         accountService.registrationClient(account, strategy).get()
         val request = SignedRequest("Hello", publicKey)
         request.signMessage(privateKey)
@@ -76,10 +73,17 @@ class AccountServiceTest {
         Assertions.assertThat(account.publicKey).isEqualTo(publicKey)
     }
 
-    @Test
-    fun `register new client`() {
+    @Test fun `register new client`() {
         val regAccount = accountService.registrationClient(account, strategy).get()
         Assertions.assertThat(regAccount.publicKey).isEqualTo(publicKey)
+    }
+
+    @Test fun `delete client`() {
+        val regAccount = accountService.registrationClient(account, strategy).get()
+        Assertions.assertThat(regAccount.publicKey).isEqualTo(publicKey)
+        accountService.deleteAccount(account.publicKey, strategy).get()
+
+        accountService.registrationClient(account, strategy).get()
     }
 
     @Test(expected = AlreadyRegisteredException::class)
@@ -92,8 +96,7 @@ class AccountServiceTest {
         }
     }
 
-    @Test
-    fun `check client already registered`() {
+    @Test fun `check client already registered`() {
         accountService.registrationClient(account, strategy).get()
         val existAccount = accountService.existAccount(account, strategy).get()
         Assertions.assertThat(existAccount.publicKey).isEqualTo(publicKey)

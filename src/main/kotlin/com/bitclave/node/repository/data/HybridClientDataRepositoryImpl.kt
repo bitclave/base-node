@@ -3,7 +3,7 @@ package com.bitclave.node.repository.data
 import com.bitclave.node.configuration.properties.HybridProperties
 import com.bitclave.node.extensions.ECPoint
 import com.bitclave.node.repository.Web3Provider
-import com.bitclave.node.services.errors.DataNotSaved
+import com.bitclave.node.services.errors.NotImplementedException
 import com.bitclave.node.solidity.generated.ClientDataContract
 import com.bitclave.node.solidity.generated.NameServiceContract
 import org.springframework.beans.factory.annotation.Qualifier
@@ -59,7 +59,7 @@ class HybridClientDataRepositoryImpl(
             val key = contract.clientKeys(ecPoint.affineX, it.toBigInteger()).send()
             val value = contract.info(ecPoint.affineX, key).send()
             deserializeKey(key) to value
-        }.toMap<String,String>()
+        }.toMap<String, String>()
     }
 
     override fun updateData(publicKey: String, data: Map<String, String>) {
@@ -75,9 +75,8 @@ class HybridClientDataRepositoryImpl(
         getData(publicKey)
     }
 
-    override fun deleteAccount(publicKey: String): Long
-    {
-        throw DataNotSaved();
+    override fun deleteData(publicKey: String) {
+        throw NotImplementedException()
     }
 
     private fun serializeKey(key: String): ByteArray {

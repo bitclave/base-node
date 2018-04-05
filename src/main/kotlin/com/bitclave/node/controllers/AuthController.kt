@@ -2,11 +2,8 @@ package com.bitclave.node.controllers
 
 import com.bitclave.node.repository.models.Account
 import com.bitclave.node.repository.models.SignedRequest
-import com.bitclave.node.services.AccountService
-import com.bitclave.node.services.ClientProfileService
-import com.bitclave.node.services.RequestDataService
+import com.bitclave.node.services.*
 import com.bitclave.node.services.errors.AccessDeniedException
-import com.bitclave.node.services.errors.BadArgumentException
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
@@ -19,7 +16,10 @@ import java.util.concurrent.CompletableFuture
 @RequestMapping("/")
 class AuthController(private val accountService: AccountService,
                      private val profileService: ClientProfileService,
-                     private val requestDataService: RequestDataService) : AbstractController() {
+                     private val requestDataService: RequestDataService,
+                     private val offerService: OfferService,
+                     private val searchRequestService: SearchRequestService
+) : AbstractController() {
 
     /**
      * Creates a new user in the system, based on the provided information.
@@ -114,27 +114,26 @@ class AuthController(private val accountService: AccountService,
 
 
     /**
-    * Verifies if the specified account already exists in the system.
-    * The API will verify that the request is cryptographically signed by
-    * the owner of the public key.
-    * @param request is {@link SignedRequest} where client sends {@link Account}
-    * and signature of the message.
-    *
-    * @return {@link Account}, Http status - 200.
-    *
-    * @exception   {@link AccessDeniedException} - 403
-    *              {@link NotFoundException} - 404
-    */
+     * Verifies if the specified account already exists in the system.
+     * The API will verify that the request is cryptographically signed by
+     * the owner of the public key.
+     * @param request is {@link SignedRequest} where client sends {@link Account}
+     * and signature of the message.
+     *
+     * @return Http status - 200.
+     *
+     * @exception   {@link AccessDeniedException} - 403
+     *
+     */
 /**/
     @ApiOperation("Delete a user from the system.\n" +
-            "The API will verify that the request is cryptographically signed by the owner of the public key.",
-            response = Long::class)
+            "The API will verify that the request is cryptographically signed by the owner of the public key.")
     @ApiResponses(value = [
-        ApiResponse(code = 200, message = "Success", response = Account::class),
-        ApiResponse(code = 403, message = "AccessDeniedException"),
-        ApiResponse(code = 404, message = "NotFoundException")
+        ApiResponse(code = 200, message = "Success"),
+        ApiResponse(code = 403, message = "AccessDeniedException")
     ])
-    @RequestMapping(method = [RequestMethod.DELETE], value =  ["delete"])
+    @RequestMapping(method = [RequestMethod.DELETE], value = ["delete"])
+    @ResponseStatus(HttpStatus.OK)
     fun deleteUser(
             @ApiParam("where client sends Account and signature of the message.", required = true)
             @RequestBody
@@ -143,25 +142,21 @@ class AuthController(private val accountService: AccountService,
             @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
             @RequestHeader("Strategy", required = false)
             strategy: String?):
-            CompletableFuture<Long> {
+            CompletableFuture<Void> {
 
-        return accountService.checkSigMessage(request)
-                .thenApply { pk ->
-                    if (pk != request.data?.publicKey) {
+        val strategyType = getStrategyType(strategy)
+        return accountService.accountBySigMessage(request, strategyType)
+                .thenAcceptAsync {
+                    if (it.publicKey != request.pk) {
                         throw AccessDeniedException()
                     }
-                    pk
-                }
-                .thenCompose {
-                    accountService.deleteAccount(request.data!!, getStrategyType(strategy))
-                    .thenCompose {
-                        profileService.deleteAccount(request.data.publicKey, getStrategyType(strategy))
-                        .thenCompose {
-                            requestDataService.deleteAccount(request.data.publicKey, getStrategyType(strategy))
-                        }
-                    }
+
+                    accountService.deleteAccount(it.publicKey, strategyType).get()
+                    profileService.deleteData(it.publicKey, strategyType).get()
+                    requestDataService.deleteRequestsAndResponses(it.publicKey, strategyType).get()
+                    offerService.deleteOffers(it.publicKey, strategyType).get()
+                    searchRequestService.deleteSearchRequests(it.publicKey, strategyType).get()
                 }
     }
-/**/
 
 }

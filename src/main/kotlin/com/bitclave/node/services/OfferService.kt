@@ -71,6 +71,16 @@ class OfferService(
         })
     }
 
+    fun deleteOffers(
+            owner: String,
+            strategy: RepositoryStrategyType
+    ): CompletableFuture<Void> {
+
+        return CompletableFuture.runAsync({
+            offerRepository.changeStrategy(strategy).deleteOffers(owner)
+        })
+    }
+
     fun getOffers(
             id: Long,
             owner: String,

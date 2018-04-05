@@ -128,6 +128,23 @@ class OfferServiceTest {
         assertThat(savedListResult.size).isEqualTo(0)
     }
 
+    @Test fun `should delete existed offers`() {
+        `should be create new offer`()
+        `should be create new offer`()
+        `should be create new offer`()
+
+        var savedListResult = offerService.getOffers(0, account.publicKey, strategy).get()
+        assertThat(savedListResult.size).isEqualTo(3)
+        assertThat(savedListResult[0]).isEqualToIgnoringGivenFields(offer, "id")
+        assertThat(savedListResult[1]).isEqualToIgnoringGivenFields(offer, "id")
+        assertThat(savedListResult[2]).isEqualToIgnoringGivenFields(offer, "id")
+
+        offerService.deleteOffers(account.publicKey, strategy).get()
+
+        savedListResult = offerService.getOffers(0, account.publicKey, strategy).get()
+        assertThat(savedListResult.size).isEqualTo(0)
+    }
+
     @Test fun `should return offers by id and owner`() {
         `should be create new offer`()
         `should be create new offer`()

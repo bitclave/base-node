@@ -13,6 +13,8 @@ interface SearchRequestCrudRepository : CrudRepository<SearchRequest, Long> {
 
     fun deleteByIdAndOwner(id: Long, owner: String): Long
 
+    fun deleteByOwner(owner: String): Long
+
     fun findByIdAndOwner(id: Long, owner: String): SearchRequest?
 
 }
