@@ -1,24 +1,26 @@
-package com.bitclave.node.controllers
+package com.bitclave.node.controllers.v1
 
+import com.bitclave.node.controllers.AbstractController
 import com.bitclave.node.repository.models.OfferShareData
 import com.bitclave.node.repository.models.SignedRequest
-import com.bitclave.node.services.AccountService
-import com.bitclave.node.services.OfferShareService
+import com.bitclave.node.services.v1.AccountService
+import com.bitclave.node.services.v1.OfferShareService
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 import java.util.concurrent.CompletableFuture
 
 @RestController
-@RequestMapping("/data/")
+@RequestMapping("/v1/data/")
 class OfferShareDataController(
-        private val accountService: AccountService,
-        private val offerShareData: OfferShareService)
-    : AbstractController() {
+        @Qualifier("v1") private val accountService: AccountService,
+        @Qualifier("v1") private val offerShareData: OfferShareService
+) : AbstractController() {
 
     /**
      * Returns a list of shared data for offer.

@@ -7,7 +7,7 @@ import com.bitclave.node.repository.data.ClientDataCrudRepository
 import com.bitclave.node.repository.data.ClientDataRepositoryStrategy
 import com.bitclave.node.repository.data.HybridClientDataRepositoryImpl
 import com.bitclave.node.repository.data.PostgresClientDataRepositoryImpl
-import com.bitclave.node.services.ClientProfileService
+import com.bitclave.node.services.v1.ClientProfileService
 import org.assertj.core.api.Assertions
 import org.junit.Before
 import org.junit.Test

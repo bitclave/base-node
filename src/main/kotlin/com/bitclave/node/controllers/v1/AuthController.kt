@@ -1,24 +1,29 @@
-package com.bitclave.node.controllers
+package com.bitclave.node.controllers.v1
 
+import com.bitclave.node.controllers.AbstractController
 import com.bitclave.node.repository.models.Account
 import com.bitclave.node.repository.models.SignedRequest
-import com.bitclave.node.services.*
 import com.bitclave.node.services.errors.AccessDeniedException
+import com.bitclave.node.services.v1.AccountService
+import com.bitclave.node.services.v1.ClientProfileService
+import com.bitclave.node.services.v1.RequestDataService
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import java.util.concurrent.CompletableFuture
 
 @RestController()
-@RequestMapping("/")
-class AuthController(private val accountService: AccountService,
-                     private val profileService: ClientProfileService,
-                     private val requestDataService: RequestDataService,
-                     private val offerService: OfferService,
-                     private val searchRequestService: SearchRequestService
+@RequestMapping("/v1/")
+class AuthController(
+        @Qualifier("v1") private val accountService: AccountService,
+        @Qualifier("v1") private val profileService: ClientProfileService,
+        @Qualifier("v1") private val requestDataService: RequestDataService,
+        @Qualifier("v1") private val offerService: OfferService,
+        @Qualifier("v1") private val searchRequestService: SearchRequestService
 ) : AbstractController() {
 
     /**

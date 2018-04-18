@@ -28,10 +28,13 @@ class ClientProfileControllerTest {
     @Autowired
     private lateinit var mvc: MockMvc
 
+    protected lateinit var version: String
     protected lateinit var requestAccount: SignedRequest<Map<String, String>>
     private var httpHeaders: HttpHeaders = HttpHeaders()
 
     @Before fun setup() {
+        version = "v1"
+
         requestAccount = SignedRequest(emptyMap(), publicKey)
 
         httpHeaders.set("Accept", "application/json")
@@ -40,13 +43,13 @@ class ClientProfileControllerTest {
     }
 
     @Test fun getData() {
-        this.mvc.perform(get("/client/$publicKey/")
+        this.mvc.perform(get("/$version/client/$publicKey/")
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }
 
     @Test fun updateData() {
-        this.mvc.perform(patch("/client/")
+        this.mvc.perform(patch("/$version/client/")
                 .content(requestAccount.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isOk)

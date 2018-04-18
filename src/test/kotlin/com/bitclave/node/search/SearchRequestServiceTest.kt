@@ -12,8 +12,8 @@ import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.search.PostgresSearchRequestRepositoryImpl
 import com.bitclave.node.repository.search.SearchRequestCrudRepository
 import com.bitclave.node.repository.search.SearchRequestRepositoryStrategy
-import com.bitclave.node.services.AccountService
-import com.bitclave.node.services.SearchRequestService
+import com.bitclave.node.services.v1.AccountService
+import com.bitclave.node.services.v1.SearchRequestService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test

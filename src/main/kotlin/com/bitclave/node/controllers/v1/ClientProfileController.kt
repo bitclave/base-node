@@ -1,22 +1,25 @@
-package com.bitclave.node.controllers
+package com.bitclave.node.controllers.v1
 
+import com.bitclave.node.controllers.AbstractController
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.Account
 import com.bitclave.node.repository.models.SignedRequest
-import com.bitclave.node.services.AccountService
-import com.bitclave.node.services.ClientProfileService
+import com.bitclave.node.services.v1.AccountService
+import com.bitclave.node.services.v1.ClientProfileService
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.web.bind.annotation.*
 import java.util.concurrent.CompletableFuture
 
 @RestController
-@RequestMapping("/client/")
-class ClientProfileController(private val accountService: AccountService,
-                              private val profileService: ClientProfileService) :
-        AbstractController() {
+@RequestMapping("/v1/client/")
+class ClientProfileController(
+        @Qualifier("v1") private val accountService: AccountService,
+        @Qualifier("v1") private val profileService: ClientProfileService
+) : AbstractController() {
 
     /**
      * Returns encrypted data of the user that is identified by the given ID (Public Key).

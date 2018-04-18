@@ -29,11 +29,15 @@ class RequestDataControllerTest {
     @Autowired
     private lateinit var mvc: MockMvc
 
+    protected lateinit var version: String
+
     protected lateinit var requestDataRequest: SignedRequest<RequestData>
     protected lateinit var requestDataResponse: SignedRequest<String>
     private var httpHeaders: HttpHeaders = HttpHeaders()
 
     @Before fun setup() {
+        version = "v1"
+
         requestDataRequest = SignedRequest(RequestData(), from)
         requestDataResponse = SignedRequest("", from)
 
@@ -43,35 +47,35 @@ class RequestDataControllerTest {
     }
 
     @Test fun `get request by state`() {
-        this.mvc.perform(get("/data/request/from/$from/state/${RequestData.RequestDataState.AWAIT}/")
+        this.mvc.perform(get("/$version/data/request/from/$from/state/${RequestData.RequestDataState.AWAIT}/")
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
 
-        this.mvc.perform(get("/data/request/from/$from/to/$to/state/${RequestData.RequestDataState.AWAIT}/")
+        this.mvc.perform(get("/$version/data/request/from/$from/to/$to/state/${RequestData.RequestDataState.AWAIT}/")
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
 
-        this.mvc.perform(get("/data/request/to/$to/state/${RequestData.RequestDataState.AWAIT}/")
+        this.mvc.perform(get("/$version/data/request/to/$to/state/${RequestData.RequestDataState.AWAIT}/")
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }
 
     @Test fun `create request for client`() {
-        this.mvc.perform(post("/data/request/")
+        this.mvc.perform(post("/$version/data/request/")
                 .content(requestDataRequest.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isCreated)
     }
 
     @Test fun `create response for client`() {
-        this.mvc.perform(patch("/data/request/1/")
+        this.mvc.perform(patch("/$version/data/request/1/")
                 .content(requestDataResponse.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }
 
     @Test fun `grant access for client`() {
-        this.mvc.perform(post("/data/grant/request/")
+        this.mvc.perform(post("/$version/data/grant/request/")
                 .content(requestDataRequest.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isCreated)

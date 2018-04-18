@@ -10,7 +10,7 @@ import com.bitclave.node.repository.account.HybridAccountRepositoryImpl
 import com.bitclave.node.repository.account.PostgresAccountRepositoryImpl
 import com.bitclave.node.repository.models.Account
 import com.bitclave.node.repository.models.SignedRequest
-import com.bitclave.node.services.AccountService
+import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.errors.AlreadyRegisteredException
 import com.bitclave.node.services.errors.NotFoundException
 import org.assertj.core.api.Assertions

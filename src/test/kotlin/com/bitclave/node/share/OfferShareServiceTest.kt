@@ -16,8 +16,8 @@ import com.bitclave.node.repository.offer.PostgresOfferRepositoryImpl
 import com.bitclave.node.repository.share.OfferShareCrudRepository
 import com.bitclave.node.repository.share.OfferShareRepositoryStrategy
 import com.bitclave.node.repository.share.PostgresOfferShareRepositoryImpl
-import com.bitclave.node.services.AccountService
-import com.bitclave.node.services.OfferShareService
+import com.bitclave.node.services.v1.AccountService
+import com.bitclave.node.services.v1.OfferShareService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test

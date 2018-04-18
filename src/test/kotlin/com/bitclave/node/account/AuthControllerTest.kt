@@ -29,11 +29,13 @@ class AuthControllerTest {
     @Autowired
     private lateinit var mvc: MockMvc
 
+    protected lateinit var version: String
     protected lateinit var account: Account
     protected lateinit var requestAccount: SignedRequest<Account>
     private var httpHeaders: HttpHeaders = HttpHeaders()
 
     @Before fun setup() {
+        version = "v1"
         account = Account(publicKey)
         requestAccount = SignedRequest<Account>(account, publicKey)
 
@@ -43,20 +45,20 @@ class AuthControllerTest {
     }
 
     @Test fun `check registarion`() {
-        this.mvc.perform(post("/registration")
+        this.mvc.perform(post("/$version/registration")
                 .content(requestAccount.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isCreated)
     }
 
     @Test fun `check account is exist`() {
-        this.mvc.perform(post("/exist")
+        this.mvc.perform(post("/$version/exist")
                 .content(requestAccount.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }
     @Test fun `delete account`() {
-        this.mvc.perform(delete("/delete")
+        this.mvc.perform(delete("/$version/delete")
                 .content(requestAccount.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isOk)

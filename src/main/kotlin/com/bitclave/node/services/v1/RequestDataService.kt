@@ -1,14 +1,16 @@
-package com.bitclave.node.services
+package com.bitclave.node.services.v1
 
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.RequestData
 import com.bitclave.node.repository.request.RequestDataRepository
 import com.bitclave.node.services.errors.BadArgumentException
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
 
 @Service
+@Qualifier("v1")
 class RequestDataService(private val requestDataRepository: RepositoryStrategy<RequestDataRepository>) {
 
     fun getRequestByStatus(

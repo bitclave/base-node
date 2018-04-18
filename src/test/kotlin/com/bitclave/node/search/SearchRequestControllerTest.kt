@@ -26,6 +26,8 @@ class SearchRequestControllerTest {
     @Autowired
     private lateinit var mvc: MockMvc
 
+    protected lateinit var version: String
+
     private val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
     protected lateinit var requestSearch: SignedRequest<SearchRequest>
     protected lateinit var requestSearchId: SignedRequest<Long>
@@ -38,6 +40,8 @@ class SearchRequestControllerTest {
     )
 
     @Before fun setup() {
+        version = "v1"
+
         requestSearch = SignedRequest(searchRequest, publicKey)
         requestSearchId = SignedRequest(1, publicKey)
 
@@ -47,28 +51,28 @@ class SearchRequestControllerTest {
     }
 
     @Test fun `create search request`() {
-        this.mvc.perform(post("/client/$publicKey/search/")
+        this.mvc.perform(post("/$version/client/$publicKey/search/")
                 .content(requestSearch.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isCreated)
     }
 
     @Test fun `delete search request`() {
-        this.mvc.perform(delete("/client/$publicKey/search/1/")
+        this.mvc.perform(delete("/$version/client/$publicKey/search/1/")
                 .content(requestSearchId.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }
 
     @Test fun `get search request by owner`() {
-        this.mvc.perform(get("/client/$publicKey/search/")
+        this.mvc.perform(get("/$version/client/$publicKey/search/")
                 .content(requestSearch.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }
 
     @Test fun `get search request by owner and id`() {
-        this.mvc.perform(get("/client/$publicKey/search/1/")
+        this.mvc.perform(get("/$version/client/$publicKey/search/1/")
                 .content(requestSearch.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isOk)

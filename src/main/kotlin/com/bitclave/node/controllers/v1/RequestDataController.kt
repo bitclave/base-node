@@ -1,23 +1,26 @@
-package com.bitclave.node.controllers
+package com.bitclave.node.controllers.v1
 
+import com.bitclave.node.controllers.AbstractController
 import com.bitclave.node.repository.models.Account
 import com.bitclave.node.repository.models.RequestData
 import com.bitclave.node.repository.models.SignedRequest
-import com.bitclave.node.services.AccountService
-import com.bitclave.node.services.RequestDataService
+import com.bitclave.node.services.v1.AccountService
+import com.bitclave.node.services.v1.RequestDataService
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import java.util.concurrent.CompletableFuture
 
 @RestController
-@RequestMapping("/data/")
-class RequestDataController(private val accountService: AccountService,
-                            private val requestDataService: RequestDataService) :
-        AbstractController() {
+@RequestMapping("/v1/data/")
+class RequestDataController(
+        @Qualifier("v1") private val accountService: AccountService,
+        @Qualifier("v1") private val requestDataService: RequestDataService
+) : AbstractController() {
 
     /**
      * Returns a list of outstanding data access requests,

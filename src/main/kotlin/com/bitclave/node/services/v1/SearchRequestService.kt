@@ -1,14 +1,16 @@
-package com.bitclave.node.services
+package com.bitclave.node.services.v1
 
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.search.SearchRequestRepository
 import com.bitclave.node.services.errors.NotFoundException
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
 
 @Service
+@Qualifier("v1")
 class SearchRequestService(
         private val repository: RepositoryStrategy<SearchRequestRepository>
 ) {

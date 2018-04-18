@@ -27,12 +27,16 @@ class OfferShareControllerTest {
     @Autowired
     private lateinit var mvc: MockMvc
 
+    protected lateinit var version: String
+
     private val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
     protected lateinit var shareDataRequest: SignedRequest<OfferShareData>
     protected lateinit var worthRequest: SignedRequest<BigDecimal>
     private var httpHeaders: HttpHeaders = HttpHeaders()
 
     @Before fun setup() {
+        version = "v1"
+
         shareDataRequest = SignedRequest(OfferShareData(
                 1,
                 publicKey,
@@ -48,27 +52,27 @@ class OfferShareControllerTest {
     }
 
     @Test fun `create share data`() {
-        this.mvc.perform(post("/data/grant/offer")
+        this.mvc.perform(post("/$version/data/grant/offer")
                 .content(shareDataRequest.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isCreated)
     }
 
     @Test fun `accept shared data`() {
-        this.mvc.perform(patch("/data/offer/1/client/$publicKey")
+        this.mvc.perform(patch("/$version/data/offer/1/client/$publicKey")
                 .content(worthRequest.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isAccepted)
     }
 
     @Test fun `get share data by owner`() {
-        this.mvc.perform(get("/data/offer/owner/$publicKey/")
+        this.mvc.perform(get("/$version/data/offer/owner/$publicKey/")
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }
 
     @Test fun `get share data by owner and accepted`() {
-        this.mvc.perform(get("/data/offer/owner/$publicKey/accepted/true")
+        this.mvc.perform(get("/$version/data/offer/owner/$publicKey/accepted/true")
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }

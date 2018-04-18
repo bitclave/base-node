@@ -1,4 +1,4 @@
-package com.bitclave.node.services
+package com.bitclave.node.services.v1
 
 import com.bitclave.node.extensions.validateSig
 import com.bitclave.node.repository.RepositoryStrategy
@@ -10,10 +10,12 @@ import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.errors.AlreadyRegisteredException
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
 
 @Service
+@Qualifier("v1")
 class AccountService(private val accountRepository: RepositoryStrategy<AccountRepository>) {
 
     fun checkSigMessage(request: SignedRequest<*>): CompletableFuture<String> {

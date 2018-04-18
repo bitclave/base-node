@@ -26,6 +26,8 @@ class OfferControllerTest {
     @Autowired
     private lateinit var mvc: MockMvc
 
+    protected lateinit var version: String
+
     private val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
     protected lateinit var requestOffer: SignedRequest<Offer>
     protected lateinit var requestOfferId: SignedRequest<Long>
@@ -42,6 +44,7 @@ class OfferControllerTest {
             mapOf("age" to Offer.CompareAction.MORE_OR_EQUAL, "salary" to Offer.CompareAction.MORE_OR_EQUAL))
 
     @Before fun setup() {
+        version = "v1"
         requestOffer = SignedRequest<Offer>(offer, publicKey)
         requestOfferId = SignedRequest<Long>(1, publicKey)
 
@@ -51,35 +54,35 @@ class OfferControllerTest {
     }
 
     @Test fun `create offer`() {
-        this.mvc.perform(put("/client/$publicKey/offer/")
+        this.mvc.perform(put("/$version/client/$publicKey/offer/")
                 .content(requestOffer.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }
 
     @Test fun `update offer`() {
-        this.mvc.perform(put("/client/$publicKey/offer/1/")
+        this.mvc.perform(put("/$version/client/$publicKey/offer/1/")
                 .content(requestOffer.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }
 
     @Test fun `delete offer`() {
-        this.mvc.perform(delete("/client/$publicKey/offer/1/")
+        this.mvc.perform(delete("/$version/client/$publicKey/offer/1/")
                 .content(requestOfferId.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }
 
     @Test fun `get offer by owner`() {
-        this.mvc.perform(get("/client/$publicKey/offer/")
+        this.mvc.perform(get("/$version/client/$publicKey/offer/")
                 .content(requestOffer.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }
 
     @Test fun `get offer by owner and id`() {
-        this.mvc.perform(get("/client/$publicKey/offer/1/")
+        this.mvc.perform(get("/$version/client/$publicKey/offer/1/")
                 .content(requestOffer.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isOk)

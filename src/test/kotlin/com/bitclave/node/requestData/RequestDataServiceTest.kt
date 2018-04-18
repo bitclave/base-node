@@ -8,7 +8,7 @@ import com.bitclave.node.repository.request.HybridRequestDataRepositoryImpl
 import com.bitclave.node.repository.request.PostgresRequestDataRepositoryImpl
 import com.bitclave.node.repository.request.RequestDataCrudRepository
 import com.bitclave.node.repository.request.RequestDataRepositoryStrategy
-import com.bitclave.node.services.RequestDataService
+import com.bitclave.node.services.v1.RequestDataService
 import org.assertj.core.api.Assertions
 import org.junit.Before
 import org.junit.Test
