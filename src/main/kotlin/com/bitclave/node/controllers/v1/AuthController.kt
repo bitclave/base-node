@@ -6,7 +6,9 @@ import com.bitclave.node.repository.models.SignedRequest
 import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.ClientProfileService
+import com.bitclave.node.services.v1.OfferService
 import com.bitclave.node.services.v1.RequestDataService
+import com.bitclave.node.services.v1.SearchRequestService
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
