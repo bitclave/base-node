@@ -17,5 +17,5 @@ hybrid:
   contracts:
     nameService:
       address: ${DNS_CONTRACT_ADDRESS}
-      gasPrice: '8000000'
-      gasLimit: '8000000'
+      gasPrice: ${ETHEREUM_GAS_PRICE}
+      gasLimit: ${ETHEREUM_GAS_LIMIT}
