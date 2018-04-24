@@ -67,20 +67,32 @@ contract AccountContract is Ownable, IStorageContractClient {
 
     uint256 constant public storageIdentifier = uint256(keccak256("AccountContract"));
     uint256 constant public publicKeyField = uint256(keccak256("publicKeyField"));
+    uint256 constant public nonceField = uint256(keccak256("nonceField"));
 
     function AccountContract(StorageContract _storageContract) public {
         storageContract = (_storageContract != address(0)) ? _storageContract : new StorageContract();
     }
 
-    function isRegisteredPublicKey(string publicKey) public constant returns(bool) {
-        return storageContract.get(uint256(keccak256(publicKeyField, publicKey))) != 0;
+    function publicKeyYForX(uint256 publicKeyX) public constant returns(uint256) {
+        return storageContract.get(uint256(keccak256(publicKeyField, publicKeyX)));
     }
 
-    function registerPublicKey(string publicKey) public onlyOwner {
-        require(!isRegisteredPublicKey(publicKey));
-        storageContract.set(uint256(keccak256(publicKeyField, publicKey)), 1);
+    function isRegisteredPublicKey(uint256 publicKeyX) public constant returns(bool) {
+        return publicKeyYForX(publicKeyX) != 0;
     }
 
+    function registerPublicKey(uint256 publicKeyX, uint256 publicKeyY) public onlyOwner {
+        require(!isRegisteredPublicKey(publicKeyX));
+        storageContract.set(uint256(keccak256(publicKeyField, publicKeyX)), publicKeyY);
+    }
+
+    function nonceForPublicKeyX(uint256 publicKeyX) public constant returns(uint256) {
+        return storageContract.get(uint256(keccak256(nonceField, publicKeyX)));
+    }
+
+    function setNonceForPublicKeyX(uint256 publicKeyX, uint256 nonce) public onlyOwner {
+        storageContract.set(uint256(keccak256(nonceField, publicKeyX)), nonce);
+    }
 }
 
 contract ClientDataContract is Ownable {

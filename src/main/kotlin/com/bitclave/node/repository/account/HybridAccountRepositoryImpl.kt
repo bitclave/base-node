@@ -1,6 +1,7 @@
 package com.bitclave.node.repository.account
 
 import com.bitclave.node.configuration.properties.HybridProperties
+import com.bitclave.node.extensions.ECPoint
 import com.bitclave.node.repository.Web3Provider
 import com.bitclave.node.repository.models.Account
 import com.bitclave.node.services.errors.NotImplementedException
@@ -44,7 +45,9 @@ class HybridAccountRepositoryImpl(
     }
 
     override fun saveAccount(account: Account) {
-        contract.registerPublicKey(account.publicKey).send()
+        val ecPoint = ECPoint(account.publicKey)
+        contract.registerPublicKey(ecPoint.affineX, ecPoint.affineY).send()
+        contract.setNonceForPublicKeyX(ecPoint.affineX, account.nonce.toBigInteger()).send()
     }
 
     override fun deleteAccount(publicKey: String): Long {
@@ -52,7 +55,8 @@ class HybridAccountRepositoryImpl(
     }
 
     override fun findByPublicKey(publicKey: String): Account? {
-        if (contract.isRegisteredPublicKey(publicKey).send()) {
+        val ecPoint = ECPoint(publicKey)
+        if (contract.isRegisteredPublicKey(ecPoint.affineX).send()) {
             return Account(publicKey, 1L)
         }
         return null
