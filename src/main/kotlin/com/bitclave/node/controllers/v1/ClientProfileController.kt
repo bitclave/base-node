@@ -84,12 +84,16 @@ class ClientProfileController(
     ): CompletableFuture<Map<String, String>> {
 
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
+                .thenCompose { account: Account -> accountService.validateNonce(request, account) }
                 .thenCompose { account: Account ->
-                    profileService.updateData(
+                    val result = profileService.updateData(
                             account.publicKey,
                             request.data!!,
                             getStrategyType(strategy)
                     )
+                    accountService.incrementNonce(account, getStrategyType(strategy))
+
+                    result
                 }
     }
 

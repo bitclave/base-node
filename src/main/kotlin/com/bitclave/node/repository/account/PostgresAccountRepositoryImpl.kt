@@ -9,8 +9,8 @@ import org.springframework.stereotype.Component
 @Qualifier("postgres")
 class PostgresAccountRepositoryImpl(val repository: AccountCrudRepository) : AccountRepository {
 
-    override fun saveAccount(publicKey: String) {
-        repository.save(Account(publicKey)) ?: throw DataNotSaved()
+    override fun saveAccount(account: Account) {
+        repository.save(account) ?: throw DataNotSaved()
     }
 
     override fun deleteAccount(publicKey: String): Long {

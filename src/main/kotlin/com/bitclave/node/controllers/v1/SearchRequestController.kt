@@ -1,6 +1,7 @@
 package com.bitclave.node.controllers.v1
 
 import com.bitclave.node.controllers.AbstractController
+import com.bitclave.node.repository.models.Account
 import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.models.SignedRequest
 import com.bitclave.node.services.errors.BadArgumentException
@@ -60,12 +61,17 @@ class SearchRequestController(
             strategy: String?): CompletableFuture<SearchRequest> {
 
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
+                .thenCompose { account: Account -> accountService.validateNonce(request, account) }
                 .thenCompose {
-                    searchRequestService.createSearchRequest(
+                    val result = searchRequestService.createSearchRequest(
                             owner,
                             request.data!!,
                             getStrategyType(strategy)
                     )
+
+                    accountService.incrementNonce(it, getStrategyType(strategy))
+
+                    result
                 }
     }
 
@@ -110,15 +116,21 @@ class SearchRequestController(
             strategy: String?): CompletableFuture<Long> {
 
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
+                .thenCompose { account: Account -> accountService.validateNonce(request, account) }
                 .thenCompose {
                     if (request.pk != owner || id != request.data) {
                         throw BadArgumentException()
                     }
-                    searchRequestService.deleteSearchRequest(
+
+                    val result = searchRequestService.deleteSearchRequest(
                             id,
                             owner,
                             getStrategyType(strategy)
                     )
+
+                    accountService.incrementNonce(it, getStrategyType(strategy))
+
+                    result
                 }
     }
 

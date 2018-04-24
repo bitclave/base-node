@@ -1,6 +1,7 @@
 package com.bitclave.node.controllers.v1
 
 import com.bitclave.node.controllers.AbstractController
+import com.bitclave.node.repository.models.Account
 import com.bitclave.node.repository.models.OfferShareData
 import com.bitclave.node.repository.models.SignedRequest
 import com.bitclave.node.services.v1.AccountService
@@ -89,8 +90,11 @@ class OfferShareDataController(
     ): CompletableFuture<Void> {
 
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
+                .thenCompose { account: Account -> accountService.validateNonce(request, account) }
                 .thenAcceptAsync({
                     offerShareData.grantAccess(it.publicKey, request.data!!, getStrategyType(strategy))
+
+                    accountService.incrementNonce(it, getStrategyType(strategy))
                 })
     }
 
@@ -134,13 +138,17 @@ class OfferShareDataController(
     ): CompletableFuture<Void> {
 
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
+                .thenCompose { account: Account -> accountService.validateNonce(request, account) }
                 .thenAcceptAsync({
                     offerShareData.acceptShareData(
                             it.publicKey,
                             offerId,
                             clientId,
                             request.data!!,
-                            getStrategyType(strategy))
+                            getStrategyType(strategy)
+                    )
+
+                    accountService.incrementNonce(it, getStrategyType(strategy))
                 })
     }
 

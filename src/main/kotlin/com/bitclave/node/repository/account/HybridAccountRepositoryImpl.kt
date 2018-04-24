@@ -8,6 +8,11 @@ import com.bitclave.node.solidity.generated.AccountContract
 import com.bitclave.node.solidity.generated.NameServiceContract
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
+import org.web3j.protocol.core.DefaultBlockParameterName
+import org.apache.tomcat.jni.Buffer.address
+import org.web3j.protocol.core.methods.response.EthGetTransactionCount
+
+
 
 @Component
 @Qualifier("hybrid")
@@ -38,8 +43,8 @@ class HybridAccountRepositoryImpl(
         )
     }
 
-    override fun saveAccount(publicKey: String) {
-        contract.registerPublicKey(publicKey).send()
+    override fun saveAccount(account: Account) {
+        contract.registerPublicKey(account.publicKey).send()
     }
 
     override fun deleteAccount(publicKey: String): Long {
@@ -48,7 +53,7 @@ class HybridAccountRepositoryImpl(
 
     override fun findByPublicKey(publicKey: String): Account? {
         if (contract.isRegisteredPublicKey(publicKey).send()) {
-            return Account(publicKey)
+            return Account(publicKey, 1L)
         }
         return null
     }

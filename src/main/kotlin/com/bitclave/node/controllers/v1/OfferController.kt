@@ -1,6 +1,7 @@
 package com.bitclave.node.controllers.v1
 
 import com.bitclave.node.controllers.AbstractController
+import com.bitclave.node.repository.models.Account
 import com.bitclave.node.repository.models.Offer
 import com.bitclave.node.repository.models.SignedRequest
 import com.bitclave.node.services.errors.BadArgumentException
@@ -65,16 +66,21 @@ class OfferController(
             strategy: String?): CompletableFuture<ResponseEntity<Offer>> {
 
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
+                .thenCompose { account: Account -> accountService.validateNonce(request, account) }
                 .thenCompose {
                     if (request.pk != owner) {
                         throw BadArgumentException()
                     }
-                    offerService.putOffer(
+                    val result = offerService.putOffer(
                             id ?: 0,
                             owner,
                             request.data!!,
                             getStrategyType(strategy)
                     )
+
+                    accountService.incrementNonce(it, getStrategyType(strategy))
+
+                    result
                 }.thenCompose {
                     val status = if (it.id != id) HttpStatus.CREATED else HttpStatus.OK
                     CompletableFuture.completedFuture(ResponseEntity<Offer>(it, status))
@@ -122,15 +128,19 @@ class OfferController(
             strategy: String?): CompletableFuture<Long> {
 
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
+                .thenCompose { account: Account -> accountService.validateNonce(request, account) }
                 .thenCompose {
                     if (request.pk != owner || id != request.data) {
                         throw BadArgumentException()
                     }
-                    offerService.deleteOffer(
+                    val result = offerService.deleteOffer(
                             id,
                             owner,
                             getStrategyType(strategy)
                     )
+                    accountService.incrementNonce(it, getStrategyType(strategy))
+
+                    result
                 }
     }
 

@@ -105,12 +105,17 @@ class RequestDataController(
     ): CompletableFuture<Long> {
 
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
+                .thenCompose { account: Account -> accountService.validateNonce(request, account) }
                 .thenCompose { account: Account ->
-                    requestDataService.request(
+                    val result = requestDataService.request(
                             account.publicKey,
                             request.data!!,
                             getStrategyType(strategy)
                     )
+
+                    accountService.incrementNonce(account, getStrategyType(strategy))
+
+                    result
                 }
     }
 
@@ -151,13 +156,18 @@ class RequestDataController(
     ): CompletableFuture<RequestData.RequestDataState> {
 
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
+                .thenCompose { account: Account -> accountService.validateNonce(request, account) }
                 .thenCompose { account: Account ->
-                    requestDataService.response(
+                    val result = requestDataService.response(
                             requestId,
                             account.publicKey,
                             request.data,
                             getStrategyType(strategy)
                     )
+
+                    accountService.incrementNonce(account, getStrategyType(strategy))
+
+                    result
                 }
     }
 
@@ -193,12 +203,17 @@ class RequestDataController(
     ): CompletableFuture<Long> {
 
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
+                .thenCompose { account: Account -> accountService.validateNonce(request, account) }
                 .thenCompose { account: Account ->
-                    requestDataService.grantAccess(
+                    val result = requestDataService.grantAccess(
                             account.publicKey,
                             request.data!!,
                             getStrategyType(strategy)
                     )
+
+                    accountService.incrementNonce(account, getStrategyType(strategy))
+
+                    result
                 }
     }
 

@@ -7,7 +7,8 @@ import javax.persistence.Id
 
 @Entity
 data class Account(
-        @Column(length = 256, unique = true) @Id val publicKey: String = ""
+        @Column(length = 256, unique = true) @Id val publicKey: String = "",
+        @Column(nullable = false) var nonce: Long = 0
 ) {
     @JsonIgnore
     fun isValid(): Boolean = publicKey.length == 66

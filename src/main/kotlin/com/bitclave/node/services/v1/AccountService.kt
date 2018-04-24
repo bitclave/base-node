@@ -48,6 +48,33 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
                 }
     }
 
+    fun validateNonce(request: SignedRequest<*>, account: Account): CompletableFuture<Account> {
+        return CompletableFuture.supplyAsync({
+            if (request.nonce <= account.nonce) {
+                throw BadArgumentException()
+            }
+            account
+        })
+    }
+
+    fun incrementNonce(account: Account,
+                       strategy: RepositoryStrategyType
+    ): CompletableFuture<Void> {
+        return CompletableFuture.runAsync({
+            account.nonce++
+            accountRepository.changeStrategy(strategy).saveAccount(account)
+        })
+    }
+
+    fun getNonce(publicKey: String, strategy: RepositoryStrategyType): CompletableFuture<Long> {
+        return CompletableFuture.supplyAsync({
+            val account = accountRepository.changeStrategy(strategy).findByPublicKey(publicKey)
+                    ?: throw NotFoundException()
+
+            account.nonce
+        })
+    }
+
     fun registrationClient(account: Account, strategy: RepositoryStrategyType): CompletableFuture<Account> {
         return CompletableFuture.supplyAsync {
             if (!account.isValid()) {
@@ -59,10 +86,11 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
                 throw AlreadyRegisteredException()
             }
 
+            val createdAccount = Account(account.publicKey, 1)
             accountRepository.changeStrategy(strategy)
-                    .saveAccount(account.publicKey)
+                    .saveAccount(createdAccount)
 
-            account
+            createdAccount
         }
     }
 
