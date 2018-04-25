@@ -43,7 +43,9 @@ class HybridAccountRepositoryImpl(
 
     override fun saveAccount(account: Account) {
         val ecPoint = ECPoint(account.publicKey)
-        contract.registerPublicKey(ecPoint.affineX, ecPoint.affineY).send()
+        if (!contract.isRegisteredPublicKey(ecPoint.affineX).send()) {
+            contract.registerPublicKey(ecPoint.affineX, ecPoint.affineY).send()
+        }
         contract.setNonceForPublicKeyX(ecPoint.affineX, account.nonce.toBigInteger()).send()
     }
 
@@ -55,7 +57,6 @@ class HybridAccountRepositoryImpl(
         val ecPoint = ECPoint(publicKey)
         if (contract.isRegisteredPublicKey(ecPoint.affineX).send()) {
             val nonce = contract.nonceForPublicKeyX(ecPoint.affineX).send() ?: BigInteger.ZERO
-
             return Account(publicKey, nonce.toLong())
         }
         return null
