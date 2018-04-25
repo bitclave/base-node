@@ -9,10 +9,7 @@ import com.bitclave.node.solidity.generated.AccountContract
 import com.bitclave.node.solidity.generated.NameServiceContract
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
-import org.web3j.protocol.core.DefaultBlockParameterName
-import org.apache.tomcat.jni.Buffer.address
-import org.web3j.protocol.core.methods.response.EthGetTransactionCount
-
+import java.math.BigInteger
 
 
 @Component
@@ -57,7 +54,9 @@ class HybridAccountRepositoryImpl(
     override fun findByPublicKey(publicKey: String): Account? {
         val ecPoint = ECPoint(publicKey)
         if (contract.isRegisteredPublicKey(ecPoint.affineX).send()) {
-            return Account(publicKey, 1L)
+            val nonce = contract.nonceForPublicKeyX(ecPoint.affineX).send() ?: BigInteger.ZERO
+
+            return Account(publicKey, nonce.toLong())
         }
         return null
     }

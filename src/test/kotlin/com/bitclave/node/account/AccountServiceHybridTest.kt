@@ -29,10 +29,6 @@ class AccountServiceHybridTest : AccountServiceTest() {
         }
     }
 
-    @Test override fun `check invalid nonce`() {
-        System.out.println("ignore in Ethereum implementation")
-    }
-
     @After
     fun revertHybridState() {
         contractDeployer.revertNode()

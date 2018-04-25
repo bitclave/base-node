@@ -86,7 +86,7 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
                 throw AlreadyRegisteredException()
             }
 
-            val createdAccount = Account(account.publicKey, 1)
+            val createdAccount = Account(account.publicKey, 1L)
             accountRepository.changeStrategy(strategy)
                     .saveAccount(createdAccount)
 
