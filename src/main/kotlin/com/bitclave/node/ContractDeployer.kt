@@ -49,16 +49,14 @@ class ContractDeployer(
                 web3Provider.web3,
                 web3Provider.credentials,
                 contractAccount.gasPrice,
-                contractAccount.gasLimit,
-                storageContract.contractAddress
+                contractAccount.gasLimit
         ).send()
 
         val requestDataContract = RequestDataContract.deploy(
                 web3Provider.web3,
                 web3Provider.credentials,
                 contractAccount.gasPrice,
-                contractAccount.gasLimit,
-                storageContract.contractAddress
+                contractAccount.gasLimit
         ).send()
 
         nameServiceContract.setAddressOf(
