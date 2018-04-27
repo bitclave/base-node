@@ -66,14 +66,12 @@ class SearchRequestControllerTest {
 
     @Test fun `get search request by owner`() {
         this.mvc.perform(get("/$version/client/$publicKey/search/")
-                .content(requestSearch.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }
 
     @Test fun `get search request by owner and id`() {
         this.mvc.perform(get("/$version/client/$publicKey/search/1/")
-                .content(requestSearch.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }
