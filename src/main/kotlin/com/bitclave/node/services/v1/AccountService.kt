@@ -50,7 +50,7 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
 
     fun validateNonce(request: SignedRequest<*>, account: Account): CompletableFuture<Account> {
         return CompletableFuture.supplyAsync({
-            if (request.nonce <= account.nonce) {
+            if (request.nonce != account.nonce + 1) {
                 throw BadArgumentException()
             }
             account
@@ -69,9 +69,8 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
     fun getNonce(publicKey: String, strategy: RepositoryStrategyType): CompletableFuture<Long> {
         return CompletableFuture.supplyAsync({
             val account = accountRepository.changeStrategy(strategy).findByPublicKey(publicKey)
-                    ?: throw NotFoundException()
 
-            account.nonce
+            account?.nonce ?: 0
         })
     }
 
