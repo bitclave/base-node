@@ -24,16 +24,17 @@ class SiteService(
                 throw BadArgumentException()
 
             } else {
-                repository.changeStrategy(strategy).deleteByOrigin(site.origin)
+                val model = Site(0, site.origin.toLowerCase(), site.publicKey, site.confidential)
+                repository.changeStrategy(strategy).deleteByOrigin(model.origin)
 
-                return@supplyAsync repository.changeStrategy(strategy).saveSite(site).id
+                return@supplyAsync repository.changeStrategy(strategy).saveSite(model).id
             }
         })
     }
 
     fun getSite(origin: String, strategy: RepositoryStrategyType): CompletableFuture<Site> {
         return CompletableFuture.supplyAsync({
-            val site = repository.changeStrategy(strategy).findByOrigin(origin)
+            val site = repository.changeStrategy(strategy).findByOrigin(origin.toLowerCase())
 
             return@supplyAsync site ?: throw NotFoundException()
         })

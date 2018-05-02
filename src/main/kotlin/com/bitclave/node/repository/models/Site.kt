@@ -10,5 +10,6 @@ import javax.persistence.Id
 data class Site(
         @JsonIgnore @GeneratedValue(strategy = GenerationType.TABLE) @Id val id: Long = 0,
         val origin: String = "",
-        val publicKey: String = ""
+        val publicKey: String = "",
+        val confidential: Boolean = false
 )
