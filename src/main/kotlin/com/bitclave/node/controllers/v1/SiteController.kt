@@ -86,7 +86,7 @@ class SiteController(
         ApiResponse(code = 200, message = "Success", response = Site::class),
         ApiResponse(code = 404, message = "NotFoundException")
     ])
-    @RequestMapping(method = [RequestMethod.GET], value = ["{origin}"])
+    @RequestMapping(method = [RequestMethod.GET], value = ["{origin:.+}"])
     fun getPublicKeyByOrigin(
             @ApiParam("Site origin")
             @PathVariable("origin")
