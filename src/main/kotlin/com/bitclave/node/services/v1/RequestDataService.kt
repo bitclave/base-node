@@ -5,6 +5,7 @@ import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.RequestData
 import com.bitclave.node.repository.request.RequestDataRepository
 import com.bitclave.node.services.errors.BadArgumentException
+import com.bitclave.node.utils.KeyPairUtils
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
@@ -100,7 +101,7 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
     ): CompletableFuture<Long> {
 
         return CompletableFuture.supplyAsync({
-            if (data.responseData.isEmpty() || data.toPk != clientId || data.fromPk.length < 66) {
+            if (data.responseData.isEmpty() || data.toPk != clientId || !KeyPairUtils.isValidPublicKey(data.fromPk)) {
                 throw BadArgumentException()
             }
 
