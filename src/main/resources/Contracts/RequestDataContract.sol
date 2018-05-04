@@ -78,6 +78,22 @@ contract RequestDataContract is Pausable {
         return (data.id, data.fromPkX, data.fromPkY, data.toPkX, data.toPkY, data.requestData, data.responseData);
     }
 
+    function deleteById(uint id) public onlyOwner whenNotPaused {
+        uint index = indexOfRequestId[id];
+        require(index > 0);
+        index--;
+
+        RequestData storage data = requests[index];
+        deleteId(id, idsByTo[data.toPkX]);
+        deleteId(id, idsByFrom[data.fromPkX]);
+        deleteId(id, idsByFromAndTo[data.fromPkX][data.toPkX]);
+
+        if (index + 1 < requests.length) {
+            requests[index] = requests[requests.length - 1];
+        }
+        requests.length -= 1;
+    }
+
     function updateData(
         uint id,
         uint256 fromPkX,
@@ -120,6 +136,20 @@ contract RequestDataContract is Pausable {
         // (y^2 == x^3 + 7) mod m
         uint256 m = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F;
         return mulmod(pkY, pkY, m) == addmod(mulmod(pkX, mulmod(pkX, pkX, m), m), 7, m);
+    }
+
+    function deleteId(uint id, ItemsAndLookupEntry storage fromEntry) internal {
+        uint fromIndex = fromEntry.lookup[id];
+        require(fromIndex > 0);
+        fromIndex--;
+
+        uint lastId = fromEntry.items[fromEntry.items.length - 1];
+        fromEntry.items[fromIndex] = lastId;
+        fromEntry.items.length--;
+        delete fromEntry.lookup[id];
+        if (fromEntry.items.length > 0) {
+            fromEntry.lookup[lastId] = fromIndex + 1; // Incremented index
+        }
     }
 
 }

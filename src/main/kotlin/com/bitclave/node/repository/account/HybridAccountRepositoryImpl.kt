@@ -49,8 +49,9 @@ class HybridAccountRepositoryImpl(
         contract.setNonceForPublicKeyX(ecPoint.affineX, account.nonce.toBigInteger()).send()
     }
 
-    override fun deleteAccount(publicKey: String): Long {
-        throw NotImplementedException()
+    override fun deleteAccount(publicKey: String) {
+        val ecPoint = ECPoint(publicKey)
+        contract.unregisterPublicKey(ecPoint.affineX).send()
     }
 
     override fun findByPublicKey(publicKey: String): Account? {

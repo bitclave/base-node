@@ -161,7 +161,31 @@ class HybridRequestDataRepositoryImpl(
     }
 
     override fun deleteByFromAndTo(publicKey: String) {
-        throw NotImplementedException()
+        val ecPoint = ECPoint(publicKey)
+
+        val toCount = contract.getByToCount(ecPoint.affineX).send().toLong()
+        (0..(toCount - 1))
+            .map {
+                contract.getByTo(
+                        ecPoint.affineX,
+                        it.toBigInteger()
+                ).send()
+            }
+            .map {
+                contract.deleteById(it).send()
+            }
+
+        val fromCount = contract.getByFromCount(ecPoint.affineX).send().toLong()
+        (0..(fromCount - 1))
+            .map {
+                contract.getByFrom(
+                        ecPoint.affineX,
+                        it.toBigInteger()
+                ).send()
+            }
+            .map {
+                contract.deleteById(it).send()
+            }
     }
 
     private fun tupleToRequestData(tuple: Tuple7<BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, ByteArray, ByteArray>): RequestData {

@@ -39,7 +39,7 @@ contract ClientDataContract is Pausable {
         clientData.valueForKey[key] = value;
     }
 
-    function deleteInfo(uint256 publicKeyX, bytes32 key, string value) public onlyOwner whenNotPaused {
+    function deleteInfo(uint256 publicKeyX, bytes32 key) public onlyOwner whenNotPaused {
         ClientData storage clientData = dict[publicKeyX];
         uint index = clientData.allKeysIndexes[key];
         require(index > 0);

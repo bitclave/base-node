@@ -21,6 +21,10 @@ contract AccountContract is Pausable, IStorageContractClient {
         storageContract.set(uint256(keccak256(publicKeyField, publicKeyX)), publicKeyY);
     }
 
+    function unregisterPublicKey(uint256 publicKeyX) public onlyOwner whenNotPaused {
+        storageContract.erase(uint256(keccak256(publicKeyField, publicKeyX)));
+    }
+
     function setNonceForPublicKeyX(uint256 publicKeyX, uint256 nonce) public onlyOwner whenNotPaused {
         storageContract.set(uint256(keccak256(nonceField, publicKeyX)), nonce);
     }
