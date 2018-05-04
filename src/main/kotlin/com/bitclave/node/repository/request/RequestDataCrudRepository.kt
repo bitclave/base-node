@@ -9,18 +9,10 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 interface RequestDataCrudRepository : CrudRepository<RequestData, Long> {
 
-    fun findByFromPkAndState(from: String, state: RequestData.RequestDataState): List<RequestData>
-
-    fun findByToPkAndState(to: String, state: RequestData.RequestDataState): List<RequestData>
-
-    fun findByFromPkAndToPkAndState(
-            from: String,
-            to: String,
-            state: RequestData.RequestDataState
-    ): List<RequestData>
-
-
     fun findByFromPk(from: String): List<RequestData>
+
     fun findByToPk(to: String): List<RequestData>
+
+    fun findByFromPkAndToPk(from: String, to: String): RequestData?
 
 }

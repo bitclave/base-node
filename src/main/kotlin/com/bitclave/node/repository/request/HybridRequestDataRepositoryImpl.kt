@@ -46,15 +46,14 @@ class HybridRequestDataRepositoryImpl(
         )
     }
 
-    override fun getByFrom(from: String, state: RequestData.RequestDataState): List<RequestData> {
+    override fun getByFrom(from: String): List<RequestData> {
         val ecPointFrom = ECPoint(from)
 
-        val count = contract.getByFromCount(ecPointFrom.affineX, state.ordinal.toBigInteger()).send().toLong()
+        val count = contract.getByFromCount(ecPointFrom.affineX).send().toLong()
         return (0..(count - 1))
                 .map {
                     contract.getByFrom(
                             ecPointFrom.affineX,
-                            state.ordinal.toBigInteger(),
                             it.toBigInteger()
                     ).send()
                 }
@@ -67,12 +66,11 @@ class HybridRequestDataRepositoryImpl(
                 .toList()
     }
 
-    override fun getByTo(to: String, state: RequestData.RequestDataState): List<RequestData> {
+    override fun getByTo(to: String): List<RequestData> {
         val ecPointTo = ECPoint(to)
 
         val count = contract.getByToCount(
-                ecPointTo.affineX,
-                state.ordinal.toBigInteger()
+                ecPointTo.affineX
         )
                 .send()
                 .toLong()
@@ -80,7 +78,6 @@ class HybridRequestDataRepositoryImpl(
                 .map {
                     contract.getByTo(
                             ecPointTo.affineX,
-                            state.ordinal.toBigInteger(),
                             it.toBigInteger()
                     ).send()
                 }
@@ -95,17 +92,15 @@ class HybridRequestDataRepositoryImpl(
 
     override fun getByFromAndTo(
             from: String,
-            to: String,
-            state: RequestData.RequestDataState
-    ): List<RequestData> {
+            to: String
+    ): RequestData? {
 
         val ecPointFrom = ECPoint(from)
         val ecPointTo = ECPoint(to)
 
         val count = contract.getByFromAndToCount(
                 ecPointFrom.affineX,
-                ecPointTo.affineX,
-                state.ordinal.toBigInteger()
+                ecPointTo.affineX
         )
                 .send()
                 .toLong()
@@ -114,7 +109,6 @@ class HybridRequestDataRepositoryImpl(
                     contract.getByFromAndTo(
                             ecPointFrom.affineX,
                             ecPointTo.affineX,
-                            state.ordinal.toBigInteger(),
                             it.toBigInteger()
                     ).send()
                 }
@@ -124,7 +118,6 @@ class HybridRequestDataRepositoryImpl(
                 .map {
                     tupleToRequestData(it)
                 }
-                .toList()
     }
 
     override fun findById(id: Long): RequestData? {
@@ -143,8 +136,7 @@ class HybridRequestDataRepositoryImpl(
                     ecPointTo.affineX,
                     ecPointTo.affineY,
                     request.requestData.toByteArray(),
-                    request.responseData.toByteArray(),
-                    request.state.ordinal.toBigInteger()
+                    request.responseData.toByteArray()
             ).send()
 
             for (log in tx.logs) {
@@ -154,8 +146,7 @@ class HybridRequestDataRepositoryImpl(
                             request.fromPk,
                             request.toPk,
                             request.requestData,
-                            request.responseData,
-                            request.state
+                            request.responseData
                     )
                 }
             }
@@ -178,8 +169,7 @@ class HybridRequestDataRepositoryImpl(
                 tuple.value6.toString(Charset.defaultCharset())
                         .trim(Character.MIN_VALUE),
                 tuple.value7.toString(Charset.defaultCharset())
-                        .trim(Character.MIN_VALUE),
-                RequestData.RequestDataState.values()[tuple.value8.toInt()])
+                        .trim(Character.MIN_VALUE))
     }
 
 }

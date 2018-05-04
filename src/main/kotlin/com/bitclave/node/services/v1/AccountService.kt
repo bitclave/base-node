@@ -25,7 +25,7 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
                         throw AccessDeniedException()
                     }
 
-                    request.pk
+                    request.pk.toLowerCase()
                 }
     }
 

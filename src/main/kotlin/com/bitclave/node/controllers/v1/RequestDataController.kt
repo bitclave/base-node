@@ -61,16 +61,12 @@ class RequestDataController(
             @PathVariable("toPk", required = false)
             toPk: String?,
 
-            @ApiParam("state of request", required = true)
-            @PathVariable("state")
-            state: RequestData.RequestDataState,
-
             @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
             @RequestHeader("Strategy", required = false)
             strategy: String?
     ): CompletableFuture<List<RequestData>> {
 
-        return requestDataService.getRequestByStatus(fromPk, toPk, state, getStrategyType(strategy))
+        return requestDataService.getRequestByStatus(fromPk, toPk, getStrategyType(strategy))
     }
 
     /**
@@ -110,58 +106,6 @@ class RequestDataController(
                     val result = requestDataService.request(
                             account.publicKey,
                             request.data!!,
-                            getStrategyType(strategy)
-                    )
-
-                    accountService.incrementNonce(account, getStrategyType(strategy))
-
-                    result
-                }
-    }
-
-    /**
-     * Creates a response to a previously submitted data access request.
-     * @param id of request
-     * @param {@link SignedRequest} with encrypted data
-     *
-     * @return state of request {@link RequestData.RequestDataState}
-     *
-     * @exception   {@link BadArgumentException} - 400
-     *              {@link AccessDeniedException} - 403
-     *              {@link NotFoundException} - 404
-     *              {@link DataNotSaved} - 500
-     */
-
-    @ApiOperation("Creates a response to a previously submitted data access request.",
-            response = RequestData.RequestDataState::class)
-    @ApiResponses(value = [
-        ApiResponse(code = 200, message = "Success", response = RequestData.RequestDataState::class),
-        ApiResponse(code = 400, message = "BadArgumentException"),
-        ApiResponse(code = 403, message = "AccessDeniedException"),
-        ApiResponse(code = 404, message = "NotFoundException"),
-        ApiResponse(code = 500, message = "DataNotSaved")
-    ])
-    @RequestMapping(method = [RequestMethod.PATCH], value = ["request/{id}/"])
-    fun response(
-            @ApiParam("id of request", required = true)
-            @PathVariable("id")
-            requestId: Long,
-
-            @ApiParam("SignedRequest with encrypted data", required = true)
-            @RequestBody request: SignedRequest<String>,
-
-            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
-            @RequestHeader("Strategy", required = false)
-            strategy: String?
-    ): CompletableFuture<RequestData.RequestDataState> {
-
-        return accountService.accountBySigMessage(request, getStrategyType(strategy))
-                .thenCompose { account: Account -> accountService.validateNonce(request, account) }
-                .thenCompose { account: Account ->
-                    val result = requestDataService.response(
-                            requestId,
-                            account.publicKey,
-                            request.data,
                             getStrategyType(strategy)
                     )
 

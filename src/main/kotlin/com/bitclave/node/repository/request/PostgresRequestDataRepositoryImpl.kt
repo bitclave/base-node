@@ -10,21 +10,16 @@ import org.springframework.stereotype.Component
 class PostgresRequestDataRepositoryImpl(val repository: RequestDataCrudRepository) :
         RequestDataRepository {
 
-    override fun getByFrom(from: String, state: RequestData.RequestDataState): List<RequestData> {
-        return repository.findByFromPkAndState(from, state)
+    override fun getByFrom(from: String): List<RequestData> {
+        return repository.findByFromPk(from)
     }
 
-    override fun getByTo(to: String, state: RequestData.RequestDataState): List<RequestData> {
-        return repository.findByToPkAndState(to, state)
+    override fun getByTo(to: String): List<RequestData> {
+        return repository.findByToPk(to)
     }
 
-    override fun getByFromAndTo(
-            from: String,
-            to: String,
-            state: RequestData.RequestDataState
-    ): List<RequestData> {
-
-        return repository.findByFromPkAndToPkAndState(from, to, state)
+    override fun getByFromAndTo(from: String, to: String): RequestData? {
+        return repository.findByFromPkAndToPk(from, to)
     }
 
     override fun findById(id: Long): RequestData? {
@@ -39,6 +34,5 @@ class PostgresRequestDataRepositoryImpl(val repository: RequestDataCrudRepositor
         repository.delete(repository.findByFromPk(publicKey))
         repository.delete(repository.findByToPk(publicKey))
     }
-
 
 }

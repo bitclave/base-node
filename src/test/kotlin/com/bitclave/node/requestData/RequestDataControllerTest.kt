@@ -47,15 +47,15 @@ class RequestDataControllerTest {
     }
 
     @Test fun `get request by state`() {
-        this.mvc.perform(get("/$version/data/request/from/$from/state/${RequestData.RequestDataState.AWAIT}/")
+        this.mvc.perform(get("/$version/data/request/from/$from/")
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
 
-        this.mvc.perform(get("/$version/data/request/from/$from/to/$to/state/${RequestData.RequestDataState.AWAIT}/")
+        this.mvc.perform(get("/$version/data/request/from/$from/to/$to/")
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
 
-        this.mvc.perform(get("/$version/data/request/to/$to/state/${RequestData.RequestDataState.AWAIT}/")
+        this.mvc.perform(get("/$version/data/request/to/$to/")
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }
