@@ -12,7 +12,7 @@ import com.bitclave.node.solidity.generated.NameServiceContract
 import com.bitclave.node.solidity.generated.RequestDataContract
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
-import org.web3j.tuples.generated.Tuple8
+import org.web3j.tuples.generated.Tuple7
 import java.math.BigInteger
 import java.nio.charset.Charset
 import java.security.spec.ECPoint
@@ -104,20 +104,23 @@ class HybridRequestDataRepositoryImpl(
         )
                 .send()
                 .toLong()
-        return (0..(count - 1))
-                .map {
-                    contract.getByFromAndTo(
-                            ecPointFrom.affineX,
-                            ecPointTo.affineX,
-                            it.toBigInteger()
-                    ).send()
-                }
-                .map {
-                    contract.findById(it).send()
-                }
-                .map {
-                    tupleToRequestData(it)
-                }
+
+        if (count == 0.toLong()) {
+            return null
+        }
+
+        val requestId = contract.getByFromAndTo(
+                ecPointFrom.affineX,
+                ecPointTo.affineX,
+                0.toBigInteger()
+        )
+                .send()
+
+        if (requestId == 0.toBigInteger()) {
+            return null
+        }
+
+        return tupleToRequestData(contract.findById(requestId).send())
     }
 
     override fun findById(id: Long): RequestData? {
@@ -161,7 +164,7 @@ class HybridRequestDataRepositoryImpl(
         throw NotImplementedException()
     }
 
-    private fun tupleToRequestData(tuple: Tuple8<BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, ByteArray, ByteArray, BigInteger>): RequestData {
+    private fun tupleToRequestData(tuple: Tuple7<BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, ByteArray, ByteArray>): RequestData {
         return RequestData(
                 tuple.value1.toLong(),
                 ECPoint(tuple.value2, tuple.value3).compressedString(),
