@@ -46,9 +46,9 @@ class RequestDataController(
     ])
     @RequestMapping(method = [RequestMethod.GET],
             value = [
-                "request/from/{fromPk}/state/{state}/",
-                "request/to/{toPk}/state/{state}/",
-                "request/from/{fromPk}/to/{toPk}/state/{state}/"
+                "request/from/{fromPk}/",
+                "request/to/{toPk}/",
+                "request/from/{fromPk}/to/{toPk}/"
             ])
     fun getRequestByState(
             @ApiParam("Optional if use toPk. Public key of the user " +
