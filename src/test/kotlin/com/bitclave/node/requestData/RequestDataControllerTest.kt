@@ -67,13 +67,6 @@ class RequestDataControllerTest {
                 .andExpect(status().isCreated)
     }
 
-    @Test fun `create response for client`() {
-        this.mvc.perform(patch("/$version/data/request/1/")
-                .content(requestDataResponse.toJsonString())
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
-    }
-
     @Test fun `grant access for client`() {
         this.mvc.perform(post("/$version/data/grant/request/")
                 .content(requestDataRequest.toJsonString())
