@@ -44,21 +44,16 @@ class RequestDataController(
                 responseContainer = "List"),
         ApiResponse(code = 400, message = "BadArgumentException")
     ])
-    @RequestMapping(method = [RequestMethod.GET],
-            value = [
-                "request/from/{fromPk}/",
-                "request/to/{toPk}/",
-                "request/from/{fromPk}/to/{toPk}/"
-            ])
+    @RequestMapping(method = [RequestMethod.GET], value = ["request/"])
     fun getRequestByState(
             @ApiParam("Optional if use toPk. Public key of the user " +
                     "that issued data access request.", required = false)
-            @PathVariable("fromPk", required = false)
+            @RequestParam("fromPk", required = false)
             fromPk: String?,
 
             @ApiParam("Optional if use fromPk. Public key of the user that is expected to\n" +
                     "approve data access request to his personal data.", required = false)
-            @PathVariable("toPk", required = false)
+            @RequestParam("toPk", required = false)
             toPk: String?,
 
             @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)

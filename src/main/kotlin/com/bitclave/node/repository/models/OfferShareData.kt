@@ -7,11 +7,9 @@ import javax.persistence.Id
 import javax.persistence.IdClass
 
 @Entity
-@IdClass(OfferCompositeKeys::class)
 data class OfferShareData(
-        @Id val offerId: Long = 0,
-        @Id val clientId: String = "",
-        @Id val offerOwner: String = "",
+        @Id val offerSearchId: Long = 0,
+        val offerOwner: String = "",
         @Column(length = 2000) val clientResponse: String = "",
         val worth: String = BigDecimal.ZERO.toString(),
         val accepted: Boolean = false

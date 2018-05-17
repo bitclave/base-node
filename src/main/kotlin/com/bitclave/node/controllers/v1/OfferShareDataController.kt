@@ -35,17 +35,14 @@ class OfferShareDataController(
         ApiResponse(code = 200, message = "Success", response = OfferShareData::class,
                 responseContainer = "List")
     ])
-    @RequestMapping(method = [RequestMethod.GET], value = [
-        "offer/owner/{owner}/accepted/{accepted}",
-        "offer/owner/{owner}"
-    ])
+    @RequestMapping(method = [RequestMethod.GET], value = ["offer/"])
     fun getShareData(
             @ApiParam("id of offer owner")
-            @PathVariable("owner")
+            @RequestParam("owner")
             offerOwner: String,
 
             @ApiParam("accepted or not", required = false)
-            @PathVariable("accepted", required = false)
+            @RequestParam("accepted", required = false)
             accepted: Boolean?,
 
             @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
@@ -77,7 +74,7 @@ class OfferShareDataController(
         ApiResponse(code = 409, message = "DuplicateException"),
         ApiResponse(code = 500, message = "DataNotSaved")
     ])
-    @RequestMapping(method = [RequestMethod.POST], value = ["grant/offer"])
+    @RequestMapping(method = [RequestMethod.POST], value = ["grant/offer/"])
     @ResponseStatus(HttpStatus.CREATED)
     fun grantAccess(
             @ApiParam("Grant access data for offer", required = true)
@@ -100,7 +97,6 @@ class OfferShareDataController(
 
     /**
      * Business accepted what match offer data with client data and pay worth.
-     * @param id of request
      * @param {@link SignedRequest} with encrypted data
      *
      * @return http status 202
@@ -110,7 +106,7 @@ class OfferShareDataController(
      *              {@link NotFoundException} - 404
      *              {@link DataNotSaved} - 500
      */
-    @ApiOperation("Creates a response to a previously submitted data access request.")
+    @ApiOperation("Business accepted what match offer data with client data and pay worth.")
     @ApiResponses(value = [
         ApiResponse(code = 202, message = "Accepted"),
         ApiResponse(code = 400, message = "BadArgumentException"),
@@ -118,16 +114,12 @@ class OfferShareDataController(
         ApiResponse(code = 404, message = "NotFoundException"),
         ApiResponse(code = 500, message = "DataNotSaved")
     ])
-    @RequestMapping(method = [RequestMethod.PATCH], value = ["offer/{offerId}/client/{clientId}"])
+    @RequestMapping(method = [RequestMethod.PATCH], value = ["offer/"])
     @ResponseStatus(HttpStatus.ACCEPTED)
     fun accept(
             @ApiParam("id of offer", required = true)
-            @PathVariable("offerId")
-            offerId: Long,
-
-            @ApiParam("client Id", required = true)
-            @PathVariable("clientId")
-            clientId: String,
+            @RequestParam("offerSearchId")
+            offerSearchId: Long,
 
             @ApiParam("SignedRequest with value of worth", required = true)
             @RequestBody request: SignedRequest<BigDecimal>,
@@ -142,8 +134,7 @@ class OfferShareDataController(
                 .thenAcceptAsync({
                     offerShareData.acceptShareData(
                             it.publicKey,
-                            offerId,
-                            clientId,
+                            offerSearchId,
                             request.data!!,
                             getStrategyType(strategy)
                     )

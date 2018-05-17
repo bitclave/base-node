@@ -2,9 +2,13 @@ package com.bitclave.node.services.v1
 
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
+import com.bitclave.node.repository.models.OfferResultAction
 import com.bitclave.node.repository.models.OfferShareData
 import com.bitclave.node.repository.offer.OfferRepository
+import com.bitclave.node.repository.search.SearchRequestRepository
+import com.bitclave.node.repository.search.offer.OfferSearchRepository
 import com.bitclave.node.repository.share.OfferShareRepository
+import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.DuplicateException
 import org.springframework.beans.factory.annotation.Qualifier
@@ -16,7 +20,9 @@ import java.util.concurrent.CompletableFuture
 @Qualifier("v1")
 class OfferShareService(
         private val offerShareRepository: RepositoryStrategy<OfferShareRepository>,
-        private val offerRepository: RepositoryStrategy<OfferRepository>
+        private val offerRepository: RepositoryStrategy<OfferRepository>,
+        private val offerSearchRepository: RepositoryStrategy<OfferSearchRepository>,
+        private val searchRequestRepository: RepositoryStrategy<SearchRequestRepository>
 ) {
     fun getShareData(
             offerOwner: String,
@@ -27,9 +33,9 @@ class OfferShareService(
         return CompletableFuture.supplyAsync({
             val repository = offerShareRepository.changeStrategy(strategy)
             if (accepted != null) {
-                return@supplyAsync repository.findByOwnerAndAccepted(offerOwner, accepted)
+                return@supplyAsync repository.findByOfferOwnerAndAccepted(offerOwner, accepted)
             } else {
-                return@supplyAsync repository.findByOwner(offerOwner)
+                return@supplyAsync repository.findByOfferOwner(offerOwner)
             }
         })
     }
@@ -41,50 +47,66 @@ class OfferShareService(
     ): CompletableFuture<Void> {
 
         return CompletableFuture.runAsync({
-            if (data.clientId != clientId ||
-                    data.clientResponse.isEmpty() ||
-                    data.offerId <= 0) {
+            val offerSearch = offerSearchRepository.changeStrategy(strategy)
+                    .findById(data.offerSearchId)
+                    ?: throw BadArgumentException("offer search id not exist")
+
+            searchRequestRepository.changeStrategy(strategy)
+                    .findByIdAndOwner(offerSearch.searchRequestId, clientId)
+                    ?: throw AccessDeniedException()
+
+            if (data.clientResponse.isEmpty()) {
                 throw BadArgumentException()
             }
-            val existed = offerShareRepository.changeStrategy(strategy)
-                    .findByOfferIdAndClientId(data.offerId, clientId)
-            if (existed != null) {
+
+            if (offerShareRepository.changeStrategy(strategy)
+                            .findByOfferSearchId(data.offerSearchId) != null) {
                 throw DuplicateException()
             }
 
-            val offer = offerRepository.changeStrategy(strategy).findById(data.offerId)
-                    ?: throw BadArgumentException()
+            val offer = offerRepository.changeStrategy(strategy)
+                    .findById(offerSearch.offerId)
+                    ?: throw BadArgumentException("offer id not exist")
 
             val shareData = OfferShareData(
-                    data.offerId,
-                    clientId,
+                    offerSearch.id,
                     offer.owner,
                     data.clientResponse,
                     BigDecimal.ZERO.toString(),
                     false
             )
+
             offerShareRepository.changeStrategy(strategy)
                     .saveShareData(shareData)
+
+            offerSearch.state = OfferResultAction.ACCEPT
+
+            offerSearchRepository.changeStrategy(strategy)
+                    .saveSearchResult(offerSearch)
         })
     }
 
     fun acceptShareData(
-            ownerId: String,
-            offerId: Long,
-            clientId: String,
+            offerOwner: String,
+            offerSearchId: Long,
             worth: BigDecimal,
             strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
         return CompletableFuture.runAsync({
-            val originShareData = offerShareRepository.changeStrategy(strategy)
-                    .findByOfferIdAndClientId(offerId, clientId)
+            offerSearchRepository.changeStrategy(strategy)
+                    .findById(offerSearchId)
+                    ?: throw BadArgumentException("offer search id not exist")
 
-            if (originShareData == null || originShareData.offerOwner != ownerId) {
-                throw BadArgumentException()
+            val originShareData = offerShareRepository.changeStrategy(strategy)
+                    .findByOfferSearchId(offerSearchId)
+                    ?: throw BadArgumentException("share data id not exist")
+
+            if (offerOwner != originShareData.offerOwner) {
+                throw AccessDeniedException()
             }
+
             val shareData = OfferShareData(
-                    originShareData.offerId,
-                    originShareData.clientId,
+                    originShareData.offerSearchId,
                     originShareData.offerOwner,
                     originShareData.clientResponse,
                     worth.toString(),

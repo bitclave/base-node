@@ -15,16 +15,16 @@ class PostgresOfferShareRepositoryImpl(
         repository.save(shareData) ?: throw DataNotSaved()
     }
 
-    override fun findByOwner(owner: String): List<OfferShareData> {
-        return repository.findByOfferOwner(owner)
+    override fun findByOfferSearchId(id: Long): OfferShareData? {
+        return repository.findOne(id)
     }
 
-    override fun findByOwnerAndAccepted(owner: String, accepted: Boolean): List<OfferShareData> {
-        return repository.findByOfferOwnerAndAccepted(owner, accepted)
+    override fun findByOfferOwnerAndAccepted(offerOwner: String, accepted: Boolean): List<OfferShareData> {
+        return repository.findByOfferOwnerAndAccepted(offerOwner, accepted)
     }
 
-    override fun findByOfferIdAndClientId(offerId: Long, clientId: String): OfferShareData? {
-        return repository.findByOfferIdAndClientId(offerId, clientId)
+    override fun findByOfferOwner(offerOwner: String): List<OfferShareData> {
+        return repository.findByOfferOwner(offerOwner)
     }
 
 }

@@ -1,8 +1,9 @@
-package com.bitclave.node.search
+package com.bitclave.node.search.offer
 
 import com.bitclave.node.extensions.toJsonString
 import com.bitclave.node.repository.RepositoryStrategyType
-import com.bitclave.node.repository.models.SearchRequest
+import com.bitclave.node.repository.models.OfferResultAction
+import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.repository.models.SignedRequest
 import org.junit.Before
 import org.junit.Test
@@ -14,14 +15,16 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
 @SpringBootTest
 @AutoConfigureMockMvc
-class SearchRequestControllerTest {
+class OfferSearchControllerTest {
 
     @Autowired
     private lateinit var mvc: MockMvc
@@ -29,51 +32,47 @@ class SearchRequestControllerTest {
     protected lateinit var version: String
 
     private val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
-    protected lateinit var requestSearch: SignedRequest<SearchRequest>
-    protected lateinit var requestSearchId: SignedRequest<Long>
+    protected lateinit var offerSearchRequest: SignedRequest<OfferSearch>
+    protected lateinit var offerSearchIdRequest: SignedRequest<Long>
     private var httpHeaders: HttpHeaders = HttpHeaders()
 
-    private val searchRequest = SearchRequest(
+    private val offerSearchModel = OfferSearch(
             0,
-            publicKey,
-            mapOf("car" to "true", "color" to "red")
+           1L,
+            1L,
+            OfferResultAction.NONE
     )
 
     @Before fun setup() {
         version = "v1"
 
-        requestSearch = SignedRequest(searchRequest, publicKey)
-        requestSearchId = SignedRequest(1, publicKey)
+        offerSearchRequest = SignedRequest(offerSearchModel, publicKey)
+        offerSearchIdRequest = SignedRequest(1L, publicKey)
 
         httpHeaders.set("Accept", "application/json")
         httpHeaders.set("Content-Type", "application/json")
         httpHeaders.set("Strategy", RepositoryStrategyType.POSTGRES.name)
     }
 
-    @Test fun `create search request`() {
-        this.mvc.perform(post("/$version/client/$publicKey/search/request/")
-                .content(requestSearch.toJsonString())
+    @Test fun `get offer search list`() {
+        this.mvc.perform(get("/$version/client/$publicKey/search/result/")
+                .param("searchRequestId", "1")
+                .headers(httpHeaders))
+                .andExpect(status().isOk)
+    }
+
+    @Test fun `complain to search result`() {
+        this.mvc.perform(patch("/$version/client/$publicKey/search/result/1/")
+                .content(offerSearchIdRequest.toJsonString())
+                .headers(httpHeaders))
+                .andExpect(status().isOk)
+    }
+
+    @Test fun `add offer search item`() {
+        this.mvc.perform(post("/dev/client/$publicKey/search/result/")
+                .content(offerSearchRequest.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isCreated)
-    }
-
-    @Test fun `delete search request`() {
-        this.mvc.perform(delete("/$version/client/$publicKey/search/request/1/")
-                .content(requestSearchId.toJsonString())
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
-    }
-
-    @Test fun `get search request by owner`() {
-        this.mvc.perform(get("/$version/client/$publicKey/search/request/")
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
-    }
-
-    @Test fun `get search request by owner and id`() {
-        this.mvc.perform(get("/$version/client/$publicKey/search/request/1/")
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
     }
 
 }

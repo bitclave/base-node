@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.*
 import java.util.concurrent.CompletableFuture
 
 @RestController
-@RequestMapping("/v1/client/{owner}/search/")
+@RequestMapping("/v1/client/{owner}/search/request/")
 class SearchRequestController(
         @Qualifier("v1") private val accountService: AccountService,
         @Qualifier("v1") private val searchRequestService: SearchRequestService
@@ -35,7 +35,6 @@ class SearchRequestController(
      *              {@link AccessDeniedException} - 403
      *              {@link DataNotSaved} - 500
      */
-
     @ApiOperation("Creates new request for search in the system, based on the provided information.\n" +
             "The API will verify that the request is cryptographically signed by the owner of the public key.",
             response = SearchRequest::class)
@@ -87,7 +86,6 @@ class SearchRequestController(
      *              {@link AccessDeniedException} - 403
      *              {@link NotFoundException} - 500
      */
-
     @ApiOperation("Delete a search request from the system.\n" +
             "The API will verify that the request is cryptographically signed by the owner of the public key.",
             response = Long::class)
@@ -153,7 +151,7 @@ class SearchRequestController(
             @PathVariable("owner")
             owner: String,
 
-            @ApiParam("Optional id of existed search requests")
+            @ApiParam("Optional id of existed search request")
             @PathVariable(value = "id", required = false)
             id: Long?,
 
