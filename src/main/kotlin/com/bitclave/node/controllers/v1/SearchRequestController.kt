@@ -66,11 +66,11 @@ class SearchRequestController(
                             owner,
                             request.data!!,
                             getStrategyType(strategy)
-                    )
+                    ).get()
 
-                    accountService.incrementNonce(it, getStrategyType(strategy))
+                    accountService.incrementNonce(it, getStrategyType(strategy)).get()
 
-                    result
+                    CompletableFuture.completedFuture(result)
                 }
     }
 
@@ -124,11 +124,10 @@ class SearchRequestController(
                             id,
                             owner,
                             getStrategyType(strategy)
-                    )
+                    ).get()
+                    accountService.incrementNonce(it, getStrategyType(strategy)).get()
 
-                    accountService.incrementNonce(it, getStrategyType(strategy))
-
-                    result
+                    CompletableFuture.completedFuture(result)
                 }
     }
 

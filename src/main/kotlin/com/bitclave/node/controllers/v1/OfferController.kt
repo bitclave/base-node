@@ -76,11 +76,11 @@ class OfferController(
                             owner,
                             request.data!!,
                             getStrategyType(strategy)
-                    )
+                    ).get()
 
-                    accountService.incrementNonce(it, getStrategyType(strategy))
+                    accountService.incrementNonce(it, getStrategyType(strategy)).get()
 
-                    result
+                    CompletableFuture.completedFuture(result)
                 }.thenCompose {
                     val status = if (it.id != id) HttpStatus.CREATED else HttpStatus.OK
                     CompletableFuture.completedFuture(ResponseEntity<Offer>(it, status))
@@ -137,10 +137,10 @@ class OfferController(
                             id,
                             owner,
                             getStrategyType(strategy)
-                    )
-                    accountService.incrementNonce(it, getStrategyType(strategy))
+                    ).get()
+                    accountService.incrementNonce(it, getStrategyType(strategy)).get()
 
-                    result
+                    CompletableFuture.completedFuture(result)
                 }
     }
 

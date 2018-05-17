@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*
 import java.util.concurrent.CompletableFuture
 
 @RestController
-@RequestMapping("/dev/client/{clientId}/search/result")
+@RequestMapping("/dev/client/{clientId}/search/result/")
 class DevOfferSearchController(
         @Qualifier("v1") private val accountService: AccountService,
         @Qualifier("v1") private val offerSearchService: OfferSearchService

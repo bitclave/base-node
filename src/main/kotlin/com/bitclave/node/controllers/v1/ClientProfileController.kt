@@ -90,10 +90,10 @@ class ClientProfileController(
                             account.publicKey,
                             request.data!!,
                             getStrategyType(strategy)
-                    )
-                    accountService.incrementNonce(account, getStrategyType(strategy))
+                    ).get()
+                    accountService.incrementNonce(account, getStrategyType(strategy)).get()
 
-                    result
+                    CompletableFuture.completedFuture(result)
                 }
     }
 

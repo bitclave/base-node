@@ -73,12 +73,15 @@ class OfferSearchController(
             @RequestHeader("Strategy", required = false)
             strategy: String?): CompletableFuture<Void> {
 
-        return accountService.accountBySigMessage(request, getStrategyType(strategy)).thenCompose {
-            if (clientId != it.publicKey || searchResultId != request.data!!) {
-                throw AccessDeniedException()
-            }
-            offerSearchService.complain(clientId, request.data, getStrategyType(strategy))
-        }
+        return accountService.accountBySigMessage(request, getStrategyType(strategy))
+                .thenAcceptAsync {
+                    if (clientId != it.publicKey || searchResultId != request.data!!) {
+                        throw AccessDeniedException()
+                    }
+
+                    offerSearchService.complain(clientId, request.data, getStrategyType(strategy)).get()
+                    accountService.incrementNonce(it, getStrategyType(strategy)).get()
+                }
     }
 
 }

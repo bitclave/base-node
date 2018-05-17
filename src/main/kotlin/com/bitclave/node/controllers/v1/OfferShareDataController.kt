@@ -90,8 +90,9 @@ class OfferShareDataController(
                 .thenCompose { account: Account -> accountService.validateNonce(request, account) }
                 .thenAcceptAsync({
                     offerShareData.grantAccess(it.publicKey, request.data!!, getStrategyType(strategy))
+                            .get()
 
-                    accountService.incrementNonce(it, getStrategyType(strategy))
+                    accountService.incrementNonce(it, getStrategyType(strategy)).get()
                 })
     }
 
@@ -137,9 +138,9 @@ class OfferShareDataController(
                             offerSearchId,
                             request.data!!,
                             getStrategyType(strategy)
-                    )
+                    ).get()
 
-                    accountService.incrementNonce(it, getStrategyType(strategy))
+                    accountService.incrementNonce(it, getStrategyType(strategy)).get()
                 })
     }
 

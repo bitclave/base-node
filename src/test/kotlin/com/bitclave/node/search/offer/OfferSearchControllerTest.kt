@@ -62,7 +62,7 @@ class OfferSearchControllerTest {
     }
 
     @Test fun `complain to search result`() {
-        this.mvc.perform(patch("/$version/client/$publicKey/search/result/1/")
+        this.mvc.perform(patch("/$version/client/$publicKey/search/result/1")
                 .content(offerSearchIdRequest.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isOk)

@@ -102,11 +102,11 @@ class RequestDataController(
                             account.publicKey,
                             request.data!!,
                             getStrategyType(strategy)
-                    )
+                    ).get()
 
-                    accountService.incrementNonce(account, getStrategyType(strategy))
+                    accountService.incrementNonce(account, getStrategyType(strategy)).get()
 
-                    result
+                    CompletableFuture.completedFuture(result)
                 }
     }
 
@@ -148,11 +148,11 @@ class RequestDataController(
                             account.publicKey,
                             request.data!!,
                             getStrategyType(strategy)
-                    )
+                    ).get()
 
-                    accountService.incrementNonce(account, getStrategyType(strategy))
+                    accountService.incrementNonce(account, getStrategyType(strategy)).get()
 
-                    result
+                    CompletableFuture.completedFuture(result)
                 }
     }
 
