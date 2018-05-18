@@ -10,7 +10,7 @@ import javax.persistence.IdClass
 data class OfferShareData(
         @Id val offerSearchId: Long = 0,
         val offerOwner: String = "",
-        @Column(length = 2000) val clientResponse: String = "",
+        @Column(columnDefinition = "TEXT") val clientResponse: String = "",
         val worth: String = BigDecimal.ZERO.toString(),
         val accepted: Boolean = false
 )

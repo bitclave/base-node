@@ -49,7 +49,7 @@ class OfferSearchService(
     ): CompletableFuture<Void> {
         return CompletableFuture.runAsync({
             searchRequestRepository.changeStrategy(strategy)
-                    .findByIdAndOwner(offerSearch.offerId, clientId)
+                    .findByIdAndOwner(offerSearch.searchRequestId, clientId)
                     ?: throw BadArgumentException("search request id not exist")
 
             offerRepository.changeStrategy(strategy)
