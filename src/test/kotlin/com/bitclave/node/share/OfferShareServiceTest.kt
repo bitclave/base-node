@@ -108,7 +108,6 @@ class OfferShareServiceTest {
         accountService.registrationClient(accountBusiness, strategy)
         offerRepositoryStrategy.changeStrategy(strategy).saveOffer(offer)
 
-
         val searchRequest = searchRequestRepositoryStrategy.changeStrategy(strategy)
                 .saveSearchRequest(SearchRequest(0, accountClient.publicKey, emptyMap()))
 
@@ -120,6 +119,7 @@ class OfferShareServiceTest {
         val originShareData = OfferShareData(
                 1L,
                 accountBusiness.publicKey,
+                accountClient.publicKey,
                 SHARE_DATA_RESPONSE
         )
 
@@ -149,6 +149,7 @@ class OfferShareServiceTest {
         assertThat(!shareData.accepted)
         assertThat(shareData.offerSearchId == 1L)
         assertThat(shareData.offerOwner == accountBusiness.publicKey)
+        assertThat(shareData.clientId == accountClient.publicKey)
         assertThat(shareData.clientResponse == SHARE_DATA_RESPONSE)
         assertThat(BigDecimal(shareData.worth) == BigDecimal.ZERO)
     }
@@ -180,6 +181,7 @@ class OfferShareServiceTest {
         assertThat(shareData.accepted)
         assertThat(shareData.offerSearchId == 1L)
         assertThat(shareData.offerOwner == accountBusiness.publicKey)
+        assertThat(shareData.clientId == accountClient.publicKey)
         assertThat(shareData.clientResponse == SHARE_DATA_RESPONSE)
         assertThat(BigDecimal(shareData.worth) == BigDecimal.TEN)
     }

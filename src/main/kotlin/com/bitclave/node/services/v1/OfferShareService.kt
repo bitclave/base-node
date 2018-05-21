@@ -56,7 +56,7 @@ class OfferShareService(
                     ?: throw AccessDeniedException()
 
             if (data.clientResponse.isEmpty()) {
-                throw BadArgumentException()
+                throw BadArgumentException("empty response data")
             }
 
             if (offerShareRepository.changeStrategy(strategy)
@@ -71,6 +71,7 @@ class OfferShareService(
             val shareData = OfferShareData(
                     offerSearch.id,
                     offer.owner,
+                    clientId,
                     data.clientResponse,
                     BigDecimal.ZERO.toString(),
                     false
@@ -108,6 +109,7 @@ class OfferShareService(
             val shareData = OfferShareData(
                     originShareData.offerSearchId,
                     originShareData.offerOwner,
+                    originShareData.clientId,
                     originShareData.clientResponse,
                     worth.toString(),
                     true
