@@ -54,9 +54,16 @@ class OfferSearchControllerTest {
         httpHeaders.set("Strategy", RepositoryStrategyType.POSTGRES.name)
     }
 
-    @Test fun `get offer search list`() {
+    @Test fun `get offer search list by searchRequestId`() {
         this.mvc.perform(get("/$version/client/$publicKey/search/result/")
                 .param("searchRequestId", "1")
+                .headers(httpHeaders))
+                .andExpect(status().isOk)
+    }
+
+    @Test fun `get offer search list by offerSearchId`() {
+        this.mvc.perform(get("/$version/client/$publicKey/search/result/")
+                .param("OfferSearchId", "1")
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }

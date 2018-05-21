@@ -1,6 +1,7 @@
 package com.bitclave.node.repository.search.offer
 
 import com.bitclave.node.repository.models.OfferSearch
+import com.bitclave.node.services.errors.DataNotSaved
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 
@@ -15,7 +16,7 @@ class PostgresOfferSearchRepositoryImpl(
     }
 
     override fun saveSearchResult(item: OfferSearch) {
-        repository.save(item)
+        repository.save(item) ?: throw DataNotSaved()
     }
 
     override fun findById(id: Long): OfferSearch? {

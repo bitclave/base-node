@@ -1,7 +1,6 @@
 package com.bitclave.node.controllers.v1
 
 import com.bitclave.node.controllers.AbstractController
-import com.bitclave.node.repository.models.Offer
 import com.bitclave.node.repository.models.OfferSearchResultItem
 import com.bitclave.node.repository.models.SignedRequest
 import com.bitclave.node.services.errors.AccessDeniedException
@@ -29,7 +28,7 @@ class OfferSearchController(
      *
      */
     @ApiOperation("Returns the list of the candidates selected for the search request.",
-            response = Offer::class, responseContainer = "List")
+            response = OfferSearchResultItem::class, responseContainer = "List")
     @ApiResponses(value = [
         ApiResponse(code = 200, message = "Success", response = List::class)
     ])
@@ -40,14 +39,23 @@ class OfferSearchController(
             clientId: String,
 
             @ApiParam("id of search request")
-            @RequestParam(value = "searchRequestId")
-            searchRequestId: Long,
+            @RequestParam(value = "searchRequestId", required = false)
+            searchRequestId: Long?,
+
+            @ApiParam("id of search result item")
+            @RequestParam(value = "searchResultId", required = false)
+            searchResultId: Long?,
 
             @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
             @RequestHeader("Strategy", required = false)
             strategy: String?): CompletableFuture<List<OfferSearchResultItem>> {
 
-        return offerSearchService.getOffersResult(clientId, searchRequestId, getStrategyType(strategy))
+        return offerSearchService.getOffersResult(
+                clientId,
+                getStrategyType(strategy),
+                searchRequestId,
+                searchResultId
+        )
     }
 
     /**

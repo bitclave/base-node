@@ -23,14 +23,25 @@ class OfferSearchService(
 ) {
     fun getOffersResult(
             clientId: String,
-            searchRequestId: Long,
-            strategy: RepositoryStrategyType
+            strategy: RepositoryStrategyType,
+            searchRequestId: Long? = null,
+            searchResultId: Long? = null
     ): CompletableFuture<List<OfferSearchResultItem>> {
 
         return CompletableFuture.supplyAsync({
+            if (searchRequestId == null && searchResultId == null) {
+                throw BadArgumentException("specify parameter searchRequestId or searchResultId")
+            }
+
             val repository = offerSearchRepository.changeStrategy(strategy)
 
-            val result = repository.findBySearchRequestId(searchRequestId)
+            val result = if (searchRequestId != null) {
+                repository.findBySearchRequestId(searchRequestId)
+
+            } else {
+                val offerSearch: OfferSearch? = repository.findById(searchResultId!!)
+                if (offerSearch != null) arrayListOf(offerSearch) else emptyList<OfferSearch>()
+            }
 
             val ids: Map<Long, OfferSearch> = result.associate { Pair(it.offerId, it) }
 
