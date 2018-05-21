@@ -1,7 +1,7 @@
 package com.bitclave.node.repository.account
 
 import com.bitclave.node.repository.models.Account
-import com.bitclave.node.services.errors.DataNotSaved
+import com.bitclave.node.services.errors.DataNotSavedException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 
@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component
 class PostgresAccountRepositoryImpl(val repository: AccountCrudRepository) : AccountRepository {
 
     override fun saveAccount(account: Account) {
-        repository.save(account) ?: throw DataNotSaved()
+        repository.save(account) ?: throw DataNotSavedException()
     }
 
     override fun deleteAccount(publicKey: String) {

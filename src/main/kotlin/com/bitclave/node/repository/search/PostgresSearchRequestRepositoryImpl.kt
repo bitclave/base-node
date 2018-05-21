@@ -1,7 +1,7 @@
 package com.bitclave.node.repository.search
 
 import com.bitclave.node.repository.models.SearchRequest
-import com.bitclave.node.services.errors.DataNotSaved
+import com.bitclave.node.services.errors.DataNotSavedException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 
@@ -12,7 +12,7 @@ class PostgresSearchRequestRepositoryImpl(
 ) : SearchRequestRepository {
 
     override fun saveSearchRequest(request: SearchRequest): SearchRequest {
-        return repository.save(request) ?: throw DataNotSaved()
+        return repository.save(request) ?: throw DataNotSavedException()
     }
 
     override fun deleteSearchRequest(id: Long, owner: String): Long {

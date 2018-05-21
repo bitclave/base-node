@@ -1,7 +1,7 @@
 package com.bitclave.node.repository.site
 
 import com.bitclave.node.repository.models.Site
-import com.bitclave.node.services.errors.DataNotSaved
+import com.bitclave.node.services.errors.DataNotSavedException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 
@@ -12,7 +12,7 @@ class PostgresSiteRepositoryImpl(
 ) : SiteRepository {
 
     override fun saveSite(site: Site): Site {
-        return repository.save(site) ?: throw DataNotSaved()
+        return repository.save(site) ?: throw DataNotSavedException()
     }
 
     override fun findByOrigin(origin: String): Site? {
