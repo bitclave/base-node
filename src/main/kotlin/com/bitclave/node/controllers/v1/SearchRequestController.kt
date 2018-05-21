@@ -4,6 +4,7 @@ import com.bitclave.node.controllers.AbstractController
 import com.bitclave.node.repository.models.Account
 import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.models.SignedRequest
+import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.SearchRequestService
@@ -62,8 +63,12 @@ class SearchRequestController(
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
                 .thenCompose { account: Account -> accountService.validateNonce(request, account) }
                 .thenCompose {
+                    if (owner != it.publicKey) {
+                        throw AccessDeniedException()
+                    }
+
                     val result = searchRequestService.createSearchRequest(
-                            owner,
+                            it.publicKey,
                             request.data!!,
                             getStrategyType(strategy)
                     ).get()
@@ -116,7 +121,11 @@ class SearchRequestController(
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
                 .thenCompose { account: Account -> accountService.validateNonce(request, account) }
                 .thenCompose {
-                    if (request.pk != owner || id != request.data) {
+                    if (request.pk != owner) {
+                        throw AccessDeniedException()
+                    }
+
+                    if (id != request.data) {
                         throw BadArgumentException()
                     }
 
