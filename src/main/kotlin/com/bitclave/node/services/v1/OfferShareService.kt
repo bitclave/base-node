@@ -73,7 +73,7 @@ class OfferShareService(
                     offer.owner,
                     clientId,
                     data.clientResponse,
-                    BigDecimal.ZERO.toString(),
+                    offer.worth,
                     false
             )
 

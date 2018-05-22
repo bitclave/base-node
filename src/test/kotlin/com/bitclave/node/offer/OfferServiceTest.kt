@@ -23,6 +23,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
+import java.math.BigDecimal
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
@@ -53,6 +54,7 @@ class OfferServiceTest {
             "is desc",
             "is title",
             "is image url",
+            BigDecimal.TEN.toString(),
             mapOf("car" to "true", "color" to "red"),
             mapOf("age" to "18", "salary" to "1000"),
             mapOf("age" to Offer.CompareAction.MORE_OR_EQUAL, "salary" to Offer.CompareAction.MORE_OR_EQUAL)
@@ -91,6 +93,7 @@ class OfferServiceTest {
                 "is desc111",
                 "is title111",
                 "is image url111",
+                BigDecimal.ONE.toString(),
                 mapOf("color" to "red"),
                 mapOf("salary" to "1000"),
                 mapOf("salary" to Offer.CompareAction.MORE))
@@ -109,6 +112,7 @@ class OfferServiceTest {
         assertThat(updated.title).isEqualTo(changedOffer.title)
         assertThat(updated.imageUrl).isEqualTo(changedOffer.imageUrl)
         assertThat(updated.tags).isEqualTo(changedOffer.tags)
+        assertThat(updated.worth).isEqualTo(BigDecimal.ONE.toString())
         assertThat(updated.compare).isEqualTo(changedOffer.compare)
         assertThat(updated.rules).isEqualTo(changedOffer.rules)
     }

@@ -16,6 +16,7 @@ import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.math.BigDecimal
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
@@ -39,6 +40,7 @@ class OfferControllerTest {
             "is desc",
             "is title",
             "is image url",
+            BigDecimal.TEN.toString(),
             mapOf("car" to "true", "color" to "red"),
             mapOf("age" to "18", "salary" to "1000"),
             mapOf("age" to Offer.CompareAction.MORE_OR_EQUAL, "salary" to Offer.CompareAction.MORE_OR_EQUAL))

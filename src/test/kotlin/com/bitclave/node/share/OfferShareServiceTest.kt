@@ -72,6 +72,7 @@ class OfferShareServiceTest {
             "is desc",
             "is title",
             "is image url",
+            BigDecimal.TEN.toString(),
             mapOf("car" to "true", "color" to "red"),
             mapOf("age" to "18", "salary" to "1000"),
             mapOf("age" to Offer.CompareAction.MORE_OR_EQUAL, "salary" to Offer.CompareAction.MORE_OR_EQUAL)

@@ -25,8 +25,8 @@ class OfferService(
 
         return CompletableFuture.supplyAsync({
             if (id > 0) {
-                val checkOffer = offerRepository.changeStrategy(strategy).findByIdAndOwner(id, owner)
-                checkOffer ?: throw BadArgumentException()
+                offerRepository.changeStrategy(strategy)
+                        .findByIdAndOwner(id, owner) ?: throw BadArgumentException()
             }
 
             if (offer.compare.isEmpty() ||
@@ -48,13 +48,13 @@ class OfferService(
                     offer.description,
                     offer.title,
                     offer.imageUrl,
+                    offer.worth,
                     offer.tags,
                     offer.compare,
                     offer.rules
             )
 
             offerRepository.changeStrategy(strategy).saveOffer(putOffer)
-
         })
     }
 
@@ -69,7 +69,7 @@ class OfferService(
             if (deletedId == 0L) {
                 throw NotFoundException()
             }
-            return@supplyAsync deletedId
+            deletedId
         })
     }
 
