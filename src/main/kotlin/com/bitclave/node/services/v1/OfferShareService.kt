@@ -106,6 +106,10 @@ class OfferShareService(
                 throw AccessDeniedException()
             }
 
+            if (BigDecimal(originShareData.worth).compareTo(worth) != 0) {
+                throw BadArgumentException("incorrect worth value")
+            }
+
             val shareData = OfferShareData(
                     originShareData.offerSearchId,
                     originShareData.offerOwner,
