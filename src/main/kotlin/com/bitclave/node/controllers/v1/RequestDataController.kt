@@ -44,33 +44,24 @@ class RequestDataController(
                 responseContainer = "List"),
         ApiResponse(code = 400, message = "BadArgumentException")
     ])
-    @RequestMapping(method = [RequestMethod.GET],
-            value = [
-                "request/from/{fromPk}/state/{state}/",
-                "request/to/{toPk}/state/{state}/",
-                "request/from/{fromPk}/to/{toPk}/state/{state}/"
-            ])
+    @RequestMapping(method = [RequestMethod.GET], value = ["request/"])
     fun getRequestByState(
             @ApiParam("Optional if use toPk. Public key of the user " +
                     "that issued data access request.", required = false)
-            @PathVariable("fromPk", required = false)
+            @RequestParam("fromPk", required = false)
             fromPk: String?,
 
             @ApiParam("Optional if use fromPk. Public key of the user that is expected to\n" +
                     "approve data access request to his personal data.", required = false)
-            @PathVariable("toPk", required = false)
+            @RequestParam("toPk", required = false)
             toPk: String?,
-
-            @ApiParam("state of request", required = true)
-            @PathVariable("state")
-            state: RequestData.RequestDataState,
 
             @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
             @RequestHeader("Strategy", required = false)
             strategy: String?
     ): CompletableFuture<List<RequestData>> {
 
-        return requestDataService.getRequestByStatus(fromPk, toPk, state, getStrategyType(strategy))
+        return requestDataService.getRequestByStatus(fromPk, toPk, getStrategyType(strategy))
     }
 
     /**
@@ -105,59 +96,17 @@ class RequestDataController(
     ): CompletableFuture<Long> {
 
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
+                .thenCompose { account: Account -> accountService.validateNonce(request, account) }
                 .thenCompose { account: Account ->
-                    requestDataService.request(
+                    val result = requestDataService.request(
                             account.publicKey,
                             request.data!!,
                             getStrategyType(strategy)
-                    )
-                }
-    }
+                    ).get()
 
-    /**
-     * Creates a response to a previously submitted data access request.
-     * @param id of request
-     * @param {@link SignedRequest} with encrypted data
-     *
-     * @return state of request {@link RequestData.RequestDataState}
-     *
-     * @exception   {@link BadArgumentException} - 400
-     *              {@link AccessDeniedException} - 403
-     *              {@link NotFoundException} - 404
-     *              {@link DataNotSaved} - 500
-     */
+                    accountService.incrementNonce(account, getStrategyType(strategy)).get()
 
-    @ApiOperation("Creates a response to a previously submitted data access request.",
-            response = RequestData.RequestDataState::class)
-    @ApiResponses(value = [
-        ApiResponse(code = 200, message = "Success", response = RequestData.RequestDataState::class),
-        ApiResponse(code = 400, message = "BadArgumentException"),
-        ApiResponse(code = 403, message = "AccessDeniedException"),
-        ApiResponse(code = 404, message = "NotFoundException"),
-        ApiResponse(code = 500, message = "DataNotSaved")
-    ])
-    @RequestMapping(method = [RequestMethod.PATCH], value = ["request/{id}/"])
-    fun response(
-            @ApiParam("id of request", required = true)
-            @PathVariable("id")
-            requestId: Long,
-
-            @ApiParam("SignedRequest with encrypted data", required = true)
-            @RequestBody request: SignedRequest<String>,
-
-            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
-            @RequestHeader("Strategy", required = false)
-            strategy: String?
-    ): CompletableFuture<RequestData.RequestDataState> {
-
-        return accountService.accountBySigMessage(request, getStrategyType(strategy))
-                .thenCompose { account: Account ->
-                    requestDataService.response(
-                            requestId,
-                            account.publicKey,
-                            request.data,
-                            getStrategyType(strategy)
-                    )
+                    CompletableFuture.completedFuture(result)
                 }
     }
 
@@ -193,12 +142,17 @@ class RequestDataController(
     ): CompletableFuture<Long> {
 
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
+                .thenCompose { account: Account -> accountService.validateNonce(request, account) }
                 .thenCompose { account: Account ->
-                    requestDataService.grantAccess(
+                    val result = requestDataService.grantAccess(
                             account.publicKey,
                             request.data!!,
                             getStrategyType(strategy)
-                    )
+                    ).get()
+
+                    accountService.incrementNonce(account, getStrategyType(strategy)).get()
+
+                    CompletableFuture.completedFuture(result)
                 }
     }
 

@@ -60,6 +60,34 @@ class ClientProfileServiceTest {
         clientProfileService.updateData(publicKey, data, strategy).get()
     }
 
+    @Test fun `update part of client data by public key`() {
+        clientProfileService.updateData(publicKey, data, strategy).get()
+        val updatedData = mapOf("email" to "Bob@email.com", "lastname" to "bob-lastname").toMutableMap()
+        clientProfileService.updateData(publicKey, updatedData, strategy).get()
+
+        updatedData.putAll(data)
+
+        var result = clientProfileService.getData(publicKey, strategy).get()
+
+        Assertions.assertThat(result.containsKey("name"))
+        Assertions.assertThat(result.containsValue(data.getValue("name")))
+
+        Assertions.assertThat(result == updatedData)
+
+        val changeNameMap = mapOf("name" to "Bob")
+
+        clientProfileService.updateData(publicKey, changeNameMap, strategy).get()
+
+        result = clientProfileService.getData(publicKey, strategy).get()
+
+        Assertions.assertThat(result.containsKey("name"))
+        Assertions.assertThat(!result.containsValue(data.getValue("name")))
+        Assertions.assertThat(result["name"] == "Bob")
+        updatedData.putAll(changeNameMap)
+
+        Assertions.assertThat(result == updatedData)
+    }
+
     @Test fun `delete client raw data by public key`() {
         `update client data by public key`()
         clientProfileService.deleteData(publicKey, strategy).get()

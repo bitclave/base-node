@@ -47,15 +47,19 @@ class RequestDataControllerTest {
     }
 
     @Test fun `get request by state`() {
-        this.mvc.perform(get("/$version/data/request/from/$from/state/${RequestData.RequestDataState.AWAIT}/")
+        this.mvc.perform(get("/$version/data/request/")
+                .param("from", from)
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
 
-        this.mvc.perform(get("/$version/data/request/from/$from/to/$to/state/${RequestData.RequestDataState.AWAIT}/")
+        this.mvc.perform(get("/$version/data/request/")
+                .param("from", from)
+                .param("to", to)
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
 
-        this.mvc.perform(get("/$version/data/request/to/$to/state/${RequestData.RequestDataState.AWAIT}/")
+        this.mvc.perform(get("/$version/data/request/")
+                .param("to", to)
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }
@@ -65,13 +69,6 @@ class RequestDataControllerTest {
                 .content(requestDataRequest.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isCreated)
-    }
-
-    @Test fun `create response for client`() {
-        this.mvc.perform(patch("/$version/data/request/1/")
-                .content(requestDataResponse.toJsonString())
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
     }
 
     @Test fun `grant access for client`() {

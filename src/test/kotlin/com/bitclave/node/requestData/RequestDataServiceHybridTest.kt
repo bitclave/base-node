@@ -19,15 +19,6 @@ class RequestDataServiceHybridTest : RequestDataServiceTest() {
         strategy = RepositoryStrategyType.HYBRID
     }
 
-    @Test(expected = NotImplementedException::class)
-    override fun `delete response and requests by From and To`() {
-        try {
-            super.`delete response and requests by From and To`()
-        } catch (e: Exception) {
-            throw e.cause!!
-        }
-    }
-
     @After fun revertHybridState() {
         contractDeployer.revertNode()
     }

@@ -12,7 +12,7 @@ import com.bitclave.node.solidity.generated.NameServiceContract
 import com.bitclave.node.solidity.generated.RequestDataContract
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
-import org.web3j.tuples.generated.Tuple8
+import org.web3j.tuples.generated.Tuple7
 import java.math.BigInteger
 import java.nio.charset.Charset
 import java.security.spec.ECPoint
@@ -46,15 +46,14 @@ class HybridRequestDataRepositoryImpl(
         )
     }
 
-    override fun getByFrom(from: String, state: RequestData.RequestDataState): List<RequestData> {
+    override fun getByFrom(from: String): List<RequestData> {
         val ecPointFrom = ECPoint(from)
 
-        val count = contract.getByFromCount(ecPointFrom.affineX, state.ordinal.toBigInteger()).send().toLong()
+        val count = contract.getByFromCount(ecPointFrom.affineX).send().toLong()
         return (0..(count - 1))
                 .map {
                     contract.getByFrom(
                             ecPointFrom.affineX,
-                            state.ordinal.toBigInteger(),
                             it.toBigInteger()
                     ).send()
                 }
@@ -67,12 +66,11 @@ class HybridRequestDataRepositoryImpl(
                 .toList()
     }
 
-    override fun getByTo(to: String, state: RequestData.RequestDataState): List<RequestData> {
+    override fun getByTo(to: String): List<RequestData> {
         val ecPointTo = ECPoint(to)
 
         val count = contract.getByToCount(
-                ecPointTo.affineX,
-                state.ordinal.toBigInteger()
+                ecPointTo.affineX
         )
                 .send()
                 .toLong()
@@ -80,7 +78,6 @@ class HybridRequestDataRepositoryImpl(
                 .map {
                     contract.getByTo(
                             ecPointTo.affineX,
-                            state.ordinal.toBigInteger(),
                             it.toBigInteger()
                     ).send()
                 }
@@ -95,36 +92,35 @@ class HybridRequestDataRepositoryImpl(
 
     override fun getByFromAndTo(
             from: String,
-            to: String,
-            state: RequestData.RequestDataState
-    ): List<RequestData> {
+            to: String
+    ): RequestData? {
 
         val ecPointFrom = ECPoint(from)
         val ecPointTo = ECPoint(to)
 
         val count = contract.getByFromAndToCount(
                 ecPointFrom.affineX,
-                ecPointTo.affineX,
-                state.ordinal.toBigInteger()
+                ecPointTo.affineX
         )
                 .send()
                 .toLong()
-        return (0..(count - 1))
-                .map {
-                    contract.getByFromAndTo(
-                            ecPointFrom.affineX,
-                            ecPointTo.affineX,
-                            state.ordinal.toBigInteger(),
-                            it.toBigInteger()
-                    ).send()
-                }
-                .map {
-                    contract.findById(it).send()
-                }
-                .map {
-                    tupleToRequestData(it)
-                }
-                .toList()
+
+        if (count == 0.toLong()) {
+            return null
+        }
+
+        val requestId = contract.getByFromAndTo(
+                ecPointFrom.affineX,
+                ecPointTo.affineX,
+                0.toBigInteger()
+        )
+                .send()
+
+        if (requestId == 0.toBigInteger()) {
+            return null
+        }
+
+        return tupleToRequestData(contract.findById(requestId).send())
     }
 
     override fun findById(id: Long): RequestData? {
@@ -143,8 +139,7 @@ class HybridRequestDataRepositoryImpl(
                     ecPointTo.affineX,
                     ecPointTo.affineY,
                     request.requestData.toByteArray(),
-                    request.responseData.toByteArray(),
-                    request.state.ordinal.toBigInteger()
+                    request.responseData.toByteArray()
             ).send()
 
             for (log in tx.logs) {
@@ -154,8 +149,7 @@ class HybridRequestDataRepositoryImpl(
                             request.fromPk,
                             request.toPk,
                             request.requestData,
-                            request.responseData,
-                            request.state
+                            request.responseData
                     )
                 }
             }
@@ -167,10 +161,34 @@ class HybridRequestDataRepositoryImpl(
     }
 
     override fun deleteByFromAndTo(publicKey: String) {
-        throw NotImplementedException()
+        val ecPoint = ECPoint(publicKey)
+
+        val toCount = contract.getByToCount(ecPoint.affineX).send().toLong()
+        (0..(toCount - 1))
+            .map {
+                contract.getByTo(
+                        ecPoint.affineX,
+                        it.toBigInteger()
+                ).send()
+            }
+            .map {
+                contract.deleteById(it).send()
+            }
+
+        val fromCount = contract.getByFromCount(ecPoint.affineX).send().toLong()
+        (0..(fromCount - 1))
+            .map {
+                contract.getByFrom(
+                        ecPoint.affineX,
+                        it.toBigInteger()
+                ).send()
+            }
+            .map {
+                contract.deleteById(it).send()
+            }
     }
 
-    private fun tupleToRequestData(tuple: Tuple8<BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, ByteArray, ByteArray, BigInteger>): RequestData {
+    private fun tupleToRequestData(tuple: Tuple7<BigInteger, BigInteger, BigInteger, BigInteger, BigInteger, ByteArray, ByteArray>): RequestData {
         return RequestData(
                 tuple.value1.toLong(),
                 ECPoint(tuple.value2, tuple.value3).compressedString(),
@@ -178,8 +196,7 @@ class HybridRequestDataRepositoryImpl(
                 tuple.value6.toString(Charset.defaultCharset())
                         .trim(Character.MIN_VALUE),
                 tuple.value7.toString(Charset.defaultCharset())
-                        .trim(Character.MIN_VALUE),
-                RequestData.RequestDataState.values()[tuple.value8.toInt()])
+                        .trim(Character.MIN_VALUE))
     }
 
 }

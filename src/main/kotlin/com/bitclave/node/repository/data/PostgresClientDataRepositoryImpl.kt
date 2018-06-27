@@ -1,7 +1,7 @@
 package com.bitclave.node.repository.data
 
 import com.bitclave.node.repository.models.ClientData
-import com.bitclave.node.services.errors.DataNotSaved
+import com.bitclave.node.services.errors.DataNotSavedException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 
@@ -20,7 +20,7 @@ class PostgresClientDataRepositoryImpl(
     }
 
     override fun updateData(publicKey: String, data: Map<String, String>) {
-        repository.save(ClientData(publicKey, data)) ?: throw DataNotSaved()
+        repository.save(ClientData(publicKey, data)) ?: throw DataNotSavedException()
     }
 
     override fun deleteData(publicKey: String) {

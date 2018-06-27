@@ -1,6 +1,7 @@
 package com.bitclave.node.repository.account
 
 import com.bitclave.node.configuration.properties.HybridProperties
+import com.bitclave.node.extensions.ECPoint
 import com.bitclave.node.repository.Web3Provider
 import com.bitclave.node.repository.models.Account
 import com.bitclave.node.services.errors.NotImplementedException
@@ -8,6 +9,8 @@ import com.bitclave.node.solidity.generated.AccountContract
 import com.bitclave.node.solidity.generated.NameServiceContract
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
+import java.math.BigInteger
+
 
 @Component
 @Qualifier("hybrid")
@@ -38,17 +41,24 @@ class HybridAccountRepositoryImpl(
         )
     }
 
-    override fun saveAccount(publicKey: String) {
-        contract.registerPublicKey(publicKey).send()
+    override fun saveAccount(account: Account) {
+        val ecPoint = ECPoint(account.publicKey)
+        if (!contract.isRegisteredPublicKey(ecPoint.affineX).send()) {
+            contract.registerPublicKey(ecPoint.affineX, ecPoint.affineY).send()
+        }
+        contract.setNonceForPublicKeyX(ecPoint.affineX, account.nonce.toBigInteger()).send()
     }
 
-    override fun deleteAccount(publicKey: String): Long {
-        throw NotImplementedException()
+    override fun deleteAccount(publicKey: String) {
+        val ecPoint = ECPoint(publicKey)
+        contract.unregisterPublicKey(ecPoint.affineX).send()
     }
 
     override fun findByPublicKey(publicKey: String): Account? {
-        if (contract.isRegisteredPublicKey(publicKey).send()) {
-            return Account(publicKey)
+        val ecPoint = ECPoint(publicKey)
+        if (contract.isRegisteredPublicKey(ecPoint.affineX).send()) {
+            val nonce = contract.nonceForPublicKeyX(ecPoint.affineX).send() ?: BigInteger.ZERO
+            return Account(publicKey, nonce.toLong())
         }
         return null
     }

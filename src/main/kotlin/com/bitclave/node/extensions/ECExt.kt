@@ -1,7 +1,5 @@
 package com.bitclave.node.extensions
 
-import com.bitclave.node.extensions.ECPublicKey
-import com.bitclave.node.extensions.fromHex
 import org.bitcoinj.core.ECKey
 import org.bouncycastle.jce.ECNamedCurveTable
 import org.bouncycastle.jce.ECPointUtil
@@ -18,13 +16,13 @@ fun ECPoint(str: String): ECPoint {
     return ECPublicKey(str.fromHex()).w
 }
 
-fun ECPoint.compressedString() : String {
+fun ECPoint.compressedString(): String {
     return ECKey.fromPublicOnly(
             ECKey.CURVE.curve.createPoint(this.affineX, this.affineY).getEncoded(true)
     ).publicKeyAsHex
 }
 
-fun ECPoint.uncompressedString() : String {
+fun ECPoint.uncompressedString(): String {
     return ECKey.fromPublicOnly(
             ECKey.CURVE.curve.createPoint(this.affineX, this.affineY).getEncoded(false)
     ).publicKeyAsHex

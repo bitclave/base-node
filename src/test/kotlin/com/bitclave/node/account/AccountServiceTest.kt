@@ -10,9 +10,10 @@ import com.bitclave.node.repository.account.HybridAccountRepositoryImpl
 import com.bitclave.node.repository.account.PostgresAccountRepositoryImpl
 import com.bitclave.node.repository.models.Account
 import com.bitclave.node.repository.models.SignedRequest
-import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.errors.AlreadyRegisteredException
+import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
+import com.bitclave.node.services.v1.AccountService
 import org.assertj.core.api.Assertions
 import org.junit.Before
 import org.junit.Test
@@ -54,6 +55,38 @@ class AccountServiceTest {
         accountService = AccountService(repositoryStrategy)
 
         strategy = RepositoryStrategyType.POSTGRES
+    }
+
+    @Test fun `check nonce`() {
+        accountService.registrationClient(account, strategy).get()
+        var nonce = accountService.getNonce(account.publicKey, strategy).get()
+
+        val request = SignedRequest("Hello", publicKey, "", ++nonce)
+        request.signMessage(privateKey)
+
+        val account = accountService.accountBySigMessage(request, strategy).get()
+        accountService.validateNonce(request, account).get()
+    }
+
+    @Test(expected = BadArgumentException::class)
+    fun `check invalid nonce`() {
+        try {
+            accountService.registrationClient(account, strategy).get()
+            var nonce = accountService.getNonce(account.publicKey, strategy).get()
+
+            val request = SignedRequest("Hello", publicKey, "", ++nonce)
+            request.signMessage(privateKey)
+
+            var account = accountService.accountBySigMessage(request, strategy).get()
+            accountService.incrementNonce(account, strategy).get()
+
+            account = accountService.accountBySigMessage(request, strategy).get()
+
+            accountService.validateNonce(request, account).get()
+
+        } catch (e: Exception) {
+            throw e.cause!!
+        }
     }
 
     @Test fun `check signature of signed message`() {

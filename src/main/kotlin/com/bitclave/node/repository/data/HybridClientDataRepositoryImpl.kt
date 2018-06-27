@@ -8,6 +8,7 @@ import com.bitclave.node.solidity.generated.ClientDataContract
 import com.bitclave.node.solidity.generated.NameServiceContract
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
+import java.math.BigInteger
 import java.nio.charset.Charset
 
 @Component
@@ -54,11 +55,8 @@ class HybridClientDataRepositoryImpl(
 
     override fun getData(publicKey: String): Map<String, String> {
         val ecPoint = ECPoint(publicKey)
-        val keysCount = contract.clientKeysCount(ecPoint.affineX).send().toLong()
-        return (0..(keysCount - 1)).map {
-            val key = contract.clientKeys(ecPoint.affineX, it.toBigInteger()).send()
-            val value = contract.info(ecPoint.affineX, key).send()
-            deserializeKey(key) to value
+        return getClientKeys(ecPoint.affineX).map {
+            it to contract.info(ecPoint.affineX, serializeKey(it)).send()
         }.toMap<String, String>()
     }
 
@@ -76,7 +74,10 @@ class HybridClientDataRepositoryImpl(
     }
 
     override fun deleteData(publicKey: String) {
-        throw NotImplementedException()
+        val ecPoint = ECPoint(publicKey)
+        getClientKeys(ecPoint.affineX).map {
+            contract.deleteInfo(ecPoint.affineX, serializeKey(it)).send()
+        }
     }
 
     private fun serializeKey(key: String): ByteArray {
@@ -86,6 +87,13 @@ class HybridClientDataRepositoryImpl(
     private fun deserializeKey(keyData: ByteArray): String {
         return keyData.toString(Charset.defaultCharset())
                 .trim(Character.MIN_VALUE)
+    }
+
+    private fun getClientKeys(publicKeyX: BigInteger): Array<String> {
+        val keysCount = contract.clientKeysCount(publicKeyX).send().toLong()
+        return (0..(keysCount - 1)).map {
+            deserializeKey(contract.clientKeys(publicKeyX, it.toBigInteger()).send())
+        }.toTypedArray()
     }
 
 }

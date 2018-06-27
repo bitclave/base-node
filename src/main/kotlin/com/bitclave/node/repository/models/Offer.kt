@@ -1,5 +1,7 @@
 package com.bitclave.node.repository.models
 
+import org.hibernate.annotations.ColumnDefault
+import java.math.BigDecimal
 import javax.persistence.*
 
 @Entity
@@ -9,9 +11,11 @@ data class Offer(
         @Column(length = 512) val description: String = "",
         @Column(length = 256) val title: String = "",
         @Column(length = 512) val imageUrl: String = "",
+        @ColumnDefault("0") val worth: String = BigDecimal.ZERO.toString(),
         @ElementCollection(fetch = FetchType.EAGER) val tags: Map<String, String> = HashMap(),
         @ElementCollection(fetch = FetchType.EAGER) val compare: Map<String, String> = HashMap(),
         @ElementCollection(fetch = FetchType.EAGER) val rules: Map<String, CompareAction> = HashMap()
+
 ) {
 
     enum class CompareAction(
@@ -28,4 +32,3 @@ data class Offer(
     }
 
 }
-

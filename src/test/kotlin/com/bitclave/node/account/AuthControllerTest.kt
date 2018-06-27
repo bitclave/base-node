@@ -14,8 +14,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 @ActiveProfiles("test")
@@ -44,7 +43,7 @@ class AuthControllerTest {
         httpHeaders.set("Strategy", RepositoryStrategyType.POSTGRES.name)
     }
 
-    @Test fun `check registarion`() {
+    @Test fun `check registration`() {
         this.mvc.perform(post("/$version/registration")
                 .content(requestAccount.toJsonString())
                 .headers(httpHeaders))
@@ -57,9 +56,16 @@ class AuthControllerTest {
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }
+
     @Test fun `delete account`() {
         this.mvc.perform(delete("/$version/delete")
                 .content(requestAccount.toJsonString())
+                .headers(httpHeaders))
+                .andExpect(status().isOk)
+    }
+
+    @Test fun `get nonce`() {
+        this.mvc.perform(get("/$version/nonce/$publicKey")
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }

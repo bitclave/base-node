@@ -44,7 +44,8 @@ class AuthController(
 
     @ApiOperation("Creates a new user in the system, based on the provided information.\n" +
             "The API will verify that the request is cryptographically signed by the owner of the public key.",
-            response = Account::class)
+            response = Account::class
+    )
     @ApiResponses(value = [
         ApiResponse(code = 201, message = "Created", response = Account::class),
         ApiResponse(code = 400, message = "BadArgumentException"),
@@ -61,8 +62,8 @@ class AuthController(
 
             @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
             @RequestHeader("Strategy", required = false)
-            strategy: String?):
-            CompletableFuture<Account> {
+            strategy: String?
+    ): CompletableFuture<Account> {
 
         return accountService.checkSigMessage(request)
                 .thenApply { pk ->
@@ -104,8 +105,8 @@ class AuthController(
 
             @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
             @RequestHeader("Strategy", required = false)
-            strategy: String?):
-            CompletableFuture<Account> {
+            strategy: String?
+    ): CompletableFuture<Account> {
 
         return accountService.checkSigMessage(request)
                 .thenApply { pk ->
@@ -119,6 +120,34 @@ class AuthController(
                 }
     }
 
+    /**
+     * Get count transactions by Account
+     * @param request is {@link SignedRequest} where client sends {@link Account}
+     * and signature of the message.
+     *
+     * @return {@link Long}, Http status - 200.
+     *
+     * @exception   {@link AccessDeniedException} - 403
+     *              {@link NotFoundException} - 404
+     */
+    @ApiOperation("Get count transactions by Account", response = Long::class)
+    @ApiResponses(value = [
+        ApiResponse(code = 200, message = "Success", response = Account::class),
+        ApiResponse(code = 404, message = "NotFoundException")
+    ])
+    @RequestMapping(method = [RequestMethod.GET], value = ["nonce/{pk}"])
+    fun getNonce(
+            @ApiParam("ID (Public Key) of the user in BASE system", required = true)
+            @PathVariable("pk")
+            publicKey: String,
+
+            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+            @RequestHeader("Strategy", required = false)
+            strategy: String?
+    ): CompletableFuture<Long> {
+
+        return accountService.getNonce(publicKey, getStrategyType(strategy))
+    }
 
     /**
      * Verifies if the specified account already exists in the system.
@@ -137,6 +166,7 @@ class AuthController(
             "The API will verify that the request is cryptographically signed by the owner of the public key.")
     @ApiResponses(value = [
         ApiResponse(code = 200, message = "Success"),
+        ApiResponse(code = 400, message = "BadArgumentException"),
         ApiResponse(code = 403, message = "AccessDeniedException")
     ])
     @RequestMapping(method = [RequestMethod.DELETE], value = ["delete"])
@@ -148,8 +178,8 @@ class AuthController(
 
             @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
             @RequestHeader("Strategy", required = false)
-            strategy: String?):
-            CompletableFuture<Void> {
+            strategy: String?
+    ): CompletableFuture<Void> {
 
         val strategyType = getStrategyType(strategy)
         return accountService.accountBySigMessage(request, strategyType)

@@ -5,8 +5,10 @@ import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.RequestData
 import com.bitclave.node.repository.request.RequestDataRepository
 import com.bitclave.node.services.errors.BadArgumentException
+import com.bitclave.node.utils.KeyPairUtils
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
+import java.util.*
 import java.util.concurrent.CompletableFuture
 
 @Service
@@ -16,7 +18,6 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
     fun getRequestByStatus(
             fromPk: String?,
             toPk: String?,
-            state: RequestData.RequestDataState,
             strategy: RepositoryStrategyType
     ): CompletableFuture<List<RequestData>> {
 
@@ -24,15 +25,19 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
             val result: List<RequestData> =
                     if (fromPk == null && toPk != null) {
                         requestDataRepository.changeStrategy(strategy)
-                                .getByTo(toPk, state)
+                                .getByTo(toPk)
 
                     } else if (fromPk != null && toPk == null) {
                         requestDataRepository.changeStrategy(strategy)
-                                .getByFrom(fromPk, state)
+                                .getByFrom(fromPk)
 
                     } else if (fromPk != null && toPk != null) {
-                        requestDataRepository.changeStrategy(strategy)
-                                .getByFromAndTo(fromPk, toPk, state)
+                        val result = requestDataRepository.changeStrategy(strategy)
+                                .getByFromAndTo(fromPk, toPk)
+                        if (result == null)
+                            Collections.emptyList<RequestData>()
+                        else
+                            arrayListOf(result)
 
                     } else {
                         throw BadArgumentException()
@@ -44,52 +49,18 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
 
     fun request(clientPk: String, data: RequestData, strategy: RepositoryStrategyType): CompletableFuture<Long> {
         return CompletableFuture.supplyAsync({
+            val record = requestDataRepository.changeStrategy(strategy)
+                    .getByFromAndTo(clientPk, data.toPk.toLowerCase())
+
             val request = RequestData(
-                    0L,
+                    record?.id ?: 0L,
                     clientPk,
-                    data.toPk,
+                    data.toPk.toLowerCase(),
                     data.requestData,
-                    "",
-                    RequestData.RequestDataState.AWAIT
+                    record?.responseData ?: ""
             )
             requestDataRepository.changeStrategy(strategy)
                     .updateData(request).id
-        })
-    }
-
-    fun response(
-            id: Long,
-            publicKey: String,
-            data: String?,
-            strategy: RepositoryStrategyType
-    ): CompletableFuture<RequestData.RequestDataState> {
-
-        return CompletableFuture.supplyAsync({
-            val original = requestDataRepository.changeStrategy(strategy)
-                    .findById(id)
-
-            if (original == null || original.toPk != publicKey) {
-                throw BadArgumentException()
-            }
-
-            val state = when {
-                data.isNullOrEmpty() -> RequestData.RequestDataState.REJECT
-                else -> RequestData.RequestDataState.ACCEPT
-            }
-
-            val result = RequestData(
-                    original.id,
-                    original.fromPk,
-                    original.toPk,
-                    original.requestData,
-                    data ?: "",
-                    state
-            )
-
-            requestDataRepository.changeStrategy(strategy)
-                    .updateData(result)
-
-            state
         })
     }
 
@@ -100,17 +71,21 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
     ): CompletableFuture<Long> {
 
         return CompletableFuture.supplyAsync({
-            if (data.responseData.isEmpty() || data.toPk != clientId || data.fromPk.length < 66) {
+            if (data.responseData.isEmpty() ||
+                    data.toPk != clientId ||
+                    !KeyPairUtils.isValidPublicKey(data.fromPk)) {
                 throw BadArgumentException()
             }
 
+            val record = requestDataRepository.changeStrategy(strategy)
+                    .getByFromAndTo(data.fromPk.toLowerCase(), clientId)
+
             val request = RequestData(
-                    0L,
-                    data.fromPk,
+                    record?.id ?: 0L,
+                    data.fromPk.toLowerCase(),
                     clientId,
-                    "",
-                    data.responseData,
-                    RequestData.RequestDataState.ACCEPT
+                    record?.requestData ?: "",
+                    data.responseData
             )
 
             requestDataRepository.changeStrategy(strategy)

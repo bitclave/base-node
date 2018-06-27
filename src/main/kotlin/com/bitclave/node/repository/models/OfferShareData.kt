@@ -4,15 +4,13 @@ import java.math.BigDecimal
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.Id
-import javax.persistence.IdClass
 
 @Entity
-@IdClass(OfferCompositeKeys::class)
 data class OfferShareData(
-        @Id val offerId: Long = 0,
-        @Id val clientId: String = "",
-        @Id val offerOwner: String = "",
-        @Column(length = 2000) val clientResponse: String = "",
+        @Id val offerSearchId: Long = 0,
+        val offerOwner: String = "",
+        val clientId: String = "",
+        @Column(columnDefinition = "TEXT") val clientResponse: String = "",
         val worth: String = BigDecimal.ZERO.toString(),
         val accepted: Boolean = false
 )

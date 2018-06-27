@@ -55,83 +55,50 @@ class RequestDataServiceTest {
         strategy = RepositoryStrategyType.POSTGRES
     }
 
-    @Test fun `get request by state and from`() {
+    @Test fun `get request by from`() {
         `create request to client`()
 
         val resultRequests = requestDataService.getRequestByStatus(
                 from,
                 null,
-                RequestData.RequestDataState.AWAIT,
                 strategy
         ).get()
 
         Assertions.assertThat(resultRequests.size).isEqualTo(1)
         val request = resultRequests[0]
-        assertRequestData(request, RequestData.RequestDataState.AWAIT)
+        assertRequestData(request)
     }
 
-    @Test fun `get request by state and to`() {
+    @Test fun `get request by to`() {
         `create request to client`()
 
         val resultRequests = requestDataService.getRequestByStatus(
                 null,
                 to,
-                RequestData.RequestDataState.AWAIT,
                 strategy
         ).get()
 
         Assertions.assertThat(resultRequests.size).isEqualTo(1)
         val request = resultRequests[0]
-        assertRequestData(request, RequestData.RequestDataState.AWAIT)
+        assertRequestData(request)
     }
 
-    @Test fun `get request by state and from and to`() {
+    @Test fun `get request by from and to`() {
         `create request to client`()
 
         val resultRequests = requestDataService.getRequestByStatus(
                 from,
                 to,
-                RequestData.RequestDataState.AWAIT,
                 strategy
         ).get()
 
         Assertions.assertThat(resultRequests.size).isEqualTo(1)
         val request = resultRequests[0]
-        assertRequestData(request, RequestData.RequestDataState.AWAIT)
-    }
-
-    @Test fun `test response data after response to request ACCEPT`() {
-        `create response to client with accept`()
-        val resultRequests = requestDataService.getRequestByStatus(
-                from,
-                to,
-                RequestData.RequestDataState.ACCEPT,
-                strategy
-        ).get()
-
-        Assertions.assertThat(resultRequests.size).isEqualTo(1)
-        val request = resultRequests[0]
-        assertRequestData(request, RequestData.RequestDataState.ACCEPT, RESPONSE_DATA)
-    }
-
-    @Test fun `test response data after response to request REJECT`() {
-        `create response to client with reject`()
-
-        val resultRequests = requestDataService.getRequestByStatus(
-                from,
-                to,
-                RequestData.RequestDataState.REJECT,
-                strategy
-        ).get()
-
-        Assertions.assertThat(resultRequests.size).isEqualTo(1)
-        val request = resultRequests[0]
-        assertRequestData(request, RequestData.RequestDataState.REJECT, "")
+        assertRequestData(request)
     }
 
     protected open fun assertRequestData(
             request: RequestData,
-            state: RequestData.RequestDataState,
             responseData: String = ""
     ) {
         Assertions.assertThat(request.fromPk).isEqualTo(from)
@@ -139,18 +106,11 @@ class RequestDataServiceTest {
         Assertions.assertThat(request.id).isEqualTo(1)
         Assertions.assertThat(request.requestData).isEqualTo(REQUEST_DATA)
         Assertions.assertThat(request.responseData).isEqualTo(responseData)
-        Assertions.assertThat(request.state).isEqualTo(state)
     }
 
     @Test fun `create request to client`() {
         val id = requestDataService.request(from, request, strategy).get()
         Assertions.assertThat(id).isEqualTo(1L)
-    }
-
-    @Test fun `create response to client with accept`() {
-        `create request to client`()
-        val state = requestDataService.response(1, to, RESPONSE_DATA, strategy).get()
-        Assertions.assertThat(state).isEqualTo(RequestData.RequestDataState.ACCEPT)
     }
 
     @Test fun `grant access to client with accept`() {
@@ -160,7 +120,6 @@ class RequestDataServiceTest {
         val resultRequests = requestDataService.getRequestByStatus(
                 from,
                 to,
-                RequestData.RequestDataState.ACCEPT,
                 strategy
         ).get()
 
@@ -172,13 +131,6 @@ class RequestDataServiceTest {
         Assertions.assertThat(resultRequest.id).isEqualTo(1)
         Assertions.assertThat(resultRequest.requestData).isEmpty()
         Assertions.assertThat(resultRequest.responseData).isEqualTo(RESPONSE_DATA)
-        Assertions.assertThat(resultRequest.state).isEqualTo(RequestData.RequestDataState.ACCEPT)
-    }
-
-    @Test fun `create response to client with reject`() {
-        `create request to client`()
-        val state = requestDataService.response(1, to, null, strategy).get()
-        Assertions.assertThat(state).isEqualTo(RequestData.RequestDataState.REJECT)
     }
 
     @Test fun `delete response and requests by From and To`() {
@@ -193,7 +145,6 @@ class RequestDataServiceTest {
         var resultList = requestDataService.getRequestByStatus(
                 from,
                 to,
-                RequestData.RequestDataState.AWAIT,
                 strategy
         ).get()
         Assertions.assertThat(resultList.size).isEqualTo(0)
@@ -201,11 +152,9 @@ class RequestDataServiceTest {
         resultList = requestDataService.getRequestByStatus(
                 to,
                 from,
-                RequestData.RequestDataState.AWAIT,
                 strategy
         ).get()
         Assertions.assertThat(resultList.size).isEqualTo(0)
     }
-
 
 }

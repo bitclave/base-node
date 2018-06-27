@@ -1,8 +1,10 @@
 package com.bitclave.node.controllers.v1
 
 import com.bitclave.node.controllers.AbstractController
+import com.bitclave.node.repository.models.Account
 import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.models.SignedRequest
+import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.SearchRequestService
@@ -16,7 +18,7 @@ import org.springframework.web.bind.annotation.*
 import java.util.concurrent.CompletableFuture
 
 @RestController
-@RequestMapping("/v1/client/{owner}/search/")
+@RequestMapping("/v1/client/{owner}/search/request/")
 class SearchRequestController(
         @Qualifier("v1") private val accountService: AccountService,
         @Qualifier("v1") private val searchRequestService: SearchRequestService
@@ -34,7 +36,6 @@ class SearchRequestController(
      *              {@link AccessDeniedException} - 403
      *              {@link DataNotSaved} - 500
      */
-
     @ApiOperation("Creates new request for search in the system, based on the provided information.\n" +
             "The API will verify that the request is cryptographically signed by the owner of the public key.",
             response = SearchRequest::class)
@@ -60,12 +61,21 @@ class SearchRequestController(
             strategy: String?): CompletableFuture<SearchRequest> {
 
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
+                .thenCompose { account: Account -> accountService.validateNonce(request, account) }
                 .thenCompose {
-                    searchRequestService.createSearchRequest(
-                            owner,
+                    if (owner != it.publicKey) {
+                        throw AccessDeniedException()
+                    }
+
+                    val result = searchRequestService.createSearchRequest(
+                            it.publicKey,
                             request.data!!,
                             getStrategyType(strategy)
-                    )
+                    ).get()
+
+                    accountService.incrementNonce(it, getStrategyType(strategy)).get()
+
+                    CompletableFuture.completedFuture(result)
                 }
     }
 
@@ -81,7 +91,6 @@ class SearchRequestController(
      *              {@link AccessDeniedException} - 403
      *              {@link NotFoundException} - 500
      */
-
     @ApiOperation("Delete a search request from the system.\n" +
             "The API will verify that the request is cryptographically signed by the owner of the public key.",
             response = Long::class)
@@ -110,15 +119,24 @@ class SearchRequestController(
             strategy: String?): CompletableFuture<Long> {
 
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
+                .thenCompose { account: Account -> accountService.validateNonce(request, account) }
                 .thenCompose {
-                    if (request.pk != owner || id != request.data) {
+                    if (request.pk != owner) {
+                        throw AccessDeniedException()
+                    }
+
+                    if (id != request.data) {
                         throw BadArgumentException()
                     }
-                    searchRequestService.deleteSearchRequest(
+
+                    val result = searchRequestService.deleteSearchRequest(
                             id,
                             owner,
                             getStrategyType(strategy)
-                    )
+                    ).get()
+                    accountService.incrementNonce(it, getStrategyType(strategy)).get()
+
+                    CompletableFuture.completedFuture(result)
                 }
     }
 
@@ -141,7 +159,7 @@ class SearchRequestController(
             @PathVariable("owner")
             owner: String,
 
-            @ApiParam("Optional id of existed search requests")
+            @ApiParam("Optional id of existed search request")
             @PathVariable(value = "id", required = false)
             id: Long?,
 

@@ -6,10 +6,10 @@ interface OfferShareRepository {
 
     fun saveShareData(shareData: OfferShareData)
 
-    fun findByOwner(owner: String): List<OfferShareData>
+    fun findByOfferSearchId(id: Long): OfferShareData?
 
-    fun findByOwnerAndAccepted(owner: String, accepted: Boolean): List<OfferShareData>
+    fun findByOfferOwnerAndAccepted(offerOwner: String, accepted: Boolean): List<OfferShareData>
 
-    fun findByOfferIdAndClientId(offerId: Long, clientId: String): OfferShareData?
+    fun findByOfferOwner(offerOwner: String): List<OfferShareData>
 
 }

@@ -31,8 +31,15 @@ class ClientProfileService(
     ): CompletableFuture<Map<String, String>> {
 
         return CompletableFuture.supplyAsync({
+            val oldData = clientDataRepository.changeStrategy(strategy)
+                    .getData(publicKey)
+                    .toMutableMap()
+
+            oldData.putAll(data)
+
             clientDataRepository.changeStrategy(strategy)
-                    .updateData(publicKey, data)
+                    .updateData(publicKey, oldData)
+
             data
         })
     }

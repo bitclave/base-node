@@ -19,16 +19,6 @@ class ClientProfileServiceHybridTest : ClientProfileServiceTest() {
         strategy = RepositoryStrategyType.HYBRID
     }
 
-
-    @Test(expected = NotImplementedException::class)
-    override fun `delete client raw data by public key`() {
-        try {
-            super.`delete client raw data by public key`()
-        } catch (e: Exception) {
-            throw e.cause!!
-        }
-    }
-
     @After fun revertHybridState() {
         contractDeployer.revertNode()
     }

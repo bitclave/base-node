@@ -41,7 +41,6 @@ class OfferShareControllerTest {
                 1,
                 publicKey,
                 "",
-                publicKey,
                 BigDecimal.ONE.toString()
         ), publicKey)
         worthRequest = SignedRequest(BigDecimal.TEN, publicKey)
@@ -52,27 +51,31 @@ class OfferShareControllerTest {
     }
 
     @Test fun `create share data`() {
-        this.mvc.perform(post("/$version/data/grant/offer")
+        this.mvc.perform(post("/$version/data/grant/offer/")
                 .content(shareDataRequest.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isCreated)
     }
 
     @Test fun `accept shared data`() {
-        this.mvc.perform(patch("/$version/data/offer/1/client/$publicKey")
+        this.mvc.perform(patch("/$version/data/offer/")
+                .param("offerSearchId", "1")
                 .content(worthRequest.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isAccepted)
     }
 
     @Test fun `get share data by owner`() {
-        this.mvc.perform(get("/$version/data/offer/owner/$publicKey/")
+        this.mvc.perform(get("/$version/data/offer/")
+                .param("owner", publicKey)
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }
 
     @Test fun `get share data by owner and accepted`() {
-        this.mvc.perform(get("/$version/data/offer/owner/$publicKey/accepted/true")
+        this.mvc.perform(get("/$version/data/offer/")
+                .param("owner", publicKey)
+                .param("accepted", "true")
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }

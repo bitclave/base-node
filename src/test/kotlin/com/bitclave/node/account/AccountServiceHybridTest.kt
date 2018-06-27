@@ -20,15 +20,6 @@ class AccountServiceHybridTest : AccountServiceTest() {
         strategy = RepositoryStrategyType.HYBRID
     }
 
-    @Test(expected = NotImplementedException::class)
-    override fun `delete client`() {
-        try {
-            super.`delete client`()
-        } catch (e: Exception) {
-            throw e.cause!!
-        }
-    }
-
     @After
     fun revertHybridState() {
         contractDeployer.revertNode()

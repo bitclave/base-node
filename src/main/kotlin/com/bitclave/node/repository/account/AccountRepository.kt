@@ -4,10 +4,10 @@ import com.bitclave.node.repository.models.Account
 
 interface AccountRepository {
 
-    fun saveAccount(publicKey: String)
+    fun saveAccount(account: Account)
 
     fun findByPublicKey(publicKey: String): Account?
 
-    fun deleteAccount(publicKey: String): Long
+    fun deleteAccount(publicKey: String)
 
 }

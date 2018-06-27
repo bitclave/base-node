@@ -51,29 +51,27 @@ class SearchRequestControllerTest {
     }
 
     @Test fun `create search request`() {
-        this.mvc.perform(post("/$version/client/$publicKey/search/")
+        this.mvc.perform(post("/$version/client/$publicKey/search/request/")
                 .content(requestSearch.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isCreated)
     }
 
     @Test fun `delete search request`() {
-        this.mvc.perform(delete("/$version/client/$publicKey/search/1/")
+        this.mvc.perform(delete("/$version/client/$publicKey/search/request/1/")
                 .content(requestSearchId.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }
 
     @Test fun `get search request by owner`() {
-        this.mvc.perform(get("/$version/client/$publicKey/search/")
-                .content(requestSearch.toJsonString())
+        this.mvc.perform(get("/$version/client/$publicKey/search/request/")
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }
 
     @Test fun `get search request by owner and id`() {
-        this.mvc.perform(get("/$version/client/$publicKey/search/1/")
-                .content(requestSearch.toJsonString())
+        this.mvc.perform(get("/$version/client/$publicKey/search/request/1/")
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }

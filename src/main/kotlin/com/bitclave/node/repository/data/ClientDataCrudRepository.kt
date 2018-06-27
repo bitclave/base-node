@@ -9,6 +9,6 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 interface ClientDataCrudRepository : CrudRepository<ClientData, String> {
 
-    fun deleteByPublicKey(key: String): Long
+    fun deleteByPublicKey(key: String)
 
 }
