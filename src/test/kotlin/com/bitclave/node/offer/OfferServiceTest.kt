@@ -9,9 +9,15 @@ import com.bitclave.node.repository.account.HybridAccountRepositoryImpl
 import com.bitclave.node.repository.account.PostgresAccountRepositoryImpl
 import com.bitclave.node.repository.models.Account
 import com.bitclave.node.repository.models.Offer
+import com.bitclave.node.repository.models.OfferPrice
+import com.bitclave.node.repository.models.OfferPriceRules
 import com.bitclave.node.repository.offer.OfferCrudRepository
 import com.bitclave.node.repository.offer.OfferRepositoryStrategy
 import com.bitclave.node.repository.offer.PostgresOfferRepositoryImpl
+import com.bitclave.node.repository.price.OfferPriceCrudRepository
+import com.bitclave.node.repository.price.OfferPriceRepositoryStrategy
+import com.bitclave.node.repository.price.PostgresOfferPriceRepositoryImpl
+import com.bitclave.node.repository.priceRule.OfferPriceRulesCrudRepository
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferService
 import org.assertj.core.api.Assertions.assertThat
@@ -43,10 +49,61 @@ class OfferServiceTest {
     protected lateinit var offerCrudRepository: OfferCrudRepository
     protected lateinit var offerService: OfferService
 
+    @Autowired
+    protected lateinit var offerPriceCrudRepository: OfferPriceCrudRepository
+
+    @Autowired
+    protected lateinit var offerPriceRulesCrudRepository: OfferPriceRulesCrudRepository
+
     private val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
 
     private val account: Account = Account(publicKey)
     protected lateinit var strategy: RepositoryStrategyType
+
+    private fun getOriginPrices(): List<OfferPrice> {
+        return listOf(
+                OfferPrice(
+                        0,
+                        "first price description",
+                        BigDecimal("0.5").toString(),
+                        listOf(
+                                OfferPriceRules(0,"age","10"),
+                                OfferPriceRules(0,"sex","male"),
+                                OfferPriceRules(0,"country","USA")
+                        )
+                ),
+                OfferPrice(
+                        0,
+                        "second price description",
+                        BigDecimal("0.7").toString(),
+                        listOf(
+                                OfferPriceRules(0,"age","20"),
+                                OfferPriceRules(0,"sex","female"),
+                                OfferPriceRules(0,"country","England")
+                        )
+                ),
+                OfferPrice(
+                        0,
+                        "third price description",
+                        BigDecimal("0.9").toString(),
+                        listOf(
+                                OfferPriceRules(0,"age","30"),
+                                OfferPriceRules(0,"sex","male"),
+                                OfferPriceRules(0,"country","Israel")
+                        )
+                ),
+                OfferPrice(
+                        0,
+                        "fourth price description",
+                        BigDecimal("1.2").toString(),
+                        listOf(
+                                OfferPriceRules(0,"age","40"),
+                                OfferPriceRules(0,"sex","male"),
+                                OfferPriceRules(0,"country","Ukraine")
+                        )
+                )
+        )
+    }
 
     private val offer = Offer(
             0,
@@ -57,7 +114,8 @@ class OfferServiceTest {
             BigDecimal.TEN.toString(),
             mapOf("car" to "true", "color" to "red"),
             mapOf("age" to "18", "salary" to "1000"),
-            mapOf("age" to Offer.CompareAction.MORE_OR_EQUAL, "salary" to Offer.CompareAction.MORE_OR_EQUAL)
+            mapOf("age" to Offer.CompareAction.MORE_OR_EQUAL, "salary" to Offer.CompareAction.MORE_OR_EQUAL),
+            getOriginPrices()
     )
 
     @Before fun setup() {
@@ -65,17 +123,26 @@ class OfferServiceTest {
         val hybrid = HybridAccountRepositoryImpl(web3Provider, hybridProperties)
         val repositoryStrategy = AccountRepositoryStrategy(postgres, hybrid)
         val accountService = AccountService(repositoryStrategy)
+
         val postgresOfferRepository = PostgresOfferRepositoryImpl(offerCrudRepository)
         val offerServiceStrategy = OfferRepositoryStrategy(postgresOfferRepository)
 
-        offerService = OfferService(offerServiceStrategy)
+        val postgresOfferPriceRepository = PostgresOfferPriceRepositoryImpl(offerPriceCrudRepository, offerPriceRulesCrudRepository)
+        val offerPriceServiceStrategy = OfferPriceRepositoryStrategy(postgresOfferPriceRepository)
+
+        offerService = OfferService(offerServiceStrategy, offerPriceServiceStrategy)
 
         strategy = RepositoryStrategyType.POSTGRES
         accountService.registrationClient(account, strategy)
     }
 
     @Test fun `should be create new offer`() {
-        val result = offerService.putOffer(0, account.publicKey, offer, strategy).get()
+
+        val oneOffer = this.offer.copy()
+        oneOffer.offerPrices = getOriginPrices()
+
+        val result = offerService.putOffer(0, account.publicKey, oneOffer, strategy).get()
+
         assert(result.id >= 1L)
         assertThat(result.owner).isEqualTo(account.publicKey)
         assertThat(result.description).isEqualTo(offer.description)
@@ -84,9 +151,11 @@ class OfferServiceTest {
         assertThat(result.tags).isEqualTo(offer.tags)
         assertThat(result.compare).isEqualTo(offer.compare)
         assertThat(result.rules).isEqualTo(offer.rules)
+
+        assertThat(result.offerPrices.size).isEqualTo(4)
     }
 
-    @Test fun `should be update created offer`() {
+    @Test fun `should be update created offer without prices`() {
         val changedOffer = Offer(
                 34,
                 "dsdsdsdsd",
@@ -96,7 +165,8 @@ class OfferServiceTest {
                 BigDecimal.ONE.toString(),
                 mapOf("color" to "red"),
                 mapOf("salary" to "1000"),
-                mapOf("salary" to Offer.CompareAction.MORE))
+                mapOf("salary" to Offer.CompareAction.MORE)
+        )
 
         val created = offerService.putOffer(0, account.publicKey, offer, strategy).get()
 
@@ -117,12 +187,52 @@ class OfferServiceTest {
         assertThat(updated.rules).isEqualTo(changedOffer.rules)
     }
 
+    @Test fun `should be update created offer with prices`() {
+        val changedOffer = Offer(
+                34,
+                "dsdsdsdsd",
+                "is desc111",
+                "is title111",
+                "is image url111",
+                BigDecimal.ONE.toString(),
+                mapOf("color" to "red"),
+                mapOf("salary" to "1000"),
+                mapOf("salary" to Offer.CompareAction.MORE)
+        )
+
+        val created = offerService.putOffer(0, account.publicKey, offer, strategy).get()
+
+        assert(created.id == 1L)
+
+        val updatedDescription = "updated"
+        changedOffer.offerPrices = created.offerPrices
+        changedOffer.offerPrices.find { it.id == 1L }?.description = updatedDescription
+
+
+        val updated = offerService.putOffer(created.id, account.publicKey, changedOffer, strategy).get()
+
+        assert(updated.id == 1L)
+        assertThat(updated.owner).isEqualTo(account.publicKey)
+        assertThat(updated.id).isNotEqualTo(changedOffer.id)
+        assertThat(updated.owner).isNotEqualTo(changedOffer.owner)
+
+        assertThat(updated.offerPrices.find{it.id==1L}!!.description).isEqualTo(updatedDescription)
+
+        assertThat(updated.description).isEqualTo(changedOffer.description)
+        assertThat(updated.title).isEqualTo(changedOffer.title)
+        assertThat(updated.imageUrl).isEqualTo(changedOffer.imageUrl)
+        assertThat(updated.tags).isEqualTo(changedOffer.tags)
+        assertThat(updated.worth).isEqualTo(BigDecimal.ONE.toString())
+        assertThat(updated.compare).isEqualTo(changedOffer.compare)
+        assertThat(updated.rules).isEqualTo(changedOffer.rules)
+    }
+
     @Test fun `should delete existed offer`() {
         `should be create new offer`()
 
         var savedListResult = offerService.getOffers(1, account.publicKey, strategy).get()
         assertThat(savedListResult.size).isEqualTo(1)
-        assertThat(savedListResult[0]).isEqualToIgnoringGivenFields(offer, "id")
+        assertThat(savedListResult[0]).isEqualToIgnoringGivenFields(offer, "id","offerPrices")
 
         val deletedId = offerService.deleteOffer(1, account.publicKey, strategy).get()
 
@@ -139,9 +249,9 @@ class OfferServiceTest {
 
         var savedListResult = offerService.getOffers(0, account.publicKey, strategy).get()
         assertThat(savedListResult.size).isEqualTo(3)
-        assertThat(savedListResult[0]).isEqualToIgnoringGivenFields(offer, "id")
-        assertThat(savedListResult[1]).isEqualToIgnoringGivenFields(offer, "id")
-        assertThat(savedListResult[2]).isEqualToIgnoringGivenFields(offer, "id")
+        assertThat(savedListResult[0]).isEqualToIgnoringGivenFields(offer, "id","offerPrices")
+        assertThat(savedListResult[1]).isEqualToIgnoringGivenFields(offer, "id","offerPrices")
+        assertThat(savedListResult[2]).isEqualToIgnoringGivenFields(offer, "id","offerPrices")
 
         offerService.deleteOffers(account.publicKey, strategy).get()
 
@@ -155,11 +265,11 @@ class OfferServiceTest {
 
         var result = offerService.getOffers(1, account.publicKey, strategy).get()
         assertThat(result.size).isEqualTo(1)
-        assertThat(result[0]).isEqualToIgnoringGivenFields(offer, "id")
+        assertThat(result[0]).isEqualToIgnoringGivenFields(offer, "id","offerPrices")
 
         result = offerService.getOffers(2, account.publicKey, strategy).get()
         assertThat(result.size).isEqualTo(1)
-        assertThat(result[0]).isEqualToIgnoringGivenFields(offer, "id")
+        assertThat(result[0]).isEqualToIgnoringGivenFields(offer, "id","offerPrices")
 
         result = offerService.getOffers(3, account.publicKey, strategy).get()
         assertThat(result.size).isEqualTo(0)
@@ -173,8 +283,8 @@ class OfferServiceTest {
         assertThat(result.size).isEqualTo(2)
         assert(result[0].id == 1L)
         assert(result[1].id == 2L)
-        assertThat(result[0]).isEqualToIgnoringGivenFields(offer, "id")
-        assertThat(result[1]).isEqualToIgnoringGivenFields(offer, "id")
+        assertThat(result[0]).isEqualToIgnoringGivenFields(offer, "id","offerPrices")
+        assertThat(result[1]).isEqualToIgnoringGivenFields(offer, "id","offerPrices")
     }
 
 }

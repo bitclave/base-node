@@ -4,6 +4,7 @@ import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.Offer
 import com.bitclave.node.repository.offer.OfferRepository
+import com.bitclave.node.repository.price.OfferPriceRepository
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
 import org.springframework.beans.factory.annotation.Qualifier
@@ -13,7 +14,8 @@ import java.util.concurrent.CompletableFuture
 @Service
 @Qualifier("v1")
 class OfferService(
-        private val offerRepository: RepositoryStrategy<OfferRepository>
+        private val offerRepository: RepositoryStrategy<OfferRepository>,
+        private val offerPriceRepository: RepositoryStrategy<OfferPriceRepository>
 ) {
 
     fun putOffer(
@@ -23,7 +25,7 @@ class OfferService(
             strategy: RepositoryStrategyType
     ): CompletableFuture<Offer> {
 
-        return CompletableFuture.supplyAsync({
+        return CompletableFuture.supplyAsync {
             if (id > 0) {
                 offerRepository.changeStrategy(strategy)
                         .findByIdAndOwner(id, owner) ?: throw BadArgumentException()
@@ -51,11 +53,16 @@ class OfferService(
                     offer.worth,
                     offer.tags,
                     offer.compare,
-                    offer.rules
+                    offer.rules,
+                    offer.offerPrices
             )
+            val processedOffer = offerRepository.changeStrategy(strategy).saveOffer(putOffer)
+            offerPriceRepository.changeStrategy(strategy).savePrices(processedOffer, offer.offerPrices)
 
-            offerRepository.changeStrategy(strategy).saveOffer(putOffer)
-        })
+            offerRepository.changeStrategy(strategy).findById(processedOffer.id)
+
+
+        }
     }
 
     fun deleteOffer(
