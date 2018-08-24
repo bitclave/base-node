@@ -22,7 +22,7 @@ sudo apt-get update
 sudo apt-get install oracle-java8-installer
 ```
 
-install local blockchain:
+- install local blockchain:
 ```
 sudo npm install -g ganache-cli
 ```
@@ -44,7 +44,7 @@ postgres -D .
 in file src/application.properties, set ( spring.profiles.active=local)
 ```
 
-#How to Run
+# How to Run
 
 - build project:
 ```
