@@ -13,6 +13,7 @@ BASE-NODE is the implementation of the Node component in BASE platform
 - install PostgreSQL (https://www.postgresql.org/download)
 - update password for user "postgres" to "bitclave"
 - install NodeJS, NPM
+- install pgadmin (https://www.pgadmin.org/)
 
 - install Java:
 ```
