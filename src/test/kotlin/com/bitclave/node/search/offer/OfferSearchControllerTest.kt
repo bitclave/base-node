@@ -55,28 +55,28 @@ class OfferSearchControllerTest {
     }
 
     @Test fun `get offer search list by searchRequestId`() {
-        this.mvc.perform(get("/$version/client/$publicKey/search/result/")
+        this.mvc.perform(get("/$version/search/result/")
                 .param("searchRequestId", "1")
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }
 
     @Test fun `get offer search list by offerSearchId`() {
-        this.mvc.perform(get("/$version/client/$publicKey/search/result/")
-                .param("OfferSearchId", "1")
+        this.mvc.perform(get("/$version/search/result/")
+                .param("offerSearchId", "1")
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }
 
     @Test fun `complain to search result`() {
-        this.mvc.perform(patch("/$version/client/$publicKey/search/result/1")
+        this.mvc.perform(patch("/$version/search/result/1")
                 .content(offerSearchIdRequest.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }
 
     @Test fun `add offer search item`() {
-        this.mvc.perform(post("/dev/client/$publicKey/search/result/")
+        this.mvc.perform(post("/$version/search/result/")
                 .content(offerSearchRequest.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isCreated)

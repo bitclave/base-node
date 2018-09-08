@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 interface SearchRequestCrudRepository : CrudRepository<SearchRequest, Long> {
 
+    fun findById(id: Long): List<SearchRequest>
+
     fun findByOwner(owner: String): List<SearchRequest>
 
     fun deleteByIdAndOwner(id: Long, owner: String): Long

@@ -10,6 +10,8 @@ interface SearchRequestRepository {
 
     fun deleteSearchRequests(owner: String): Long
 
+    fun findById(id: Long): SearchRequest?
+
     fun findByOwner(owner: String): List<SearchRequest>
 
     fun findByIdAndOwner(id: Long, owner: String): SearchRequest?
