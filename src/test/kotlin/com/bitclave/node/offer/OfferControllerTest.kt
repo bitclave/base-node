@@ -3,6 +3,8 @@ package com.bitclave.node.offer
 import com.bitclave.node.extensions.toJsonString
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.Offer
+import com.bitclave.node.repository.models.OfferPrice
+import com.bitclave.node.repository.models.OfferPriceRules
 import com.bitclave.node.repository.models.SignedRequest
 import org.junit.Before
 import org.junit.Test
@@ -34,16 +36,61 @@ class OfferControllerTest {
     protected lateinit var requestOfferId: SignedRequest<Long>
     private var httpHeaders: HttpHeaders = HttpHeaders()
 
+    private val prices = listOf(
+            OfferPrice(
+                    0,
+                    "first price description",
+                    BigDecimal("0.5").toString(),
+                    listOf(
+                            OfferPriceRules(0,"age","10"),
+                            OfferPriceRules(0,"sex","male"),
+                            OfferPriceRules(0,"country","USA")
+                    )
+            ),
+            OfferPrice(
+                    0,
+                    "second price description",
+                    BigDecimal("0.7").toString(),
+                    listOf(
+                            OfferPriceRules(0,"age","20"),
+                            OfferPriceRules(0,"sex","female"),
+                            OfferPriceRules(0,"country","England")
+                    )
+            ),
+            OfferPrice(
+                    0,
+                    "third price description",
+                    BigDecimal("0.9").toString(),
+                    listOf(
+                            OfferPriceRules(0,"age","30"),
+                            OfferPriceRules(0,"sex","male"),
+                            OfferPriceRules(0,"country","Israel")
+                    )
+            ),
+            OfferPrice(
+                    0,
+                    "fourth price description",
+                    BigDecimal("1.2").toString(),
+                    listOf(
+                            OfferPriceRules(0,"age","40"),
+                            OfferPriceRules(0,"sex","male"),
+                            OfferPriceRules(0,"country","Ukraine")
+                    )
+            )
+    )
+
     private val offer = Offer(
             0,
             publicKey,
+            prices,
             "is desc",
             "is title",
             "is image url",
             BigDecimal.TEN.toString(),
             mapOf("car" to "true", "color" to "red"),
             mapOf("age" to "18", "salary" to "1000"),
-            mapOf("age" to Offer.CompareAction.MORE_OR_EQUAL, "salary" to Offer.CompareAction.MORE_OR_EQUAL))
+            mapOf("age" to Offer.CompareAction.MORE_OR_EQUAL, "salary" to Offer.CompareAction.MORE_OR_EQUAL)
+    )
 
     @Before fun setup() {
         version = "v1"
@@ -84,10 +131,14 @@ class OfferControllerTest {
     }
 
     @Test fun `get offer by owner and id`() {
-        this.mvc.perform(get("/$version/client/$publicKey/offer/1/")
+        val result =  this.mvc.perform(get("/$version/client/$publicKey/offer/1/")
                 .content(requestOffer.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
+                .andReturn()
+
+        val content = result.response.contentAsString
+        println(content)
     }
 
 }

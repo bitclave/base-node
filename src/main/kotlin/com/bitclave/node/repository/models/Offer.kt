@@ -1,5 +1,6 @@
 package com.bitclave.node.repository.models
 
+import com.fasterxml.jackson.annotation.JsonManagedReference
 import org.hibernate.annotations.ColumnDefault
 import java.math.BigDecimal
 import javax.persistence.*
@@ -8,6 +9,10 @@ import javax.persistence.*
 data class Offer(
         @GeneratedValue(strategy = GenerationType.TABLE) @Id val id: Long = 0,
         @Column(length = 256) val owner: String = "",
+
+        @OneToMany(mappedBy = "offer", cascade = [CascadeType.REMOVE], fetch = FetchType.EAGER)
+        var offerPrices: List<OfferPrice> = emptyList(),
+
         @Column(length = 512) val description: String = "",
         @Column(length = 256) val title: String = "",
         @Column(length = 512) val imageUrl: String = "",
@@ -16,10 +21,8 @@ data class Offer(
 
         @ElementCollection(fetch = FetchType.EAGER) val tags: Map<String, String> = HashMap(),
         @ElementCollection(fetch = FetchType.EAGER) val compare: Map<String, String> = HashMap(),
-        @ElementCollection(fetch = FetchType.EAGER) val rules: Map<String, CompareAction> = HashMap(),
+        @ElementCollection(fetch = FetchType.EAGER) val rules: Map<String, CompareAction> = HashMap()
 
-        @OneToMany(mappedBy = "offer", cascade = [CascadeType.REMOVE], fetch = FetchType.EAGER)
-        var offerPrices: List<OfferPrice> = emptyList()
 
 ) {
 

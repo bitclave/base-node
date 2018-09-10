@@ -3,6 +3,7 @@ package com.bitclave.node.services.v1
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.Offer
+import com.bitclave.node.repository.models.OfferPrice
 import com.bitclave.node.repository.offer.OfferRepository
 import com.bitclave.node.repository.price.OfferPriceRepository
 import com.bitclave.node.services.errors.BadArgumentException
@@ -47,20 +48,19 @@ class OfferService(
 
             val putOffer = Offer(id,
                     owner,
+                    listOf(),
                     offer.description,
                     offer.title,
                     offer.imageUrl,
                     offer.worth,
                     offer.tags,
                     offer.compare,
-                    offer.rules,
-                    offer.offerPrices
+                    offer.rules
             )
             val processedOffer = offerRepository.changeStrategy(strategy).saveOffer(putOffer)
             offerPriceRepository.changeStrategy(strategy).savePrices(processedOffer, offer.offerPrices)
-
-            offerRepository.changeStrategy(strategy).findById(processedOffer.id)
-
+            val updatedOffer = offerRepository.changeStrategy(strategy).findById(processedOffer.id)
+            updatedOffer
 
         }
     }

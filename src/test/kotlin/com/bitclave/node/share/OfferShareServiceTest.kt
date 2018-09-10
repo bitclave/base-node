@@ -69,6 +69,7 @@ class OfferShareServiceTest {
     private val offer = Offer(
             0,
             accountBusiness.publicKey,
+            listOf(),
             "is desc",
             "is title",
             "is image url",

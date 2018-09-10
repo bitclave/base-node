@@ -24,6 +24,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.internal.matchers.Null
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.annotation.DirtiesContext
@@ -108,14 +109,14 @@ class OfferServiceTest {
     private val offer = Offer(
             0,
             account.publicKey,
+            listOf(),
             "is desc",
             "is title",
             "is image url",
             BigDecimal.TEN.toString(),
             mapOf("car" to "true", "color" to "red"),
             mapOf("age" to "18", "salary" to "1000"),
-            mapOf("age" to Offer.CompareAction.MORE_OR_EQUAL, "salary" to Offer.CompareAction.MORE_OR_EQUAL),
-            getOriginPrices()
+            mapOf("age" to Offer.CompareAction.MORE_OR_EQUAL, "salary" to Offer.CompareAction.MORE_OR_EQUAL)
     )
 
     @Before fun setup() {
@@ -159,6 +160,7 @@ class OfferServiceTest {
         val changedOffer = Offer(
                 34,
                 "dsdsdsdsd",
+                listOf(),
                 "is desc111",
                 "is title111",
                 "is image url111",
@@ -188,9 +190,13 @@ class OfferServiceTest {
     }
 
     @Test fun `should be update created offer with prices`() {
+        val oneOffer = this.offer.copy()
+        oneOffer.offerPrices = getOriginPrices()
+
         val changedOffer = Offer(
                 34,
                 "dsdsdsdsd",
+                getOriginPrices(),
                 "is desc111",
                 "is title111",
                 "is image url111",
@@ -200,7 +206,7 @@ class OfferServiceTest {
                 mapOf("salary" to Offer.CompareAction.MORE)
         )
 
-        val created = offerService.putOffer(0, account.publicKey, offer, strategy).get()
+        val created = offerService.putOffer(0, account.publicKey, oneOffer, strategy).get()
 
         assert(created.id == 1L)
 

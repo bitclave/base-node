@@ -69,6 +69,7 @@ class OfferSearchServiceTest {
     protected val offer = Offer(
             0,
             businessPublicKey,
+            listOf(),
             "desc",
             "title",
             "url"
