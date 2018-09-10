@@ -47,7 +47,7 @@ postgres -D .
 
 - set base-node configuration to local
 ```
-in file src/application.properties, set ( spring.profiles.active=local)
+in file src/main/resources/application-local.yml, set ( spring.profiles.active=local)
 ```
 
 # How to Run
