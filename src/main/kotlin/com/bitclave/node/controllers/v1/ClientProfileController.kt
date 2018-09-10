@@ -40,10 +40,10 @@ class ClientProfileController(
             publicKey: String,
             @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
             @RequestHeader("Strategy", required = false)
-            strategy: RepositoryStrategyType
+            strategy: String?
     ): CompletableFuture<Map<String, String>> {
 
-        return profileService.getData(publicKey, strategy)
+        return profileService.getData(publicKey, getStrategyType(strategy))
     }
 
     /**
