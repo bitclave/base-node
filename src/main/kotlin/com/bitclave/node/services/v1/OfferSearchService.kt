@@ -22,15 +22,14 @@ class OfferSearchService(
         private val offerSearchRepository: RepositoryStrategy<OfferSearchRepository>
 ) {
     fun getOffersResult(
-            clientId: String,
             strategy: RepositoryStrategyType,
             searchRequestId: Long? = null,
-            searchResultId: Long? = null
+            offerSearchId: Long? = null
     ): CompletableFuture<List<OfferSearchResultItem>> {
 
-        return CompletableFuture.supplyAsync({
-            if (searchRequestId == null && searchResultId == null) {
-                throw BadArgumentException("specify parameter searchRequestId or searchResultId")
+        return CompletableFuture.supplyAsync {
+            if (searchRequestId == null && offerSearchId == null) {
+                throw BadArgumentException("specify parameter searchRequestId or offerSearchId")
             }
 
             val repository = offerSearchRepository.changeStrategy(strategy)
@@ -39,7 +38,7 @@ class OfferSearchService(
                 repository.findBySearchRequestId(searchRequestId)
 
             } else {
-                val offerSearch: OfferSearch? = repository.findById(searchResultId!!)
+                val offerSearch: OfferSearch? = repository.findById(offerSearchId!!)
                 if (offerSearch != null) arrayListOf(offerSearch) else emptyList<OfferSearch>()
             }
 
@@ -50,17 +49,16 @@ class OfferSearchService(
 
             offers.filter { ids.containsKey(it.id) }
                     .map { OfferSearchResultItem(ids[it.id]!!, it) }
-        })
+        }
     }
 
     fun saveOfferSearch(
-            clientId: String,
             offerSearch: OfferSearch,
             strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
-        return CompletableFuture.runAsync({
+        return CompletableFuture.runAsync {
             searchRequestRepository.changeStrategy(strategy)
-                    .findByIdAndOwner(offerSearch.searchRequestId, clientId)
+                    .findById(offerSearch.searchRequestId)
                     ?: throw BadArgumentException("search request id not exist")
 
             offerRepository.changeStrategy(strategy)
@@ -74,26 +72,25 @@ class OfferSearchService(
                             offerSearch.offerId,
                             OfferResultAction.NONE
                     ))
-        })
+        }
     }
 
     fun complain(
-            clientId: String,
             offerSearchId: Long,
             strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
-        return CompletableFuture.runAsync({
+        return CompletableFuture.runAsync {
             val repository = offerSearchRepository.changeStrategy(strategy)
             val item = repository.findById(offerSearchId)
                     ?: throw BadArgumentException("offer search item id not exist")
 
             searchRequestRepository.changeStrategy(strategy)
-                    .findByIdAndOwner(item.searchRequestId, clientId)
+                    .findById(item.searchRequestId)
                     ?: AccessDeniedException()
 
             item.state = OfferResultAction.REJECT;
             repository.saveSearchResult(item)
-        })
+        }
     }
 
 }

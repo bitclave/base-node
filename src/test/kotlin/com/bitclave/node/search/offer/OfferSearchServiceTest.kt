@@ -119,12 +119,11 @@ class OfferSearchServiceTest {
     @Test
     fun `should be create new offer search item and get result by clientId and search request id`() {
         offerSearchService.saveOfferSearch(
-                publicKey,
                 OfferSearch(0, 1L, 1L, OfferResultAction.NONE),
                 strategy
         ).get()
 
-        val result = offerSearchService.getOffersResult(publicKey, strategy, 1L).get()
+        val result = offerSearchService.getOffersResult(strategy, 1L).get()
         assert(result.size == 1)
         assert(result[0].offerSearch.id == 1L)
         assert(result[0].offerSearch.state == OfferResultAction.NONE)
@@ -135,12 +134,11 @@ class OfferSearchServiceTest {
     @Test
     fun `should be create new offer search item and get result by clientId and offer search id`() {
         offerSearchService.saveOfferSearch(
-                publicKey,
                 OfferSearch(0, 1L, 1L, OfferResultAction.NONE),
                 strategy
         ).get()
 
-        val result = offerSearchService.getOffersResult(publicKey, strategy, null, 1L).get()
+        val result = offerSearchService.getOffersResult(strategy, null, 1L).get()
         assert(result.size == 1)
         assert(result[0].offerSearch.id == 1L)
         assert(result[0].offerSearch.state == OfferResultAction.NONE)
@@ -151,9 +149,9 @@ class OfferSearchServiceTest {
     @Test fun `client can complain to search item`() {
         `should be create new offer search item and get result by clientId and search request id`()
 
-        offerSearchService.complain(publicKey, 1L, strategy).get()
+        offerSearchService.complain(1L, strategy).get()
 
-        val result = offerSearchService.getOffersResult(publicKey, strategy, 1L).get()
+        val result = offerSearchService.getOffersResult(strategy, 1L).get()
         assert(result.size == 1)
         assert(result[0].offerSearch.id == 1L)
         assert(result[0].offerSearch.state == OfferResultAction.REJECT)
@@ -170,7 +168,7 @@ class OfferSearchServiceTest {
                 strategy
         ).get()
 
-        val result = offerSearchService.getOffersResult(publicKey, strategy, 1L).get()
+        val result = offerSearchService.getOffersResult(strategy, 1L).get()
         assert(result.size == 1)
         assert(result[0].offerSearch.id == 1L)
         assert(result[0].offerSearch.state == OfferResultAction.ACCEPT)

@@ -9,9 +9,28 @@ BASE-NODE is the implementation of the Node component in BASE platform
 - BASE-NODE API is available [here](https://base2-bitclva-com.herokuapp.com/swagger-ui.html#)
 
 # Installation
-- install ganache-cli - your local blockchain
+
+- install PostgreSQL (https://www.postgresql.org/download)
+- update password for user "postgres" to "bitclave"
 ```
-npm install -g ganache-cli
+sudo -u postgres psql postgres
+\password postgres
+bitclave
+\q
+```
+- install NodeJS, NPM
+- install pgadmin (https://www.pgadmin.org/)
+
+- install Java:
+```
+sudo add-apt-repository ppa:webupd8team/java
+sudo apt-get update
+sudo apt-get install oracle-java8-installer
+```
+
+- install local blockchain:
+```
+sudo npm install -g ganache-cli
 ```
 
 - start your local blockchain
@@ -19,9 +38,38 @@ npm install -g ganache-cli
 ./start-ganache.sh 
 ```
 
-- start your local Postgres instance
+- start your local Postgres instance (Mac)
 ```
 postgres -D .
+```
+
+- verify your Postgres instance is running (using pgAdmin for example)
+
+- set base-node configuration to local
+```
+in file src/main/resources/application-local.yml, set ( spring.profiles.active=local)
+```
+
+# How to Run
+
+- build project:
+```
+gradlew build
+```
+
+- start local blockchain:
+```
+./start-ganache
+```
+
+- run tests
+```
+gradlew test
+```
+
+- compile and start spring-boot app:
+```
+gradlew bootRun
 ```
 
 - check the base-node API

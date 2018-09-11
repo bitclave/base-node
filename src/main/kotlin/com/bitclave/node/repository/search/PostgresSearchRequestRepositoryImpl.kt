@@ -28,6 +28,10 @@ class PostgresSearchRequestRepositoryImpl(
         return repository.deleteByOwner(owner)
     }
 
+    override fun findById(id: Long): SearchRequest? {
+        return repository.findOne(id)
+    }
+
     override fun findByOwner(owner: String): List<SearchRequest> {
         return repository.findByOwner(owner)
     }
