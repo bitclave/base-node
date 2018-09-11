@@ -86,7 +86,8 @@ class OfferShareDataController(
             strategy: String?
     ): CompletableFuture<Void> {
 
-        return accountService.accountBySigMessage(request, getStrategyType(strategy))
+        return accountService
+                .accountBySigMessage(request, getStrategyType(strategy))
                 .thenCompose { account: Account -> accountService.validateNonce(request, account) }
                 .thenAcceptAsync {
                     offerShareData.grantAccess(it.publicKey, request.data!!, getStrategyType(strategy))

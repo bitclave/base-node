@@ -68,12 +68,16 @@ class OfferShareService(
                     .findById(offerSearch.offerId)
                     ?: throw BadArgumentException("offer id not exist")
 
+            val price = offer.offerPrices.find { it.id === data.priceId }
+                    ?: throw BadArgumentException("priceId should be in offer")
+
+
             val shareData = OfferShareData(
                     offerSearch.id,
                     offer.owner,
                     clientId,
                     data.clientResponse,
-                    offer.worth,
+                    price.worth,
                     false,
                     data.priceId
             )

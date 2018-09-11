@@ -70,7 +70,7 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
             strategy: RepositoryStrategyType
     ): CompletableFuture<Long> {
 
-        return CompletableFuture.supplyAsync({
+        return CompletableFuture.supplyAsync {
             if (data.responseData.isEmpty() ||
                     data.toPk != clientId ||
                     !KeyPairUtils.isValidPublicKey(data.fromPk)) {
@@ -90,7 +90,7 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
 
             requestDataRepository.changeStrategy(strategy)
                     .updateData(request).id
-        })
+        }
     }
 
     fun deleteRequestsAndResponses(
