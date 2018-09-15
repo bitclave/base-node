@@ -1,0 +1,24 @@
+spring:
+  jpa:
+    hibernate:
+      ddlAuto: create-drop
+
+  datasource:
+    driverClassName: org.postgresql.Driver
+    platform: postgres
+    url: ${JDBC_DATABASE_URL}
+    username: ${JDBC_DATABASE_USERNAME}
+    password: ${JDBC_DATABASE_PASSWORD}
+
+server:
+  port: 8080
+
+hybrid:
+  nodeUrl: ${ETHEREUM_RPC_URL}
+  ownerPrivateKey: ${OWNER_PRIVATE_KEY}
+
+  contracts:
+    nameService:
+      address: ${DNS_CONTRACT_ADDRESS}
+      gasPrice: ${ETHEREUM_GAS_PRICE}
+      gasLimit: ${ETHEREUM_GAS_LIMIT}

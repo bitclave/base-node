@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 
 @Component
-@Profile("test", "local")
+@Profile("test", "local", "docker")
 class ContractDeployer(
         private val web3Provider: Web3Provider,
         private val hybridProperties: HybridProperties
