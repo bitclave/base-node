@@ -11,6 +11,10 @@ import com.bitclave.node.repository.models.*
 import com.bitclave.node.repository.offer.OfferCrudRepository
 import com.bitclave.node.repository.offer.OfferRepositoryStrategy
 import com.bitclave.node.repository.offer.PostgresOfferRepositoryImpl
+import com.bitclave.node.repository.price.OfferPriceCrudRepository
+import com.bitclave.node.repository.price.OfferPriceRepositoryStrategy
+import com.bitclave.node.repository.price.PostgresOfferPriceRepositoryImpl
+import com.bitclave.node.repository.priceRule.OfferPriceRulesCrudRepository
 import com.bitclave.node.repository.search.PostgresSearchRequestRepositoryImpl
 import com.bitclave.node.repository.search.SearchRequestCrudRepository
 import com.bitclave.node.repository.search.SearchRequestRepositoryStrategy
@@ -31,6 +35,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
+import java.math.BigDecimal
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
@@ -48,6 +53,12 @@ class OfferSearchServiceTest {
 
     @Autowired
     protected lateinit var offerCrudRepository: OfferCrudRepository
+
+    @Autowired
+    protected lateinit var offerPriceCrudRepository: OfferPriceCrudRepository
+
+    @Autowired
+    protected lateinit var offerPriceRuleCrudRepository: OfferPriceRulesCrudRepository
 
     @Autowired
     protected lateinit var searchRequestCrudRepository: SearchRequestCrudRepository
@@ -74,6 +85,18 @@ class OfferSearchServiceTest {
             "title",
             "url"
     )
+    protected val offerPrice = OfferPrice(
+            0,
+            "first price description",
+            BigDecimal("0.5").toString(),
+            listOf(
+                    OfferPriceRules(0,"age","10"),
+                    OfferPriceRules(0,"sex","male"),
+                    OfferPriceRules(0,"country","USA")
+            )
+    )
+
+    protected val offerPrices = listOf(offerPrice)
 
     @Before fun setup() {
         val postgres = PostgresAccountRepositoryImpl(accountCrudRepository)
@@ -93,6 +116,10 @@ class OfferSearchServiceTest {
         val offerSearchRepository = PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository)
         val offerSearchRepositoryStrategy = OfferSearchRepositoryStrategy(offerSearchRepository)
 
+        val offerPriceRepository = PostgresOfferPriceRepositoryImpl(offerPriceCrudRepository, offerPriceRuleCrudRepository)
+        val offerPriceRepositoryStrategy = OfferPriceRepositoryStrategy(offerPriceRepository)
+
+
         offerShareService = OfferShareService(
                 shareRepositoryStrategy,
                 offerRepositoryStrategy,
@@ -109,8 +136,15 @@ class OfferSearchServiceTest {
         strategy = RepositoryStrategyType.POSTGRES
         accountService.registrationClient(account, strategy)
 
-        offerRepositoryStrategy.changeStrategy(strategy)
+
+
+        offerRepositoryStrategy
+                .changeStrategy(strategy)
                 .saveOffer(offer)
+
+        offerPriceRepositoryStrategy
+                .changeStrategy(strategy)
+                .savePrices(offer, offerPrices)
 
         searchRequestRepositoryStrategy.changeStrategy(strategy)
                 .saveSearchRequest(SearchRequest(0, publicKey, emptyMap()))
@@ -162,9 +196,12 @@ class OfferSearchServiceTest {
     @Test fun `search item state should be ACCEPT`() {
         `should be create new offer search item and get result by clientId and search request id`()
 
+        val projectId = offerPrices[0].id
+        val offerShareData = OfferShareData(1L, businessPublicKey, publicKey, "response", BigDecimal.ZERO.toString(), true, projectId)
+
         offerShareService.grantAccess(
                 publicKey,
-                OfferShareData(1L, businessPublicKey, publicKey, "response"),
+                offerShareData,
                 strategy
         ).get()
 

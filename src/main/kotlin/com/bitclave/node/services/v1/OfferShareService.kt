@@ -59,17 +59,20 @@ class OfferShareService(
                 throw BadArgumentException("empty response data")
             }
 
-            if (offerShareRepository.changeStrategy(strategy)
+            if (offerShareRepository
+                            .changeStrategy(strategy)
                             .findByOfferSearchId(data.offerSearchId) != null) {
                 throw DuplicateException()
             }
 
-            val offer = offerRepository.changeStrategy(strategy)
+            val offer = offerRepository
+                    .changeStrategy(strategy)
                     .findById(offerSearch.offerId)
                     ?: throw BadArgumentException("offer id not exist")
 
             val price = offer.offerPrices.find { it.id === data.priceId }
                     ?: throw BadArgumentException("priceId should be in offer")
+
 
 
             val shareData = OfferShareData(
@@ -82,12 +85,14 @@ class OfferShareService(
                     data.priceId
             )
 
-            offerShareRepository.changeStrategy(strategy)
+            offerShareRepository
+                    .changeStrategy(strategy)
                     .saveShareData(shareData)
 
             offerSearch.state = OfferResultAction.ACCEPT
 
-            offerSearchRepository.changeStrategy(strategy)
+            offerSearchRepository
+                    .changeStrategy(strategy)
                     .saveSearchResult(offerSearch)
         }
     }
@@ -99,11 +104,13 @@ class OfferShareService(
             strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
         return CompletableFuture.runAsync {
-            offerSearchRepository.changeStrategy(strategy)
+            offerSearchRepository
+                    .changeStrategy(strategy)
                     .findById(offerSearchId)
                     ?: throw BadArgumentException("offer search id not exist")
 
-            val originShareData = offerShareRepository.changeStrategy(strategy)
+            val originShareData = offerShareRepository
+                    .changeStrategy(strategy)
                     .findByOfferSearchId(offerSearchId)
                     ?: throw BadArgumentException("share data id not exist")
 
@@ -115,12 +122,13 @@ class OfferShareService(
                 throw BadArgumentException("incorrect worth value")
             }
 
+
             val shareData = OfferShareData(
                     originShareData.offerSearchId,
                     originShareData.offerOwner,
                     originShareData.clientId,
                     originShareData.clientResponse,
-                    worth.toString(),
+                    originShareData.worth,
                     true,
                     originShareData.priceId
             )
@@ -129,5 +137,6 @@ class OfferShareService(
                     .saveShareData(shareData)
         }
     }
+
 
 }
