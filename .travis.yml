@@ -20,5 +20,8 @@ before_script:
   - ./start-ganache.sh > /dev/null &
   - sleep 5
 
+script:
+  - ./gradlew check --stacktrace
+  
 after_success:
   - ./gradlew jacocoTestReport coveralls
