@@ -141,7 +141,8 @@ class RequestDataController(
             strategy: String?
     ): CompletableFuture<Long> {
 
-        return accountService.accountBySigMessage(request, getStrategyType(strategy))
+        return accountService
+                .accountBySigMessage(request, getStrategyType(strategy))
                 .thenCompose { account: Account -> accountService.validateNonce(request, account) }
                 .thenCompose { account: Account ->
                     val result = requestDataService.grantAccess(

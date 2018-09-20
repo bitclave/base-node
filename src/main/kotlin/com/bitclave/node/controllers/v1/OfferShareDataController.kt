@@ -86,14 +86,15 @@ class OfferShareDataController(
             strategy: String?
     ): CompletableFuture<Void> {
 
-        return accountService.accountBySigMessage(request, getStrategyType(strategy))
+        return accountService
+                .accountBySigMessage(request, getStrategyType(strategy))
                 .thenCompose { account: Account -> accountService.validateNonce(request, account) }
-                .thenAcceptAsync({
+                .thenAcceptAsync {
                     offerShareData.grantAccess(it.publicKey, request.data!!, getStrategyType(strategy))
                             .get()
 
                     accountService.incrementNonce(it, getStrategyType(strategy)).get()
-                })
+                }
     }
 
     /**
@@ -132,7 +133,7 @@ class OfferShareDataController(
 
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
                 .thenCompose { account: Account -> accountService.validateNonce(request, account) }
-                .thenAcceptAsync({
+                .thenAcceptAsync {
                     offerShareData.acceptShareData(
                             it.publicKey,
                             offerSearchId,
@@ -141,7 +142,7 @@ class OfferShareDataController(
                     ).get()
 
                     accountService.incrementNonce(it, getStrategyType(strategy)).get()
-                })
+                }
     }
 
 }

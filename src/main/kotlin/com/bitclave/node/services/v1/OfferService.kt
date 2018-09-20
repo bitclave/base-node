@@ -3,7 +3,9 @@ package com.bitclave.node.services.v1
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.Offer
+import com.bitclave.node.repository.models.OfferPrice
 import com.bitclave.node.repository.offer.OfferRepository
+import com.bitclave.node.repository.price.OfferPriceRepository
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
 import org.springframework.beans.factory.annotation.Qualifier
@@ -13,7 +15,8 @@ import java.util.concurrent.CompletableFuture
 @Service
 @Qualifier("v1")
 class OfferService(
-        private val offerRepository: RepositoryStrategy<OfferRepository>
+        private val offerRepository: RepositoryStrategy<OfferRepository>,
+        private val offerPriceRepository: RepositoryStrategy<OfferPriceRepository>
 ) {
 
     fun putOffer(
@@ -23,7 +26,7 @@ class OfferService(
             strategy: RepositoryStrategyType
     ): CompletableFuture<Offer> {
 
-        return CompletableFuture.supplyAsync({
+        return CompletableFuture.supplyAsync {
             if (id > 0) {
                 offerRepository.changeStrategy(strategy)
                         .findByIdAndOwner(id, owner) ?: throw BadArgumentException()
@@ -45,6 +48,7 @@ class OfferService(
 
             val putOffer = Offer(id,
                     owner,
+                    listOf(),
                     offer.description,
                     offer.title,
                     offer.imageUrl,
@@ -53,9 +57,12 @@ class OfferService(
                     offer.compare,
                     offer.rules
             )
+            val processedOffer = offerRepository.changeStrategy(strategy).saveOffer(putOffer)
+            offerPriceRepository.changeStrategy(strategy).savePrices(processedOffer, offer.offerPrices)
+            val updatedOffer = offerRepository.changeStrategy(strategy).findById(processedOffer.id)
+            updatedOffer
 
-            offerRepository.changeStrategy(strategy).saveOffer(putOffer)
-        })
+        }
     }
 
     fun deleteOffer(

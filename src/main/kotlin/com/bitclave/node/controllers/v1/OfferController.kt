@@ -65,8 +65,11 @@ class OfferController(
             @RequestHeader("Strategy", required = false)
             strategy: String?): CompletableFuture<ResponseEntity<Offer>> {
 
-        return accountService.accountBySigMessage(request, getStrategyType(strategy))
-                .thenCompose { account: Account -> accountService.validateNonce(request, account) }
+        return accountService
+                .accountBySigMessage(request, getStrategyType(strategy))
+                .thenCompose {
+                    account: Account -> accountService.validateNonce(request, account)
+                }
                 .thenCompose {
                     if (request.pk != owner) {
                         throw BadArgumentException()
@@ -77,11 +80,10 @@ class OfferController(
                             request.data!!,
                             getStrategyType(strategy)
                     ).get()
-
                     accountService.incrementNonce(it, getStrategyType(strategy)).get()
-
                     CompletableFuture.completedFuture(result)
-                }.thenCompose {
+                }
+                .thenCompose {
                     val status = if (it.id != id) HttpStatus.CREATED else HttpStatus.OK
                     CompletableFuture.completedFuture(ResponseEntity<Offer>(it, status))
                 }

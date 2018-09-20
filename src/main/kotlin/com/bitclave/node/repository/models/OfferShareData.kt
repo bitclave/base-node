@@ -12,5 +12,6 @@ data class OfferShareData(
         val clientId: String = "",
         @Column(columnDefinition = "TEXT") val clientResponse: String = "",
         val worth: String = BigDecimal.ZERO.toString(),
-        val accepted: Boolean = false
+        val accepted: Boolean = false,
+        val priceId: Long = 0
 )

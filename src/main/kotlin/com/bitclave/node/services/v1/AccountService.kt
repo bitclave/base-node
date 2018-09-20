@@ -37,6 +37,7 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
         return checkSigMessage(request)
                 .thenApply(accountRepository.changeStrategy(strategy)::findByPublicKey)
                 .thenApply { account: Account? ->
+
                     if (account == null) {
                         throw NotFoundException()
                     }

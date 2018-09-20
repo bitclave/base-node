@@ -15,9 +15,14 @@ fun SignedRequest<*>.signMessage(privateKey: String) {
 }
 
 fun SignedRequest<*>.validateSig(): CompletableFuture<Boolean> {
-    return CompletableFuture.supplyAsync({
-        ECKey.signedMessageToKey(GSON.toJson(this.data), this.sig).publicKeyAsHex == this.pk
-    })
+    return CompletableFuture.supplyAsync {
+
+        val a = GSON.toJson(this.data)
+        val b = this.sig
+        val c = ECKey.signedMessageToKey(a, b)
+
+        c.publicKeyAsHex == this.pk
+    }
 }
 
 fun SignedRequest<*>.toJsonString(): String = GSON.toJson(this)
