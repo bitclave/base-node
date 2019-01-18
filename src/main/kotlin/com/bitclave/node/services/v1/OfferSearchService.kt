@@ -88,7 +88,43 @@ class OfferSearchService(
                     .findById(item.searchRequestId)
                     ?: AccessDeniedException()
 
-            item.state = OfferResultAction.REJECT;
+            item.state = OfferResultAction.COMPLAIN
+            repository.saveSearchResult(item)
+        }
+    }
+
+    fun evaluate(
+            offerSearchId: Long,
+            strategy: RepositoryStrategyType
+    ): CompletableFuture<Void> {
+        return CompletableFuture.runAsync {
+            val repository = offerSearchRepository.changeStrategy(strategy)
+            val item = repository.findById(offerSearchId)
+                    ?: throw BadArgumentException("offer search item id not exist")
+
+            searchRequestRepository.changeStrategy(strategy)
+                    .findById(item.searchRequestId)
+                    ?: AccessDeniedException()
+
+            item.state = OfferResultAction.EVALUATE
+            repository.saveSearchResult(item)
+        }
+    }
+
+    fun reject(
+            offerSearchId: Long,
+            strategy: RepositoryStrategyType
+    ): CompletableFuture<Void> {
+        return CompletableFuture.runAsync {
+            val repository = offerSearchRepository.changeStrategy(strategy)
+            val item = repository.findById(offerSearchId)
+                    ?: throw BadArgumentException("offer search item id not exist")
+
+            searchRequestRepository.changeStrategy(strategy)
+                    .findById(item.searchRequestId)
+                    ?: AccessDeniedException()
+
+            item.state = OfferResultAction.REJECT
             repository.saveSearchResult(item)
         }
     }

@@ -15,6 +15,9 @@ open class OfferSearch(
 
 enum class OfferResultAction {
     NONE,
-    ACCEPT,
-    REJECT
+    ACCEPT,     // set by ???
+    REJECT,     // set by User when rejects the offer
+    EVALUATE,   // set by User when following external redirect link
+    REWARDED,   // set by Business when it pays out to User based on User's action outside of BASE
+    COMPLAIN    // set by User when complains on the offer
 }
