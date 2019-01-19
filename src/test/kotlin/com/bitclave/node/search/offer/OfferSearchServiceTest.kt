@@ -188,7 +188,7 @@ class OfferSearchServiceTest {
         val result = offerSearchService.getOffersResult(strategy, 1L).get()
         assert(result.size == 1)
         assert(result[0].offerSearch.id == 1L)
-        assert(result[0].offerSearch.state == OfferResultAction.REJECT)
+        assert(result[0].offerSearch.state == OfferResultAction.COMPLAIN)
         assert(result[0].offer.id == 1L)
         assert(result[0].offer.owner == businessPublicKey)
     }
