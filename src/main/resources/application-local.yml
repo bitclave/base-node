@@ -1,6 +1,7 @@
 spring:
   jpa:
     hibernate:
+#      ddlAuto: update
       ddlAuto: create-drop
 
   datasource:

@@ -132,10 +132,10 @@ class OfferSearchController(
     /**
      * Marks Search Result item for <evaluation>
      */
-    @ApiOperation("Updates status of the selected SearchResults item to <evalaute>.")
+    @ApiOperation("Updates status of the selected SearchResults item to <evaluate>.")
     @ApiResponses(value = [ApiResponse(code = 200, message = "Success")])
     @RequestMapping(method = [RequestMethod.PATCH], value = ["/evaluate/{id}"])
-    fun evalaute(
+    fun evaluate(
             @ApiParam("id of search result item")
             @PathVariable(value = "id")
             searchResultId: Long,
@@ -151,6 +151,29 @@ class OfferSearchController(
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
                 .thenAcceptAsync {
                     offerSearchService.evaluate(request.data!!, getStrategyType(strategy)).get()
+                    accountService.incrementNonce(it, getStrategyType(strategy)).get()
+                }
+    }
+
+    @ApiOperation("Updates status of the selected SearchResults item to <confirmed>.")
+    @ApiResponses(value = [ApiResponse(code = 200, message = "Success")])
+    @RequestMapping(method = [RequestMethod.PATCH], value = ["/confirm/{id}"])
+    fun confirm(
+            @ApiParam("id of search result item")
+            @PathVariable(value = "id")
+            searchResultId: Long,
+
+            @ApiParam("where client sends searchResult id and signature of the message.", required = true)
+            @RequestBody
+            request: SignedRequest<Long>,
+
+            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+            @RequestHeader("Strategy", required = false)
+            strategy: String?): CompletableFuture<Void> {
+
+        return accountService.accountBySigMessage(request, getStrategyType(strategy))
+                .thenAcceptAsync {
+                    offerSearchService.confirm(request.data!!, it.publicKey, getStrategyType(strategy)).get()
                     accountService.incrementNonce(it, getStrategyType(strategy)).get()
                 }
     }

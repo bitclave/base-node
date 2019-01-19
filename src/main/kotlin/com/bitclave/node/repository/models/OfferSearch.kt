@@ -18,6 +18,7 @@ enum class OfferResultAction {
     ACCEPT,     // set by ???
     REJECT,     // set by User when rejects the offer
     EVALUATE,   // set by User when following external redirect link
-    REWARDED,   // set by Business when it pays out to User based on User's action outside of BASE
+    CONFIRMED,  // set by Offer Owner when user completed external action
+    REWARDED,   // set by Offer Owner when Owner paid out the promised reward
     COMPLAIN    // set by User when complains on the offer
 }
