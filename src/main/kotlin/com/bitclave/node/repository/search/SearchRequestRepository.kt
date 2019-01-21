@@ -1,6 +1,8 @@
 package com.bitclave.node.repository.search
 
 import com.bitclave.node.repository.models.SearchRequest
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 
 interface SearchRequestRepository {
 
@@ -18,4 +20,5 @@ interface SearchRequestRepository {
 
     fun findAll(): List<SearchRequest>
 
+    fun findAll(pageable: Pageable): Page<SearchRequest>
 }

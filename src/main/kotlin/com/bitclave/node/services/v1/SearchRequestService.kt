@@ -6,6 +6,8 @@ import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.search.SearchRequestRepository
 import com.bitclave.node.services.errors.NotFoundException
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
 
@@ -82,6 +84,17 @@ class SearchRequestService(
                 return@supplyAsync repository.findAll()
             }
         })
+    }
+
+    fun getPageableRequests(
+            page: PageRequest,
+            strategy: RepositoryStrategyType
+    ): CompletableFuture<Page<SearchRequest>> {
+
+        return CompletableFuture.supplyAsync {
+            val repository = repository.changeStrategy(strategy)
+            return@supplyAsync repository.findAll(page)
+        }
     }
 
 }

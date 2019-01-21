@@ -76,4 +76,10 @@ class SearchRequestControllerTest {
                 .andExpect(status().isOk)
     }
 
+    @Test fun `get search requests by page`() {
+        this.mvc.perform(get("/$version/search/requests?page=0&size=2")
+                .headers(httpHeaders))
+                .andExpect(status().isOk)
+    }
+
 }
