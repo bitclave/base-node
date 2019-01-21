@@ -28,6 +28,7 @@ import org.junit.runner.RunWith
 import org.mockito.internal.matchers.Null
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.data.domain.PageRequest
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
@@ -297,4 +298,20 @@ class OfferServiceTest {
         assertThat(result[1]).isEqualToIgnoringGivenFields(offer, "id","offerPrices")
     }
 
+    @Test fun `should return all offers by page`() {
+        `should be create new offer`()
+        `should be create new offer`()
+        `should be create new offer`()
+        `should be create new offer`()
+
+        val firstPage = offerService.getPageableOffers(PageRequest(0, 2), strategy).get()
+        assertThat(firstPage.size).isEqualTo(2)
+        assert(firstPage.first().id == 1L)
+        assert(firstPage.last().id == 2L)
+
+        val secondPage = offerService.getPageableOffers(PageRequest(1, 2), strategy).get()
+        assertThat(secondPage.size).isEqualTo(2)
+        assert(secondPage.first().id == 3L)
+        assert(secondPage.last().id == 4L)
+    }
 }
