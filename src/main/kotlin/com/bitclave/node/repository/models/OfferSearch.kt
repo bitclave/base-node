@@ -1,16 +1,15 @@
 package com.bitclave.node.repository.models
 
-import javax.persistence.Entity
-import javax.persistence.GeneratedValue
-import javax.persistence.GenerationType
-import javax.persistence.Id
+import javax.persistence.*
 
 @Entity
 open class OfferSearch(
         @GeneratedValue(strategy = GenerationType.TABLE) @Id val id: Long = 0,
         val searchRequestId: Long = 0,
         val offerId: Long = 0,
-        var state: OfferResultAction = OfferResultAction.NONE
+        var state: OfferResultAction = OfferResultAction.NONE,
+//        @Column(length=10485760) var events: String = ""
+        @ElementCollection(fetch = FetchType.EAGER) var events: MutableList<String> = ArrayList()
 )
 
 enum class OfferResultAction {

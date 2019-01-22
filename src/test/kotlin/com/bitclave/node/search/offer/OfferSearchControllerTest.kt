@@ -34,13 +34,15 @@ class OfferSearchControllerTest {
     private val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
     protected lateinit var offerSearchRequest: SignedRequest<OfferSearch>
     protected lateinit var offerSearchIdRequest: SignedRequest<Long>
+    protected lateinit var offerEventRequest: SignedRequest<String>
     private var httpHeaders: HttpHeaders = HttpHeaders()
 
     private val offerSearchModel = OfferSearch(
             0,
            1L,
             1L,
-            OfferResultAction.NONE
+            OfferResultAction.NONE,
+            ArrayList()
     )
 
     @Before fun setup() {
@@ -48,6 +50,7 @@ class OfferSearchControllerTest {
 
         offerSearchRequest = SignedRequest(offerSearchModel, publicKey)
         offerSearchIdRequest = SignedRequest(1L, publicKey)
+        offerEventRequest = SignedRequest("bla-bla-bla", publicKey)
 
         httpHeaders.set("Accept", "application/json")
         httpHeaders.set("Content-Type", "application/json")
@@ -64,6 +67,13 @@ class OfferSearchControllerTest {
     @Test fun `get offer search list by offerSearchId`() {
         this.mvc.perform(get("/$version/search/result/")
                 .param("offerSearchId", "1")
+                .headers(httpHeaders))
+                .andExpect(status().isOk)
+    }
+
+    @Test fun `add event`() {
+        this.mvc.perform(patch("/$version/search/result/event/1")
+                .content(offerEventRequest.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }

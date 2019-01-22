@@ -78,6 +78,34 @@ class OfferSearchController(
     }
 
     /**
+     * Add event to history
+     *
+     */
+    @ApiOperation("Add event")
+    @ApiResponses(value = [ApiResponse(code = 201, message = "Added")])
+    @RequestMapping(method = [RequestMethod.PATCH], value = ["/event/{id}"])
+    @ResponseStatus(HttpStatus.OK)
+    fun addEvent(
+            @ApiParam("id of search result item")
+            @PathVariable(value = "id")
+            searchResultId: Long,
+
+            @ApiParam("where client sends searchResult id and signature of the message.", required = true)
+            @RequestBody
+            event: SignedRequest<String>,
+
+            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+            @RequestHeader("Strategy", required = false)
+            strategy: String?): CompletableFuture<Void> {
+
+        return accountService.accountBySigMessage(event, getStrategyType(strategy))
+                .thenCompose {
+                    offerSearchService.addEventTo(event.data!!, searchResultId, getStrategyType(strategy))
+                }
+    }
+
+
+    /**
      * Complain to Offer or search result item.
      */
     @ApiOperation("[Legacy] Updates status of the selected SearchResults item to <reject>.")

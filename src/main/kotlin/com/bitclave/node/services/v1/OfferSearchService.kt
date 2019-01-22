@@ -72,8 +72,20 @@ class OfferSearchService(
                             0,
                             offerSearch.searchRequestId,
                             offerSearch.offerId,
-                            OfferResultAction.NONE
+                            OfferResultAction.NONE,
+                            offerSearch.events
                     ))
+        }
+    }
+    fun addEventTo(
+            event: String,
+            offerSearchId: Long,
+            strategy: RepositoryStrategyType): CompletableFuture<Void> {
+        return CompletableFuture.runAsync {
+            val repository = offerSearchRepository.changeStrategy(strategy)
+            val item = repository.findById(offerSearchId) ?: throw BadArgumentException("offer search item id not exist")
+            item.events.add(event)
+            repository.saveSearchResult(item)
         }
     }
 
