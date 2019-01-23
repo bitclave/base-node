@@ -176,6 +176,24 @@ class OfferSearchService(
         }
     }
 
+    fun claimPurchase(
+            offerSearchId: Long,
+            strategy: RepositoryStrategyType
+    ): CompletableFuture<Void> {
+        return CompletableFuture.runAsync {
+            val repository = offerSearchRepository.changeStrategy(strategy)
+            val item = repository.findById(offerSearchId)
+                    ?: throw BadArgumentException("offer search item id not exist")
+
+            searchRequestRepository.changeStrategy(strategy)
+                    .findById(item.searchRequestId)
+                    ?: throw AccessDeniedException()
+
+            item.state = OfferResultAction.CLAIMPURCHASE
+            repository.saveSearchResult(item)
+        }
+    }
+
     fun confirm(
             offerSearchId: Long,
             publicKey: String,

@@ -19,10 +19,11 @@ open class OfferSearch(
 
 enum class OfferResultAction {
     NONE,
-    ACCEPT,     // set by ???
-    REJECT,     // set by User when rejects the offer
-    EVALUATE,   // set by User when following external redirect link
-    CONFIRMED,  // set by Offer Owner when user completed external action
-    REWARDED,   // set by Offer Owner when Owner paid out the promised reward
-    COMPLAIN    // set by User when complains on the offer
+    ACCEPT,         // set by ???
+    REJECT,         // set by User when rejects the offer
+    EVALUATE,       // set by User when following external redirect link
+    CONFIRMED,      // set by Offer Owner when user completed external action
+    REWARDED,       // set by Offer Owner when Owner paid out the promised reward
+    COMPLAIN,       // set by User when complains on the offer
+    CLAIMPURCHASE   // set by User to communicate that he mad the purchase for external offer
 }
