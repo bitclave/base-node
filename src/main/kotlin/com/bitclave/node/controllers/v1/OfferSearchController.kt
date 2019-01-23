@@ -196,6 +196,32 @@ class OfferSearchController(
                 }
     }
 
+    /**
+     * Marks Search Result as item that was purchased by user but not confirmed by vendor yet
+     */
+    @ApiOperation("Updates status of the selected SearchResults item to <claim purchase>.")
+    @ApiResponses(value = [ApiResponse(code = 200, message = "Success")])
+    @RequestMapping(method = [RequestMethod.PATCH], value = ["/claimpurchase/{id}"])
+    fun claimPurchase(
+            @ApiParam("id of search result item")
+            @PathVariable(value = "id")
+            searchResultId: Long,
+
+            @ApiParam("where client sends searchResult id and signature of the message.", required = true)
+            @RequestBody
+            request: SignedRequest<Long>,
+
+            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+            @RequestHeader("Strategy", required = false)
+            strategy: String?): CompletableFuture<Void> {
+
+        return accountService.accountBySigMessage(request, getStrategyType(strategy))
+                .thenAcceptAsync {
+                    offerSearchService.claimPurchase(request.data!!, getStrategyType(strategy)).get()
+                    accountService.incrementNonce(it, getStrategyType(strategy)).get()
+                }
+    }
+
     @ApiOperation("Updates status of the selected SearchResults item to <confirmed>.")
     @ApiResponses(value = [ApiResponse(code = 200, message = "Success")])
     @RequestMapping(method = [RequestMethod.PATCH], value = ["/confirm/{id}"])
