@@ -10,7 +10,7 @@ open class OfferSearch(
         val offerId: Long = 0,
         var state: OfferResultAction = OfferResultAction.NONE,
         var lastUpdated: String = Date().toString(),
-        var lastUpdate: Date = Date(),
+//        var lastUpdate: Date = Date(),
         @Column(length=4096) var info: String = "[]",
 //        @Column(length=10485760) var events: String = ""
         @ElementCollection(fetch = FetchType.EAGER) var events: MutableList<String> = ArrayList()

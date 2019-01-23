@@ -100,7 +100,7 @@ class OfferSearchService(
                             offerSearch.offerId,
                             OfferResultAction.NONE,
                             offerSearch.lastUpdated,
-                            offerSearch.lastUpdate,
+//                            offerSearch.lastUpdate,
                             info,
                             offerSearch.events
                     ))
