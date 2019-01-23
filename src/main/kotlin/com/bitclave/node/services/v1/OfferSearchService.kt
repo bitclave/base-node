@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.google.gson.reflect.TypeToken
 import java.util.*
 
 open class OfferSearchEvent (
@@ -101,6 +100,7 @@ class OfferSearchService(
                             offerSearch.offerId,
                             OfferResultAction.NONE,
                             offerSearch.lastUpdated,
+                            offerSearch.lastUpdate,
                             info,
                             offerSearch.events
                     ))
@@ -154,7 +154,7 @@ class OfferSearchService(
             item.state = OfferResultAction.COMPLAIN
 
             var event: OfferSearchEvent = OfferSearchEvent("to be filled", item.state);
-            addEventTo(event.toString(), offerSearchId, strategy);
+            addEventTo(GSON.toJson(event), offerSearchId, strategy);
 
             repository.saveSearchResult(item)
         }
@@ -176,7 +176,7 @@ class OfferSearchService(
             item.state = OfferResultAction.EVALUATE
 
             var event: OfferSearchEvent = OfferSearchEvent("to be filled", item.state);
-            addEventTo(event.toString(), offerSearchId, strategy);
+            addEventTo(GSON.toJson(event), offerSearchId, strategy);
 
             repository.saveSearchResult(item)
         }
@@ -198,7 +198,7 @@ class OfferSearchService(
             item.state = OfferResultAction.REJECT
 
             var event: OfferSearchEvent = OfferSearchEvent("to be filled", item.state);
-            addEventTo(event.toString(), offerSearchId, strategy);
+            addEventTo(GSON.toJson(event), offerSearchId, strategy);
 
             repository.saveSearchResult(item)
         }
@@ -220,7 +220,7 @@ class OfferSearchService(
             item.state = OfferResultAction.CLAIMPURCHASE
 
             var event: OfferSearchEvent = OfferSearchEvent("to be filled", item.state);
-            addEventTo(event.toString(), offerSearchId, strategy);
+            addEventTo(GSON.toJson(event), offerSearchId, strategy);
 
             repository.saveSearchResult(item)
         }
@@ -259,7 +259,7 @@ class OfferSearchService(
             item.state = OfferResultAction.CONFIRMED
 
             var event: OfferSearchEventConfirmed = OfferSearchEventConfirmed(publicKey, item.state, "22");
-            addEventTo(event.toString(), offerSearchId, strategy);
+            addEventTo(GSON.toJson(event), offerSearchId, strategy);
 
             repository.saveSearchResult(item)
         }
