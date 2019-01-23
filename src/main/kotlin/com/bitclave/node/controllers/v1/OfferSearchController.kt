@@ -139,7 +139,7 @@ class OfferSearchController(
 
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
                 .thenAcceptAsync {
-                    offerSearchService.complain(request.data!!, getStrategyType(strategy)).get()
+                    offerSearchService.complain(request.data!!, it.publicKey, getStrategyType(strategy)).get()
                     accountService.incrementNonce(it, getStrategyType(strategy)).get()
                 }
     }
@@ -165,7 +165,7 @@ class OfferSearchController(
 
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
                 .thenAcceptAsync {
-                    offerSearchService.reject(request.data!!, getStrategyType(strategy)).get()
+                    offerSearchService.reject(request.data!!, it.publicKey, getStrategyType(strategy)).get()
                     accountService.incrementNonce(it, getStrategyType(strategy)).get()
                 }
     }
@@ -191,7 +191,7 @@ class OfferSearchController(
 
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
                 .thenAcceptAsync {
-                    offerSearchService.evaluate(request.data!!, getStrategyType(strategy)).get()
+                    offerSearchService.evaluate(request.data!!, it.publicKey, getStrategyType(strategy)).get()
                     accountService.incrementNonce(it, getStrategyType(strategy)).get()
                 }
     }
@@ -217,7 +217,7 @@ class OfferSearchController(
 
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
                 .thenAcceptAsync {
-                    offerSearchService.claimPurchase(request.data!!, getStrategyType(strategy)).get()
+                    offerSearchService.claimPurchase(request.data!!, it.publicKey, getStrategyType(strategy)).get()
                     accountService.incrementNonce(it, getStrategyType(strategy)).get()
                 }
     }

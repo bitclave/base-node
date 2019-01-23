@@ -140,6 +140,7 @@ class OfferSearchService(
 
     fun complain(
             offerSearchId: Long,
+            callerPublicKey: String,
             strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
         return CompletableFuture.runAsync {
@@ -154,13 +155,14 @@ class OfferSearchService(
             item.state = OfferResultAction.COMPLAIN
             repository.saveSearchResult(item)
 
-            var event: OfferSearchEvent = OfferSearchEvent("to be filled", item.state);
+            var event: OfferSearchEvent = OfferSearchEvent(callerPublicKey, item.state);
             addEventTo(GSON.toJson(event), offerSearchId, strategy);
         }
     }
 
     fun evaluate(
             offerSearchId: Long,
+            callerPublicKey: String,
             strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
         return CompletableFuture.runAsync {
@@ -175,13 +177,14 @@ class OfferSearchService(
             item.state = OfferResultAction.EVALUATE
             repository.saveSearchResult(item)
 
-            var event: OfferSearchEvent = OfferSearchEvent("to be filled", item.state);
+            var event: OfferSearchEvent = OfferSearchEvent(callerPublicKey, item.state);
             addEventTo(GSON.toJson(event), offerSearchId, strategy);
         }
     }
 
     fun reject(
             offerSearchId: Long,
+            callerPublicKey: String,
             strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
         return CompletableFuture.runAsync {
@@ -196,13 +199,14 @@ class OfferSearchService(
             item.state = OfferResultAction.REJECT
             repository.saveSearchResult(item)
 
-            var event: OfferSearchEvent = OfferSearchEvent("to be filled", item.state);
+            var event: OfferSearchEvent = OfferSearchEvent(callerPublicKey, item.state);
             addEventTo(GSON.toJson(event), offerSearchId, strategy);
         }
     }
 
     fun claimPurchase(
             offerSearchId: Long,
+            callerPublicKey: String,
             strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
         return CompletableFuture.runAsync {
@@ -217,14 +221,14 @@ class OfferSearchService(
             item.state = OfferResultAction.CLAIMPURCHASE
             repository.saveSearchResult(item)
 
-            var event: OfferSearchEvent = OfferSearchEvent("to be filled", item.state);
+            var event: OfferSearchEvent = OfferSearchEvent(callerPublicKey, item.state);
             addEventTo(GSON.toJson(event), offerSearchId, strategy);
         }
     }
 
     fun confirm(
             offerSearchId: Long,
-            publicKey: String,
+            callerPublicKey: String,
 //            userBaseId: String,
             strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
@@ -246,7 +250,7 @@ class OfferSearchService(
                     ?: throw AccessDeniedException()
 
             // check that the owner is the caller
-            if (offer.owner != publicKey)
+            if (offer.owner != callerPublicKey)
                 throw AccessDeniedException()
 
 //            if (request.owner != userBaseId)
@@ -255,7 +259,7 @@ class OfferSearchService(
             item.state = OfferResultAction.CONFIRMED
             repository.saveSearchResult(item)
 
-            var event: OfferSearchEventConfirmed = OfferSearchEventConfirmed(publicKey, item.state, "22");
+            var event: OfferSearchEventConfirmed = OfferSearchEventConfirmed(callerPublicKey, item.state, "22");
             addEventTo(GSON.toJson(event), offerSearchId, strategy);
         }
     }
