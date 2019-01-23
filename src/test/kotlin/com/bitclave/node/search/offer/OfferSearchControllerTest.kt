@@ -42,6 +42,8 @@ class OfferSearchControllerTest {
            1L,
             1L,
             OfferResultAction.NONE,
+            "",
+            "",
             ArrayList()
     )
 

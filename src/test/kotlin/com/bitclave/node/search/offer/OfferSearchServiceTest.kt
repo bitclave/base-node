@@ -153,7 +153,7 @@ class OfferSearchServiceTest {
     @Test
     fun `should be create new offer search item and get result by clientId and search request id`() {
         offerSearchService.saveOfferSearch(
-                OfferSearch(0, 1L, 1L, OfferResultAction.NONE, ArrayList()),
+                OfferSearch(0, 1L, 1L, OfferResultAction.NONE, "","", ArrayList()),
                 strategy
         ).get()
 
@@ -169,7 +169,7 @@ class OfferSearchServiceTest {
     fun `should be add EVENT as serialized object into array`() {
         var events = mutableListOf("tram taram")
         offerSearchService.saveOfferSearch(
-                OfferSearch(0, 1L, 1L, OfferResultAction.NONE, events),
+                OfferSearch(0, 1L, 1L, OfferResultAction.NONE, "", "", events),
                 strategy
         ).get()
 
@@ -184,7 +184,7 @@ class OfferSearchServiceTest {
     @Test
     fun `should be create new offer search item and get result by clientId and offer search id`() {
         offerSearchService.saveOfferSearch(
-                OfferSearch(0, 1L, 1L, OfferResultAction.NONE, ArrayList()),
+                OfferSearch(0, 1L, 1L, OfferResultAction.NONE, "", "", ArrayList()),
                 strategy
         ).get()
 

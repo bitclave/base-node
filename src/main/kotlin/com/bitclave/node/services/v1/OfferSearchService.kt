@@ -15,6 +15,10 @@ import com.bitclave.node.services.errors.BadArgumentException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.reflect.TypeToken
+
 
 @Service
 @Qualifier("v1")
@@ -79,6 +83,9 @@ class OfferSearchService(
                     ))
         }
     }
+
+    private val GSON: Gson = GsonBuilder().disableHtmlEscaping().create();
+
     fun addEventTo(
             event: String,
             offerSearchId: Long,
@@ -86,7 +93,23 @@ class OfferSearchService(
         return CompletableFuture.runAsync {
             val repository = offerSearchRepository.changeStrategy(strategy)
             val item = repository.findById(offerSearchId) ?: throw BadArgumentException("offer search item id not exist")
+
             item.events.add(event)
+
+            val infoAsArrayTmp: MutableList<String> = mutableListOf<String>();
+            infoAsArrayTmp.add("test1");
+            item.info = GSON.toJson(infoAsArrayTmp);
+
+            try {
+                val type = object : TypeToken<MutableList<String>>() {}.type;
+                val infoAsArray = GSON.fromJson<MutableList<String>>(item.info, type);
+                infoAsArray.add(event);
+                item.info = GSON.toJson(infoAsArray);
+            }
+            catch (e: Exception)
+            {
+                System.out.println(e.localizedMessage);
+            }
             repository.saveSearchResult(item)
         }
     }
