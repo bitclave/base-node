@@ -34,19 +34,30 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
             strategy: RepositoryStrategyType
     ): CompletableFuture<Account> {
 
-        return checkSigMessage(request)
-                .thenApply(accountRepository.changeStrategy(strategy)::findByPublicKey)
-                .thenApply { account: Account? ->
+        try {
+            return checkSigMessage(request)
+                    .thenApply(accountRepository.changeStrategy(strategy)::findByPublicKey)
+                    .exceptionally {
+                        System.out.println("Oops! We have an exception - "+ it.localizedMessage);
+                        null
+                    }
+                    .thenApply { account: Account? ->
 
-                    if (account == null) {
-                        throw NotFoundException()
+                        if (account == null) {
+                            throw NotFoundException()
+                        }
+
+                        if (request.data == null) {
+                            throw BadArgumentException()
+                        }
+                        account
                     }
 
-                    if (request.data == null) {
-                        throw BadArgumentException()
-                    }
-                    account
-                }
+        } catch (e: Exception) {
+            System.out.println(e.localizedMessage)
+        }
+
+        return CompletableFuture<Account>();
     }
 
     fun validateNonce(request: SignedRequest<*>, account: Account): CompletableFuture<Account> {

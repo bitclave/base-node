@@ -71,11 +71,52 @@ class OfferSearchController(
             @RequestHeader("Strategy", required = false)
             strategy: String?): CompletableFuture<Void> {
 
-        return accountService.accountBySigMessage(request, getStrategyType(strategy))
+
+        try {
+            return accountService.accountBySigMessage(request, getStrategyType(strategy))
+                    .thenCompose {
+                        offerSearchService.saveNewOfferSearch(request.data!!, getStrategyType(strategy))
+                    }
+                    .exceptionally {
+                        System.out.println("Oops! We have an exception - "+ it.localizedMessage);
+                        null
+                    }
+
+        } catch (e: Exception) {
+            System.out.println(e.localizedMessage)
+        }
+
+
+        return CompletableFuture<Void>();
+    }
+
+    /**
+     * Add event to history
+     *
+     */
+    @ApiOperation("Add event")
+    @ApiResponses(value = [ApiResponse(code = 201, message = "Added")])
+    @RequestMapping(method = [RequestMethod.PATCH], value = ["/event/{id}"])
+    @ResponseStatus(HttpStatus.OK)
+    fun addEvent(
+            @ApiParam("id of search result item")
+            @PathVariable(value = "id")
+            searchResultId: Long,
+
+            @ApiParam("where client sends searchResult id and signature of the message.", required = true)
+            @RequestBody
+            event: SignedRequest<String>,
+
+            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+            @RequestHeader("Strategy", required = false)
+            strategy: String?): CompletableFuture<Void> {
+
+        return accountService.accountBySigMessage(event, getStrategyType(strategy))
                 .thenCompose {
-                    offerSearchService.saveOfferSearch(request.data!!, getStrategyType(strategy))
+                    offerSearchService.addEventTo(event.data!!, searchResultId, getStrategyType(strategy))
                 }
     }
+
 
     /**
      * Complain to Offer or search result item.
@@ -176,6 +217,7 @@ class OfferSearchController(
                     offerSearchService.confirm(request.data!!, it.publicKey, getStrategyType(strategy)).get()
                     accountService.incrementNonce(it, getStrategyType(strategy)).get()
                 }
+
     }
 
 
