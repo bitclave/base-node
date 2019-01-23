@@ -20,6 +20,22 @@ import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import java.util.*
 
+open class OfferSearchEvent (
+        _updater: String,
+        _status: OfferResultAction
+){
+    private var date: Date = Date();
+    private var updater: String = _updater;
+    private var status: OfferResultAction = _status;
+}
+
+class OfferSearchEventConfirmed  (
+        _updater: String,
+        _status: OfferResultAction,
+        _CAT: String
+) : OfferSearchEvent (_updater, _status) {
+    private var CAT: String = _CAT;
+}
 
 @Service
 @Qualifier("v1")
@@ -136,6 +152,10 @@ class OfferSearchService(
                     ?: throw AccessDeniedException()
 
             item.state = OfferResultAction.COMPLAIN
+
+            var event: OfferSearchEvent = OfferSearchEvent("to be filled", item.state);
+            addEventTo(event.toString(), offerSearchId, strategy);
+
             repository.saveSearchResult(item)
         }
     }
@@ -154,6 +174,10 @@ class OfferSearchService(
                     ?: throw AccessDeniedException()
 
             item.state = OfferResultAction.EVALUATE
+
+            var event: OfferSearchEvent = OfferSearchEvent("to be filled", item.state);
+            addEventTo(event.toString(), offerSearchId, strategy);
+
             repository.saveSearchResult(item)
         }
     }
@@ -172,6 +196,10 @@ class OfferSearchService(
                     ?: throw AccessDeniedException()
 
             item.state = OfferResultAction.REJECT
+
+            var event: OfferSearchEvent = OfferSearchEvent("to be filled", item.state);
+            addEventTo(event.toString(), offerSearchId, strategy);
+
             repository.saveSearchResult(item)
         }
     }
@@ -190,6 +218,10 @@ class OfferSearchService(
                     ?: throw AccessDeniedException()
 
             item.state = OfferResultAction.CLAIMPURCHASE
+
+            var event: OfferSearchEvent = OfferSearchEvent("to be filled", item.state);
+            addEventTo(event.toString(), offerSearchId, strategy);
+
             repository.saveSearchResult(item)
         }
     }
@@ -225,6 +257,10 @@ class OfferSearchService(
 //                throw AccessDeniedException()
 
             item.state = OfferResultAction.CONFIRMED
+
+            var event: OfferSearchEventConfirmed = OfferSearchEventConfirmed(publicKey, item.state, "22");
+            addEventTo(event.toString(), offerSearchId, strategy);
+
             repository.saveSearchResult(item)
         }
     }
