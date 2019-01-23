@@ -73,6 +73,8 @@ class OfferSearchService(
                             offerSearch.searchRequestId,
                             offerSearch.offerId,
                             OfferResultAction.NONE,
+                            offerSearch.lastUpdated,
+                            offerSearch.info,
                             offerSearch.events
                     ))
         }

@@ -71,10 +71,23 @@ class OfferSearchController(
             @RequestHeader("Strategy", required = false)
             strategy: String?): CompletableFuture<Void> {
 
-        return accountService.accountBySigMessage(request, getStrategyType(strategy))
-                .thenCompose {
-                    offerSearchService.saveOfferSearch(request.data!!, getStrategyType(strategy))
-                }
+
+        try {
+            return accountService.accountBySigMessage(request, getStrategyType(strategy))
+                    .thenCompose {
+                        offerSearchService.saveOfferSearch(request.data!!, getStrategyType(strategy))
+                    }
+                    .exceptionally {
+                        System.out.println("Oops! We have an exception - "+ it.localizedMessage);
+                        null
+                    }
+
+        } catch (e: Exception) {
+            System.out.println(e.localizedMessage)
+        }
+
+
+        return CompletableFuture<Void>();
     }
 
     /**
@@ -204,6 +217,7 @@ class OfferSearchController(
                     offerSearchService.confirm(request.data!!, it.publicKey, getStrategyType(strategy)).get()
                     accountService.incrementNonce(it, getStrategyType(strategy)).get()
                 }
+
     }
 
 
