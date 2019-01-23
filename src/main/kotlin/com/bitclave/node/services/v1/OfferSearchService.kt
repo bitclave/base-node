@@ -152,11 +152,10 @@ class OfferSearchService(
                     ?: throw AccessDeniedException()
 
             item.state = OfferResultAction.COMPLAIN
+            repository.saveSearchResult(item)
 
             var event: OfferSearchEvent = OfferSearchEvent("to be filled", item.state);
             addEventTo(GSON.toJson(event), offerSearchId, strategy);
-
-            repository.saveSearchResult(item)
         }
     }
 
@@ -174,11 +173,10 @@ class OfferSearchService(
                     ?: throw AccessDeniedException()
 
             item.state = OfferResultAction.EVALUATE
+            repository.saveSearchResult(item)
 
             var event: OfferSearchEvent = OfferSearchEvent("to be filled", item.state);
             addEventTo(GSON.toJson(event), offerSearchId, strategy);
-
-            repository.saveSearchResult(item)
         }
     }
 
@@ -196,11 +194,10 @@ class OfferSearchService(
                     ?: throw AccessDeniedException()
 
             item.state = OfferResultAction.REJECT
+            repository.saveSearchResult(item)
 
             var event: OfferSearchEvent = OfferSearchEvent("to be filled", item.state);
             addEventTo(GSON.toJson(event), offerSearchId, strategy);
-
-            repository.saveSearchResult(item)
         }
     }
 
@@ -218,11 +215,10 @@ class OfferSearchService(
                     ?: throw AccessDeniedException()
 
             item.state = OfferResultAction.CLAIMPURCHASE
+            repository.saveSearchResult(item)
 
             var event: OfferSearchEvent = OfferSearchEvent("to be filled", item.state);
             addEventTo(GSON.toJson(event), offerSearchId, strategy);
-
-            repository.saveSearchResult(item)
         }
     }
 
@@ -257,11 +253,10 @@ class OfferSearchService(
 //                throw AccessDeniedException()
 
             item.state = OfferResultAction.CONFIRMED
+            repository.saveSearchResult(item)
 
             var event: OfferSearchEventConfirmed = OfferSearchEventConfirmed(publicKey, item.state, "22");
             addEventTo(GSON.toJson(event), offerSearchId, strategy);
-
-            repository.saveSearchResult(item)
         }
     }
 }
