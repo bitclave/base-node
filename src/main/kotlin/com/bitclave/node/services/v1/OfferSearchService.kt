@@ -74,7 +74,7 @@ class OfferSearchService(
             // we want to guarantee that info is always represents a serialized array
             var info: String = "[]";
             if (!offerSearch.info.isEmpty()) {
-                info = "[" + offerSearch.info + "]";
+                info = "[\"" + offerSearch.info + "\"]";
             }
 
             offerSearchRepository.changeStrategy(strategy)
