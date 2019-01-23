@@ -75,7 +75,7 @@ class OfferSearchController(
         try {
             return accountService.accountBySigMessage(request, getStrategyType(strategy))
                     .thenCompose {
-                        offerSearchService.saveOfferSearch(request.data!!, getStrategyType(strategy))
+                        offerSearchService.saveNewOfferSearch(request.data!!, getStrategyType(strategy))
                     }
                     .exceptionally {
                         System.out.println("Oops! We have an exception - "+ it.localizedMessage);

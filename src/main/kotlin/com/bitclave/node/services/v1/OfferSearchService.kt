@@ -58,7 +58,7 @@ class OfferSearchService(
         }
     }
 
-    fun saveOfferSearch(
+    fun saveNewOfferSearch(
             offerSearch: OfferSearch,
             strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
@@ -71,6 +71,12 @@ class OfferSearchService(
                     .findById(offerSearch.offerId)
                     ?: throw BadArgumentException("offer id not exist")
 
+            // we want to guarantee that info is always represents a serialized array
+            var info: String = "[]";
+            if (!offerSearch.info.isEmpty()) {
+                info = "[" + offerSearch.info + "]";
+            }
+
             offerSearchRepository.changeStrategy(strategy)
                     .saveSearchResult(OfferSearch(
                             0,
@@ -78,7 +84,7 @@ class OfferSearchService(
                             offerSearch.offerId,
                             OfferResultAction.NONE,
                             offerSearch.lastUpdated,
-                            offerSearch.info,
+                            info,
                             offerSearch.events
                     ))
         }
@@ -96,9 +102,9 @@ class OfferSearchService(
 
             item.events.add(event)
 
-            val infoAsArrayTmp: MutableList<String> = mutableListOf<String>();
-            infoAsArrayTmp.add("test1");
-            item.info = GSON.toJson(infoAsArrayTmp);
+//            val infoAsArrayTmp: MutableList<String> = mutableListOf<String>();
+//            infoAsArrayTmp.add("test1");
+//            item.info = GSON.toJson(infoAsArrayTmp);
 
             try {
                 val type = object : TypeToken<MutableList<String>>() {}.type;

@@ -1,6 +1,7 @@
 package com.bitclave.node.repository.models
 
 import javax.persistence.*
+import java.util.Date
 
 @Entity
 open class OfferSearch(
@@ -8,11 +9,13 @@ open class OfferSearch(
         val searchRequestId: Long = 0,
         val offerId: Long = 0,
         var state: OfferResultAction = OfferResultAction.NONE,
-        var lastUpdated: String = "aaa",
-        @Column(length=4096) var info: String = "info",
+        var lastUpdated: String = Date().toString(),
+        @Column(length=4096) var info: String = "[]",
 //        @Column(length=10485760) var events: String = ""
         @ElementCollection(fetch = FetchType.EAGER) var events: MutableList<String> = ArrayList()
-)
+) {
+
+}
 
 enum class OfferResultAction {
     NONE,
