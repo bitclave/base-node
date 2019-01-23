@@ -18,6 +18,7 @@ import java.util.concurrent.CompletableFuture
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
+import java.util.*
 
 
 @Service
@@ -101,21 +102,22 @@ class OfferSearchService(
             val item = repository.findById(offerSearchId) ?: throw BadArgumentException("offer search item id not exist")
 
             item.events.add(event)
+            item.lastUpdated = Date().toString()
 
 //            val infoAsArrayTmp: MutableList<String> = mutableListOf<String>();
 //            infoAsArrayTmp.add("test1");
 //            item.info = GSON.toJson(infoAsArrayTmp);
 
-            try {
-                val type = object : TypeToken<MutableList<String>>() {}.type;
-                val infoAsArray = GSON.fromJson<MutableList<String>>(item.info, type);
-                infoAsArray.add(event);
-                item.info = GSON.toJson(infoAsArray);
-            }
-            catch (e: Exception)
-            {
-                System.out.println(e.localizedMessage);
-            }
+//            try {
+//                val type = object : TypeToken<MutableList<String>>() {}.type;
+//                val infoAsArray = GSON.fromJson<MutableList<String>>(item.info, type);
+//                infoAsArray.add(event);
+//                item.info = GSON.toJson(infoAsArray);
+//            }
+//            catch (e: Exception)
+//            {
+//                System.out.println(e.localizedMessage);
+//            }
             repository.saveSearchResult(item)
         }
     }
