@@ -159,7 +159,7 @@ class OfferSearchServiceTest {
 
         val result = offerSearchService.getOffersResult(strategy, 1L).get()
         assert(result.size == 1)
-        assert(result[0].offerSearch.id == 1L)
+        assert(result[0].offerSearch.id >= 1L)
         assert(result[0].offerSearch.state == OfferResultAction.NONE)
         assert(result[0].offer.id == 1L)
         assert(result[0].offer.owner == businessPublicKey)
@@ -199,11 +199,11 @@ class OfferSearchServiceTest {
     @Test fun `client can complain to search item`() {
         `should be create new offer search item and get result by clientId and search request id`()
 
-        offerSearchService.complain(1L, strategy).get()
+        offerSearchService.complain(1L, publicKey, strategy).get()
 
         val result = offerSearchService.getOffersResult(strategy, 1L).get()
         assert(result.size == 1)
-        assert(result[0].offerSearch.id == 1L)
+        assert(result[0].offerSearch.id >= 1L)
         assert(result[0].offerSearch.state == OfferResultAction.COMPLAIN)
         assert(result[0].offer.id == 1L)
         assert(result[0].offer.owner == businessPublicKey)
@@ -227,6 +227,18 @@ class OfferSearchServiceTest {
         assert(result[0].offerSearch.state == OfferResultAction.ACCEPT)
         assert(result[0].offer.id == 1L)
         assert(result[0].offer.owner == businessPublicKey)
+    }
+
+    @Test fun `all search item states with same searchRequestId and offerId should be same when one of them is updated`() {
+        `should be create new offer search item and get result by clientId and search request id`()
+        `client can complain to search item`()
+
+        val result = offerSearchService.getSearchOffers(strategy, 1L, 1L).get()
+        assert(result.size == 2)
+        assert(result[0].id >= 1L)
+        assert(result[0].state == OfferResultAction.COMPLAIN)
+        assert(result[1].id >= 1L)
+        assert(result[1].state == OfferResultAction.COMPLAIN)
     }
 
 }

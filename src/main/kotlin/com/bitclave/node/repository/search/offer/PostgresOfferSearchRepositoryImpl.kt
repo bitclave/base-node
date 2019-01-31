@@ -17,6 +17,11 @@ class PostgresOfferSearchRepositoryImpl(
 
     override fun saveSearchResult(item: OfferSearch) {
         repository.save(item) ?: throw DataNotSavedException()
+        if(item.id > 0) {
+            var relatedOfferSearches = repository.findBySearchRequestIdAndOfferId(item.searchRequestId, item.offerId);
+            relatedOfferSearches.forEach{offerSearchObj -> offerSearchObj.state = item.state}
+            saveSearchResult(relatedOfferSearches)
+        }
     }
 
     override fun findById(id: Long): OfferSearch? {
@@ -27,4 +32,7 @@ class PostgresOfferSearchRepositoryImpl(
         return repository.findBySearchRequestId(id)
     }
 
+    override fun findBySearchRequestIdAndOfferId(searchRequestId: Long, offerId: Long): List<OfferSearch> {
+        return repository.findBySearchRequestIdAndOfferId(searchRequestId, offerId)
+    }
 }

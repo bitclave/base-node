@@ -269,4 +269,19 @@ class OfferSearchService(
             addEventTo(GSON.toJson(event), offerSearchId, strategy);
         }
     }
+
+    fun getSearchOffers(
+            strategy: RepositoryStrategyType,
+            searchRequestId: Long,
+            offerId: Long
+    ): CompletableFuture<List<OfferSearch>> {
+
+        return CompletableFuture.supplyAsync {
+
+            val repository = offerSearchRepository.changeStrategy(strategy)
+
+            return@supplyAsync repository.findBySearchRequestIdAndOfferId(searchRequestId, offerId)
+
+        }
+    }
 }
