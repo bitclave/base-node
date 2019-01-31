@@ -138,9 +138,6 @@ class OfferControllerTest {
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
                 .andReturn()
-
-        val content = result.response.contentAsString
-        println("Sai>>>>>$content")
     }
 
     @Test
