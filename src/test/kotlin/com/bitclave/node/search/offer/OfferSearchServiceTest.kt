@@ -199,7 +199,7 @@ class OfferSearchServiceTest {
     @Test fun `client can complain to search item`() {
         `should be create new offer search item and get result by clientId and search request id`()
 
-        offerSearchService.complain(1L, strategy).get()
+        offerSearchService.complain(1L, businessPublicKey, strategy).get()
 
         val result = offerSearchService.getOffersResult(strategy, 1L).get()
         assert(result.size == 1)
