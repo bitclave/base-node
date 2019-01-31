@@ -1,6 +1,7 @@
 package com.bitclave.node.repository.search
 
 import com.bitclave.node.repository.models.SearchRequest
+import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.services.errors.DataNotSavedException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
@@ -8,7 +9,8 @@ import org.springframework.stereotype.Component
 @Component
 @Qualifier("postgres")
 class PostgresSearchRequestRepositoryImpl(
-        val repository: SearchRequestCrudRepository
+        val repository: SearchRequestCrudRepository,
+        val offerSearchRepository: OfferSearchCrudRepository
 ) : SearchRequestRepository {
 
     override fun saveSearchRequest(request: SearchRequest): SearchRequest {
@@ -18,6 +20,10 @@ class PostgresSearchRequestRepositoryImpl(
     override fun deleteSearchRequest(id: Long, owner: String): Long {
         val count = repository.deleteByIdAndOwner(id, owner)
         if (count > 0) {
+            var relatedOfferSearches = offerSearchRepository.findBySearchRequestId(id)
+
+            offerSearchRepository.delete(relatedOfferSearches)
+
             return id
         }
 
@@ -25,6 +31,7 @@ class PostgresSearchRequestRepositoryImpl(
     }
 
     override fun deleteSearchRequests(owner: String): Long {
+        // TODO delete OfferSearch based on deleted searchRequest
         return repository.deleteByOwner(owner)
     }
 

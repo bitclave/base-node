@@ -12,6 +12,7 @@ import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.search.PostgresSearchRequestRepositoryImpl
 import com.bitclave.node.repository.search.SearchRequestCrudRepository
 import com.bitclave.node.repository.search.SearchRequestRepositoryStrategy
+import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.SearchRequestService
 import org.assertj.core.api.Assertions.assertThat
@@ -39,6 +40,9 @@ class SearchRequestServiceTest {
     protected lateinit var accountCrudRepository: AccountCrudRepository
 
     @Autowired
+    protected lateinit var offerSearchCrudRepository: OfferSearchCrudRepository
+
+    @Autowired
     protected lateinit var searchRequestCrudRepository: SearchRequestCrudRepository
     protected lateinit var searchRequestService: SearchRequestService
 
@@ -58,7 +62,7 @@ class SearchRequestServiceTest {
         val hybrid = HybridAccountRepositoryImpl(web3Provider, hybridProperties)
         val repositoryStrategy = AccountRepositoryStrategy(postgres, hybrid)
         val accountService = AccountService(repositoryStrategy)
-        val searchRequestRepository = PostgresSearchRequestRepositoryImpl(searchRequestCrudRepository)
+        val searchRequestRepository = PostgresSearchRequestRepositoryImpl(searchRequestCrudRepository, offerSearchCrudRepository)
         val requestRepositoryStrategy = SearchRequestRepositoryStrategy(searchRequestRepository)
 
         searchRequestService = SearchRequestService(requestRepositoryStrategy)

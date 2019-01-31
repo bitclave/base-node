@@ -29,6 +29,10 @@ class PostgresOfferRepositoryImpl(
     override fun deleteOffer(id: Long, owner: String): Long {
         val count = repository.deleteByIdAndOwner(id, owner)
         if (count > 0) {
+            var relatedOfferSearches = offerSearchRepository.findByOfferId(id)
+
+            offerSearchRepository.delete(relatedOfferSearches)
+
             return id
         }
 
@@ -36,6 +40,7 @@ class PostgresOfferRepositoryImpl(
     }
 
     override fun deleteOffers(owner: String): Long {
+        // TODO delete OfferSearch based on deleted offers
         return repository.deleteByOwner(owner)
     }
 

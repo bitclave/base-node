@@ -24,10 +24,7 @@ import com.bitclave.node.repository.search.offer.PostgresOfferSearchRepositoryIm
 import com.bitclave.node.repository.share.OfferShareCrudRepository
 import com.bitclave.node.repository.share.OfferShareRepositoryStrategy
 import com.bitclave.node.repository.share.PostgresOfferShareRepositoryImpl
-import com.bitclave.node.services.v1.AccountService
-import com.bitclave.node.services.v1.OfferSearchService
-import com.bitclave.node.services.v1.OfferService
-import com.bitclave.node.services.v1.OfferShareService
+import com.bitclave.node.services.v1.*
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -64,6 +61,7 @@ class OfferSearchServiceTest {
 
     @Autowired
     protected lateinit var searchRequestCrudRepository: SearchRequestCrudRepository
+    protected lateinit var searchRequestService: SearchRequestService
 
     @Autowired
     protected lateinit var offerSearchCrudRepository: OfferSearchCrudRepository
@@ -78,6 +76,8 @@ class OfferSearchServiceTest {
 
     private val account: Account = Account(publicKey)
     protected lateinit var strategy: RepositoryStrategyType
+    protected lateinit var createdOffer: Offer;
+    protected lateinit var createdSearchRequest: SearchRequest;
 
     protected val offer = Offer(
             0,
@@ -87,7 +87,7 @@ class OfferSearchServiceTest {
             "title",
             "url"
     )
-    protected lateinit var createdOffer: Offer;
+
     protected val offerPrice = OfferPrice(
             0,
             "first price description",
@@ -110,7 +110,7 @@ class OfferSearchServiceTest {
         val offerShareRepository = PostgresOfferShareRepositoryImpl(offerShareCrudRepository)
         val shareRepositoryStrategy = OfferShareRepositoryStrategy(offerShareRepository)
 
-        val searchRequestRepository = PostgresSearchRequestRepositoryImpl(searchRequestCrudRepository)
+        val searchRequestRepository = PostgresSearchRequestRepositoryImpl(searchRequestCrudRepository, offerSearchCrudRepository)
         val searchRequestRepositoryStrategy = SearchRequestRepositoryStrategy(searchRequestRepository)
 
         val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
@@ -141,6 +141,10 @@ class OfferSearchServiceTest {
                 offerPriceRepositoryStrategy
         )
 
+        searchRequestService = SearchRequestService(
+                searchRequestRepositoryStrategy
+        )
+
         strategy = RepositoryStrategyType.POSTGRES
         accountService.registrationClient(account, strategy)
 
@@ -154,7 +158,7 @@ class OfferSearchServiceTest {
                 .changeStrategy(strategy)
                 .savePrices(offer, offerPrices)
 
-        searchRequestRepositoryStrategy.changeStrategy(strategy)
+        createdSearchRequest = searchRequestRepositoryStrategy.changeStrategy(strategy)
                 .saveSearchRequest(SearchRequest(0, publicKey, emptyMap()))
     }
 
@@ -239,6 +243,7 @@ class OfferSearchServiceTest {
 
     @Test fun `all search item states with same searchRequestId and offerId should be same when one of them is updated`() {
         `should be create new offer search item and get result by clientId and search request id`()
+
         `client can complain to search item`()
 
         val result = offerSearchService.getSearchOffers(strategy, 1L, 1L).get()
@@ -270,6 +275,32 @@ class OfferSearchServiceTest {
         )
 
         offerService.putOffer(createdOffer.id, createdOffer.owner, changedOffer, strategy).get()
+
+        result = offerSearchService.getSearchOffers(strategy,1L).get()
+        assert(result.isEmpty())
+    }
+
+    @Test fun `delete all OfferSearch objects with state NONE or REJECT when related Offer object is deleted`() {
+        `should be create new offer search item and get result by clientId and search request id`()
+        `should be create new offer search item and get result by clientId and search request id`()
+
+        var result = offerSearchService.getSearchOffers(strategy,1L).get()
+        assert(result.size == 2)
+
+        offerService.deleteOffer(createdOffer.id, createdOffer.owner, strategy).get()
+
+        result = offerSearchService.getSearchOffers(strategy,1L).get()
+        assert(result.isEmpty())
+    }
+
+    @Test fun `delete all OfferSearch objects with state NONE or REJECT when related SearchRequest object is deleted`() {
+        `should be create new offer search item and get result by clientId and search request id`()
+        `should be create new offer search item and get result by clientId and search request id`()
+
+        var result = offerSearchService.getSearchOffers(strategy,1L).get()
+        assert(result.size == 2)
+
+        searchRequestService.deleteSearchRequest(createdSearchRequest.id, createdSearchRequest.owner, strategy).get()
 
         result = offerSearchService.getSearchOffers(strategy,1L).get()
         assert(result.isEmpty())
