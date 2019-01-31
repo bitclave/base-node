@@ -1,16 +1,29 @@
 package com.bitclave.node.repository.offer
 
 import com.bitclave.node.repository.models.Offer
+import com.bitclave.node.repository.models.OfferResultAction
+import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.services.errors.DataNotSavedException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 
 @Component
 @Qualifier("postgres")
-class PostgresOfferRepositoryImpl(val repository: OfferCrudRepository) : OfferRepository {
+class PostgresOfferRepositoryImpl(
+        val repository: OfferCrudRepository,
+        val offerSearchRepository: OfferSearchCrudRepository) : OfferRepository {
 
     override fun saveOffer(offer: Offer): Offer {
-        return repository.save(offer) ?: throw DataNotSavedException()
+        var id = offer.id;
+        repository.save(offer) ?: throw DataNotSavedException()
+        if(id > 0) {
+            var relatedOfferSearches = offerSearchRepository.findByOfferId(offer.id)
+            relatedOfferSearches = relatedOfferSearches.filterIndexed { ix, element ->
+                element.state == OfferResultAction.NONE || element.state == OfferResultAction.REJECT
+            }
+            offerSearchRepository.delete(relatedOfferSearches)
+        }
+        return offer;
     }
 
     override fun deleteOffer(id: Long, owner: String): Long {

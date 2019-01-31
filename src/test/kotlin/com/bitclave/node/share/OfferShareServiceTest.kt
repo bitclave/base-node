@@ -108,7 +108,7 @@ class OfferShareServiceTest {
         val hybrid = HybridAccountRepositoryImpl(web3Provider, hybridProperties)
         val repositoryStrategy = AccountRepositoryStrategy(postgres, hybrid)
         val accountService = AccountService(repositoryStrategy)
-        val postgresOfferRepository = PostgresOfferRepositoryImpl(offerCrudRepository)
+        val postgresOfferRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
         val offerRepositoryStrategy = OfferRepositoryStrategy(postgresOfferRepository)
 
         val offerShareRepository = PostgresOfferShareRepositoryImpl(offerShareCrudRepository)

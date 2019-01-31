@@ -26,6 +26,7 @@ import com.bitclave.node.repository.share.OfferShareRepositoryStrategy
 import com.bitclave.node.repository.share.PostgresOfferShareRepositoryImpl
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferSearchService
+import com.bitclave.node.services.v1.OfferService
 import com.bitclave.node.services.v1.OfferShareService
 import org.junit.Before
 import org.junit.Test
@@ -53,6 +54,7 @@ class OfferSearchServiceTest {
 
     @Autowired
     protected lateinit var offerCrudRepository: OfferCrudRepository
+    protected lateinit var offerService: OfferService
 
     @Autowired
     protected lateinit var offerPriceCrudRepository: OfferPriceCrudRepository
@@ -85,6 +87,7 @@ class OfferSearchServiceTest {
             "title",
             "url"
     )
+    protected lateinit var createdOffer: Offer;
     protected val offerPrice = OfferPrice(
             0,
             "first price description",
@@ -110,7 +113,7 @@ class OfferSearchServiceTest {
         val searchRequestRepository = PostgresSearchRequestRepositoryImpl(searchRequestCrudRepository)
         val searchRequestRepositoryStrategy = SearchRequestRepositoryStrategy(searchRequestRepository)
 
-        val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository)
+        val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
 
         val offerSearchRepository = PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository)
@@ -133,12 +136,17 @@ class OfferSearchServiceTest {
                 offerSearchRepositoryStrategy
         )
 
+        offerService = OfferService(
+                offerRepositoryStrategy,
+                offerPriceRepositoryStrategy
+        )
+
         strategy = RepositoryStrategyType.POSTGRES
         accountService.registrationClient(account, strategy)
 
 
 
-        offerRepositoryStrategy
+        createdOffer = offerRepositoryStrategy
                 .changeStrategy(strategy)
                 .saveOffer(offer)
 
@@ -239,6 +247,32 @@ class OfferSearchServiceTest {
         assert(result[0].state == OfferResultAction.COMPLAIN)
         assert(result[1].id >= 1L)
         assert(result[1].state == OfferResultAction.COMPLAIN)
+    }
+
+    @Test fun `delete all OfferSearch objects with state NONE or REJECT when related Offer object is updated`() {
+        `should be create new offer search item and get result by clientId and search request id`()
+        `should be create new offer search item and get result by clientId and search request id`()
+
+        var result = offerSearchService.getSearchOffers(strategy,1L).get()
+        assert(result.size == 2)
+
+        val changedOffer = Offer(
+                createdOffer.id,
+                createdOffer.owner,
+                listOf(),
+                "is desc111",
+                "is title111",
+                "is image url111",
+                BigDecimal.ONE.toString(),
+                mapOf("color" to "red"),
+                mapOf("salary" to "1000"),
+                mapOf("salary" to Offer.CompareAction.MORE)
+        )
+
+        offerService.putOffer(createdOffer.id, createdOffer.owner, changedOffer, strategy).get()
+
+        result = offerSearchService.getSearchOffers(strategy,1L).get()
+        assert(result.isEmpty())
     }
 
 }

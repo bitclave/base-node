@@ -272,15 +272,18 @@ class OfferSearchService(
 
     fun getSearchOffers(
             strategy: RepositoryStrategyType,
-            searchRequestId: Long,
-            offerId: Long
+            offerId: Long,
+            searchRequestId: Long? = null
     ): CompletableFuture<List<OfferSearch>> {
 
         return CompletableFuture.supplyAsync {
 
             val repository = offerSearchRepository.changeStrategy(strategy)
 
-            return@supplyAsync repository.findBySearchRequestIdAndOfferId(searchRequestId, offerId)
+            if(searchRequestId != null)
+                return@supplyAsync repository.findBySearchRequestIdAndOfferId(searchRequestId, offerId)
+            else
+                return@supplyAsync repository.findByOfferId(offerId)
 
         }
     }

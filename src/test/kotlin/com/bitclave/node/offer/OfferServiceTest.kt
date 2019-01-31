@@ -18,6 +18,7 @@ import com.bitclave.node.repository.price.OfferPriceCrudRepository
 import com.bitclave.node.repository.price.OfferPriceRepositoryStrategy
 import com.bitclave.node.repository.price.PostgresOfferPriceRepositoryImpl
 import com.bitclave.node.repository.priceRule.OfferPriceRulesCrudRepository
+import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferService
 import org.assertj.core.api.Assertions.assertThat
@@ -55,6 +56,9 @@ class OfferServiceTest {
 
     @Autowired
     protected lateinit var offerPriceRulesCrudRepository: OfferPriceRulesCrudRepository
+
+    @Autowired
+    protected lateinit var offerSearchCrudRepository: OfferSearchCrudRepository
 
     private val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
 
@@ -125,7 +129,7 @@ class OfferServiceTest {
         val repositoryStrategy = AccountRepositoryStrategy(postgres, hybrid)
         val accountService = AccountService(repositoryStrategy)
 
-        val postgresOfferRepository = PostgresOfferRepositoryImpl(offerCrudRepository)
+        val postgresOfferRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
         val offerServiceStrategy = OfferRepositoryStrategy(postgresOfferRepository)
 
         val postgresOfferPriceRepository = PostgresOfferPriceRepositoryImpl(offerPriceCrudRepository, offerPriceRulesCrudRepository)
