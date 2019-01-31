@@ -270,7 +270,7 @@ class OfferSearchService(
         }
     }
 
-    fun getSearchOffers(
+    fun getOfferSearches(
             strategy: RepositoryStrategyType,
             offerId: Long,
             searchRequestId: Long? = null

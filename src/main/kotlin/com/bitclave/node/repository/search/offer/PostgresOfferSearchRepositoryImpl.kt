@@ -21,6 +21,7 @@ class PostgresOfferSearchRepositoryImpl(
         if(id > 0) {
             var relatedOfferSearches = repository.findBySearchRequestIdAndOfferId(item.searchRequestId, item.offerId)
             relatedOfferSearches.forEach{offerSearchObj -> offerSearchObj.state = item.state}
+            // TODO need to update all OfferSearch state, especially the events
             saveSearchResult(relatedOfferSearches)
         }
     }

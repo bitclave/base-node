@@ -31,7 +31,7 @@ class PostgresSearchRequestRepositoryImpl(
     }
 
     override fun deleteSearchRequests(owner: String): Long {
-        // TODO delete OfferSearch based on deleted searchRequest
+        // TODO delete OfferSearch based on BULK deleted searchRequest
         return repository.deleteByOwner(owner)
     }
 

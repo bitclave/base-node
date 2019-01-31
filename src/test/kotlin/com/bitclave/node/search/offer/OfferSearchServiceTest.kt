@@ -246,7 +246,7 @@ class OfferSearchServiceTest {
 
         `client can complain to search item`()
 
-        val result = offerSearchService.getSearchOffers(strategy, 1L, 1L).get()
+        val result = offerSearchService.getOfferSearches(strategy, 1L, 1L).get()
         assert(result.size == 2)
         assert(result[0].id >= 1L)
         assert(result[0].state == OfferResultAction.COMPLAIN)
@@ -258,7 +258,7 @@ class OfferSearchServiceTest {
         `should be create new offer search item and get result by clientId and search request id`()
         `should be create new offer search item and get result by clientId and search request id`()
 
-        var result = offerSearchService.getSearchOffers(strategy,1L).get()
+        var result = offerSearchService.getOfferSearches(strategy,1L).get()
         assert(result.size == 2)
 
         val changedOffer = Offer(
@@ -276,7 +276,7 @@ class OfferSearchServiceTest {
 
         offerService.putOffer(createdOffer.id, createdOffer.owner, changedOffer, strategy).get()
 
-        result = offerSearchService.getSearchOffers(strategy,1L).get()
+        result = offerSearchService.getOfferSearches(strategy,1L).get()
         assert(result.isEmpty())
     }
 
@@ -284,12 +284,12 @@ class OfferSearchServiceTest {
         `should be create new offer search item and get result by clientId and search request id`()
         `should be create new offer search item and get result by clientId and search request id`()
 
-        var result = offerSearchService.getSearchOffers(strategy,1L).get()
+        var result = offerSearchService.getOfferSearches(strategy,1L).get()
         assert(result.size == 2)
 
         offerService.deleteOffer(createdOffer.id, createdOffer.owner, strategy).get()
 
-        result = offerSearchService.getSearchOffers(strategy,1L).get()
+        result = offerSearchService.getOfferSearches(strategy,1L).get()
         assert(result.isEmpty())
     }
 
@@ -297,12 +297,12 @@ class OfferSearchServiceTest {
         `should be create new offer search item and get result by clientId and search request id`()
         `should be create new offer search item and get result by clientId and search request id`()
 
-        var result = offerSearchService.getSearchOffers(strategy,1L).get()
+        var result = offerSearchService.getOfferSearches(strategy,1L).get()
         assert(result.size == 2)
 
         searchRequestService.deleteSearchRequest(createdSearchRequest.id, createdSearchRequest.owner, strategy).get()
 
-        result = offerSearchService.getSearchOffers(strategy,1L).get()
+        result = offerSearchService.getOfferSearches(strategy,1L).get()
         assert(result.isEmpty())
     }
 
