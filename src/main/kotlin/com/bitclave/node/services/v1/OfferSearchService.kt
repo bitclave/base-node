@@ -56,6 +56,7 @@ class OfferSearchService(
 
             val repository = offerSearchRepository.changeStrategy(strategy)
 
+            // "result" is list of OfferSearches with searchRequestId as was requested in API call
             val result = if (searchRequestId != null) {
                 repository.findBySearchRequestId(searchRequestId)
 
@@ -64,13 +65,26 @@ class OfferSearchService(
                 if (offerSearch != null) arrayListOf(offerSearch) else emptyList<OfferSearch>()
             }
 
+            // "ids" is list of offer Ids that are associated with the searchRequests in "result" above
+            // Note: we should handle case where multiple OfferSearches have pointer to the same offer Id
             val ids: Map<Long, OfferSearch> = result.associate { Pair(it.offerId, it) }
 
             val offers = offerRepository.changeStrategy(strategy)
                     .findById(ids.keys.toList())
 
-            offers.filter { ids.containsKey(it.id) }
-                    .map { OfferSearchResultItem(ids[it.id]!!, it) }
+            val l = mutableListOf<OfferSearchResultItem>();
+            for( offerSearch: OfferSearch in result) {
+                val offer: Offer? = offerRepository.changeStrategy(strategy).findById(offerSearch.offerId);
+                if (offer!=null) {
+                    val item: OfferSearchResultItem = OfferSearchResultItem(offerSearch, offer );
+                    l.add(item);
+                }
+            }
+            l;
+
+//            offers.filter { ids.containsKey(it.id) }
+//                    .map { OfferSearchResultItem(ids[it.id]!!, it) }
+
         }
     }
 
@@ -138,6 +152,20 @@ class OfferSearchService(
         }
     }
 
+    fun addEventTo(
+            event: String,
+            offerSearch: OfferSearch,
+            strategy: RepositoryStrategyType): CompletableFuture<Void> {
+        return CompletableFuture.runAsync {
+            val repository = offerSearchRepository.changeStrategy(strategy)
+            val item = offerSearch;
+
+            item.events.add(event)
+            item.lastUpdated = Date().toString()
+
+            repository.saveSearchResult(item)
+        }
+    }
     fun complain(
             offerSearchId: Long,
             callerPublicKey: String,
@@ -153,10 +181,10 @@ class OfferSearchService(
                     ?: throw AccessDeniedException()
 
             item.state = OfferResultAction.COMPLAIN
-            repository.saveSearchResult(item)
+//            repository.saveSearchResult(item)
 
             var event: OfferSearchEvent = OfferSearchEvent(callerPublicKey, item.state);
-            addEventTo(GSON.toJson(event), offerSearchId, strategy);
+            addEventTo(GSON.toJson(event), item, strategy);
         }
     }
 
@@ -175,10 +203,10 @@ class OfferSearchService(
                     ?: throw AccessDeniedException()
 
             item.state = OfferResultAction.EVALUATE
-            repository.saveSearchResult(item)
+//            repository.saveSearchResult(item)
 
             var event: OfferSearchEvent = OfferSearchEvent(callerPublicKey, item.state);
-            addEventTo(GSON.toJson(event), offerSearchId, strategy);
+            addEventTo(GSON.toJson(event), item, strategy);
         }
     }
 
@@ -197,10 +225,10 @@ class OfferSearchService(
                     ?: throw AccessDeniedException()
 
             item.state = OfferResultAction.REJECT
-            repository.saveSearchResult(item)
+//            repository.saveSearchResult(item)
 
             var event: OfferSearchEvent = OfferSearchEvent(callerPublicKey, item.state);
-            addEventTo(GSON.toJson(event), offerSearchId, strategy);
+            addEventTo(GSON.toJson(event), item, strategy);
         }
     }
 
@@ -219,10 +247,10 @@ class OfferSearchService(
                     ?: throw AccessDeniedException()
 
             item.state = OfferResultAction.CLAIMPURCHASE
-            repository.saveSearchResult(item)
+//            repository.saveSearchResult(item)
 
             var event: OfferSearchEvent = OfferSearchEvent(callerPublicKey, item.state);
-            addEventTo(GSON.toJson(event), offerSearchId, strategy);
+            addEventTo(GSON.toJson(event), item, strategy);
         }
     }
 
@@ -263,10 +291,10 @@ class OfferSearchService(
 //                throw AccessDeniedException()
 
             item.state = OfferResultAction.CONFIRMED
-            repository.saveSearchResult(item)
+//            repository.saveSearchResult(item)
 
             var event: OfferSearchEventConfirmed = OfferSearchEventConfirmed(callerPublicKey, item.state, "22");
-            addEventTo(GSON.toJson(event), offerSearchId, strategy);
+            addEventTo(GSON.toJson(event), item, strategy);
         }
     }
 

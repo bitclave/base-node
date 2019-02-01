@@ -18,10 +18,27 @@ class PostgresOfferSearchRepositoryImpl(
     override fun saveSearchResult(item: OfferSearch) {
         var id = item.id;
         repository.save(item) ?: throw DataNotSavedException()
-        if(id > 0) {
-            var relatedOfferSearches = repository.findBySearchRequestIdAndOfferId(item.searchRequestId, item.offerId)
-            relatedOfferSearches.forEach{offerSearchObj -> offerSearchObj.state = item.state}
+//        if(id > 0) { @Koray, why did you have this "if" - in my tests "on input" I saw item.id was 0
+        if(item.id > 0) {
+//            var relatedOfferSearches = repository.findBySearchRequestIdAndOfferId(item.searchRequestId, item.offerId)
+            var relatedOfferSearches = repository.findByOfferId(item.offerId)
+//            relatedOfferSearches.forEach{offerSearchObj -> offerSearchObj.state = item.state}
             // TODO need to update all OfferSearch state, especially the events
+            // @Koray, this did not work for me. I had to replace with other loop
+//            relatedOfferSearches.forEach{offerSearchObj -> {
+//                offerSearchObj.state = item.state;
+//                offerSearchObj.lastUpdated = item.lastUpdated;
+//                offerSearchObj.events = item.events;
+//                offerSearchObj.info = item.info;
+//            }}
+
+            for (offerSearch: OfferSearch in relatedOfferSearches) {
+                offerSearch.state = item.state;
+                offerSearch.lastUpdated = item.lastUpdated;
+                offerSearch.events = item.events;
+                offerSearch.info = item.info;
+            }
+
             saveSearchResult(relatedOfferSearches)
         }
     }
