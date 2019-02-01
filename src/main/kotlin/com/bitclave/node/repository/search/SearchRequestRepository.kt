@@ -18,4 +18,6 @@ interface SearchRequestRepository {
 
     fun findAll(): List<SearchRequest>
 
+    fun cloneSearchRequestWithOfferSearches(request: SearchRequest): SearchRequest
+
 }
