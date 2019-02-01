@@ -290,6 +290,33 @@ class OfferSearchServiceTest {
         assert(result[0].state == OfferResultAction.NONE)
     }
 
+    @Test fun `a new offerSearch item should be sync with related offerSerach items if exists`() {
+        `should be create new offer search item and get result by clientId and search request id`()
+
+        `client can complain to search item`()
+
+        var result = offerSearchService.getOfferSearches(strategy, 1L, 1L).get()
+        assert(result.size == 2)
+        assert(result[0].id >= 1L)
+        assert(result[0].state == OfferResultAction.COMPLAIN)
+        assert(result[1].id >= 1L)
+        assert(result[1].state == OfferResultAction.COMPLAIN)
+
+        offerSearchService.saveNewOfferSearch(
+                OfferSearch(0, 1L, 1L, OfferResultAction.NONE, "","", ArrayList()),
+                strategy
+        ).get()
+
+        result = offerSearchService.getOfferSearches(strategy, 1L, 1L).get()
+        assert(result.size == 3)
+        assert(result[0].id >= 1L)
+        assert(result[0].state == OfferResultAction.COMPLAIN)
+        assert(result[1].id >= 1L)
+        assert(result[1].state == OfferResultAction.COMPLAIN)
+        assert(result[2].id >= 1L)
+        assert(result[2].state == OfferResultAction.COMPLAIN)
+    }
+
     @Test fun `delete all OfferSearch objects with state NONE or REJECT when related Offer object is updated`() {
         `should be create new offer search item and get result by clientId and search request id`()
         `should be create new offer search item and get result by clientId and search request id`()
