@@ -76,11 +76,22 @@ class OfferSearchServiceTest {
 
     private val account: Account = Account(publicKey)
     protected lateinit var strategy: RepositoryStrategyType
-    protected lateinit var createdOffer: Offer;
+    protected lateinit var createdOffer1: Offer
+    protected lateinit var createdOffer2: Offer
 
-    protected lateinit var createdSearchRequest: SearchRequest;
+    protected lateinit var createdSearchRequest1: SearchRequest
+    protected lateinit var createdSearchRequest2: SearchRequest
 
     protected val offer = Offer(
+            0,
+            businessPublicKey,
+            listOf(),
+            "desc",
+            "title",
+            "url"
+    )
+
+    protected val offer2 = Offer(
             0,
             businessPublicKey,
             listOf(),
@@ -117,7 +128,7 @@ class OfferSearchServiceTest {
         val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
 
-        val offerSearchRepository = PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository)
+        val offerSearchRepository = PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository, searchRequestCrudRepository)
         val offerSearchRepositoryStrategy = OfferSearchRepositoryStrategy(offerSearchRepository)
 
         val offerPriceRepository = PostgresOfferPriceRepositoryImpl(offerPriceCrudRepository, offerPriceRuleCrudRepository)
@@ -150,63 +161,66 @@ class OfferSearchServiceTest {
         accountService.registrationClient(account, strategy)
 
 
-
-        createdOffer = offerRepositoryStrategy
+        createdOffer1 = offerRepositoryStrategy
                 .changeStrategy(strategy)
                 .saveOffer(offer)
+
+        createdOffer2 = offerRepositoryStrategy
+                .changeStrategy(strategy)
+                .saveOffer(offer2)
 
         offerPriceRepositoryStrategy
                 .changeStrategy(strategy)
                 .savePrices(offer, offerPrices)
 
 
-        createdSearchRequest = searchRequestRepositoryStrategy.changeStrategy(strategy)
+        createdSearchRequest1 = searchRequestRepositoryStrategy.changeStrategy(strategy)
                 .saveSearchRequest(SearchRequest(0, publicKey, emptyMap()))
+
+        createdSearchRequest2 = searchRequestRepositoryStrategy.changeStrategy(strategy)
+                .saveSearchRequest(SearchRequest(0, publicKey, emptyMap()))
+    }
+
+    fun createOfferSearch(searchRequest: SearchRequest, offer: Offer, events: MutableList<String>) {
+        offerSearchService.saveNewOfferSearch(
+                OfferSearch(0, searchRequest.id, offer.id, OfferResultAction.NONE, "","", events),
+                strategy
+        ).get()
     }
 
     @Test
     fun `should be create new offer search item and get result by clientId and search request id`() {
-        offerSearchService.saveNewOfferSearch(
-                OfferSearch(0, 1L, 1L, OfferResultAction.NONE, "","", ArrayList()),
-                strategy
-        ).get()
+        createOfferSearch(createdSearchRequest1, createdOffer1, ArrayList())
 
-        val result = offerSearchService.getOffersResult(strategy, 1L).get()
-        assert(result.size == 1)
+        val result = offerSearchService.getOffersResult(strategy, createdSearchRequest1.id).get()
+        assert(result.isNotEmpty())
         assert(result[0].offerSearch.id >= 1L)
         assert(result[0].offerSearch.state == OfferResultAction.NONE)
-        assert(result[0].offer.id == 1L)
+        assert(result[0].offer.id == createdOffer1.id)
         assert(result[0].offer.owner == businessPublicKey)
     }
 
     @Test
     fun `should be add EVENT as serialized object into array`() {
         var events = mutableListOf("tram taram")
-        offerSearchService.saveNewOfferSearch(
-                OfferSearch(0, 1L, 1L, OfferResultAction.NONE, "", "", events),
-                strategy
-        ).get()
+        createOfferSearch(createdSearchRequest1, createdOffer1, events)
 
         offerSearchService.addEventTo( "bla bla bla",1L, strategy).get()
 
-
-        val result = offerSearchService.getOffersResult(strategy, 1L).get()
+        val result = offerSearchService.getOffersResult(strategy, createdSearchRequest1.id).get()
         assert(result[0].offerSearch.events.contains("bla bla bla"))
 
     }
 
     @Test
     fun `should be create new offer search item and get result by clientId and offer search id`() {
-        offerSearchService.saveNewOfferSearch(
-                OfferSearch(0, 1L, 1L, OfferResultAction.NONE, "", "", ArrayList()),
-                strategy
-        ).get()
+        createOfferSearch(createdSearchRequest1, createdOffer1, ArrayList())
 
-        val result = offerSearchService.getOffersResult(strategy, null, 1L).get()
+        val result = offerSearchService.getOffersResult(strategy, null, createdSearchRequest1.id).get()
         assert(result.size == 1)
-        assert(result[0].offerSearch.id == 1L)
+        assert(result[0].offerSearch.id == createdSearchRequest1.id)
         assert(result[0].offerSearch.state == OfferResultAction.NONE)
-        assert(result[0].offer.id == 1L)
+        assert(result[0].offer.id == createdOffer1.id)
         assert(result[0].offer.owner == businessPublicKey)
     }
 
@@ -215,11 +229,11 @@ class OfferSearchServiceTest {
 
         offerSearchService.complain(1L, businessPublicKey, strategy).get()
 
-        val result = offerSearchService.getOffersResult(strategy, 1L).get()
-        assert(result.size == 1)
+        val result = offerSearchService.getOffersResult(strategy, createdSearchRequest1.id).get()
+        assert(result.isNotEmpty())
         assert(result[0].offerSearch.id >= 1L)
         assert(result[0].offerSearch.state == OfferResultAction.COMPLAIN)
-        assert(result[0].offer.id == 1L)
+        assert(result[0].offer.id == createdOffer1.id)
         assert(result[0].offer.owner == businessPublicKey)
     }
 
@@ -235,20 +249,39 @@ class OfferSearchServiceTest {
                 strategy
         ).get()
 
-        val result = offerSearchService.getOffersResult(strategy, 1L).get()
+        val result = offerSearchService.getOffersResult(strategy, createdSearchRequest1.id).get()
         assert(result.size == 1)
-        assert(result[0].offerSearch.id == 1L)
+        assert(result[0].offerSearch.id == createdSearchRequest1.id)
         assert(result[0].offerSearch.state == OfferResultAction.ACCEPT)
-        assert(result[0].offer.id == 1L)
+        assert(result[0].offer.id == createdOffer1.id)
         assert(result[0].offer.owner == businessPublicKey)
     }
 
-    @Test fun `all search item states with same searchRequestId and offerId should be same when one of them is updated`() {
-        `should be create new offer search item and get result by clientId and search request id`()
+    @Test fun `all search item states with same owner and offerId should be same when one of them is updated`() {
+        createOfferSearch(createdSearchRequest2, createdOffer1, ArrayList())
+        createOfferSearch(createdSearchRequest1, createdOffer2, ArrayList())
 
         `client can complain to search item`()
 
-        val result = offerSearchService.getOfferSearches(strategy, 1L, 1L).get()
+        var result = offerSearchService.getOfferSearches(strategy, createdOffer1.id).get()
+        assert(result.size == 2)
+        assert(result[0].id >= 1L)
+        assert(result[0].state == OfferResultAction.COMPLAIN)
+        assert(result[1].id >= 1L)
+        assert(result[1].state == OfferResultAction.COMPLAIN)
+
+        result = offerSearchService.getOfferSearches(strategy, createdOffer2.id, createdSearchRequest1.id).get()
+        assert(result.size == 1)
+        assert(result[0].id >= 1L)
+        assert(result[0].state == OfferResultAction.NONE)
+    }
+
+    @Test fun `a new offerSearch item should be sync with related offerSerach items if exists`() {
+        `client can complain to search item`()
+
+        createOfferSearch(createdSearchRequest2, createdOffer1, ArrayList())
+
+        val result = offerSearchService.getOfferSearches(strategy, createdOffer1.id).get()
         assert(result.size == 2)
         assert(result[0].id >= 1L)
         assert(result[0].state == OfferResultAction.COMPLAIN)
@@ -257,15 +290,16 @@ class OfferSearchServiceTest {
     }
 
     @Test fun `delete all OfferSearch objects with state NONE or REJECT when related Offer object is updated`() {
-        `should be create new offer search item and get result by clientId and search request id`()
-        `should be create new offer search item and get result by clientId and search request id`()
+        createOfferSearch(createdSearchRequest1, createdOffer1, ArrayList())
+        createOfferSearch(createdSearchRequest2, createdOffer1, ArrayList())
+        createOfferSearch(createdSearchRequest1, createdOffer2, ArrayList())
 
-        var result = offerSearchService.getOfferSearches(strategy,1L).get()
+        var result = offerSearchService.getOfferSearches(strategy, createdOffer1.id).get()
         assert(result.size == 2)
 
         val changedOffer = Offer(
-                createdOffer.id,
-                createdOffer.owner,
+                createdOffer1.id,
+                createdOffer1.owner,
                 listOf(),
                 "is desc111",
                 "is title111",
@@ -276,35 +310,46 @@ class OfferSearchServiceTest {
                 mapOf("salary" to Offer.CompareAction.MORE)
         )
 
-        offerService.putOffer(createdOffer.id, createdOffer.owner, changedOffer, strategy).get()
+        offerService.putOffer(createdOffer1.id, createdOffer1.owner, changedOffer, strategy).get()
 
-        result = offerSearchService.getOfferSearches(strategy,1L).get()
+        result = offerSearchService.getOfferSearches(strategy, createdOffer1.id).get()
         assert(result.isEmpty())
+
+        result = offerSearchService.getOfferSearches(strategy, createdOffer2.id).get()
+        assert(result.isNotEmpty())
     }
 
     @Test fun `delete all OfferSearch objects with state NONE or REJECT when related Offer object is deleted`() {
-        `should be create new offer search item and get result by clientId and search request id`()
-        `should be create new offer search item and get result by clientId and search request id`()
+        createOfferSearch(createdSearchRequest1, createdOffer1, ArrayList())
+        createOfferSearch(createdSearchRequest2, createdOffer1, ArrayList())
+        createOfferSearch(createdSearchRequest1, createdOffer2, ArrayList())
 
-        var result = offerSearchService.getOfferSearches(strategy,1L).get()
+        var result = offerSearchService.getOfferSearches(strategy, createdOffer1.id).get()
         assert(result.size == 2)
 
-        offerService.deleteOffer(createdOffer.id, createdOffer.owner, strategy).get()
+        offerService.deleteOffer(createdOffer1.id, createdOffer1.owner, strategy).get()
 
-        result = offerSearchService.getOfferSearches(strategy,1L).get()
+        result = offerSearchService.getOfferSearches(strategy, createdOffer1.id).get()
         assert(result.isEmpty())
+
+        result = offerSearchService.getOfferSearches(strategy,createdOffer2.id).get()
+        assert(result.isNotEmpty())
     }
 
     @Test fun `delete all OfferSearch objects with state NONE or REJECT when related SearchRequest object is deleted`() {
-        `should be create new offer search item and get result by clientId and search request id`()
-        `should be create new offer search item and get result by clientId and search request id`()
+        createOfferSearch(createdSearchRequest1, createdOffer1, ArrayList())
+        createOfferSearch(createdSearchRequest2, createdOffer1, ArrayList())
+        createOfferSearch(createdSearchRequest1, createdOffer2, ArrayList())
 
-        var result = offerSearchService.getOfferSearches(strategy,1L).get()
+        var result = offerSearchService.getOfferSearches(strategy, createdOffer1.id).get()
         assert(result.size == 2)
 
-        searchRequestService.deleteSearchRequest(createdSearchRequest.id, createdSearchRequest.owner, strategy).get()
+        searchRequestService.deleteSearchRequest(createdSearchRequest1.id, createdSearchRequest1.owner, strategy).get()
 
-        result = offerSearchService.getOfferSearches(strategy,1L).get()
+        result = offerSearchService.getOfferSearches(strategy, createdOffer1.id).get()
+        assert(result.size == 1)
+
+        result = offerSearchService.getOfferSearches(strategy, createdOffer2.id).get()
         assert(result.isEmpty())
     }
 

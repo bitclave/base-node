@@ -84,4 +84,21 @@ class SearchRequestService(
         })
     }
 
+    fun cloneSearchRequestWithOfferSearches(
+            owner: String,
+            searchRequest: SearchRequest,
+            strategy: RepositoryStrategyType
+    ): CompletableFuture<SearchRequest> {
+
+        return CompletableFuture.supplyAsync({
+            val clonedSearchRequest = SearchRequest(
+                    searchRequest.id,
+                    owner,
+                    searchRequest.tags
+            )
+
+            repository.changeStrategy(strategy).cloneSearchRequestWithOfferSearches(clonedSearchRequest)
+        })
+    }
+
 }

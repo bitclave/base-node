@@ -31,10 +31,17 @@ class SearchRequestControllerTest {
     private val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
     protected lateinit var requestSearch: SignedRequest<SearchRequest>
     protected lateinit var requestSearchId: SignedRequest<Long>
+    protected lateinit var cloneRequestSearch: SignedRequest<SearchRequest>
     private var httpHeaders: HttpHeaders = HttpHeaders()
 
     private val searchRequest = SearchRequest(
             0,
+            publicKey,
+            mapOf("car" to "true", "color" to "red")
+    )
+
+    private val cloneSearchRequest = SearchRequest(
+            1,
             publicKey,
             mapOf("car" to "true", "color" to "red")
     )
@@ -44,6 +51,7 @@ class SearchRequestControllerTest {
 
         requestSearch = SignedRequest(searchRequest, publicKey)
         requestSearchId = SignedRequest(1, publicKey)
+        cloneRequestSearch = SignedRequest(cloneSearchRequest, publicKey)
 
         httpHeaders.set("Accept", "application/json")
         httpHeaders.set("Content-Type", "application/json")
@@ -74,6 +82,13 @@ class SearchRequestControllerTest {
         this.mvc.perform(get("/$version/client/$publicKey/search/request/1/")
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
+    }
+
+    @Test fun `clone search request`() {
+        this.mvc.perform(put("/$version/client/$publicKey/search/request/")
+                .content(cloneRequestSearch.toJsonString())
+                .headers(httpHeaders))
+                .andExpect(status().isCreated)
     }
 
 }

@@ -1,8 +1,11 @@
 package com.bitclave.node.repository.search
 
+import com.bitclave.node.repository.models.OfferResultAction
+import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.services.errors.DataNotSavedException
+import com.bitclave.node.services.errors.NotFoundException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 
@@ -51,6 +54,37 @@ class PostgresSearchRequestRepositoryImpl(
         return repository.findAll()
                 .asSequence()
                 .toList()
+    }
+
+    override fun cloneSearchRequestWithOfferSearches(request: SearchRequest): SearchRequest {
+        var existingRequest = repository.findOne(request.id)
+        if(existingRequest == null) return throw NotFoundException()
+
+        var relatedOfferSearches = offerSearchRepository.findBySearchRequestId(existingRequest.id)
+
+        val createSearchRequest = SearchRequest(
+                0,
+                request.owner,
+                request.tags
+        )
+
+        repository.save(createSearchRequest)
+
+        var toBeSavedOfferSearched: MutableList<OfferSearch> = mutableListOf<OfferSearch>()
+        for (offerSearch: OfferSearch in relatedOfferSearches) {
+            val newOfferSearch = OfferSearch(0, createSearchRequest.id,
+                    offerSearch.offerId,
+                    OfferResultAction.NONE,
+                    offerSearch.lastUpdated,
+                    offerSearch.info,
+                    ArrayList()
+            )
+            toBeSavedOfferSearched.add(newOfferSearch)
+        }
+
+        offerSearchRepository.save(toBeSavedOfferSearched)
+
+        return createSearchRequest
     }
 
 }

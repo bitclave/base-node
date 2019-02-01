@@ -170,4 +170,59 @@ class SearchRequestController(
         return searchRequestService.getSearchRequests(id ?: 0, owner, getStrategyType(strategy))
     }
 
+    /**
+     * Clone new request with OfferSearch objects, based on the provided request.
+     * The API will verify that the request is cryptographically signed by the owner of the public key.
+     * @param request is {@link SignedRequest} where client sends {@link SearchRequest} and
+     * signature of the message.
+     *
+     * @return {@link Long}, Http status - 201.
+     *
+     * @exception   {@link BadArgumentException} - 400
+     *              {@link AccessDeniedException} - 403
+     *              {@link NotFoundException} - 500
+     */
+    @ApiOperation("Clone new request with OfferSearch objects, based on the provided request.\n" +
+            "The API will verify that the request is cryptographically signed by the owner of the public key.",
+            response = SearchRequest::class)
+    @ApiResponses(value = [
+        ApiResponse(code = 201, message = "Created", response = SearchRequest::class),
+        ApiResponse(code = 400, message = "BadArgumentException"),
+        ApiResponse(code = 403, message = "AccessDeniedException"),
+        ApiResponse(code = 500, message = "NotFoundException")
+    ])
+    @RequestMapping(method = [RequestMethod.PUT])
+    @ResponseStatus(value = HttpStatus.CREATED)
+    fun cloneSearchRequest(
+            @ApiParam("public key owner of search request")
+            @PathVariable(value = "owner")
+            owner: String,
+
+            @ApiParam("where client sends SearchRequest and signature of the message.", required = true)
+            @RequestBody
+            request: SignedRequest<SearchRequest>,
+
+            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+            @RequestHeader("Strategy", required = false)
+            strategy: String?): CompletableFuture<SearchRequest> {
+
+        return accountService.accountBySigMessage(request, getStrategyType(strategy))
+                .thenCompose { account: Account -> accountService.validateNonce(request, account) }
+                .thenCompose {
+                    if (owner != it.publicKey) {
+                        throw AccessDeniedException()
+                    }
+
+                    val result = searchRequestService.cloneSearchRequestWithOfferSearches(
+                            it.publicKey,
+                            request.data!!,
+                            getStrategyType(strategy)
+                    ).get()
+
+                    accountService.incrementNonce(it, getStrategyType(strategy)).get()
+
+                    CompletableFuture.completedFuture(result)
+                }
+    }
+
 }

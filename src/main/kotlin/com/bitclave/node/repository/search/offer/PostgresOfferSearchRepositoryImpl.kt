@@ -1,6 +1,7 @@
 package com.bitclave.node.repository.search.offer
 
 import com.bitclave.node.repository.models.OfferSearch
+import com.bitclave.node.repository.search.SearchRequestCrudRepository
 import com.bitclave.node.services.errors.DataNotSavedException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
@@ -8,8 +9,9 @@ import org.springframework.stereotype.Component
 @Component
 @Qualifier("postgres")
 class PostgresOfferSearchRepositoryImpl(
-        val repository: OfferSearchCrudRepository
-) : OfferSearchRepository {
+        val repository: OfferSearchCrudRepository,
+        val searchRequestRepository: SearchRequestCrudRepository
+        ) : OfferSearchRepository {
 
     override fun saveSearchResult(list: List<OfferSearch>) {
         repository.save(list)
@@ -18,28 +20,33 @@ class PostgresOfferSearchRepositoryImpl(
     override fun saveSearchResult(item: OfferSearch) {
         var id = item.id;
         repository.save(item) ?: throw DataNotSavedException()
-//        if(id > 0) { @Koray, why did you have this "if" - in my tests "on input" I saw item.id was 0
-        if(item.id > 0) {
-//            var relatedOfferSearches = repository.findBySearchRequestIdAndOfferId(item.searchRequestId, item.offerId)
-            var relatedOfferSearches = repository.findByOfferId(item.offerId)
-//            relatedOfferSearches.forEach{offerSearchObj -> offerSearchObj.state = item.state}
-            // TODO need to update all OfferSearch state, especially the events
-            // @Koray, this did not work for me. I had to replace with other loop
-//            relatedOfferSearches.forEach{offerSearchObj -> {
-//                offerSearchObj.state = item.state;
-//                offerSearchObj.lastUpdated = item.lastUpdated;
-//                offerSearchObj.events = item.events;
-//                offerSearchObj.info = item.info;
-//            }}
 
-            for (offerSearch: OfferSearch in relatedOfferSearches) {
-                offerSearch.state = item.state;
-                offerSearch.lastUpdated = item.lastUpdated;
-                offerSearch.events = item.events;
-                offerSearch.info = item.info;
+        val searchRequest = searchRequestRepository.findById(item.searchRequestId)
+        if(searchRequest.isNotEmpty()) {
+            var relatedOfferSearches = findByOwnerAndOfferId(searchRequest[0].owner, item.offerId)
+
+            if(id > 0) {// if it was an update then update all related OfferSearches
+                for (offerSearch: OfferSearch in relatedOfferSearches) {
+                    offerSearch.state = item.state
+                    offerSearch.lastUpdated = item.lastUpdated
+                    offerSearch.events = item.events
+                    offerSearch.info = item.info
+                }
+
+                saveSearchResult(relatedOfferSearches)
+            } else {// if it was an new insert then update it according related OfferSearches if exists
+                //TODO can be implemented more efficient insert
+                for (offerSearch: OfferSearch in relatedOfferSearches) {
+                    if(offerSearch.id != item.id) {
+                        item.state = offerSearch.state
+                        item.lastUpdated = offerSearch.lastUpdated
+                        item.events = offerSearch.events
+                        item.info = offerSearch.info
+                        repository.save(item)
+                        break
+                    }
+                }
             }
-
-            saveSearchResult(relatedOfferSearches)
         }
     }
 
@@ -57,5 +64,15 @@ class PostgresOfferSearchRepositoryImpl(
 
     override fun findBySearchRequestIdAndOfferId(searchRequestId: Long, offerId: Long): List<OfferSearch> {
         return repository.findBySearchRequestIdAndOfferId(searchRequestId, offerId)
+    }
+
+    //TODO Later OfferSearch model can be changed in order to cover this need
+    override fun findByOwnerAndOfferId(owner: String, offerId: Long): List<OfferSearch> {
+        val searchRequestList = searchRequestRepository.findByOwner(owner)
+        val searchRequestIDs = searchRequestList.map { it.id }.toSet()
+
+        val offerSearchList = repository.findByOfferId(offerId)
+
+        return offerSearchList.filter { searchRequestIDs.contains(it.searchRequestId) }
     }
 }

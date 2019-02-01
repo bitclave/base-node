@@ -4,6 +4,9 @@ import javax.persistence.*
 import java.util.Date
 
 @Entity
+@Table(uniqueConstraints = [
+    UniqueConstraint(columnNames = ["searchRequestId", "offerId"])
+])
 open class OfferSearch(
         @GeneratedValue(strategy = GenerationType.TABLE) @Id val id: Long = 0,
         val searchRequestId: Long = 0,
