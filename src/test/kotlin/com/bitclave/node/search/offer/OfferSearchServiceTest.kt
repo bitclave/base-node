@@ -77,6 +77,9 @@ class OfferSearchServiceTest {
     private val account: Account = Account(publicKey)
     protected lateinit var strategy: RepositoryStrategyType
     protected lateinit var createdOffer: Offer;
+    protected lateinit var createdOffer1: Offer;
+    protected lateinit var createdOffer2: Offer;
+
     protected lateinit var createdSearchRequest: SearchRequest;
 
     protected val offer = Offer(
@@ -158,6 +161,15 @@ class OfferSearchServiceTest {
                 .changeStrategy(strategy)
                 .savePrices(offer, offerPrices)
 
+        createdOffer1 = offerRepositoryStrategy
+                .changeStrategy(strategy)
+                .saveOffer(offer)
+
+        createdOffer2 = offerRepositoryStrategy
+                .changeStrategy(strategy)
+                .saveOffer(offer)
+
+
         createdSearchRequest = searchRequestRepositoryStrategy.changeStrategy(strategy)
                 .saveSearchRequest(SearchRequest(0, publicKey, emptyMap()))
     }
@@ -211,13 +223,13 @@ class OfferSearchServiceTest {
     @Test fun `client can complain to search item`() {
         `should be create new offer search item and get result by clientId and search request id`()
 
-        offerSearchService.complain(1L, businessPublicKey, strategy).get()
+        offerSearchService.complain(2L, businessPublicKey, strategy).get()
 
         val result = offerSearchService.getOffersResult(strategy, 1L).get()
         assert(result.size == 1)
         assert(result[0].offerSearch.id >= 1L)
         assert(result[0].offerSearch.state == OfferResultAction.COMPLAIN)
-        assert(result[0].offer.id == 1L)
+        assert(result[0].offer.id == 2L)
         assert(result[0].offer.owner == businessPublicKey)
     }
 
