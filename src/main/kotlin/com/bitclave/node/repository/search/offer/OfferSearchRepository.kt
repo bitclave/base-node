@@ -1,6 +1,8 @@
 package com.bitclave.node.repository.search.offer
 
 import com.bitclave.node.repository.models.OfferSearch
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 
 interface OfferSearchRepository {
 
@@ -11,5 +13,7 @@ interface OfferSearchRepository {
     fun findById(id: Long): OfferSearch?
 
     fun findBySearchRequestId(id: Long): List<OfferSearch>
+
+    fun findAll(pageable: Pageable): Page<OfferSearch>
 
 }

@@ -3,6 +3,8 @@ package com.bitclave.node.repository.search.offer
 import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.services.errors.DataNotSavedException
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 
 @Component
@@ -27,4 +29,7 @@ class PostgresOfferSearchRepositoryImpl(
         return repository.findBySearchRequestId(id)
     }
 
+    override fun findAll(pageable: Pageable): Page<OfferSearch> {
+        return repository.findAll(pageable)
+    }
 }
