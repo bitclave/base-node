@@ -360,10 +360,9 @@ class OfferSearchServiceTest {
     }
 
     @Test fun `should return all offersearch results by page`() {
-
         LongStream.range(0, 4).forEach { id ->
             val offer = Offer(
-                    id,
+                    0,
                     businessPublicKey,
                     listOf(),
                     "desc",
@@ -373,7 +372,7 @@ class OfferSearchServiceTest {
 
             offerCrudRepository.save(offer)
 
-            val request = SearchRequest(id, publicKey, emptyMap())
+            val request = SearchRequest(0, publicKey, emptyMap())
             searchRequestCrudRepository.save(request)
 
             offerSearchService.saveNewOfferSearch(
