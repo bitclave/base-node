@@ -13,6 +13,8 @@ import com.bitclave.node.repository.search.offer.OfferSearchRepository
 import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.errors.BadArgumentException
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
 import com.google.gson.Gson
@@ -313,6 +315,15 @@ class OfferSearchService(
             else
                 return@supplyAsync repository.findByOfferId(offerId)
 
+        }
+    }
+
+    fun getPageableOfferSearches(page: PageRequest,
+                                 strategy: RepositoryStrategyType
+    ): CompletableFuture<Page<OfferSearch>> {
+        return CompletableFuture.supplyAsync {
+            val repository = offerSearchRepository.changeStrategy(strategy)
+            return@supplyAsync repository.findAll(page)
         }
     }
 }

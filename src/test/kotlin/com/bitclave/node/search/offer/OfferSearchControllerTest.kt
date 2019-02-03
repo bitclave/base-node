@@ -94,4 +94,9 @@ class OfferSearchControllerTest {
                 .andExpect(status().isCreated)
     }
 
+    @Test fun `get offer search by page`() {
+        this.mvc.perform(get("/$version/search/results?page=0&size=2")
+                .headers(httpHeaders))
+                .andExpect(status().isOk)
+    }
 }

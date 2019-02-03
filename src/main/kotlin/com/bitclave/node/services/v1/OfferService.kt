@@ -3,12 +3,13 @@ package com.bitclave.node.services.v1
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.Offer
-import com.bitclave.node.repository.models.OfferPrice
 import com.bitclave.node.repository.offer.OfferRepository
 import com.bitclave.node.repository.price.OfferPriceRepository
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
 
@@ -116,4 +117,12 @@ class OfferService(
         })
     }
 
+    fun getPageableOffers(page: PageRequest,
+                          strategy: RepositoryStrategyType
+    ): CompletableFuture<Page<Offer>> {
+        return CompletableFuture.supplyAsync {
+            val repository = offerRepository.changeStrategy(strategy)
+            return@supplyAsync repository.findAll(page)
+        }
+    }
 }

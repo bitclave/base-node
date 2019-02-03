@@ -1,13 +1,13 @@
 package com.bitclave.node.repository.search
 
 import com.bitclave.node.repository.models.SearchRequest
-import org.springframework.data.repository.CrudRepository
+import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 
 @Repository
 @Transactional
-interface SearchRequestCrudRepository : CrudRepository<SearchRequest, Long> {
+interface SearchRequestCrudRepository : PagingAndSortingRepository<SearchRequest, Long> {
 
     fun findById(id: Long): List<SearchRequest>
 

@@ -25,15 +25,21 @@ import com.bitclave.node.repository.share.OfferShareCrudRepository
 import com.bitclave.node.repository.share.OfferShareRepositoryStrategy
 import com.bitclave.node.repository.share.PostgresOfferShareRepositoryImpl
 import com.bitclave.node.services.v1.*
+import com.bitclave.node.services.v1.AccountService
+import com.bitclave.node.services.v1.OfferSearchService
+import com.bitclave.node.services.v1.OfferShareService
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.data.domain.PageRequest
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import java.math.BigDecimal
+import java.util.stream.LongStream
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
@@ -353,4 +359,36 @@ class OfferSearchServiceTest {
         assert(result.isEmpty())
     }
 
+    @Test fun `should return all offersearch results by page`() {
+        LongStream.range(0, 4).forEach { id ->
+            val offer = Offer(
+                    0,
+                    businessPublicKey,
+                    listOf(),
+                    "desc",
+                    "title",
+                    "url"
+            )
+
+            offerCrudRepository.save(offer)
+
+            val request = SearchRequest(0, publicKey, emptyMap())
+            searchRequestCrudRepository.save(request)
+
+            offerSearchService.saveNewOfferSearch(
+                    OfferSearch(0, request.id, offer.id, OfferResultAction.NONE),
+                    strategy
+            ).get()
+        }
+
+        val firstPage = offerSearchService.getPageableOfferSearches(PageRequest(0, 2), strategy).get()
+        assertThat(firstPage.size).isEqualTo(2)
+        assert(firstPage.first().id == 1L)
+        assert(firstPage.last().id == 2L)
+
+        val secondPage = offerSearchService.getPageableOfferSearches(PageRequest(1, 2), strategy).get()
+        assertThat(secondPage.size).isEqualTo(2)
+        assert(secondPage.first().id == 3L)
+        assert(secondPage.last().id == 4L)
+    }
 }
