@@ -29,3 +29,8 @@ select * from offer_search where offer_search.id not in
 		select offer.id from offer
 	);
 -- find dangling offerSearch with no matching Offer
+
+-- delete all search requests
+delete from search_request_tags;
+delete from search_request;
+-- ~delete all search requests
