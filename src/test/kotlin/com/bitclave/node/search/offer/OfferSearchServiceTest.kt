@@ -297,7 +297,7 @@ class OfferSearchServiceTest {
         assert(result[0].state == OfferResultAction.NONE)
     }
 
-    @Test fun `a new offerSearch item should be sync with related offerSerach items if exists`() {
+    @Test fun `a new offerSearch item should be sync with related offerSearch items if exists`() {
         `client can complain to search item`()
 
         createOfferSearch(createdSearchRequest2, createdOffer1, ArrayList())
@@ -340,7 +340,7 @@ class OfferSearchServiceTest {
         assert(result.isNotEmpty())
     }
 
-    @Test fun `delete all OfferSearch objects with state NONE or REJECT when related Offer object is deleted`() {
+    @Test fun `delete all OfferSearch objects when related Offer object is deleted`() {
         createOfferSearch(createdSearchRequest1, createdOffer1, ArrayList())
         createOfferSearch(createdSearchRequest2, createdOffer1, ArrayList())
         createOfferSearch(createdSearchRequest1, createdOffer2, ArrayList())
@@ -358,17 +358,21 @@ class OfferSearchServiceTest {
     }
 
     @Test fun `delete all OfferSearch objects with state NONE or REJECT when related SearchRequest object is deleted`() {
-        createOfferSearch(createdSearchRequest1, createdOffer1, ArrayList())
+        `client can complain to search item`()
+        //createOfferSearch(createdSearchRequest1, createdOffer1, ArrayList())
         createOfferSearch(createdSearchRequest2, createdOffer1, ArrayList())
         createOfferSearch(createdSearchRequest1, createdOffer2, ArrayList())
 
         var result = offerSearchService.getOfferSearches(strategy, createdOffer1.id).get()
         assert(result.size == 2)
 
+        result = offerSearchService.getOfferSearches(strategy, createdOffer2.id).get()
+        assert(result.isNotEmpty())
+
         searchRequestService.deleteSearchRequest(createdSearchRequest1.id, createdSearchRequest1.owner, strategy).get()
 
         result = offerSearchService.getOfferSearches(strategy, createdOffer1.id).get()
-        assert(result.size == 1)
+        assert(result.size == 2)
 
         result = offerSearchService.getOfferSearches(strategy, createdOffer2.id).get()
         assert(result.isEmpty())
