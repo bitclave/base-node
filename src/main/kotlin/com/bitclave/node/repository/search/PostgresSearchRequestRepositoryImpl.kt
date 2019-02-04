@@ -27,6 +27,10 @@ class PostgresSearchRequestRepositoryImpl(
         if (count > 0) {
             var relatedOfferSearches = offerSearchRepository.findBySearchRequestId(id)
 
+            relatedOfferSearches = relatedOfferSearches.filter {
+                it.state == OfferResultAction.NONE || it.state == OfferResultAction.REJECT
+            }
+
             offerSearchRepository.delete(relatedOfferSearches)
 
             return id

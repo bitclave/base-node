@@ -27,25 +27,29 @@ class PostgresOfferSearchRepositoryImpl(
         if(searchRequest.isNotEmpty()) {
             var relatedOfferSearches = findByOwnerAndOfferId(searchRequest[0].owner, item.offerId)
 
-            if(id > 0) {// if it was an update then update all related OfferSearches
-                for (offerSearch: OfferSearch in relatedOfferSearches) {
-                    offerSearch.state = item.state
-                    offerSearch.lastUpdated = item.lastUpdated
-                    offerSearch.events = item.events
-                    offerSearch.info = item.info
-                }
+            if(relatedOfferSearches.size > 1) {
+                if (id > 0) {// if it was an update then update all related OfferSearches
+                    for (offerSearch: OfferSearch in relatedOfferSearches) {
+                        if (offerSearch.id != item.id) {
+                            offerSearch.state = item.state
+                            offerSearch.lastUpdated = item.lastUpdated
+                            offerSearch.events = item.events
+                            offerSearch.info = item.info
+                        }
+                    }
 
-                saveSearchResult(relatedOfferSearches)
-            } else {// if it was an new insert then update it according related OfferSearches if exists
-                //TODO can be implemented more efficient insert
-                for (offerSearch: OfferSearch in relatedOfferSearches) {
-                    if(offerSearch.id != item.id) {
-                        item.state = offerSearch.state
-                        item.lastUpdated = offerSearch.lastUpdated
-                        item.events = offerSearch.events
-                        item.info = offerSearch.info
-                        repository.save(item)
-                        break
+                    saveSearchResult(relatedOfferSearches)
+                } else {// if it was an new insert then update it according related OfferSearches if exists
+                    //TODO can be implemented more efficient insert
+                    for (offerSearch: OfferSearch in relatedOfferSearches) {
+                        if (offerSearch.id != item.id) {
+                            item.state = offerSearch.state
+                            item.lastUpdated = offerSearch.lastUpdated
+                            item.events = offerSearch.events
+                            item.info = offerSearch.info
+                            repository.save(item)
+                            break
+                        }
                     }
                 }
             }
@@ -58,6 +62,10 @@ class PostgresOfferSearchRepositoryImpl(
 
     override fun findBySearchRequestId(id: Long): List<OfferSearch> {
         return repository.findBySearchRequestId(id)
+    }
+
+    override fun findBySearchRequestIds(ids: List<Long>): List<OfferSearch> {
+        return repository.findBySearchRequestIdIn(ids)
     }
 
     override fun findByOfferId(id: Long): List<OfferSearch> {
