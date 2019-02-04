@@ -73,6 +73,13 @@ class OfferSearchControllerTest {
                 .andExpect(status().isOk)
     }
 
+    @Test fun `get offer search list by owner`() {
+        this.mvc.perform(get("/$version/search/result/user")
+                .param("owner", publicKey)
+                .headers(httpHeaders))
+                .andExpect(status().isOk)
+    }
+
     @Test fun `add event`() {
         this.mvc.perform(patch("/$version/search/result/event/1")
                 .content(offerEventRequest.toJsonString())

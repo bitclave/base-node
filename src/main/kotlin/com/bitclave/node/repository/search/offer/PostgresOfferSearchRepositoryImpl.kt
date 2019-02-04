@@ -60,6 +60,10 @@ class PostgresOfferSearchRepositoryImpl(
         return repository.findBySearchRequestId(id)
     }
 
+    override fun findBySearchRequestIds(ids: List<Long>): List<OfferSearch> {
+        return repository.findBySearchRequestIdIn(ids)
+    }
+
     override fun findByOfferId(id: Long): List<OfferSearch> {
         return repository.findByOfferId(id)
     }

@@ -207,6 +207,21 @@ class OfferSearchServiceTest {
     }
 
     @Test
+    fun `should be create multiple offer search items and get result by owner`() {
+        createOfferSearch(createdSearchRequest1, createdOffer1, ArrayList())
+        createOfferSearch(createdSearchRequest1, createdOffer2, ArrayList())
+        createOfferSearch(createdSearchRequest2, createdOffer1, ArrayList())
+        createOfferSearch(createdSearchRequest2, createdOffer2, ArrayList())
+
+        val result = offerSearchService.getOffersAndOfferSearchesByOwnerResult(strategy, publicKey).get()
+        assert(result.size == 4)
+        assert(result[0].offerSearch.offerId == result[0].offer.id)
+        assert(result[1].offerSearch.offerId == result[1].offer.id)
+        assert(result[2].offerSearch.offerId == result[2].offer.id)
+        assert(result[3].offerSearch.offerId == result[3].offer.id)
+    }
+
+    @Test
     fun `should be add EVENT as serialized object into array`() {
         var events = mutableListOf("tram taram")
         createOfferSearch(createdSearchRequest1, createdOffer1, events)

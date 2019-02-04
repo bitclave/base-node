@@ -55,6 +55,33 @@ class OfferSearchController(
     }
 
     /**
+     * Returns the OfferSearches with related Offers list of provided user.
+     *
+     * @return {@link List<OfferSearchResultItem>}, Http status - 200.
+     *
+     */
+    @ApiOperation("Returns the OfferSearches with related Offers list of provided user.",
+            response = OfferSearchResultItem::class, responseContainer = "List")
+    @ApiResponses(value = [
+        ApiResponse(code = 200, message = "Success", response = List::class)
+    ])
+    @RequestMapping(method = [RequestMethod.GET], value = ["/user"])
+    fun getResultByOwner(
+            @ApiParam("public key owner of search requests")
+            @RequestParam(value = "owner", required = false)
+            owner: String,
+
+            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+            @RequestHeader("Strategy", required = false)
+            strategy: String?): CompletableFuture<List<OfferSearchResultItem>> {
+
+        return offerSearchService.getOffersAndOfferSearchesByOwnerResult(
+                getStrategyType(strategy),
+                owner
+        )
+    }
+
+    /**
      * Add offer to search result for some search request
      *
      */

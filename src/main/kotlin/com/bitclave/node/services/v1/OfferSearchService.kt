@@ -69,24 +69,56 @@ class OfferSearchService(
 
             // "ids" is list of offer Ids that are associated with the searchRequests in "result" above
             // Note: we should handle case where multiple OfferSearches have pointer to the same offer Id
-            val ids: Map<Long, OfferSearch> = result.associate { Pair(it.offerId, it) }
+//            val ids: Map<Long, OfferSearch> = result.associate { Pair(it.offerId, it) }
 
-            val offers = offerRepository.changeStrategy(strategy)
-                    .findById(ids.keys.toList())
+//            val offers = offerRepository.changeStrategy(strategy)
+//                    .findById(ids.keys.toList())
 
-            val l = mutableListOf<OfferSearchResultItem>();
+            val l = mutableListOf<OfferSearchResultItem>()
             for( offerSearch: OfferSearch in result) {
-                val offer: Offer? = offerRepository.changeStrategy(strategy).findById(offerSearch.offerId);
+                val offer: Offer? = offerRepository.changeStrategy(strategy).findById(offerSearch.offerId)
                 if (offer!=null) {
-                    val item: OfferSearchResultItem = OfferSearchResultItem(offerSearch, offer );
-                    l.add(item);
+                    val item: OfferSearchResultItem = OfferSearchResultItem(offerSearch, offer )
+                    l.add(item)
                 }
             }
-            l;
+            l
 
 //            offers.filter { ids.containsKey(it.id) }
 //                    .map { OfferSearchResultItem(ids[it.id]!!, it) }
 
+        }
+    }
+
+    fun getOffersAndOfferSearchesByOwnerResult(
+            strategy: RepositoryStrategyType,
+            owner: String
+    ): CompletableFuture<List<OfferSearchResultItem>> {
+
+        return CompletableFuture.supplyAsync {
+            val repository = offerSearchRepository.changeStrategy(strategy)
+
+            //get all searchRequests of the user
+            val searchRequestList = searchRequestRepository.changeStrategy(strategy).findByOwner(owner)
+
+            //get all relevant offerSearches of searchRequests
+            val searchRequestIds: List<Long> = searchRequestList.map { it.id }
+            val offerSearches = repository.findBySearchRequestIds(searchRequestIds)
+
+            //get all relevant offer of offerSearches
+            val offerIds: List<Long> = offerSearches.map { it.offerId }
+            val offers = offerRepository.changeStrategy(strategy).findById(offerIds).distinct()
+
+            //merge all relevant offer and offerSearches together
+            val returnList = mutableListOf<OfferSearchResultItem>()
+            for( offerSearch: OfferSearch in offerSearches) {
+                val offer: Offer? = offers.find { it.id == offerSearch.offerId }
+                if (offer!=null) {
+                    val item = OfferSearchResultItem(offerSearch, offer )
+                    returnList.add(item)
+                }
+            }
+            returnList
         }
     }
 
