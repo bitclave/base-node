@@ -73,6 +73,13 @@ class OfferSearchControllerTest {
                 .andExpect(status().isOk)
     }
 
+    @Test fun `get offer search list by owner`() {
+        this.mvc.perform(get("/$version/search/result/user")
+                .param("owner", publicKey)
+                .headers(httpHeaders))
+                .andExpect(status().isOk)
+    }
+
     @Test fun `add event`() {
         this.mvc.perform(patch("/$version/search/result/event/1")
                 .content(offerEventRequest.toJsonString())
@@ -94,4 +101,9 @@ class OfferSearchControllerTest {
                 .andExpect(status().isCreated)
     }
 
+    @Test fun `get offer search by page`() {
+        this.mvc.perform(get("/$version/search/results?page=0&size=2")
+                .headers(httpHeaders))
+                .andExpect(status().isOk)
+    }
 }

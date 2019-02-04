@@ -16,7 +16,9 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.math.BigDecimal
 
@@ -136,9 +138,13 @@ class OfferControllerTest {
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
                 .andReturn()
-
-        val content = result.response.contentAsString
-        println(content)
     }
 
+    @Test
+    fun `get offers by page`() {
+        val result = this.mvc.perform(MockMvcRequestBuilders.get("/$version/offers?page=0&size=2")
+                .headers(httpHeaders))
+                .andExpect(MockMvcResultMatchers.status().isOk)
+                .andReturn()
+    }
 }

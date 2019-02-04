@@ -1,6 +1,8 @@
 package com.bitclave.node.repository.offer
 
 import com.bitclave.node.repository.models.Offer
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 
 interface OfferRepository {
 
@@ -20,4 +22,5 @@ interface OfferRepository {
 
     fun findAll(): List<Offer>
 
+    fun findAll(pageable: Pageable): Page<Offer>
 }

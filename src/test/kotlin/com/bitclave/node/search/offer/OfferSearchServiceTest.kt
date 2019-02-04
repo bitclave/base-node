@@ -25,15 +25,21 @@ import com.bitclave.node.repository.share.OfferShareCrudRepository
 import com.bitclave.node.repository.share.OfferShareRepositoryStrategy
 import com.bitclave.node.repository.share.PostgresOfferShareRepositoryImpl
 import com.bitclave.node.services.v1.*
+import com.bitclave.node.services.v1.AccountService
+import com.bitclave.node.services.v1.OfferSearchService
+import com.bitclave.node.services.v1.OfferShareService
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.data.domain.PageRequest
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import java.math.BigDecimal
+import java.util.stream.LongStream
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
@@ -201,6 +207,21 @@ class OfferSearchServiceTest {
     }
 
     @Test
+    fun `should be create multiple offer search items and get result by owner`() {
+        createOfferSearch(createdSearchRequest1, createdOffer1, ArrayList())
+        createOfferSearch(createdSearchRequest1, createdOffer2, ArrayList())
+        createOfferSearch(createdSearchRequest2, createdOffer1, ArrayList())
+        createOfferSearch(createdSearchRequest2, createdOffer2, ArrayList())
+
+        val result = offerSearchService.getOffersAndOfferSearchesByOwnerResult(strategy, publicKey).get()
+        assert(result.size == 4)
+        assert(result[0].offerSearch.offerId == result[0].offer.id)
+        assert(result[1].offerSearch.offerId == result[1].offer.id)
+        assert(result[2].offerSearch.offerId == result[2].offer.id)
+        assert(result[3].offerSearch.offerId == result[3].offer.id)
+    }
+
+    @Test
     fun `should be add EVENT as serialized object into array`() {
         var events = mutableListOf("tram taram")
         createOfferSearch(createdSearchRequest1, createdOffer1, events)
@@ -276,7 +297,7 @@ class OfferSearchServiceTest {
         assert(result[0].state == OfferResultAction.NONE)
     }
 
-    @Test fun `a new offerSearch item should be sync with related offerSerach items if exists`() {
+    @Test fun `a new offerSearch item should be sync with related offerSearch items if exists`() {
         `client can complain to search item`()
 
         createOfferSearch(createdSearchRequest2, createdOffer1, ArrayList())
@@ -319,7 +340,7 @@ class OfferSearchServiceTest {
         assert(result.isNotEmpty())
     }
 
-    @Test fun `delete all OfferSearch objects with state NONE or REJECT when related Offer object is deleted`() {
+    @Test fun `delete all OfferSearch objects when related Offer object is deleted`() {
         createOfferSearch(createdSearchRequest1, createdOffer1, ArrayList())
         createOfferSearch(createdSearchRequest2, createdOffer1, ArrayList())
         createOfferSearch(createdSearchRequest1, createdOffer2, ArrayList())
@@ -337,20 +358,56 @@ class OfferSearchServiceTest {
     }
 
     @Test fun `delete all OfferSearch objects with state NONE or REJECT when related SearchRequest object is deleted`() {
-        createOfferSearch(createdSearchRequest1, createdOffer1, ArrayList())
+        `client can complain to search item`()
+        //createOfferSearch(createdSearchRequest1, createdOffer1, ArrayList())
         createOfferSearch(createdSearchRequest2, createdOffer1, ArrayList())
         createOfferSearch(createdSearchRequest1, createdOffer2, ArrayList())
 
         var result = offerSearchService.getOfferSearches(strategy, createdOffer1.id).get()
         assert(result.size == 2)
 
+        result = offerSearchService.getOfferSearches(strategy, createdOffer2.id).get()
+        assert(result.isNotEmpty())
+
         searchRequestService.deleteSearchRequest(createdSearchRequest1.id, createdSearchRequest1.owner, strategy).get()
 
         result = offerSearchService.getOfferSearches(strategy, createdOffer1.id).get()
-        assert(result.size == 1)
+        assert(result.size == 2)
 
         result = offerSearchService.getOfferSearches(strategy, createdOffer2.id).get()
         assert(result.isEmpty())
     }
 
+    @Test fun `should return all offersearch results by page`() {
+        LongStream.range(0, 4).forEach { id ->
+            val offer = Offer(
+                    0,
+                    businessPublicKey,
+                    listOf(),
+                    "desc",
+                    "title",
+                    "url"
+            )
+
+            offerCrudRepository.save(offer)
+
+            val request = SearchRequest(0, publicKey, emptyMap())
+            searchRequestCrudRepository.save(request)
+
+            offerSearchService.saveNewOfferSearch(
+                    OfferSearch(0, request.id, offer.id, OfferResultAction.NONE),
+                    strategy
+            ).get()
+        }
+
+        val firstPage = offerSearchService.getPageableOfferSearches(PageRequest(0, 2), strategy).get()
+        assertThat(firstPage.size).isEqualTo(2)
+        assert(firstPage.first().id == 1L)
+        assert(firstPage.last().id == 2L)
+
+        val secondPage = offerSearchService.getPageableOfferSearches(PageRequest(1, 2), strategy).get()
+        assertThat(secondPage.size).isEqualTo(2)
+        assert(secondPage.first().id == 3L)
+        assert(secondPage.last().id == 4L)
+    }
 }

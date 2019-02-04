@@ -7,6 +7,8 @@ import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.services.errors.DataNotSavedException
 import com.bitclave.node.services.errors.NotFoundException
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 
 @Component
@@ -24,6 +26,10 @@ class PostgresSearchRequestRepositoryImpl(
         val count = repository.deleteByIdAndOwner(id, owner)
         if (count > 0) {
             var relatedOfferSearches = offerSearchRepository.findBySearchRequestId(id)
+
+            relatedOfferSearches = relatedOfferSearches.filter {
+                it.state == OfferResultAction.NONE || it.state == OfferResultAction.REJECT
+            }
 
             offerSearchRepository.delete(relatedOfferSearches)
 
@@ -56,7 +62,7 @@ class PostgresSearchRequestRepositoryImpl(
                 .toList()
     }
 
-    override fun cloneSearchRequestWithOfferSearches(request: SearchRequest): SearchRequest {
+     override fun cloneSearchRequestWithOfferSearches(request: SearchRequest): SearchRequest {
         var existingRequest = repository.findOne(request.id)
         if(existingRequest == null) return throw NotFoundException()
 
@@ -87,4 +93,7 @@ class PostgresSearchRequestRepositoryImpl(
         return createSearchRequest
     }
 
+    override fun findAll(pageable: Pageable): Page<SearchRequest> {
+        return repository.findAll(pageable)
+    }
 }
