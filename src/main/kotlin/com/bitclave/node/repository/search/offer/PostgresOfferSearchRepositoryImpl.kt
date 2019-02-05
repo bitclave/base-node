@@ -37,15 +37,14 @@ class PostgresOfferSearchRepositoryImpl(
                             offerSearch.info = item.info
                         }
                     }
-
-                    saveSearchResult(relatedOfferSearches)
+                    repository.save(relatedOfferSearches)
                 } else {// if it was an new insert then update it according related OfferSearches if exists
                     //TODO can be implemented more efficient insert
                     for (offerSearch: OfferSearch in relatedOfferSearches) {
                         if (offerSearch.id != item.id) {
                             item.state = offerSearch.state
                             item.lastUpdated = offerSearch.lastUpdated
-                            item.events = offerSearch.events
+                            item.events.addAll(offerSearch.events)
                             item.info = offerSearch.info
                             repository.save(item)
                             break

@@ -217,8 +217,8 @@ class OfferSearchService(
             item.state = OfferResultAction.COMPLAIN
             repository.saveSearchResult(item)
 
-            var event: OfferSearchEvent = OfferSearchEvent(callerPublicKey, item.state);
-            addEventTo(GSON.toJson(event), offerSearchId, strategy);
+            var event: OfferSearchEvent = OfferSearchEvent(callerPublicKey, item.state)
+            addEventTo(GSON.toJson(event), offerSearchId, strategy).get()
         }
     }
 
@@ -239,8 +239,8 @@ class OfferSearchService(
             item.state = OfferResultAction.EVALUATE
             repository.saveSearchResult(item)
 
-            var event: OfferSearchEvent = OfferSearchEvent(callerPublicKey, item.state);
-            addEventTo(GSON.toJson(event), offerSearchId, strategy);
+            var event: OfferSearchEvent = OfferSearchEvent(callerPublicKey, item.state)
+            addEventTo(GSON.toJson(event), offerSearchId, strategy).get()
         }
     }
 
@@ -261,8 +261,8 @@ class OfferSearchService(
             item.state = OfferResultAction.REJECT
             repository.saveSearchResult(item)
 
-            var event: OfferSearchEvent = OfferSearchEvent(callerPublicKey, item.state);
-            addEventTo(GSON.toJson(event), offerSearchId, strategy);
+            var event: OfferSearchEvent = OfferSearchEvent(callerPublicKey, item.state)
+            addEventTo(GSON.toJson(event), offerSearchId, strategy).get()
         }
     }
 
@@ -283,8 +283,8 @@ class OfferSearchService(
             item.state = OfferResultAction.CLAIMPURCHASE
             repository.saveSearchResult(item)
 
-            var event: OfferSearchEvent = OfferSearchEvent(callerPublicKey, item.state);
-            addEventTo(GSON.toJson(event), offerSearchId, strategy);
+            var event: OfferSearchEvent = OfferSearchEvent(callerPublicKey, item.state)
+            addEventTo(GSON.toJson(event), offerSearchId, strategy).get()
         }
     }
 
@@ -327,8 +327,8 @@ class OfferSearchService(
             item.state = OfferResultAction.CONFIRMED
             repository.saveSearchResult(item)
 
-            var event: OfferSearchEventConfirmed = OfferSearchEventConfirmed(callerPublicKey, item.state, "22");
-            addEventTo(GSON.toJson(event), offerSearchId, strategy);
+            var event: OfferSearchEventConfirmed = OfferSearchEventConfirmed(callerPublicKey, item.state, "22")
+            addEventTo(GSON.toJson(event), offerSearchId, strategy).get()
         }
     }
 
