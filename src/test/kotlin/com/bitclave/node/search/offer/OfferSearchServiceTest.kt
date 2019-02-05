@@ -290,6 +290,9 @@ class OfferSearchServiceTest {
         assert(result[0].state == OfferResultAction.COMPLAIN)
         assert(result[1].id >= 1L)
         assert(result[1].state == OfferResultAction.COMPLAIN)
+        assertThat(result[0].events.toList()).isEqualTo(result[1].events.toList())
+        assert(result[0].lastUpdated == result[1].lastUpdated)
+        assert(result[0].info == result[1].info)
 
         result = offerSearchService.getOfferSearches(strategy, createdOffer2.id, createdSearchRequest1.id).get()
         assert(result.size == 1)
@@ -308,6 +311,10 @@ class OfferSearchServiceTest {
         assert(result[0].state == OfferResultAction.COMPLAIN)
         assert(result[1].id >= 1L)
         assert(result[1].state == OfferResultAction.COMPLAIN)
+        assert(result[1].state == OfferResultAction.COMPLAIN)
+        assertThat(result[0].events.toList()).isEqualTo(result[1].events.toList())
+        assert(result[0].lastUpdated == result[1].lastUpdated)
+        assert(result[0].info == result[1].info)
     }
 
     @Test fun `delete all OfferSearch objects with state NONE or REJECT when related Offer object is updated`() {
