@@ -134,7 +134,8 @@ class SearchRequestServiceTest {
     }
 
     @Test fun `should be create new search request`() {
-        val result = searchRequestService.createSearchRequest(
+        val result = searchRequestService.putSearchRequest(
+                0,
                 account.publicKey,
                 searchRequest,
                 strategy
@@ -143,6 +144,29 @@ class SearchRequestServiceTest {
         assert(result.id >= 1L)
         assertThat(result.owner).isEqualTo(account.publicKey)
         assertThat(result.tags).isEqualTo(searchRequest.tags)
+    }
+
+    @Test fun `should update existed search request`() {
+        `should be create new search request`()
+
+        var savedListResult = searchRequestService.getSearchRequests(1, account.publicKey, strategy).get()
+        assertThat(savedListResult.size).isEqualTo(1)
+        assertThat(savedListResult[0]).isEqualToIgnoringGivenFields(searchRequest, "id")
+
+        val updateSearchRequest = SearchRequest(
+                1,
+                account.publicKey,
+                mapOf("car" to "false", "color" to "blue")
+        )
+
+        val result = searchRequestService.putSearchRequest(1,account.publicKey,updateSearchRequest,strategy).get()
+
+        assert(result.id >= 1L)
+        assertThat(result.owner).isEqualTo(account.publicKey)
+        assertThat(result.tags).isEqualTo(updateSearchRequest.tags)
+
+        savedListResult = searchRequestService.getSearchRequests(1, account.publicKey, strategy).get()
+        assertThat(savedListResult.size).isEqualTo(1)
     }
 
     @Test fun `should delete existed search request`() {
@@ -207,13 +231,15 @@ class SearchRequestServiceTest {
     }
 
     @Test fun `should clone existed search request with related offerSearches`() {
-        val result1 = searchRequestService.createSearchRequest(
+        val result1 = searchRequestService.putSearchRequest(
+                0,
                 account.publicKey,
                 searchRequest,
                 strategy
         ).get()
 
-        val result2 = searchRequestService.createSearchRequest(
+        val result2 = searchRequestService.putSearchRequest(
+                0,
                 account.publicKey,
                 searchRequest2,
                 strategy

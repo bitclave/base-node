@@ -4,6 +4,7 @@ import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.search.SearchRequestRepository
+import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
@@ -17,20 +18,26 @@ class SearchRequestService(
         private val repository: RepositoryStrategy<SearchRequestRepository>
 ) {
 
-    fun createSearchRequest(
+    fun putSearchRequest(
+            id: Long,
             owner: String,
             searchRequest: SearchRequest,
             strategy: RepositoryStrategyType
     ): CompletableFuture<SearchRequest> {
 
         return CompletableFuture.supplyAsync({
-            val createSearchRequest = SearchRequest(
-                    0,
+            if (id > 0) {
+                repository.changeStrategy(strategy)
+                        .findByIdAndOwner(id, owner) ?: throw BadArgumentException()
+            }
+
+            val updateSearchRequest = SearchRequest(
+                    id,
                     owner,
                     searchRequest.tags
             )
 
-            repository.changeStrategy(strategy).saveSearchRequest(createSearchRequest)
+            repository.changeStrategy(strategy).saveSearchRequest(updateSearchRequest)
         })
     }
 
