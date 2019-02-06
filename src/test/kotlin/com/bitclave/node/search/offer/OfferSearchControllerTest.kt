@@ -39,6 +39,7 @@ class OfferSearchControllerTest {
 
     private val offerSearchModel = OfferSearch(
             0,
+            publicKey,
            1L,
             1L,
             OfferResultAction.NONE,

@@ -144,6 +144,7 @@ class OfferSearchService(
             offerSearchRepository.changeStrategy(strategy)
                     .saveSearchResult(OfferSearch(
                             0,
+                            offerSearch.owner,
                             offerSearch.searchRequestId,
                             offerSearch.offerId,
                             OfferResultAction.NONE,
