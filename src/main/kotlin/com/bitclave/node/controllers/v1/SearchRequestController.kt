@@ -25,29 +25,32 @@ class SearchRequestController(
 ) : AbstractController() {
 
     /**
-     * Creates new request for search in the system, based on the provided information.
+     * Creates new or updates request for search in the system, based on the provided information.
      * The API will verify that the request is cryptographically signed by the owner of the public key.
      * @param request is {@link SignedRequest} where client sends {@link SearchRequest} and
      * signature of the message.
      *
-     * @return {@link Long}, Http status - 201.
+     * @return {@link SearchRequest}, Http status - 200.
      *
      * @exception   {@link BadArgumentException} - 400
      *              {@link AccessDeniedException} - 403
      *              {@link DataNotSaved} - 500
      */
-    @ApiOperation("Creates new request for search in the system, based on the provided information.\n" +
+    @ApiOperation("Creates new or updates request for search in the system, based on the provided information.\n" +
             "The API will verify that the request is cryptographically signed by the owner of the public key.",
             response = SearchRequest::class)
     @ApiResponses(value = [
-        ApiResponse(code = 201, message = "Created", response = SearchRequest::class),
+        ApiResponse(code = 200, message = "Success", response = SearchRequest::class),
         ApiResponse(code = 400, message = "BadArgumentException"),
         ApiResponse(code = 403, message = "AccessDeniedException"),
         ApiResponse(code = 500, message = "DataNotSaved")
     ])
-    @RequestMapping(method = [RequestMethod.POST])
-    @ResponseStatus(value = HttpStatus.CREATED)
-    fun createSearchRequest(
+    @RequestMapping(method = [RequestMethod.POST], value = ["/", "{id}"])
+    fun putSearchRequest(
+            @ApiParam("Optional id of already created a search request. Use for update search request")
+            @PathVariable(value = "id", required = false)
+            id: Long?,
+
             @ApiParam("public key owner of search request")
             @PathVariable(value = "owner")
             owner: String,
@@ -67,7 +70,8 @@ class SearchRequestController(
                         throw AccessDeniedException()
                     }
 
-                    val result = searchRequestService.createSearchRequest(
+                    val result = searchRequestService.putSearchRequest(
+                            id ?: 0,
                             it.publicKey,
                             request.data!!,
                             getStrategyType(strategy)

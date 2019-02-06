@@ -62,7 +62,14 @@ class SearchRequestControllerTest {
         this.mvc.perform(post("/$version/client/$publicKey/search/request/")
                 .content(requestSearch.toJsonString())
                 .headers(httpHeaders))
-                .andExpect(status().isCreated)
+                .andExpect(status().isOk)
+    }
+
+    @Test fun `update search request`() {
+        this.mvc.perform(post("/$version/client/$publicKey/search/request/1/")
+                .content(cloneRequestSearch.toJsonString())
+                .headers(httpHeaders))
+                .andExpect(status().isOk)
     }
 
     @Test fun `delete search request`() {
