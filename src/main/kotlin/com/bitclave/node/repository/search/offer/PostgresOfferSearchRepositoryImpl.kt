@@ -2,6 +2,8 @@ package com.bitclave.node.repository.search.offer
 
 import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.repository.search.SearchRequestCrudRepository
+import com.bitclave.node.repository.search.SearchRequestRepository
+import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.DataNotSavedException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
@@ -12,7 +14,7 @@ import org.springframework.stereotype.Component
 @Qualifier("postgres")
 class PostgresOfferSearchRepositoryImpl(
         val repository: OfferSearchCrudRepository,
-        val searchRequestRepository: SearchRequestCrudRepository
+        val searchRequestRepository: SearchRequestRepository
         ) : OfferSearchRepository {
 
     override fun saveSearchResult(list: List<OfferSearch>) {
@@ -20,12 +22,13 @@ class PostgresOfferSearchRepositoryImpl(
     }
 
     override fun saveSearchResult(item: OfferSearch) {
-        var id = item.id;
-        repository.save(item) ?: throw DataNotSavedException()
-
         val searchRequest = searchRequestRepository.findById(item.searchRequestId)
-        if(searchRequest.isNotEmpty()) {
-            var relatedOfferSearches = findByOwnerAndOfferId(searchRequest[0].owner, item.offerId)
+        if(searchRequest != null) {
+        var id = item.id
+            item.owner = searchRequest.owner
+            repository.save(item) ?: throw DataNotSavedException()
+
+            var relatedOfferSearches = findByOwnerAndOfferId(searchRequest.owner, item.offerId)
 
             if(relatedOfferSearches.size > 1) {
                 if (id > 0) {// if it was an update then update all related OfferSearches
@@ -53,6 +56,7 @@ class PostgresOfferSearchRepositoryImpl(
                 }
             }
         }
+        else throw BadArgumentException("search request id not exist")
     }
 
     override fun findById(id: Long): OfferSearch? {

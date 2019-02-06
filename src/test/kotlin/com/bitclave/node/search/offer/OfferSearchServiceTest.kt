@@ -134,7 +134,7 @@ class OfferSearchServiceTest {
         val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
 
-        val offerSearchRepository = PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository, searchRequestCrudRepository)
+        val offerSearchRepository = PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository, searchRequestRepository)
         val offerSearchRepositoryStrategy = OfferSearchRepositoryStrategy(offerSearchRepository)
 
         val offerPriceRepository = PostgresOfferPriceRepositoryImpl(offerPriceCrudRepository, offerPriceRuleCrudRepository)
@@ -189,7 +189,7 @@ class OfferSearchServiceTest {
 
     fun createOfferSearch(searchRequest: SearchRequest, offer: Offer, events: MutableList<String>) {
         offerSearchService.saveNewOfferSearch(
-                OfferSearch(0, searchRequest.id, offer.id, OfferResultAction.NONE, "","", events),
+                OfferSearch(0, searchRequest.owner, searchRequest.id, offer.id, OfferResultAction.NONE, "","", events),
                 strategy
         ).get()
     }
@@ -402,7 +402,7 @@ class OfferSearchServiceTest {
             searchRequestCrudRepository.save(request)
 
             offerSearchService.saveNewOfferSearch(
-                    OfferSearch(0, request.id, offer.id, OfferResultAction.NONE),
+                    OfferSearch(0, request.owner, request.id, offer.id, OfferResultAction.NONE),
                     strategy
             ).get()
         }

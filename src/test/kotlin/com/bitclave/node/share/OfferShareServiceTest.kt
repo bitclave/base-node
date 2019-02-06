@@ -117,7 +117,7 @@ class OfferShareServiceTest {
         val searchRequestRepository = PostgresSearchRequestRepositoryImpl(searchRequestCrudRepository, offerSearchCrudRepository)
         val searchRequestRepositoryStrategy = SearchRequestRepositoryStrategy(searchRequestRepository)
 
-        val offerSearchRepository = PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository, searchRequestCrudRepository)
+        val offerSearchRepository = PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository, searchRequestRepository)
         val offerSearchRepositoryStrategy = OfferSearchRepositoryStrategy(offerSearchRepository)
 
         val offerPriceRepository = PostgresOfferPriceRepositoryImpl(offerPriceCrudRepository, offerPriceRuleCrudRepository)
@@ -148,7 +148,7 @@ class OfferShareServiceTest {
 
         offerSearchRepositoryStrategy
                 .changeStrategy(strategy)
-                .saveSearchResult(OfferSearch(0, searchRequest.id, 1, OfferResultAction.ACCEPT ,"", "", ArrayList()))
+                .saveSearchResult(OfferSearch(0, searchRequest.owner, searchRequest.id, 1, OfferResultAction.ACCEPT ,"", "", ArrayList()))
     }
 
     @Test fun `should be create new share data`() {
