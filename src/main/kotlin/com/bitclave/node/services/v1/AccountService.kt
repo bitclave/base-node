@@ -39,6 +39,7 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
                     .thenApply(accountRepository.changeStrategy(strategy)::findByPublicKey)
                     .exceptionally {
                         System.out.println("Oops! We have an exception - "+ it.localizedMessage);
+                        throw BadArgumentException(it.localizedMessage);
                         null
                     }
                     .thenApply { account: Account? ->
@@ -55,6 +56,7 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
 
         } catch (e: Exception) {
             System.out.println(e.localizedMessage)
+            throw BadArgumentException(e.localizedMessage);
         }
 
         return CompletableFuture<Account>();
