@@ -9,7 +9,7 @@ import java.util.Date
 ])
 open class OfferSearch(
         @GeneratedValue(strategy = GenerationType.TABLE) @Id val id: Long = 0,
-        @Column(length = 256) val owner: String = "",
+        @Column(length = 256) var owner: String = "",
         val searchRequestId: Long = 0,
         val offerId: Long = 0,
         var state: OfferResultAction = OfferResultAction.NONE,
