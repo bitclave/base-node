@@ -106,11 +106,13 @@ class OfferSearchController(
                     }
                     .exceptionally {
                         System.out.println("Oops! We have an exception - "+ it.localizedMessage);
+                        throw it;
                         null
                     }
 
         } catch (e: Exception) {
             System.out.println(e.localizedMessage)
+            throw e;
         }
 
 
