@@ -20,6 +20,8 @@ interface OfferSearchRepository {
 
     fun findBySearchRequestIdAndOfferId(searchRequestId: Long, offerId: Long): List<OfferSearch>
 
+    fun findByOwner(owner: String): List<OfferSearch>
+
     fun findByOwnerAndOfferId(owner: String, offerId: Long): List<OfferSearch>
 
     fun findAll(pageable: Pageable): Page<OfferSearch>
