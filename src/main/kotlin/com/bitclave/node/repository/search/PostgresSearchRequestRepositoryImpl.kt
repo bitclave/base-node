@@ -77,7 +77,7 @@ class PostgresSearchRequestRepositoryImpl(
 
         repository.save(createSearchRequest)
 
-        var toBeSavedOfferSearched: MutableList<OfferSearch> = mutableListOf<OfferSearch>()
+        var toBeSavedOfferSearched: MutableList<OfferSearch> = mutableListOf()
         for (offerSearch: OfferSearch in relatedOfferSearches) {
             val newOfferSearch = OfferSearch(
                     0,

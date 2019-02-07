@@ -16,7 +16,7 @@ class PostgresOfferRepositoryImpl(
         val offerSearchRepository: OfferSearchCrudRepository) : OfferRepository {
 
     override fun saveOffer(offer: Offer): Offer {
-        var id = offer.id;
+        var id = offer.id
         repository.save(offer) ?: throw DataNotSavedException()
         if(id > 0) {
             var relatedOfferSearches = offerSearchRepository.findByOfferId(offer.id)
@@ -25,7 +25,7 @@ class PostgresOfferRepositoryImpl(
             }
             offerSearchRepository.delete(relatedOfferSearches)
         }
-        return offer;
+        return offer
     }
 
     override fun deleteOffer(id: Long, owner: String): Long {
