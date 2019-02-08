@@ -196,4 +196,25 @@ class AuthController(
                 }
     }
 
+    /**
+     * Returns the total count of Accounts
+     *
+     * @return {@link Long}, Http status - 200.
+     *
+     */
+    @ApiOperation("Returns the total count of Accounts",
+            response = Long::class)
+    @ApiResponses(value = [
+        ApiResponse(code = 200, message = "Success", response = Long::class)
+    ])
+    @RequestMapping(method = [RequestMethod.GET], value = ["account/count"])
+    fun getAccountTotalCount(
+
+            @ApiParam("change repository strategy", allowableValues = "POSTGRES", required = false)
+            @RequestHeader("Strategy", required = false)
+            strategy: String?): CompletableFuture<Long> {
+
+        return accountService.getAccountTotalCount(getStrategyType(strategy) )
+    }
+
 }

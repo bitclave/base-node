@@ -25,4 +25,6 @@ interface SearchRequestRepository {
     fun cloneSearchRequestWithOfferSearches(request: SearchRequest): SearchRequest
 
     fun findAll(pageable: Pageable): Page<SearchRequest>
+
+    fun getTotalCount(): Long
 }

@@ -144,4 +144,21 @@ class AccountServiceTest {
         }
     }
 
+    @Test (expected = BadArgumentException::class)
+    fun `expect error - get total count of accounts`() {
+        strategy = RepositoryStrategyType.HYBRID
+        try {
+            accountService.getAccountTotalCount(strategy).get()
+        } catch (e: Exception) {
+            throw e.cause!!
+        }
+    }
+
+    @Test fun `get total count of accounts`() {
+        strategy = RepositoryStrategyType.POSTGRES
+        `register new client`()
+        var result = accountService.getAccountTotalCount(strategy).get()
+        assert(result == 1L)
+    }
+
 }

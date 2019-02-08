@@ -121,4 +121,17 @@ class SearchRequestService(
         }
     }
 
+    fun getSearchRequestTotalCount(
+            strategy: RepositoryStrategyType
+    ): CompletableFuture<Long> {
+
+        return CompletableFuture.supplyAsync {
+
+            val repository = repository.changeStrategy(strategy)
+
+            return@supplyAsync repository.getTotalCount()
+
+        }
+    }
+
 }

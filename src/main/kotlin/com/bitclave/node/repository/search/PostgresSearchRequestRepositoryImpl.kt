@@ -119,4 +119,8 @@ class PostgresSearchRequestRepositoryImpl(
     override fun findAll(pageable: Pageable): Page<SearchRequest> {
         return repository.findAll(pageable)
     }
+
+    override fun getTotalCount(): Long {
+        return repository.count()
+    }
 }

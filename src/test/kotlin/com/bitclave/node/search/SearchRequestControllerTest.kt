@@ -104,4 +104,10 @@ class SearchRequestControllerTest {
                 .andExpect(status().isOk)
     }
 
+    @Test fun `get the total count of search requests`() {
+        this.mvc.perform(get("/$version/client/$publicKey/search/request/count")
+                .headers(httpHeaders))
+                .andExpect(status().isOk)
+    }
+
 }

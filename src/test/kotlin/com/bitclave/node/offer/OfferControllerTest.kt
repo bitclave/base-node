@@ -147,4 +147,10 @@ class OfferControllerTest {
                 .andExpect(MockMvcResultMatchers.status().isOk)
                 .andReturn()
     }
+
+    @Test fun `get the total count of Offers`() {
+        this.mvc.perform(get("/$version/client/$publicKey/offer/count")
+                .headers(httpHeaders))
+                .andExpect(status().isOk)
+    }
 }

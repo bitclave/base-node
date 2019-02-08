@@ -121,4 +121,17 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
         })
     }
 
+    fun getAccountTotalCount(
+            strategy: RepositoryStrategyType
+    ): CompletableFuture<Long> {
+
+        return CompletableFuture.supplyAsync {
+
+            val repository = accountRepository.changeStrategy(strategy)
+
+            return@supplyAsync repository.getTotalCount()
+
+        }
+    }
+
 }

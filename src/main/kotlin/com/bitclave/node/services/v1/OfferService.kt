@@ -125,4 +125,17 @@ class OfferService(
             return@supplyAsync repository.findAll(page)
         }
     }
+
+    fun getOfferTotalCount(
+            strategy: RepositoryStrategyType
+    ): CompletableFuture<Long> {
+
+        return CompletableFuture.supplyAsync {
+
+            val repository = offerRepository.changeStrategy(strategy)
+
+            return@supplyAsync repository.getTotalCount()
+
+        }
+    }
 }

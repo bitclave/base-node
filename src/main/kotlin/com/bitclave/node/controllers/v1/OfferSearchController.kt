@@ -103,7 +103,6 @@ class OfferSearchController(
                 getStrategyType(strategy),
                 true,
                 false
-
         )
     }
 
@@ -129,8 +128,49 @@ class OfferSearchController(
                 getStrategyType(strategy),
                 false,
                 true
-
         )
+    }
+
+    /**
+     * Returns offerSearches with the same owner and offerId but different content (status/events)
+     *
+     * @return {@link List<OfferSearch>}, Http status - 200.
+     *
+     */
+    @ApiOperation("Returns offerSearches with the same owner and offerId but different content (status/events)",
+            response = OfferSearch::class, responseContainer = "List")
+    @ApiResponses(value = [
+        ApiResponse(code = 200, message = "Success", response = List::class)
+    ])
+    @RequestMapping(method = [RequestMethod.GET], value = ["/conflicted"])
+    fun getDiffOfferSearches(
+
+            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+            @RequestHeader("Strategy", required = false)
+            strategy: String?): CompletableFuture<List<OfferSearch>> {
+
+        return offerSearchService.getDiffOfferSearches(getStrategyType(strategy))
+    }
+
+    /**
+     * Returns the total count of OfferSearches
+     *
+     * @return {@link Long}, Http status - 200.
+     *
+     */
+    @ApiOperation("Returns the total count of OfferSearches",
+            response = Long::class)
+    @ApiResponses(value = [
+        ApiResponse(code = 200, message = "Success", response = Long::class)
+    ])
+    @RequestMapping(method = [RequestMethod.GET], value = ["/count"])
+    fun getOfferSearchTotalCount(
+
+            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+            @RequestHeader("Strategy", required = false)
+            strategy: String?): CompletableFuture<Long> {
+
+        return offerSearchService.getOfferSearchTotalCount(getStrategyType(strategy) )
     }
 
     /**

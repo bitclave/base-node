@@ -1,7 +1,6 @@
 package com.bitclave.node.repository.search.offer
 
 import com.bitclave.node.repository.models.OfferSearch
-import com.bitclave.node.repository.search.SearchRequestCrudRepository
 import com.bitclave.node.repository.search.SearchRequestRepository
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.DataNotSavedException
@@ -103,4 +102,13 @@ class PostgresOfferSearchRepositoryImpl(
                 .asSequence()
                 .toList()
     }
+
+    override fun findAllDiff(): List<OfferSearch> {
+        return repository.findAllDiff()
+    }
+
+    override fun getTotalCount(): Long {
+        return repository.count()
+    }
+
 }

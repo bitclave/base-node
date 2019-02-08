@@ -23,4 +23,6 @@ interface OfferRepository {
     fun findAll(): List<Offer>
 
     fun findAll(pageable: Pageable): Page<Offer>
+
+    fun getTotalCount(): Long
 }

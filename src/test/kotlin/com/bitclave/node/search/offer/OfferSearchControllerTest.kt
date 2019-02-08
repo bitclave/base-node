@@ -86,6 +86,18 @@ class OfferSearchControllerTest {
                 .andExpect(status().isOk)
     }
 
+    @Test fun `get offerSearches with the same owner and offerId but different content`() {
+        this.mvc.perform(get("/$version/search/result/conflicted")
+                .headers(httpHeaders))
+                .andExpect(status().isOk)
+    }
+
+    @Test fun `get the total count of OfferSearches`() {
+        this.mvc.perform(get("/$version/search/result/count")
+                .headers(httpHeaders))
+                .andExpect(status().isOk)
+    }
+
     @Test fun `get offer search list by owner`() {
         this.mvc.perform(get("/$version/search/result/user")
                 .param("owner", publicKey)

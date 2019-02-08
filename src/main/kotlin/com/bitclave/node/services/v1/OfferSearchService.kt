@@ -390,4 +390,30 @@ class OfferSearchService(
 
         }
     }
+
+    fun getDiffOfferSearches(
+            strategy: RepositoryStrategyType
+    ): CompletableFuture<List<OfferSearch>> {
+
+        return CompletableFuture.supplyAsync {
+
+            val repository = offerSearchRepository.changeStrategy(strategy)
+
+            return@supplyAsync repository.findAllDiff()
+
+        }
+    }
+
+    fun getOfferSearchTotalCount(
+            strategy: RepositoryStrategyType
+    ): CompletableFuture<Long> {
+
+        return CompletableFuture.supplyAsync {
+
+            val repository = offerSearchRepository.changeStrategy(strategy)
+
+            return@supplyAsync repository.getTotalCount()
+
+        }
+    }
 }
