@@ -403,8 +403,7 @@ class OfferSearchServiceTest {
         `delete all OfferSearch objects with state NONE or REJECT when related SearchRequest object is deleted`()
 
         var result = offerSearchService.getDiffOfferSearches(strategy).get()
-        //TODO it's failing because jpql is wrong, will enable once jpql is fixed
-        //assert(result.isEmpty())
+        assert(result.isEmpty())
     }
 
     @Test fun `get total count of offerSearches`() {

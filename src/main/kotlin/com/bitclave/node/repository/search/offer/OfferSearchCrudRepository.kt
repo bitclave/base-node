@@ -23,8 +23,27 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     fun findByOwnerAndOfferId(owner: String, offerId: Long): List<OfferSearch>
 
-    //TODO jpql is wrong, it can't differentiate events. will be fixed
-    @Query("SELECT os FROM OfferSearch os WHERE os.offerId IN ( SELECT inos.offerId FROM OfferSearch inos left join inos.events e GROUP BY inos.offerId, inos.owner HAVING COUNT(inos) > 1 )")
+    @Query(value ="SELECT os_inner.offer_id, os_inner.owner,  os_inner.state, e.events from " +
+            "( " +
+            "select s.* from offer_search s, " +
+            "( " +
+            "select offer_id, owner, count(*) offer_owner_count " +
+            "from offer_search " +
+            "group by offer_id, owner " +
+            "having count(*) > 1 " +
+            ") c " +
+            "where s.offer_id = c.offer_id " +
+            "and s.owner = c.owner " +
+            ") os_inner " +
+            "left outer join " +
+            "( " +
+            "select e_in.offer_search_id, string_agg(e_in.events, ',') events " +
+            "from offer_search_events e_in " +
+            "group by e_in.offer_search_id " +
+            ") e on e.offer_search_id = os_inner.id " +
+            "GROUP BY os_inner.offer_id, os_inner.owner,  os_inner.state, e.events " +
+            "HAVING COUNT(*) < 2 ",
+            nativeQuery = true)
     fun findAllDiff(): List<OfferSearch>
 
 }
