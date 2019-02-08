@@ -1,6 +1,8 @@
 package com.bitclave.node.repository.search.offer
 
+import com.bitclave.node.repository.models.OfferResultAction
 import com.bitclave.node.repository.models.OfferSearch
+import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.search.SearchRequestCrudRepository
 import com.bitclave.node.repository.search.SearchRequestRepository
 import com.bitclave.node.services.errors.BadArgumentException
@@ -83,7 +85,6 @@ class PostgresOfferSearchRepositoryImpl(
         return repository.findByOwner(owner)
     }
 
-    //TODO Later OfferSearch model can be changed in order to cover this need
     override fun findByOwnerAndOfferId(owner: String, offerId: Long): List<OfferSearch> {
         //val searchRequestList = searchRequestRepository.findByOwner(owner)
         //val searchRequestIDs = searchRequestList.map { it.id }.toSet()
@@ -96,5 +97,29 @@ class PostgresOfferSearchRepositoryImpl(
 
     override fun findAll(pageable: Pageable): Page<OfferSearch> {
         return repository.findAll(pageable)
+    }
+
+    override fun cloneOfferSearchOfSearchRequest(sourceSearchRequestId: Long, targetSearchRequest: SearchRequest): List<OfferSearch> {
+        val copiedOfferSearchList = repository.findBySearchRequestId(sourceSearchRequestId)
+        val existedOfferSearchList = repository.findBySearchRequestId(targetSearchRequest.id)
+
+        var toBeSavedOfferSearched: MutableList<OfferSearch> = mutableListOf()
+        for (offerSearch: OfferSearch in copiedOfferSearchList) {
+            if(existedOfferSearchList.find { it.offerId == offerSearch.offerId && it.owner == offerSearch.owner } == null) {
+                val newOfferSearch = OfferSearch(
+                        0,
+                        targetSearchRequest.owner,
+                        targetSearchRequest.id,
+                        offerSearch.offerId,
+                        OfferResultAction.NONE,
+                        offerSearch.lastUpdated,
+                        offerSearch.info,
+                        ArrayList()
+                )
+                toBeSavedOfferSearched.add(newOfferSearch)
+            }
+        }
+
+        return repository.save(toBeSavedOfferSearched).toList()
     }
 }

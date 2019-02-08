@@ -417,4 +417,15 @@ class OfferSearchServiceTest {
         assert(secondPage.first().id == 3L)
         assert(secondPage.last().id == 4L)
     }
+
+    @Test fun `clone all OfferSearch objects when from search request to search request`() {
+        createOfferSearch(createdSearchRequest1, createdOffer1, ArrayList())
+        createOfferSearch(createdSearchRequest1, createdOffer2, ArrayList())
+        createOfferSearch(createdSearchRequest2, createdOffer2, ArrayList())
+
+        offerSearchService.cloneOfferSearchOfSearchRequest(createdSearchRequest1.id, createdSearchRequest2, strategy).get()
+
+        val result = offerSearchService.getOffersResult(strategy, createdSearchRequest2.id).get()
+        assertThat(result.size).isEqualTo(2)
+    }
 }
