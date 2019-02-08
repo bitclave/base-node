@@ -79,14 +79,19 @@ class PostgresOfferSearchRepositoryImpl(
         return repository.findBySearchRequestIdAndOfferId(searchRequestId, offerId)
     }
 
+    override fun findByOwner(owner: String): List<OfferSearch> {
+        return repository.findByOwner(owner)
+    }
+
     //TODO Later OfferSearch model can be changed in order to cover this need
     override fun findByOwnerAndOfferId(owner: String, offerId: Long): List<OfferSearch> {
-        val searchRequestList = searchRequestRepository.findByOwner(owner)
-        val searchRequestIDs = searchRequestList.map { it.id }.toSet()
+        //val searchRequestList = searchRequestRepository.findByOwner(owner)
+        //val searchRequestIDs = searchRequestList.map { it.id }.toSet()
 
-        val offerSearchList = repository.findByOfferId(offerId)
+        //val offerSearchList = repository.findByOfferId(offerId)
 
-        return offerSearchList.filter { searchRequestIDs.contains(it.searchRequestId) }
+        //return offerSearchList.filter { searchRequestIDs.contains(it.searchRequestId) }
+        return repository.findByOwnerAndOfferId(owner, offerId)
     }
 
     override fun findAll(pageable: Pageable): Page<OfferSearch> {

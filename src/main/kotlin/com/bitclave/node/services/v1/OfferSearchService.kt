@@ -99,11 +99,12 @@ class OfferSearchService(
             val repository = offerSearchRepository.changeStrategy(strategy)
 
             //get all searchRequests of the user
-            val searchRequestList = searchRequestRepository.changeStrategy(strategy).findByOwner(owner)
+//            val searchRequestList = searchRequestRepository.changeStrategy(strategy).findByOwner(owner)
 
             //get all relevant offerSearches of searchRequests
-            val searchRequestIds: List<Long> = searchRequestList.map { it.id }
-            val offerSearches = repository.findBySearchRequestIds(searchRequestIds)
+//            val searchRequestIds: List<Long> = searchRequestList.map { it.id }
+//            val offerSearches = repository.findBySearchRequestIds(searchRequestIds)
+            val offerSearches = repository.findByOwner(owner)
 
             //get all relevant offer of offerSearches
             val offerIds: List<Long> = offerSearches.map { it.offerId }

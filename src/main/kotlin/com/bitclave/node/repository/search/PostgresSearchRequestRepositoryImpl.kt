@@ -20,7 +20,20 @@ class PostgresSearchRequestRepositoryImpl(
 ) : SearchRequestRepository {
 
     override fun saveSearchRequest(request: SearchRequest): SearchRequest {
-        return repository.save(request) ?: throw DataNotSavedException()
+        var id = request.id;
+        repository.save(request) ?: throw DataNotSavedException()
+
+        if (id > 0) {
+            var relatedOfferSearches = offerSearchRepository.findBySearchRequestId(id)
+
+            relatedOfferSearches = relatedOfferSearches.filter {
+                it.state == OfferResultAction.NONE || it.state == OfferResultAction.REJECT
+            }
+
+            offerSearchRepository.delete(relatedOfferSearches)
+        }
+
+        return request
     }
 
     override fun deleteSearchRequest(id: Long, owner: String): Long {
@@ -83,7 +96,7 @@ class PostgresSearchRequestRepositoryImpl(
 
         repository.save(createSearchRequest)
 
-        var toBeSavedOfferSearched: MutableList<OfferSearch> = mutableListOf<OfferSearch>()
+        var toBeSavedOfferSearched: MutableList<OfferSearch> = mutableListOf()
         for (offerSearch: OfferSearch in relatedOfferSearches) {
             val newOfferSearch = OfferSearch(
                     0,

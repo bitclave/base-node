@@ -18,4 +18,8 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     fun findBySearchRequestIdIn(searchRequestIds: List<Long>): List<OfferSearch>
 
+    fun findByOwner(owner: String): List<OfferSearch>
+
+    fun findByOwnerAndOfferId(owner: String, offerId: Long): List<OfferSearch>
+
 }
