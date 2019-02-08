@@ -74,6 +74,18 @@ class OfferSearchControllerTest {
                 .andExpect(status().isOk)
     }
 
+    @Test fun `get dangling offer search list by offer`() {
+        this.mvc.perform(get("/$version/search/result/byOffer")
+                .headers(httpHeaders))
+                .andExpect(status().isOk)
+    }
+
+    @Test fun `get dangling offer search list by searchRequest`() {
+        this.mvc.perform(get("/$version/search/result/bySearchRequest")
+                .headers(httpHeaders))
+                .andExpect(status().isOk)
+    }
+
     @Test fun `get offer search list by owner`() {
         this.mvc.perform(get("/$version/search/result/user")
                 .param("owner", publicKey)

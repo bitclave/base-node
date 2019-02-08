@@ -92,4 +92,10 @@ class PostgresOfferSearchRepositoryImpl(
     override fun findAll(pageable: Pageable): Page<OfferSearch> {
         return repository.findAll(pageable)
     }
+
+    override fun findAll(): List<OfferSearch> {
+        return repository.findAll()
+                .asSequence()
+                .toList()
+    }
 }

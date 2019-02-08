@@ -49,6 +49,12 @@ class PostgresSearchRequestRepositoryImpl(
         return repository.findOne(id)
     }
 
+    override fun findById(ids: List<Long>): List<SearchRequest> {
+        return repository.findAll(ids)
+                .asSequence()
+                .toList()
+    }
+
     override fun findByOwner(owner: String): List<SearchRequest> {
         return repository.findByOwner(owner)
     }

@@ -366,7 +366,6 @@ class OfferSearchServiceTest {
 
     @Test fun `delete all OfferSearch objects with state NONE or REJECT when related SearchRequest object is deleted`() {
         `client can complain to search item`()
-        //createOfferSearch(createdSearchRequest1, createdOffer1, ArrayList())
         createOfferSearch(createdSearchRequest2, createdOffer1, ArrayList())
         createOfferSearch(createdSearchRequest1, createdOffer2, ArrayList())
 
@@ -382,6 +381,21 @@ class OfferSearchServiceTest {
         assert(result.size == 2)
 
         result = offerSearchService.getOfferSearches(strategy, createdOffer2.id).get()
+        assert(result.isEmpty())
+    }
+
+    @Test fun `get all dangling OfferSearch objects by SearchRequest`() {
+        `delete all OfferSearch objects with state NONE or REJECT when related SearchRequest object is deleted`()
+
+        var result = offerSearchService.getDanglingOfferSearches(strategy, false, true).get()
+        assert(result.size == 1)
+        assert(result[0].searchRequestId == createdSearchRequest1.id)
+    }
+
+    @Test fun `get all dangling OfferSearch objects by Offer`() {
+        `delete all OfferSearch objects when related Offer object is deleted`()
+
+        var result = offerSearchService.getDanglingOfferSearches(strategy, true, false).get()
         assert(result.isEmpty())
     }
 

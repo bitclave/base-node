@@ -82,6 +82,58 @@ class OfferSearchController(
     }
 
     /**
+     * Returns the dangling OfferSearches by Offers
+     *
+     * @return {@link List<OfferSearch>}, Http status - 200.
+     *
+     */
+    @ApiOperation("Returns the dangling OfferSearches by Offers",
+            response = OfferSearch::class, responseContainer = "List")
+    @ApiResponses(value = [
+        ApiResponse(code = 200, message = "Success", response = List::class)
+    ])
+    @RequestMapping(method = [RequestMethod.GET], value = ["/byOffer"])
+    fun getDanglingOfferSearchesByOffer(
+
+            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+            @RequestHeader("Strategy", required = false)
+            strategy: String?): CompletableFuture<List<OfferSearch>> {
+
+        return offerSearchService.getDanglingOfferSearches(
+                getStrategyType(strategy),
+                true,
+                false
+
+        )
+    }
+
+    /**
+     * Returns the dangling OfferSearches by SearchRequests
+     *
+     * @return {@link List<OfferSearch>}, Http status - 200.
+     *
+     */
+    @ApiOperation("Returns the dangling OfferSearches by SearchRequests",
+            response = OfferSearch::class, responseContainer = "List")
+    @ApiResponses(value = [
+        ApiResponse(code = 200, message = "Success", response = List::class)
+    ])
+    @RequestMapping(method = [RequestMethod.GET], value = ["/bySearchRequest"])
+    fun getDanglingOfferSearchesBySearchRequest(
+
+            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+            @RequestHeader("Strategy", required = false)
+            strategy: String?): CompletableFuture<List<OfferSearch>> {
+
+        return offerSearchService.getDanglingOfferSearches(
+                getStrategyType(strategy),
+                false,
+                true
+
+        )
+    }
+
+    /**
      * Add offer to search result for some search request
      *
      */

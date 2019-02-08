@@ -24,4 +24,6 @@ interface OfferSearchRepository {
 
     fun findAll(pageable: Pageable): Page<OfferSearch>
 
+    fun findAll(): List<OfferSearch>
+
 }
