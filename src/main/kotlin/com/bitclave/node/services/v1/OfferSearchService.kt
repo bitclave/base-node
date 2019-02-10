@@ -360,4 +360,17 @@ class OfferSearchService(
             return@supplyAsync repository.findAll(page)
         }
     }
+
+
+    fun cloneOfferSearchOfSearchRequest(
+            id: Long,
+            searchRequest: SearchRequest,
+            strategy: RepositoryStrategyType
+    ): CompletableFuture<List<OfferSearch>> {
+
+        return CompletableFuture.supplyAsync({
+            searchRequestRepository.changeStrategy(strategy).findById(id) ?: throw BadArgumentException()
+            return@supplyAsync offerSearchRepository.changeStrategy(strategy).cloneOfferSearchOfSearchRequest(id, searchRequest)
+        })
+    }
 }

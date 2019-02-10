@@ -1,9 +1,8 @@
 package com.bitclave.node.controllers.v1
 
 import com.bitclave.node.controllers.AbstractController
-import com.bitclave.node.repository.models.OfferSearch
-import com.bitclave.node.repository.models.OfferSearchResultItem
-import com.bitclave.node.repository.models.SignedRequest
+import com.bitclave.node.repository.models.*
+import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferSearchService
 import io.swagger.annotations.ApiOperation
@@ -275,5 +274,61 @@ class OfferSearchController(
 
     }
 
+
+    /**
+     * Clone existing offer searches of a search request to another search request.
+     * The API will verify that the request is cryptographically signed by the owner of the public key.
+     * @param request is {@link SignedRequest} where client sends {@link SearchRequest} and
+     * signature of the message.
+     *
+     * @return {@link List<OfferSearch>}, Http status - 200.
+     *
+     * @exception   {@link BadArgumentException} - 400
+     *              {@link AccessDeniedException} - 403
+     *              {@link NotFoundException} - 500
+     */
+    @ApiOperation("Clone existing offer searches of a search request to another search request.\n" +
+            "The API will verify that the request is cryptographically signed by the owner of the public key.",
+            response = OfferSearch::class,
+            responseContainer = "List")
+    @ApiResponses(value = [
+        ApiResponse(code = 200, message = "Success", response = List::class)
+    ])
+    @RequestMapping(method = [RequestMethod.PUT], value = ["/{owner}/{id}"])
+    fun cloneOfferSearchOfSearchRequest(
+            @ApiParam("public key owner of target search request")
+            @PathVariable(value = "owner")
+            owner: String,
+
+            @ApiParam("id of source search request.")
+            @PathVariable(value = "id")
+            id: Long,
+
+            @ApiParam("where client sends SearchRequest and signature of the message.", required = true)
+            @RequestBody
+            request: SignedRequest<SearchRequest>,
+
+            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+            @RequestHeader("Strategy", required = false)
+            strategy: String?): CompletableFuture<List<OfferSearch>> {
+
+        return accountService.accountBySigMessage(request, getStrategyType(strategy))
+                .thenCompose { account: Account -> accountService.validateNonce(request, account) }
+                .thenCompose {
+                    if (owner != it.publicKey) {
+                        throw AccessDeniedException()
+                    }
+
+                    val result = offerSearchService.cloneOfferSearchOfSearchRequest(
+                            id,
+                            request.data!!,
+                            getStrategyType(strategy)
+                    ).get()
+
+                    accountService.incrementNonce(it, getStrategyType(strategy)).get()
+
+                    CompletableFuture.completedFuture(result)
+                }
+    }
 
 }
