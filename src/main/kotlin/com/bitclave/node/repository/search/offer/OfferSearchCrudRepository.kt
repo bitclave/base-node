@@ -23,7 +23,11 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     fun findByOwnerAndOfferId(owner: String, offerId: Long): List<OfferSearch>
 
-    @Query(value ="SELECT os_inner.offer_id, os_inner.owner,  os_inner.state, e.events from " +
+    @Query(value ="SELECT s.* from offer_search s, " +
+            "( " +
+            "SELECT b.offer_id, b.owner from " +
+            "(" +
+            "SELECT os_inner.offer_id, os_inner.owner,  os_inner.state, e.events from " +
             "( " +
             "select s.* from offer_search s, " +
             "( " +
@@ -42,7 +46,12 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
             "group by e_in.offer_search_id " +
             ") e on e.offer_search_id = os_inner.id " +
             "GROUP BY os_inner.offer_id, os_inner.owner,  os_inner.state, e.events " +
-            "HAVING COUNT(*) < 2 ",
+            "HAVING COUNT(*) < 2 " +
+            ") b " +
+            "GROUP BY b.offer_id, b.owner " +
+            ") a " +
+            "where s.offer_id = a.offer_id " +
+            "and s.owner = a.owner",
             nativeQuery = true)
     fun findAllDiff(): List<OfferSearch>
 

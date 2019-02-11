@@ -26,7 +26,7 @@ class PostgresOfferSearchRepositoryImpl(
     override fun saveSearchResult(item: OfferSearch) {
         val searchRequest = searchRequestRepository.findById(item.searchRequestId)
         if(searchRequest != null) {
-        var id = item.id
+            var id = item.id
             item.owner = searchRequest.owner
             repository.save(item) ?: throw DataNotSavedException()
 

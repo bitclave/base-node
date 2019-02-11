@@ -400,7 +400,7 @@ class OfferSearchServiceTest {
     }
 
     @Test fun `get offerSearches with the same owner and offerId but different content`() {
-        `delete all OfferSearch objects with state NONE or REJECT when related SearchRequest object is deleted`()
+        `a new offerSearch item should be sync with related offerSearch items if exists`()
 
         var result = offerSearchService.getDiffOfferSearches(strategy).get()
         assert(result.isEmpty())

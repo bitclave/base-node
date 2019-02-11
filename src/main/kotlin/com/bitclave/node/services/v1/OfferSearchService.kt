@@ -415,6 +415,7 @@ class OfferSearchService(
             return@supplyAsync repository.getTotalCount()
 
         }
+    }
 
     fun cloneOfferSearchOfSearchRequest(
             id: Long,
