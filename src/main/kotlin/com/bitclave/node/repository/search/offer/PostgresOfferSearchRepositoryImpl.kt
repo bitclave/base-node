@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
+import java.util.*
 
 @Component
 @Qualifier("postgres")
@@ -112,7 +113,7 @@ class PostgresOfferSearchRepositoryImpl(
                         targetSearchRequest.id,
                         offerSearch.offerId,
                         OfferResultAction.NONE,
-                        offerSearch.lastUpdated,
+                        Date().toString(),
                         offerSearch.info,
                         ArrayList()
                 )
