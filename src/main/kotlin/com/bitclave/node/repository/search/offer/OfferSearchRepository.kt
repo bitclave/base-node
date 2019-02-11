@@ -29,4 +29,11 @@ interface OfferSearchRepository {
 
     fun findAll(pageable: Pageable): Page<OfferSearch>
 
+    fun findAll(): List<OfferSearch>
+
+    fun getTotalCount(): Long
+
+    //get offerSearches with the same owner and offerId but different content (status/events)
+    fun findAllDiff(): List<OfferSearch>
+
 }

@@ -295,4 +295,14 @@ class SearchRequestServiceTest {
         assert(secondPage.first().id == 3L)
         assert(secondPage.last().id == 4L)
     }
+
+    @Test fun `get total count of search requests`() {
+        `should be create new search request`()
+        `should be create new search request`()
+        `should be create new search request`()
+        `should be create new search request`()
+
+        var result = searchRequestService.getSearchRequestTotalCount(strategy).get()
+        assert(result == 4L)
+    }
 }

@@ -366,7 +366,6 @@ class OfferSearchServiceTest {
 
     @Test fun `delete all OfferSearch objects with state NONE or REJECT when related SearchRequest object is deleted`() {
         `client can complain to search item`()
-        //createOfferSearch(createdSearchRequest1, createdOffer1, ArrayList())
         createOfferSearch(createdSearchRequest2, createdOffer1, ArrayList())
         createOfferSearch(createdSearchRequest1, createdOffer2, ArrayList())
 
@@ -383,6 +382,37 @@ class OfferSearchServiceTest {
 
         result = offerSearchService.getOfferSearches(strategy, createdOffer2.id).get()
         assert(result.isEmpty())
+    }
+
+    @Test fun `get all dangling OfferSearch objects by SearchRequest`() {
+        `delete all OfferSearch objects with state NONE or REJECT when related SearchRequest object is deleted`()
+
+        var result = offerSearchService.getDanglingOfferSearches(strategy, false, true).get()
+        assert(result.size == 1)
+        assert(result[0].searchRequestId == createdSearchRequest1.id)
+    }
+
+    @Test fun `get all dangling OfferSearch objects by Offer`() {
+        `delete all OfferSearch objects when related Offer object is deleted`()
+
+        var result = offerSearchService.getDanglingOfferSearches(strategy, true, false).get()
+        assert(result.isEmpty())
+    }
+
+    @Test fun `get offerSearches with the same owner and offerId but different content`() {
+        `a new offerSearch item should be sync with related offerSearch items if exists`()
+
+        var result = offerSearchService.getDiffOfferSearches(strategy).get()
+        assert(result.isEmpty())
+    }
+
+    @Test fun `get total count of offerSearches`() {
+        createOfferSearch(createdSearchRequest1, createdOffer1, ArrayList())
+        createOfferSearch(createdSearchRequest2, createdOffer1, ArrayList())
+        createOfferSearch(createdSearchRequest1, createdOffer2, ArrayList())
+
+        var result = offerSearchService.getOfferSearchTotalCount(strategy).get()
+        assert(result == 3L)
     }
 
     @Test fun `should return all offersearch results by page`() {

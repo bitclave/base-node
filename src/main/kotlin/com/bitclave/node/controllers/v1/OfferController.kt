@@ -174,4 +174,25 @@ class OfferController(
         return offerService.getOffers(id ?: 0, owner, getStrategyType(strategy))
     }
 
+    /**
+     * Returns the total count of Offers
+     *
+     * @return {@link Long}, Http status - 200.
+     *
+     */
+    @ApiOperation("Returns the total count of Offers",
+            response = Long::class)
+    @ApiResponses(value = [
+        ApiResponse(code = 200, message = "Success", response = Long::class)
+    ])
+    @RequestMapping(method = [RequestMethod.GET], value = ["/count"])
+    fun getOffertTotalCount(
+
+            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+            @RequestHeader("Strategy", required = false)
+            strategy: String?): CompletableFuture<Long> {
+
+        return offerService.getOfferTotalCount(getStrategyType(strategy) )
+    }
+
 }

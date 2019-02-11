@@ -63,6 +63,12 @@ class PostgresSearchRequestRepositoryImpl(
         return repository.findOne(id)
     }
 
+    override fun findById(ids: List<Long>): List<SearchRequest> {
+        return repository.findAll(ids)
+                .asSequence()
+                .toList()
+    }
+
     override fun findByOwner(owner: String): List<SearchRequest> {
         return repository.findByOwner(owner)
     }
@@ -113,5 +119,9 @@ class PostgresSearchRequestRepositoryImpl(
 
     override fun findAll(pageable: Pageable): Page<SearchRequest> {
         return repository.findAll(pageable)
+    }
+
+    override fun getTotalCount(): Long {
+        return repository.count()
     }
 }

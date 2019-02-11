@@ -14,6 +14,8 @@ interface SearchRequestRepository {
 
     fun findById(id: Long): SearchRequest?
 
+    fun findById(ids: List<Long>): List<SearchRequest>
+
     fun findByOwner(owner: String): List<SearchRequest>
 
     fun findByIdAndOwner(id: Long, owner: String): SearchRequest?
@@ -23,4 +25,6 @@ interface SearchRequestRepository {
     fun cloneSearchRequestWithOfferSearches(request: SearchRequest): SearchRequest
 
     fun findAll(pageable: Pageable): Page<SearchRequest>
+
+    fun getTotalCount(): Long
 }

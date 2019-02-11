@@ -229,4 +229,25 @@ class SearchRequestController(
                 }
     }
 
+    /**
+     * Returns the total count of SearchRequests
+     *
+     * @return {@link Long}, Http status - 200.
+     *
+     */
+    @ApiOperation("Returns the total count of SearchRequests",
+            response = Long::class)
+    @ApiResponses(value = [
+        ApiResponse(code = 200, message = "Success", response = Long::class)
+    ])
+    @RequestMapping(method = [RequestMethod.GET], value = ["count"])
+    fun getSearchRequestTotalCount(
+
+            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+            @RequestHeader("Strategy", required = false)
+            strategy: String?): CompletableFuture<Long> {
+
+        return searchRequestService.getSearchRequestTotalCount(getStrategyType(strategy) )
+    }
+
 }

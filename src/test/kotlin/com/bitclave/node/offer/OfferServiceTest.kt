@@ -314,4 +314,14 @@ class OfferServiceTest {
         assert(secondPage.first().id == 3L)
         assert(secondPage.last().id == 4L)
     }
+
+    @Test fun `get total count of offers`() {
+        `should be create new offer`()
+        `should be create new offer`()
+        `should be create new offer`()
+        `should be create new offer`()
+
+        var result = offerService.getOfferTotalCount(strategy).get()
+        assert(result == 4L)
+    }
 }

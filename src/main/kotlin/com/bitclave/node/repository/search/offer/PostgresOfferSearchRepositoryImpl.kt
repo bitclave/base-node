@@ -27,7 +27,7 @@ class PostgresOfferSearchRepositoryImpl(
     override fun saveSearchResult(item: OfferSearch) {
         val searchRequest = searchRequestRepository.findById(item.searchRequestId)
         if(searchRequest != null) {
-        var id = item.id
+            var id = item.id
             item.owner = searchRequest.owner
             repository.save(item) ?: throw DataNotSavedException()
 
@@ -98,6 +98,20 @@ class PostgresOfferSearchRepositoryImpl(
 
     override fun findAll(pageable: Pageable): Page<OfferSearch> {
         return repository.findAll(pageable)
+    }
+
+    override fun findAll(): List<OfferSearch> {
+        return repository.findAll()
+                .asSequence()
+                .toList()
+    }
+
+    override fun findAllDiff(): List<OfferSearch> {
+        return repository.findAllDiff()
+    }
+
+    override fun getTotalCount(): Long {
+        return repository.count()
     }
 
     override fun cloneOfferSearchOfSearchRequest(sourceSearchRequestId: Long, targetSearchRequest: SearchRequest): List<OfferSearch> {

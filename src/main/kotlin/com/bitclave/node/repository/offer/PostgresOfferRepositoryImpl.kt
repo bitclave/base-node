@@ -73,4 +73,8 @@ class PostgresOfferRepositoryImpl(
     override fun findAll(pageable: Pageable): Page<Offer> {
         return repository.findAll(pageable)
     }
+
+    override fun getTotalCount(): Long {
+        return repository.count()
+    }
 }

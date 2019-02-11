@@ -4,6 +4,7 @@ import com.bitclave.node.configuration.properties.HybridProperties
 import com.bitclave.node.extensions.ECPoint
 import com.bitclave.node.repository.Web3Provider
 import com.bitclave.node.repository.models.Account
+import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotImplementedException
 import com.bitclave.node.solidity.generated.AccountContract
 import com.bitclave.node.solidity.generated.NameServiceContract
@@ -61,6 +62,10 @@ class HybridAccountRepositoryImpl(
             return Account(publicKey, nonce.toLong())
         }
         return null
+    }
+
+    override fun getTotalCount(): Long {
+        throw BadArgumentException("This method is not implemented for hybrid")
     }
 
 }

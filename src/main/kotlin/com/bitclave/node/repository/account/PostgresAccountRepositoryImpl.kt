@@ -21,4 +21,8 @@ class PostgresAccountRepositoryImpl(val repository: AccountCrudRepository) : Acc
         return repository.findByPublicKey(publicKey)
     }
 
+    override fun getTotalCount(): Long {
+        return repository.count()
+    }
+
 }

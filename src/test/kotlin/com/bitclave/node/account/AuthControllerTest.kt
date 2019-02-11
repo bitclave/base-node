@@ -70,4 +70,10 @@ class AuthControllerTest {
                 .andExpect(status().isOk)
     }
 
+    @Test fun `get total account count`() {
+        this.mvc.perform(get("/$version/account/count")
+                .headers(httpHeaders))
+                .andExpect(status().isOk)
+    }
+
 }

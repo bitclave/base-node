@@ -361,6 +361,61 @@ class OfferSearchService(
         }
     }
 
+    fun getDanglingOfferSearches(
+            strategy: RepositoryStrategyType,
+            byOffer: Boolean? = false,
+            bySearchRequest: Boolean? =false
+    ): CompletableFuture<List<OfferSearch>> {
+
+        return CompletableFuture.supplyAsync {
+
+            val repository = offerSearchRepository.changeStrategy(strategy)
+
+            //get all offerSearches
+            val allOfferSearches = repository.findAll()
+
+            if (byOffer!!) {
+                //get all relevant offers of offerSearches
+                val offerIds: List<Long> = allOfferSearches.map { it.offerId }
+                val offers = offerRepository.changeStrategy(strategy).findById(offerIds.distinct())
+                val existedOfferIds: List<Long> = offers.map { it.id }
+                return@supplyAsync allOfferSearches.filter { it.offerId !in existedOfferIds }
+            } else if(bySearchRequest!!) {
+                //get all relevant searchRequests of offerSearches
+                val searchRequestIds: List<Long> = allOfferSearches.map { it.searchRequestId }
+                val searchRequests = searchRequestRepository.changeStrategy(strategy).findById(searchRequestIds)
+                val existedSearchRequestIds: List<Long> = searchRequests.map { it.id }
+                return@supplyAsync allOfferSearches.filter { it.searchRequestId !in existedSearchRequestIds }
+            } else throw BadArgumentException("specify either byOffer or bySearchRequest")
+
+        }
+    }
+
+    fun getDiffOfferSearches(
+            strategy: RepositoryStrategyType
+    ): CompletableFuture<List<OfferSearch>> {
+
+        return CompletableFuture.supplyAsync {
+
+            val repository = offerSearchRepository.changeStrategy(strategy)
+
+            return@supplyAsync repository.findAllDiff()
+
+        }
+    }
+
+    fun getOfferSearchTotalCount(
+            strategy: RepositoryStrategyType
+    ): CompletableFuture<Long> {
+
+        return CompletableFuture.supplyAsync {
+
+            val repository = offerSearchRepository.changeStrategy(strategy)
+
+            return@supplyAsync repository.getTotalCount()
+
+        }
+    }
 
     fun cloneOfferSearchOfSearchRequest(
             id: Long,
