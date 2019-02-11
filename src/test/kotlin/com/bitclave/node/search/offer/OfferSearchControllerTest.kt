@@ -4,6 +4,7 @@ import com.bitclave.node.extensions.toJsonString
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.OfferResultAction
 import com.bitclave.node.repository.models.OfferSearch
+import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.models.SignedRequest
 import org.junit.Before
 import org.junit.Test
@@ -35,6 +36,7 @@ class OfferSearchControllerTest {
     protected lateinit var offerSearchRequest: SignedRequest<OfferSearch>
     protected lateinit var offerSearchIdRequest: SignedRequest<Long>
     protected lateinit var offerEventRequest: SignedRequest<String>
+    protected lateinit var requestSearch: SignedRequest<SearchRequest>
     private var httpHeaders: HttpHeaders = HttpHeaders()
 
     private val offerSearchModel = OfferSearch(
@@ -48,12 +50,20 @@ class OfferSearchControllerTest {
             ArrayList()
     )
 
+    private val searchRequest = SearchRequest(
+            0,
+            publicKey,
+            mapOf("car" to "true", "color" to "red")
+    )
+
     @Before fun setup() {
         version = "v1"
 
         offerSearchRequest = SignedRequest(offerSearchModel, publicKey)
         offerSearchIdRequest = SignedRequest(1L, publicKey)
         offerEventRequest = SignedRequest("bla-bla-bla", publicKey)
+
+        requestSearch = SignedRequest(searchRequest, publicKey)
 
         httpHeaders.set("Accept", "application/json")
         httpHeaders.set("Content-Type", "application/json")
@@ -128,6 +138,13 @@ class OfferSearchControllerTest {
 
     @Test fun `get offer search by page`() {
         this.mvc.perform(get("/$version/search/results?page=0&size=2")
+                .headers(httpHeaders))
+                .andExpect(status().isOk)
+    }
+
+    @Test fun `clone offer search of search request`() {
+        this.mvc.perform(put("/$version/search/result/$publicKey/1")
+                .content(requestSearch.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }

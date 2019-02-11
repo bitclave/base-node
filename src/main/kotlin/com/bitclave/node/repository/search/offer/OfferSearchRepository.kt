@@ -1,6 +1,7 @@
 package com.bitclave.node.repository.search.offer
 
 import com.bitclave.node.repository.models.OfferSearch
+import com.bitclave.node.repository.models.SearchRequest
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 
@@ -23,6 +24,8 @@ interface OfferSearchRepository {
     fun findByOwner(owner: String): List<OfferSearch>
 
     fun findByOwnerAndOfferId(owner: String, offerId: Long): List<OfferSearch>
+
+    fun cloneOfferSearchOfSearchRequest(id: Long, searchRequest: SearchRequest): List<OfferSearch>
 
     fun findAll(pageable: Pageable): Page<OfferSearch>
 
