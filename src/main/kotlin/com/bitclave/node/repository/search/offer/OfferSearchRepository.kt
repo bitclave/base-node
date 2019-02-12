@@ -13,6 +13,8 @@ interface OfferSearchRepository {
 
     fun findById(id: Long): OfferSearch?
 
+    fun findById(ids: List<Long>): List<OfferSearch>
+
     fun findBySearchRequestId(id: Long): List<OfferSearch>
 
     fun findBySearchRequestIds(ids: List<Long>): List<OfferSearch>

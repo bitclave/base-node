@@ -404,6 +404,20 @@ class OfferSearchService(
         }
     }
 
+    fun getOfferSearchesByIds(
+            strategy: RepositoryStrategyType,
+            ids: List<Long>
+    ): CompletableFuture<List<OfferSearch>> {
+
+        return CompletableFuture.supplyAsync {
+
+            val repository = offerSearchRepository.changeStrategy(strategy)
+
+            return@supplyAsync repository.findById(ids)
+
+        }
+    }
+
     fun getOfferSearchTotalCount(
             strategy: RepositoryStrategyType
     ): CompletableFuture<Long> {

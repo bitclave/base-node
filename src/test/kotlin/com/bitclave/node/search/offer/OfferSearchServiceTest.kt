@@ -222,6 +222,17 @@ class OfferSearchServiceTest {
     }
 
     @Test
+    fun `should be get by multiple ids`() {
+        createOfferSearch(createdSearchRequest1, createdOffer1, ArrayList())
+        createOfferSearch(createdSearchRequest1, createdOffer2, ArrayList())
+        createOfferSearch(createdSearchRequest2, createdOffer1, ArrayList())
+        createOfferSearch(createdSearchRequest2, createdOffer2, ArrayList())
+
+        val result = offerSearchService.getOfferSearchesByIds(strategy, mutableListOf(1L, 2L, 3L, 4L)).get()
+        assert(result.size == 4)
+    }
+
+    @Test
     fun `should be add EVENT as serialized object into array`() {
         var events = mutableListOf("tram taram")
         createOfferSearch(createdSearchRequest1, createdOffer1, events)
