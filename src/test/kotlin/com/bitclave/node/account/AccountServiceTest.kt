@@ -42,12 +42,15 @@ class AccountServiceTest {
 
     protected val privateKey = "c9574c6138fe689946e4f0273e848a8219a6652288273dc6cf291e09517d0abd"
     protected val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
+    protected val publicKey2 = "03836649d2e353c332287e8280d1dbb1805cab0bae289ad08db9cc86f040ac6360"
 
     protected lateinit var account: Account
+    protected lateinit var account2: Account
     protected lateinit var strategy: RepositoryStrategyType
 
     @Before fun setup() {
         account = Account(publicKey)
+        account2 = Account(publicKey2)
         val postgres = PostgresAccountRepositoryImpl(accountCrudRepository)
         val hybrid = HybridAccountRepositoryImpl(web3Provider, hybridProperties)
         val repositoryStrategy = AccountRepositoryStrategy(postgres, hybrid)
@@ -152,6 +155,13 @@ class AccountServiceTest {
         } catch (e: Exception) {
             throw e.cause!!
         }
+    }
+
+    @Test fun `get accounts`() {
+        accountService.registrationClient(account, strategy).get()
+        accountService.registrationClient(account2, strategy).get()
+        val existAccounts = accountService.getAccounts(strategy, mutableListOf<String>(publicKey, publicKey2)).get()
+        Assertions.assertThat(existAccounts.size).isEqualTo(2)
     }
 
     @Test fun `get total count of accounts`() {

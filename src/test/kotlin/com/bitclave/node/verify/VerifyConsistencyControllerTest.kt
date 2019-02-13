@@ -31,14 +31,18 @@ class VerifyConsistencyControllerTest {
     private lateinit var mvc: MockMvc
 
     private val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
+    protected val publicKey2 = "03836649d2e353c332287e8280d1dbb1805cab0bae289ad08db9cc86f040ac6360"
     protected lateinit var idsRequest: SignedRequest<List<Long>>
+    protected lateinit var publicKeysRequest: SignedRequest<List<String>>
     private var httpHeaders: HttpHeaders = HttpHeaders()
 
     private val ids = mutableListOf(1L, 2L, 3L, 4L)
+    private val publicKeys = mutableListOf(publicKey, publicKey2)
 
     @Before fun setup() {
 
         idsRequest = SignedRequest(ids, publicKey)
+        publicKeysRequest = SignedRequest(publicKeys, publicKey)
 
         httpHeaders.set("Accept", "application/json")
         httpHeaders.set("Content-Type", "application/json")
@@ -48,6 +52,13 @@ class VerifyConsistencyControllerTest {
     @Test fun `get offer search list by ids`() {
         this.mvc.perform(post("/dev/verify/offersearch/ids")
                 .content(idsRequest.toJsonString())
+                .headers(httpHeaders))
+                .andExpect(status().isOk)
+    }
+
+    @Test fun `get account list by publicKeys`() {
+        this.mvc.perform(post("/dev/verify/account/publickeys")
+                .content(publicKeysRequest.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }

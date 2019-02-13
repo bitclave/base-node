@@ -52,4 +52,35 @@ class VerifyConsistencyController(
                 }
     }
 
+    /**
+     * Returns the Accounts by provided publicKeys.
+     *
+     * @return {@link List<Account>}, Http status - 200.
+     *
+     */
+    @ApiOperation("Returns the Accounts by provided publicKeys.",
+            response = Account::class, responseContainer = "List")
+    @ApiResponses(value = [
+        ApiResponse(code = 200, message = "Success", response = List::class)
+    ])
+    @RequestMapping(method = [RequestMethod.POST], value = ["/account/publickeys"])
+    fun getAccountsByPublicKeys(
+            @ApiParam("ids of search requests", required = true)
+            @RequestBody
+            request: SignedRequest<List<String>>,
+
+            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+            @RequestHeader("Strategy", required = false)
+            strategy: String?): CompletableFuture<List<Account>> {
+
+        return accountService
+                .accountBySigMessage(request, getStrategyType(strategy))
+                .thenCompose {
+                    accountService.getAccounts(
+                            getStrategyType(strategy),
+                            request.data!!
+                    )
+                }
+    }
+
 }

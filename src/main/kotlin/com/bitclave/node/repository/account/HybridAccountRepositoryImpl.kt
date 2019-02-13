@@ -64,6 +64,18 @@ class HybridAccountRepositoryImpl(
         return null
     }
 
+    override fun findByPublicKey(publicKeys: List<String>): List<Account> {
+        val returnArray: MutableList<Account> =  mutableListOf<Account>()
+        publicKeys.forEach({ publicKey ->
+            val ecPoint = ECPoint(publicKey)
+            if (contract.isRegisteredPublicKey(ecPoint.affineX).send()) {
+                val nonce = contract.nonceForPublicKeyX(ecPoint.affineX).send() ?: BigInteger.ZERO
+                returnArray.add( Account(publicKey, nonce.toLong()))
+            }
+        })
+        return returnArray
+    }
+
     override fun getTotalCount(): Long {
         throw BadArgumentException("This method is not implemented for hybrid")
     }
