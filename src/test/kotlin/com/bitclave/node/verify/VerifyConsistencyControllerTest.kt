@@ -1,5 +1,6 @@
 package com.bitclave.node.verify
 
+import com.bitclave.node.extensions.toJsonString
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.OfferResultAction
 import com.bitclave.node.repository.models.OfferSearch
@@ -24,44 +25,20 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 @RunWith(SpringRunner::class)
 @SpringBootTest
 @AutoConfigureMockMvc
-class VerifyConsistencyTest {
+class VerifyConsistencyControllerTest {
 
     @Autowired
     private lateinit var mvc: MockMvc
 
     private val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
-    protected lateinit var offerSearchRequest: SignedRequest<OfferSearch>
-    protected lateinit var offerSearchIdRequest: SignedRequest<Long>
-    protected lateinit var offerEventRequest: SignedRequest<String>
-    protected lateinit var requestSearch: SignedRequest<SearchRequest>
+    protected lateinit var idsRequest: SignedRequest<List<Long>>
     private var httpHeaders: HttpHeaders = HttpHeaders()
 
-    private val GSON: Gson = GsonBuilder().disableHtmlEscaping().create()
-
-    private val offerSearchModel = OfferSearch(
-            0,
-            publicKey,
-           1L,
-            1L,
-            OfferResultAction.NONE,
-            "",
-            "",
-            ArrayList()
-    )
-
-    private val searchRequest = SearchRequest(
-            0,
-            publicKey,
-            mapOf("car" to "true", "color" to "red")
-    )
+    private val ids = mutableListOf(1L, 2L, 3L, 4L)
 
     @Before fun setup() {
 
-        offerSearchRequest = SignedRequest(offerSearchModel, publicKey)
-        offerSearchIdRequest = SignedRequest(1L, publicKey)
-        offerEventRequest = SignedRequest("bla-bla-bla", publicKey)
-
-        requestSearch = SignedRequest(searchRequest, publicKey)
+        idsRequest = SignedRequest(ids, publicKey)
 
         httpHeaders.set("Accept", "application/json")
         httpHeaders.set("Content-Type", "application/json")
@@ -69,8 +46,8 @@ class VerifyConsistencyTest {
     }
 
     @Test fun `get offer search list by ids`() {
-        this.mvc.perform(get("/dev/verify/offersearch/ids")
-                .content(GSON.toJson(mutableListOf(1L, 2L, 3L, 4L)))
+        this.mvc.perform(post("/dev/verify/offersearch/ids")
+                .content(idsRequest.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }

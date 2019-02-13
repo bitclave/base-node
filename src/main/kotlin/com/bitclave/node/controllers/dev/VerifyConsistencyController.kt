@@ -32,20 +32,24 @@ class VerifyConsistencyController(
     @ApiResponses(value = [
         ApiResponse(code = 200, message = "Success", response = List::class)
     ])
-    @RequestMapping(method = [RequestMethod.GET], value = ["/offersearch/ids"])
+    @RequestMapping(method = [RequestMethod.POST], value = ["/offersearch/ids"])
     fun getOfferSearchesByIds(
-            @ApiParam("ids of search requests")
+            @ApiParam("ids of search requests", required = true)
             @RequestBody
-            ids: List<Long>,
+            request: SignedRequest<List<Long>>,
 
             @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
             @RequestHeader("Strategy", required = false)
             strategy: String?): CompletableFuture<List<OfferSearch>> {
 
-        return offerSearchService.getOfferSearchesByIds(
-                getStrategyType(strategy),
-                ids
-        )
+        return accountService
+                .accountBySigMessage(request, getStrategyType(strategy))
+                .thenCompose {
+                    offerSearchService.getOfferSearchesByIds(
+                            getStrategyType(strategy),
+                            request.data!!
+                    )
+                }
     }
 
 }
