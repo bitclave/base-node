@@ -31,3 +31,4 @@ nbdist/
 /build/resources/
 /build/tmp/
 /src/main/java/com/bitclave/node/solidity/generated/
+/logs/
