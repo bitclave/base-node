@@ -16,6 +16,7 @@ import io.swagger.annotations.ApiResponses
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
+import java.lang.RuntimeException
 import java.util.concurrent.CompletableFuture
 
 @RestController()
@@ -68,7 +69,7 @@ class AuthController(
         return accountService.checkSigMessage(request)
                 .thenApply { pk ->
                     if (pk != request.data?.publicKey) {
-                        throw AccessDeniedException()
+                        throw RuntimeException("Signature missmatch: content vs request  have different keys")
                     }
                     pk
                 }
@@ -111,7 +112,7 @@ class AuthController(
         return accountService.checkSigMessage(request)
                 .thenApply { pk ->
                     if (pk != request.data?.publicKey) {
-                        throw AccessDeniedException()
+                        throw RuntimeException("Signature missmatch: content vs request  have different keys")
                     }
                     pk
                 }
@@ -185,7 +186,7 @@ class AuthController(
         return accountService.accountBySigMessage(request, strategyType)
                 .thenAcceptAsync {
                     if (it.publicKey != request.pk) {
-                        throw AccessDeniedException()
+                        throw RuntimeException("Signature missmatch: content vs request  have different keys")
                     }
 
                     accountService.deleteAccount(it.publicKey, strategyType).get()

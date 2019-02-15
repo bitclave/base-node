@@ -53,7 +53,7 @@ class OfferShareService(
 
             searchRequestRepository.changeStrategy(strategy)
                     .findByIdAndOwner(offerSearch.searchRequestId, clientId)
-                    ?: throw AccessDeniedException()
+                    ?: throw BadArgumentException("searchRequestId does not exist")
 
             if (data.clientResponse.isEmpty()) {
                 throw BadArgumentException("empty response data")

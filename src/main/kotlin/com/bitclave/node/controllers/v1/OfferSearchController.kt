@@ -393,7 +393,7 @@ class OfferSearchController(
                 .thenCompose { account: Account -> accountService.validateNonce(request, account) }
                 .thenCompose {
                     if (owner != it.publicKey) {
-                        throw AccessDeniedException()
+                        throw RuntimeException("Signature missmatch: content vs request  have different keys")
                     }
 
                     val result = offerSearchService.cloneOfferSearchOfSearchRequest(

@@ -15,6 +15,7 @@ import io.swagger.annotations.ApiResponses
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
+import java.lang.RuntimeException
 import java.util.concurrent.CompletableFuture
 
 @RestController
@@ -67,7 +68,7 @@ class SearchRequestController(
                 .thenCompose { account: Account -> accountService.validateNonce(request, account) }
                 .thenCompose {
                     if (owner != it.publicKey) {
-                        throw AccessDeniedException()
+                        throw RuntimeException("Signature missmatch: content vs request  have different keys")
                     }
 
                     val result = searchRequestService.putSearchRequest(
@@ -126,7 +127,7 @@ class SearchRequestController(
                 .thenCompose { account: Account -> accountService.validateNonce(request, account) }
                 .thenCompose {
                     if (request.pk != owner) {
-                        throw AccessDeniedException()
+                        throw RuntimeException("Signature missmatch: content vs request  have different keys")
                     }
 
                     if (id != request.data) {
@@ -214,7 +215,7 @@ class SearchRequestController(
                 .thenCompose { account: Account -> accountService.validateNonce(request, account) }
                 .thenCompose {
                     if (owner != it.publicKey) {
-                        throw AccessDeniedException()
+                        throw RuntimeException("Signature missmatch: content vs request  have different keys")
                     }
 
                     val result = searchRequestService.cloneSearchRequestWithOfferSearches(

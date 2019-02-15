@@ -214,7 +214,7 @@ class OfferSearchService(
 
             searchRequestRepository.changeStrategy(strategy)
                     .findById(item.searchRequestId)
-                    ?: throw AccessDeniedException()
+                    ?: throw BadArgumentException("searchRequestId id not exist")
 
             item.state = OfferResultAction.COMPLAIN
             repository.saveSearchResult(item)
@@ -258,7 +258,7 @@ class OfferSearchService(
 
             searchRequestRepository.changeStrategy(strategy)
                     .findById(item.searchRequestId)
-                    ?: throw AccessDeniedException()
+                    ?: throw BadArgumentException("searchRequestId item id not exist")
 
             item.state = OfferResultAction.REJECT
             repository.saveSearchResult(item)
@@ -280,7 +280,7 @@ class OfferSearchService(
 
             searchRequestRepository.changeStrategy(strategy)
                     .findById(item.searchRequestId)
-                    ?: throw AccessDeniedException()
+                    ?: throw BadArgumentException("searchRequestId id not exist")
 
             item.state = OfferResultAction.CLAIMPURCHASE
             repository.saveSearchResult(item)
