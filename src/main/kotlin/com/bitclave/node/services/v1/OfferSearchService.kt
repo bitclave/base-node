@@ -303,21 +303,15 @@ class OfferSearchService(
             val item = repository.findById(offerSearchId)
                     ?: throw BadArgumentException("offer search item id not exist: " + offerSearchId.toString())
 
-            System.out.println("postback confirmation: found offerSearchId with offerId="
-                    + item.offerId.toString()
-                    + " requestId="
-                    + item.searchRequestId.toString());
-
-
             // check requestId exist
-            var request: SearchRequest = searchRequestRepository.changeStrategy(strategy)
+            searchRequestRepository.changeStrategy(strategy)
                     .findById(item.searchRequestId)
-                    ?: throw BadArgumentException( "searchRequestId does not exists: " + item.searchRequestId.toString());
+                    ?: throw BadArgumentException( "searchRequestId does not exists: " + item.searchRequestId.toString())
 
             // check OfferId exist
             val offer: Offer = offerRepository.changeStrategy(strategy)
                     .findById(item.offerId)
-                    ?: throw BadArgumentException( "offerId does not exists: " + item.offerId.toString());
+                    ?: throw BadArgumentException( "offerId does not exists: " + item.offerId.toString())
 
             // check that the owner is the caller
             if (offer.owner != callerPublicKey)

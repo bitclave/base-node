@@ -10,9 +10,12 @@ import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.errors.AlreadyRegisteredException
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
+import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
+
+private val logger = KotlinLogging.logger {}
 
 @Service
 @Qualifier("v1")
@@ -37,11 +40,6 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
         try {
             return checkSigMessage(request)
                     .thenApply(accountRepository.changeStrategy(strategy)::findByPublicKey)
-                    .exceptionally {
-                        System.out.println("Oops! We have an exception - "+ it.localizedMessage);
-                        throw BadArgumentException(it.localizedMessage);
-                        null
-                    }
                     .thenApply { account: Account? ->
 
                         if (account == null) {
@@ -53,13 +51,10 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
                         }
                         account
                     }
-
         } catch (e: Exception) {
-            System.out.println(e.localizedMessage)
-            throw BadArgumentException(e.localizedMessage);
+            logger.error("Request: " + request.toString() + " raised " + e)
+            throw BadArgumentException(e.localizedMessage)
         }
-
-        return CompletableFuture<Account>();
     }
 
     fun validateNonce(request: SignedRequest<*>, account: Account): CompletableFuture<Account> {

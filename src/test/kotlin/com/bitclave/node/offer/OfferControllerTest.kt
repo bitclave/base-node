@@ -133,7 +133,7 @@ class OfferControllerTest {
     }
 
     @Test fun `get offer by owner and id`() {
-        val result =  this.mvc.perform(get("/$version/client/$publicKey/offer/1/")
+        this.mvc.perform(get("/$version/client/$publicKey/offer/1/")
                 .content(requestOffer.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
@@ -142,7 +142,7 @@ class OfferControllerTest {
 
     @Test
     fun `get offers by page`() {
-        val result = this.mvc.perform(MockMvcRequestBuilders.get("/$version/offers?page=0&size=2")
+        this.mvc.perform(MockMvcRequestBuilders.get("/$version/offers?page=0&size=2")
                 .headers(httpHeaders))
                 .andExpect(MockMvcResultMatchers.status().isOk)
                 .andReturn()

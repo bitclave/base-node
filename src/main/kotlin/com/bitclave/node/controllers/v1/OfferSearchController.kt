@@ -189,25 +189,10 @@ class OfferSearchController(
             @RequestHeader("Strategy", required = false)
             strategy: String?): CompletableFuture<Void> {
 
-
-        try {
             return accountService.accountBySigMessage(request, getStrategyType(strategy))
                     .thenCompose {
                         offerSearchService.saveNewOfferSearch(request.data!!, getStrategyType(strategy))
                     }
-                    .exceptionally {
-                        System.out.println("Oops! We have an exception - "+ it.localizedMessage);
-                        throw it;
-                        null
-                    }
-
-        } catch (e: Exception) {
-            System.out.println(e.localizedMessage)
-            throw e;
-        }
-
-
-        return CompletableFuture<Void>();
     }
 
     /**
