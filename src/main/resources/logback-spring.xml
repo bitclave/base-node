@@ -38,8 +38,10 @@
             <level>ERROR</level>
         </filter>
         <url>${elasticUrl}/_bulk</url>
-        <index>log</index>
+        <index>base-node-log</index>
         <type>log</type>
+        <authentication class="com.internetitem.logback.elasticsearch.config.BasicAuthentication" />
+        <errorLoggerName>es-error-logger</errorLoggerName>
         <properties>
             <property>
                 <name>categoryName</name>
@@ -65,6 +67,11 @@
             </header>
         </headers>
     </appender>
+
+    <logger name="es-error-logger" level="INFO" additivity="false">
+        <appender-ref ref="Console" />
+        <appender-ref ref="RollingFile" />
+    </logger>
 
     <!-- LOG everything at INFO level -->
     <root level="info">
