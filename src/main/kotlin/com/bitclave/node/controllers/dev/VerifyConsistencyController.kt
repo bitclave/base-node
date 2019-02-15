@@ -2,7 +2,6 @@ package com.bitclave.node.controllers.dev
 
 import com.bitclave.node.controllers.AbstractController
 import com.bitclave.node.repository.models.*
-import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferSearchService
 import io.swagger.annotations.ApiOperation
@@ -10,7 +9,6 @@ import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import java.util.concurrent.CompletableFuture
 

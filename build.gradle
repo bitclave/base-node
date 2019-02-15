@@ -86,6 +86,9 @@ dependencies {
     compile 'org.springframework.boot:spring-boot-starter-web'
     compile 'org.springframework.boot:spring-boot-configuration-processor'
 
+    compile 'io.github.microutils:kotlin-logging:1.6.24'
+    compile 'com.internetitem:logback-elasticsearch-appender:1.6'
+
     compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}"
     compile "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}"
 

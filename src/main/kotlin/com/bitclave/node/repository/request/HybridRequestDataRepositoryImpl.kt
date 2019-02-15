@@ -7,15 +7,17 @@ import com.bitclave.node.extensions.hex
 import com.bitclave.node.extensions.sha3
 import com.bitclave.node.repository.Web3Provider
 import com.bitclave.node.repository.models.RequestData
-import com.bitclave.node.services.errors.NotImplementedException
 import com.bitclave.node.solidity.generated.NameServiceContract
 import com.bitclave.node.solidity.generated.RequestDataContract
+import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import org.web3j.tuples.generated.Tuple7
 import java.math.BigInteger
 import java.nio.charset.Charset
 import java.security.spec.ECPoint
+
+private val logger = KotlinLogging.logger {}
 
 @Component
 @Qualifier("hybrid")
@@ -154,7 +156,7 @@ class HybridRequestDataRepositoryImpl(
                 }
             }
         } catch (e: Exception) {
-            System.out.println(e.localizedMessage)
+            logger.error("Request: " + request.toString() + " raised " + e)
         }
 
         return request

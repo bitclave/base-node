@@ -2,12 +2,7 @@ package com.bitclave.node.verify
 
 import com.bitclave.node.extensions.toJsonString
 import com.bitclave.node.repository.RepositoryStrategyType
-import com.bitclave.node.repository.models.OfferResultAction
-import com.bitclave.node.repository.models.OfferSearch
-import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.models.SignedRequest
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -47,6 +42,7 @@ class VerifyConsistencyControllerTest {
         httpHeaders.set("Accept", "application/json")
         httpHeaders.set("Content-Type", "application/json")
         httpHeaders.set("Strategy", RepositoryStrategyType.POSTGRES.name)
+
     }
 
     @Test fun `get offer search list by ids`() {
@@ -61,5 +57,12 @@ class VerifyConsistencyControllerTest {
                 .content(publicKeysRequest.toJsonString())
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
+    }
+
+    @Test fun `expected error - get account list by publicKeys`() {
+        this.mvc.perform(post("/dev/verify/account/publickeys")
+                .content(publicKey)
+                .headers(httpHeaders))
+                .andExpect(status().is4xxClientError)
     }
 }
