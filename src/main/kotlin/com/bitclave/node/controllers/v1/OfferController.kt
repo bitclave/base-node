@@ -11,11 +11,14 @@ import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
+import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 import java.util.concurrent.CompletableFuture
+
+private val logger = KotlinLogging.logger {}
 
 @RestController
 @RequestMapping("/v1/client/{owner}/offer")
@@ -67,8 +70,8 @@ class OfferController(
 
         return accountService
                 .accountBySigMessage(request, getStrategyType(strategy))
-                .thenCompose {
-                    account: Account -> accountService.validateNonce(request, account)
+                .thenCompose { account: Account ->
+                    accountService.validateNonce(request, account)
                 }
                 .thenCompose {
                     if (request.pk != owner) {
@@ -86,6 +89,9 @@ class OfferController(
                 .thenCompose {
                     val status = if (it.id != id) HttpStatus.CREATED else HttpStatus.OK
                     CompletableFuture.completedFuture(ResponseEntity<Offer>(it, status))
+                }.exceptionally { e ->
+                    logger.error("Request: putOffer/" + request.toString() + " raised " + e)
+                    throw e
                 }
     }
 
@@ -143,6 +149,9 @@ class OfferController(
                     accountService.incrementNonce(it, getStrategyType(strategy)).get()
 
                     CompletableFuture.completedFuture(result)
+                }.exceptionally { e ->
+                    logger.error("Request: deleteOffer/" + request.toString() + " raised " + e)
+                    throw e
                 }
     }
 
@@ -171,7 +180,10 @@ class OfferController(
             @RequestHeader("Strategy", required = false)
             strategy: String?): CompletableFuture<List<Offer>> {
 
-        return offerService.getOffers(id ?: 0, owner, getStrategyType(strategy))
+        return offerService.getOffers(id ?: 0, owner, getStrategyType(strategy)).exceptionally { e ->
+            logger.error("Request: getOffer/" + owner + "/" + id!!.toString() + " raised " + e)
+            throw e
+        }
     }
 
     /**
@@ -192,7 +204,10 @@ class OfferController(
             @RequestHeader("Strategy", required = false)
             strategy: String?): CompletableFuture<Long> {
 
-        return offerService.getOfferTotalCount(getStrategyType(strategy) )
+        return offerService.getOfferTotalCount(getStrategyType(strategy)).exceptionally { e ->
+            logger.error("Request: getOffertTotalCount raised " + e)
+            throw e
+        }
     }
 
 }

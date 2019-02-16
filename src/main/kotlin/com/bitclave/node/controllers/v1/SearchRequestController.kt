@@ -12,11 +12,14 @@ import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
+import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import java.lang.RuntimeException
 import java.util.concurrent.CompletableFuture
+
+private val logger = KotlinLogging.logger {}
 
 @RestController
 @RequestMapping("/v1/client/{owner}/search/request/")
@@ -81,6 +84,9 @@ class SearchRequestController(
                     accountService.incrementNonce(it, getStrategyType(strategy)).get()
 
                     CompletableFuture.completedFuture(result)
+                }.exceptionally { e ->
+                    logger.error("Request: putSearchRequest/" + id!!.toString() + "/" + owner + "/" + request.toString() + " raised " + e)
+                    throw e
                 }
     }
 
@@ -142,6 +148,9 @@ class SearchRequestController(
                     accountService.incrementNonce(it, getStrategyType(strategy)).get()
 
                     CompletableFuture.completedFuture(result)
+                }.exceptionally { e ->
+                    logger.error("Request: deleteSearchRequest/" + id.toString() + "/" + owner + "/" + request.toString() + " raised " + e)
+                    throw e
                 }
     }
 
@@ -172,7 +181,10 @@ class SearchRequestController(
             @RequestHeader("Strategy", required = false)
             strategy: String?): CompletableFuture<List<SearchRequest>> {
 
-        return searchRequestService.getSearchRequests(id ?: 0, owner, getStrategyType(strategy))
+        return searchRequestService.getSearchRequests(id ?: 0, owner, getStrategyType(strategy)).exceptionally { e ->
+            logger.error("Request: getSearchRequests/" + owner + "/" + id!!.toString() + " raised " + e)
+            throw e
+        }
     }
 
     /**
@@ -227,6 +239,9 @@ class SearchRequestController(
                     accountService.incrementNonce(it, getStrategyType(strategy)).get()
 
                     CompletableFuture.completedFuture(result)
+                }.exceptionally { e ->
+                    logger.error("Request: cloneSearchRequest/" + owner + "/" + request.toString() + " raised " + e)
+                    throw e
                 }
     }
 
@@ -248,7 +263,10 @@ class SearchRequestController(
             @RequestHeader("Strategy", required = false)
             strategy: String?): CompletableFuture<Long> {
 
-        return searchRequestService.getSearchRequestTotalCount(getStrategyType(strategy) )
+        return searchRequestService.getSearchRequestTotalCount(getStrategyType(strategy)).exceptionally { e ->
+            logger.error("Request: getSearchRequestTotalCount raised " + e)
+            throw e
+        }
     }
 
 }

@@ -10,10 +10,13 @@ import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
+import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import java.util.concurrent.CompletableFuture
+
+private val logger = KotlinLogging.logger {}
 
 @RestController
 @RequestMapping("/v1/data/")
@@ -61,7 +64,10 @@ class RequestDataController(
             strategy: String?
     ): CompletableFuture<List<RequestData>> {
 
-        return requestDataService.getRequestByStatus(fromPk, toPk, getStrategyType(strategy))
+        return requestDataService.getRequestByStatus(fromPk, toPk, getStrategyType(strategy)).exceptionally { e ->
+            logger.error("Request: getRequestByState/" + fromPk + "/" + toPk + " raised " + e)
+            throw e
+        }
     }
 
     /**
@@ -107,6 +113,9 @@ class RequestDataController(
                     accountService.incrementNonce(account, getStrategyType(strategy)).get()
 
                     CompletableFuture.completedFuture(result)
+                }.exceptionally { e ->
+                    logger.error("Request: request/" + request.toString() + " raised " + e)
+                    throw e
                 }
     }
 
@@ -154,6 +163,9 @@ class RequestDataController(
                     accountService.incrementNonce(account, getStrategyType(strategy)).get()
 
                     CompletableFuture.completedFuture(result)
+                }.exceptionally { e ->
+                    logger.error("Request: grantAccess/" + request.toString() + " raised " + e)
+                    throw e
                 }
     }
 

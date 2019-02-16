@@ -10,9 +10,12 @@ import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
+import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.web.bind.annotation.*
 import java.util.concurrent.CompletableFuture
+
+private val logger = KotlinLogging.logger {}
 
 @RestController
 @RequestMapping("/v1/client/")
@@ -42,8 +45,10 @@ class ClientProfileController(
             @RequestHeader("Strategy", required = false)
             strategy: String?
     ): CompletableFuture<Map<String, String>> {
-
-        return profileService.getData(publicKey, getStrategyType(strategy))
+        return profileService.getData(publicKey, getStrategyType(strategy)).exceptionally { e ->
+            logger.error("Request: getData/" + publicKey + " raised " + e)
+            throw e
+        }
     }
 
     /**
@@ -82,7 +87,6 @@ class ClientProfileController(
             @RequestHeader("Strategy", required = false)
             strategy: String?
     ): CompletableFuture<Map<String, String>> {
-
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
                 .thenCompose { account: Account -> accountService.validateNonce(request, account) }
                 .thenCompose { account: Account ->
@@ -94,6 +98,9 @@ class ClientProfileController(
                     accountService.incrementNonce(account, getStrategyType(strategy)).get()
 
                     CompletableFuture.completedFuture(result)
+                }.exceptionally { e ->
+                    logger.error("Request: updateData/" + request.toString() + " raised " + e)
+                    throw e
                 }
     }
 
