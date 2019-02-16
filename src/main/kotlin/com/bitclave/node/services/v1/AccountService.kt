@@ -25,7 +25,8 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
         return request.validateSig()
                 .thenApply { isValid ->
                     if (!isValid) {
-                        throw RuntimeException("Signature verification failed")
+                        throw AccessDeniedException()
+//                        throw RuntimeException("Signature verification failed")
                     }
 
                     request.pk.toLowerCase()
