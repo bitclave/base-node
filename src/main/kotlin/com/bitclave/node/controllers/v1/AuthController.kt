@@ -78,6 +78,9 @@ class AuthController(
                 }
                 .thenCompose {
                     accountService.registrationClient(request.data!!, getStrategyType(strategy))
+                }.exceptionally { e ->
+                    logger.error("Request: registration/" + request.toString() + " raised " + e)
+                    throw e
                 }
     }
 
@@ -115,13 +118,16 @@ class AuthController(
         return accountService.checkSigMessage(request)
                 .thenApply { pk ->
                     if (pk != request.data?.publicKey) {
-                        logger.debug("checkSigMessage failure "+ pk.toString()+ "vs " + request.data?.publicKey.toString())
+                        logger.debug("checkSigMessage failure " + pk.toString() + "vs " + request.data?.publicKey.toString())
                         throw RuntimeException("Signature missmatch: content vs request  have different keys")
                     }
                     pk
                 }
                 .thenCompose {
                     accountService.existAccount(request.data!!, getStrategyType(strategy))
+                }.exceptionally { e ->
+                    logger.error("Request: existAccount/" + request.toString() + " raised " + e)
+                    throw e
                 }
     }
 
@@ -151,7 +157,10 @@ class AuthController(
             strategy: String?
     ): CompletableFuture<Long> {
 
-        return accountService.getNonce(publicKey, getStrategyType(strategy))
+        return accountService.getNonce(publicKey, getStrategyType(strategy)).exceptionally { e ->
+            logger.error("Request: getNonce/" + publicKey + " raised " + e)
+            throw e
+        }
     }
 
     /**
@@ -185,7 +194,6 @@ class AuthController(
             @RequestHeader("Strategy", required = false)
             strategy: String?
     ): CompletableFuture<Void> {
-
         val strategyType = getStrategyType(strategy)
         return accountService.accountBySigMessage(request, strategyType)
                 .thenAcceptAsync {
@@ -198,6 +206,9 @@ class AuthController(
                     requestDataService.deleteRequestsAndResponses(it.publicKey, strategyType).get()
                     offerService.deleteOffers(it.publicKey, strategyType).get()
                     searchRequestService.deleteSearchRequests(it.publicKey, strategyType).get()
+                }.exceptionally { e ->
+                    logger.error("Request: deleteUser/" + request.toString() + " raised " + e)
+                    throw e
                 }
     }
 
@@ -218,8 +229,10 @@ class AuthController(
             @ApiParam("change repository strategy", allowableValues = "POSTGRES", required = false)
             @RequestHeader("Strategy", required = false)
             strategy: String?): CompletableFuture<Long> {
-
-        return accountService.getAccountTotalCount(getStrategyType(strategy) )
+        return accountService.getAccountTotalCount(getStrategyType(strategy)).exceptionally { e ->
+            logger.error("Request: getAccountTotalCount raised " + e)
+            throw e
+        }
     }
 
 }

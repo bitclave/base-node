@@ -2,15 +2,20 @@ package com.bitclave.node.controllers.dev
 
 import com.bitclave.node.controllers.AbstractController
 import com.bitclave.node.repository.models.*
+import com.bitclave.node.services.errors.BadArgumentException
+import com.bitclave.node.services.errors.NotFoundException
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferSearchService
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
+import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.web.bind.annotation.*
 import java.util.concurrent.CompletableFuture
+
+private val logger = KotlinLogging.logger {}
 
 @RestController
 @RequestMapping("/dev/verify")
@@ -39,7 +44,6 @@ class VerifyConsistencyController(
             @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
             @RequestHeader("Strategy", required = false)
             strategy: String?): CompletableFuture<List<OfferSearch>> {
-
         return accountService
                 .accountBySigMessage(request, getStrategyType(strategy))
                 .thenCompose {
@@ -47,6 +51,9 @@ class VerifyConsistencyController(
                             getStrategyType(strategy),
                             request.data!!
                     )
+                }.exceptionally { e ->
+                    logger.error("Request: " + request.toString() + " raised " + e)
+                    throw e
                 }
     }
 
@@ -70,7 +77,6 @@ class VerifyConsistencyController(
             @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
             @RequestHeader("Strategy", required = false)
             strategy: String?): CompletableFuture<List<Account>> {
-
         return accountService
                 .accountBySigMessage(request, getStrategyType(strategy))
                 .thenCompose {
@@ -78,6 +84,9 @@ class VerifyConsistencyController(
                             getStrategyType(strategy),
                             request.data!!
                     )
+                }.exceptionally { e ->
+                    logger.error("Request: " + request.toString() + " raised " + e)
+                    throw e
                 }
     }
 

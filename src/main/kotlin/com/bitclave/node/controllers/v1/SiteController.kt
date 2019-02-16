@@ -11,9 +11,12 @@ import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
+import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.web.bind.annotation.*
 import java.util.concurrent.CompletableFuture
+
+private val logger = KotlinLogging.logger {}
 
 @RestController
 @RequestMapping("/v1/site/")
@@ -68,6 +71,9 @@ class SiteController(
                     accountService.incrementNonce(it, getStrategyType(strategy))
 
                     result
+                }.exceptionally { e ->
+                    logger.error("Request: saveSiteInformation/" + request.toString() + " raised " + e)
+                    throw e
                 }
     }
 
@@ -97,7 +103,10 @@ class SiteController(
             strategy: String?
     ): CompletableFuture<Site> {
 
-        return siteService.getSite(origin, getStrategyType(strategy))
+        return siteService.getSite(origin, getStrategyType(strategy)).exceptionally { e ->
+            logger.error("Request: getPublicKeyByOrigin/" + origin + " raised " + e)
+            throw e
+        }
     }
 
 }

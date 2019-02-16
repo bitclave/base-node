@@ -11,11 +11,14 @@ import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
+import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.web.bind.annotation.*
 import java.util.concurrent.CompletableFuture
+
+private val logger = KotlinLogging.logger {}
 
 @RestController
 @RequestMapping("/v1/")
@@ -45,12 +48,18 @@ class PageableController(
         @RequestHeader("Strategy", required = false)
         strategy: String?): CompletableFuture<Page<Offer>> {
 
-        if(page == null || size == null) {
+        if (page == null || size == null) {
             return offerService.getPageableOffers(PageRequest(0, 20), getStrategyType(strategy)
-            )
+            ).exceptionally { e ->
+                logger.error("Request: getPageableOffers/" + page!!.toString() + "/" + size!!.toString() + " raised " + e)
+                throw e
+            }
         }
 
-        return offerService.getPageableOffers(PageRequest(page, size), getStrategyType(strategy))
+        return offerService.getPageableOffers(PageRequest(page, size), getStrategyType(strategy)).exceptionally { e ->
+            logger.error("Request: getPageableOffers/" + page!!.toString() + "/" + size!!.toString() + " raised " + e)
+            throw e
+        }
     }
 
     @ApiOperation(
@@ -74,14 +83,20 @@ class PageableController(
             @RequestHeader("Strategy", required = false)
             strategy: String?): CompletableFuture<Page<SearchRequest>> {
 
-        if(page == null || size == null) {
+        if (page == null || size == null) {
             return searchRequestService.getPageableRequests(
                     PageRequest(0, 20), getStrategyType(strategy)
-            )
+            ).exceptionally { e ->
+                logger.error("Request: getPageableSearchRequests/" + page!!.toString() + "/" + size!!.toString() + " raised " + e)
+                throw e
+            }
         }
 
         return searchRequestService.getPageableRequests(
-                PageRequest(page, size), getStrategyType(strategy))
+                PageRequest(page, size), getStrategyType(strategy)).exceptionally { e ->
+                    logger.error("Request: getPageableSearchRequests/" + page!!.toString() + "/" + size!!.toString() + " raised " + e)
+                    throw e
+                }
     }
 
     @ApiOperation(
@@ -105,13 +120,19 @@ class PageableController(
             @RequestHeader("Strategy", required = false)
             strategy: String?): CompletableFuture<Page<OfferSearch>> {
 
-        if(page == null || size == null) {
+        if (page == null || size == null) {
             return offerSearchService.getPageableOfferSearches(
                     PageRequest(0, 20), getStrategyType(strategy)
-            )
+            ).exceptionally { e ->
+                logger.error("Request: getPageableOfferSearch/" + page!!.toString() + "/" + size!!.toString() + " raised " + e)
+                throw e
+            }
         }
 
         return offerSearchService.getPageableOfferSearches(
-                PageRequest(page, size), getStrategyType(strategy))
+                PageRequest(page, size), getStrategyType(strategy)).exceptionally { e ->
+                    logger.error("Request: getPageableOfferSearch/" + page!!.toString() + "/" + size!!.toString() + " raised " + e)
+                    throw e
+                }
     }
 }

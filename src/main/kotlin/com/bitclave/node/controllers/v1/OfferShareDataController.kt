@@ -10,11 +10,14 @@ import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
+import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import java.math.BigDecimal
 import java.util.concurrent.CompletableFuture
+
+private val logger = KotlinLogging.logger {}
 
 @RestController
 @RequestMapping("/v1/data/")
@@ -50,7 +53,10 @@ class OfferShareDataController(
             strategy: String?
     ): CompletableFuture<List<OfferShareData>> {
 
-        return offerShareData.getShareData(offerOwner, accepted, getStrategyType(strategy))
+        return offerShareData.getShareData(offerOwner, accepted, getStrategyType(strategy)).exceptionally { e ->
+            logger.error("Request: getShareData/" + offerOwner + "/" + accepted!!.toString() + " raised " + e)
+            throw e
+        }
     }
 
     /**
@@ -94,6 +100,9 @@ class OfferShareDataController(
                             .get()
 
                     accountService.incrementNonce(it, getStrategyType(strategy)).get()
+                }.exceptionally { e ->
+                    logger.error("Request: grantAccess/" + request.toString() + " raised " + e)
+                    throw e
                 }
     }
 
@@ -142,6 +151,9 @@ class OfferShareDataController(
                     ).get()
 
                     accountService.incrementNonce(it, getStrategyType(strategy)).get()
+                }.exceptionally { e ->
+                    logger.error("Request: accept/" + offerSearchId.toString() + "/" + request.toString() + " raised " + e)
+                    throw e
                 }
     }
 

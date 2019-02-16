@@ -23,7 +23,9 @@ import javax.annotation.Resource
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder.json
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import mu.KotlinLogging
 
+private val logger = KotlinLogging.logger {}
 
 @RestController
 @RequestMapping("/v1/file/{owner}")
@@ -78,12 +80,13 @@ class FileController(
             strategy: String?): CompletableFuture<ResponseEntity<UploadedFile>> {
 
         class Token : TypeToken<SignedRequest<String>>()
+
         val sign: SignedRequest<String> = Gson().fromJson(signature, Token().type)
 
         return accountService
                 .accountBySigMessage(sign, getStrategyType(strategy))
-                .thenCompose {
-                    account: Account -> accountService.validateNonce(sign, account)
+                .thenCompose { account: Account ->
+                    accountService.validateNonce(sign, account)
                 }
                 .thenCompose {
                     if (sign.pk != owner || data.isEmpty) {
@@ -97,6 +100,9 @@ class FileController(
                 .thenCompose {
                     val status = if (it.id != id) HttpStatus.CREATED else HttpStatus.OK
                     CompletableFuture.completedFuture(ResponseEntity<UploadedFile>(it, status))
+                }.exceptionally { e ->
+                    logger.error("Request: uploadFile " + signature + " raised " + e)
+                    throw e
                 }
     }
 
@@ -155,6 +161,9 @@ class FileController(
                     accountService.incrementNonce(it, getStrategyType(strategy)).get()
 
                     CompletableFuture.completedFuture(result)
+                }.exceptionally { e ->
+                    logger.error("Request: " + request.toString() + " raised " + e)
+                    throw e
                 }
     }
 
@@ -184,12 +193,15 @@ class FileController(
             @RequestHeader("Strategy", required = false)
             strategy: String?): CompletableFuture<ResponseEntity<ByteArray>> {
 
-        return fileService.getFile(id, owner,getStrategyType(strategy))
+        return fileService.getFile(id, owner, getStrategyType(strategy))
                 .thenCompose {
                     if (it == null || it.id != id || it.data == null) throw NotFoundException()
                     CompletableFuture.completedFuture(ResponseEntity.ok()
                             .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + it.name + "\"")
                             .body(it.data!!))
+                }.exceptionally { e ->
+                    logger.error("Request: downloadFile " + owner + " " + id.toString() + " raised " + e)
+                    throw e
                 }
     }
 

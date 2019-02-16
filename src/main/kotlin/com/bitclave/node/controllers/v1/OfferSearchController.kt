@@ -9,10 +9,13 @@ import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
+import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import java.util.concurrent.CompletableFuture
+
+private val logger = KotlinLogging.logger {}
 
 @RestController
 @RequestMapping("/v1/search/result")
@@ -50,7 +53,10 @@ class OfferSearchController(
                 getStrategyType(strategy),
                 searchRequestId,
                 offerSearchId
-        )
+        ).exceptionally { e ->
+            logger.error("Request: getResult/" + searchRequestId!!.toString() + "/" + offerSearchId!!.toString() + " raised " + e)
+            throw e
+        }
     }
 
     /**
@@ -77,7 +83,10 @@ class OfferSearchController(
         return offerSearchService.getOffersAndOfferSearchesByOwnerResult(
                 getStrategyType(strategy),
                 owner
-        )
+        ).exceptionally { e ->
+            logger.error("Request: getResultByOwner/" + owner + " raised " + e)
+            throw e
+        }
     }
 
     /**
@@ -102,7 +111,10 @@ class OfferSearchController(
                 getStrategyType(strategy),
                 true,
                 false
-        )
+        ).exceptionally { e ->
+            logger.error("Request: getDanglingOfferSearchesByOffer raised " + e)
+            throw e
+        }
     }
 
     /**
@@ -127,7 +139,10 @@ class OfferSearchController(
                 getStrategyType(strategy),
                 false,
                 true
-        )
+        ).exceptionally { e ->
+            logger.error("Request: getDanglingOfferSearchesBySearchRequest raised " + e)
+            throw e
+        }
     }
 
     /**
@@ -148,7 +163,10 @@ class OfferSearchController(
             @RequestHeader("Strategy", required = false)
             strategy: String?): CompletableFuture<List<OfferSearch>> {
 
-        return offerSearchService.getDiffOfferSearches(getStrategyType(strategy))
+        return offerSearchService.getDiffOfferSearches(getStrategyType(strategy)).exceptionally { e ->
+            logger.error("Request: getDiffOfferSearches raised " + e)
+            throw e
+        }
     }
 
     /**
@@ -169,7 +187,10 @@ class OfferSearchController(
             @RequestHeader("Strategy", required = false)
             strategy: String?): CompletableFuture<Long> {
 
-        return offerSearchService.getOfferSearchTotalCount(getStrategyType(strategy) )
+        return offerSearchService.getOfferSearchTotalCount(getStrategyType(strategy)).exceptionally { e ->
+            logger.error("Request: getOfferSearchTotalCount raised " + e)
+            throw e
+        }
     }
 
     /**
@@ -189,9 +210,12 @@ class OfferSearchController(
             @RequestHeader("Strategy", required = false)
             strategy: String?): CompletableFuture<Void> {
 
-            return accountService.accountBySigMessage(request, getStrategyType(strategy))
+        return accountService.accountBySigMessage(request, getStrategyType(strategy))
                     .thenCompose {
                         offerSearchService.saveNewOfferSearch(request.data!!, getStrategyType(strategy))
+                    }.exceptionally { e ->
+                        logger.error("Request: putOfferSearchItem/" + request.toString() + " raised " + e)
+                        throw e
                     }
     }
 
@@ -219,6 +243,9 @@ class OfferSearchController(
         return accountService.accountBySigMessage(event, getStrategyType(strategy))
                 .thenCompose {
                     offerSearchService.addEventTo(event.data!!, searchResultId, getStrategyType(strategy))
+                }.exceptionally { e ->
+                    logger.error("Request: addEvent/" + event.toString() + " raised " + e)
+                    throw e
                 }
     }
 
@@ -246,6 +273,9 @@ class OfferSearchController(
                 .thenAcceptAsync {
                     offerSearchService.complain(request.data!!, it.publicKey, getStrategyType(strategy)).get()
                     accountService.incrementNonce(it, getStrategyType(strategy)).get()
+                }.exceptionally { e ->
+                    logger.error("Request: complain/" + request.toString() + " raised " + e)
+                    throw e
                 }
     }
 
@@ -272,6 +302,9 @@ class OfferSearchController(
                 .thenAcceptAsync {
                     offerSearchService.reject(request.data!!, it.publicKey, getStrategyType(strategy)).get()
                     accountService.incrementNonce(it, getStrategyType(strategy)).get()
+                }.exceptionally { e ->
+                    logger.error("Request: reject/" + request.toString() + " raised " + e)
+                    throw e
                 }
     }
 
@@ -298,6 +331,9 @@ class OfferSearchController(
                 .thenAcceptAsync {
                     offerSearchService.evaluate(request.data!!, it.publicKey, getStrategyType(strategy)).get()
                     accountService.incrementNonce(it, getStrategyType(strategy)).get()
+                }.exceptionally { e ->
+                    logger.error("Request: evaluate/" + request.toString() + " raised " + e)
+                    throw e
                 }
     }
 
@@ -324,6 +360,9 @@ class OfferSearchController(
                 .thenAcceptAsync {
                     offerSearchService.claimPurchase(request.data!!, it.publicKey, getStrategyType(strategy)).get()
                     accountService.incrementNonce(it, getStrategyType(strategy)).get()
+                }.exceptionally { e ->
+                    logger.error("Request: claimPurchase/" + request.toString() + " raised " + e)
+                    throw e
                 }
     }
 
@@ -347,6 +386,9 @@ class OfferSearchController(
                 .thenAcceptAsync {
                     offerSearchService.confirm(request.data!!, it.publicKey, getStrategyType(strategy)).get()
                     accountService.incrementNonce(it, getStrategyType(strategy)).get()
+                }.exceptionally { e ->
+                    logger.error("Request: confirm/" + request.toString() + " raised " + e)
+                    throw e
                 }
 
     }
@@ -405,6 +447,9 @@ class OfferSearchController(
                     accountService.incrementNonce(it, getStrategyType(strategy)).get()
 
                     CompletableFuture.completedFuture(result)
+                }.exceptionally { e ->
+                    logger.error("Request: cloneOfferSearchOfSearchRequest/" + request.toString() + " raised " + e)
+                    throw e
                 }
     }
 
