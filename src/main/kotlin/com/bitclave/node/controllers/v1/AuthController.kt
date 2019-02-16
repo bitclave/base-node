@@ -13,11 +13,14 @@ import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
+import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.*
 import java.lang.RuntimeException
 import java.util.concurrent.CompletableFuture
+
+private val logger = KotlinLogging.logger {}
 
 @RestController()
 @RequestMapping("/v1/")
@@ -112,6 +115,7 @@ class AuthController(
         return accountService.checkSigMessage(request)
                 .thenApply { pk ->
                     if (pk != request.data?.publicKey) {
+                        logger.debug("checkSigMessage failure "+ pk.toString()+ "vs " + request.data?.publicKey.toString())
                         throw RuntimeException("Signature missmatch: content vs request  have different keys")
                     }
                     pk
