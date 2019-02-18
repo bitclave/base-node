@@ -34,7 +34,7 @@ class PageableController(
     @ApiResponses(value = [
         ApiResponse(code = 200, message = "Success", response = Page::class)
     ])
-    @RequestMapping(value = "offers", method = [RequestMethod.GET], params = [ "page", "size"])
+    @RequestMapping(value = ["offers"], method = [RequestMethod.GET], params = [ "page", "size"])
     fun getPageableOffers(
         @ApiParam("Optional page number to retrieve a particular page. If not specified this API retrieves first page.")
         @RequestParam( "page" )
@@ -69,7 +69,7 @@ class PageableController(
     @ApiResponses(value = [
         ApiResponse(code = 200, message = "Success", response = Page::class)
     ])
-    @RequestMapping(value = "search/requests", method = [RequestMethod.GET], params = [ "page", "size"])
+    @RequestMapping(value = ["search/requests"], method = [RequestMethod.GET], params = [ "page", "size"])
     fun getPageableSearchRequests(
             @ApiParam("Optional page number to retrieve a particular page. If not specified this API retrieves first page.")
             @RequestParam( "page" )
@@ -106,7 +106,7 @@ class PageableController(
     @ApiResponses(value = [
         ApiResponse(code = 200, message = "Success", response = Page::class)
     ])
-    @RequestMapping(value = "search/results", method = [RequestMethod.GET], params = [ "page", "size"])
+    @RequestMapping(value = ["search/results"], method = [RequestMethod.GET], params = [ "page", "size"])
     fun getPageableOfferSearch(
             @ApiParam("Optional page number to retrieve a particular page. If not specified this API retrieves first page.")
             @RequestParam( "page" )
