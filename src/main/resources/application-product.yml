@@ -1,7 +1,7 @@
 spring:
   jpa:
     hibernate:
-      ddlAuto: update
+      ddlAuto: validate
 
   datasource:
     driverClassName: org.postgresql.Driver
@@ -12,6 +12,13 @@ spring:
 
 elastic:
   url: 'https://wa0p11xe8c:stzl1eu2s1@redwood-557957793.us-east-1.bonsaisearch.net'
+
+flyway:
+  baseline-on-migrate: true
+  url: ${JDBC_DATABASE_URL}
+  user: ${JDBC_DATABASE_USERNAME}
+  password: ${JDBC_DATABASE_PASSWORD}
+  locations: db/migration
 
 hybrid:
   nodeUrl: https://ropsten.infura.io/
