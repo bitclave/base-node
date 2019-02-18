@@ -2,39 +2,35 @@ package com.bitclave.node.services.v1
 
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
-import com.bitclave.node.repository.models.OfferResultAction
-import com.bitclave.node.repository.models.OfferSearch
-import com.bitclave.node.repository.models.Offer
-import com.bitclave.node.repository.models.SearchRequest
-import com.bitclave.node.repository.models.OfferSearchResultItem
+import com.bitclave.node.repository.models.*
 import com.bitclave.node.repository.offer.OfferRepository
 import com.bitclave.node.repository.search.SearchRequestRepository
 import com.bitclave.node.repository.search.offer.OfferSearchRepository
 import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.errors.BadArgumentException
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
-import java.util.concurrent.CompletableFuture
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import java.util.*
+import java.util.concurrent.CompletableFuture
 
-open class OfferSearchEvent (
+open class OfferSearchEvent(
         _updater: String,
         _status: OfferResultAction
-){
+) {
     private var date: Date = Date();
     private var updater: String = _updater;
     private var status: OfferResultAction = _status;
 }
 
-class OfferSearchEventConfirmed  (
+class OfferSearchEventConfirmed(
         _updater: String,
         _status: OfferResultAction,
         _CAT: String
-) : OfferSearchEvent (_updater, _status) {
+) : OfferSearchEvent(_updater, _status) {
     private var CAT: String = _CAT;
 }
 
@@ -75,10 +71,10 @@ class OfferSearchService(
 //                    .findById(ids.keys.toList())
 
             val l = mutableListOf<OfferSearchResultItem>()
-            for( offerSearch: OfferSearch in result) {
+            for (offerSearch: OfferSearch in result) {
                 val offer: Offer? = offerRepository.changeStrategy(strategy).findById(offerSearch.offerId)
-                if (offer!=null) {
-                    val item: OfferSearchResultItem = OfferSearchResultItem(offerSearch, offer )
+                if (offer != null) {
+                    val item: OfferSearchResultItem = OfferSearchResultItem(offerSearch, offer)
                     l.add(item)
                 }
             }
@@ -112,10 +108,10 @@ class OfferSearchService(
 
             //merge all relevant offer and offerSearches together
             val returnList = mutableListOf<OfferSearchResultItem>()
-            for( offerSearch: OfferSearch in offerSearches) {
+            for (offerSearch: OfferSearch in offerSearches) {
                 val offer: Offer? = offers.find { it.id == offerSearch.offerId }
-                if (offer!=null) {
-                    val item = OfferSearchResultItem(offerSearch, offer )
+                if (offer != null) {
+                    val item = OfferSearchResultItem(offerSearch, offer)
                     returnList.add(item)
                 }
             }
@@ -149,7 +145,7 @@ class OfferSearchService(
                             offerSearch.searchRequestId,
                             offerSearch.offerId,
                             OfferResultAction.NONE,
-                            offerSearch.lastUpdated,
+                            offerSearch.updatedAt,
 //                            offerSearch.lastUpdate,
                             info,
                             offerSearch.events
@@ -165,10 +161,11 @@ class OfferSearchService(
             strategy: RepositoryStrategyType): CompletableFuture<Void> {
         return CompletableFuture.runAsync {
             val repository = offerSearchRepository.changeStrategy(strategy)
-            val item = repository.findById(offerSearchId) ?: throw BadArgumentException("offer search item id not exist")
+            val item = repository.findById(offerSearchId)
+                    ?: throw BadArgumentException("offer search item id not exist")
 
             item.events.add(event)
-            item.lastUpdated = Date().toString()
+            item.updatedAt = Date()
 
 //            val infoAsArrayTmp: MutableList<String> = mutableListOf<String>();
 //            infoAsArrayTmp.add("test1");
@@ -197,11 +194,12 @@ class OfferSearchService(
             val item = offerSearch;
 
             item.events.add(event)
-            item.lastUpdated = Date().toString()
+            item.updatedAt = Date()
 
             repository.saveSearchResult(item)
         }
     }
+
     fun complain(
             offerSearchId: Long,
             callerPublicKey: String,
@@ -306,12 +304,12 @@ class OfferSearchService(
             // check requestId exist
             searchRequestRepository.changeStrategy(strategy)
                     .findById(item.searchRequestId)
-                    ?: throw BadArgumentException( "searchRequestId does not exists: " + item.searchRequestId.toString())
+                    ?: throw BadArgumentException("searchRequestId does not exists: " + item.searchRequestId.toString())
 
             // check OfferId exist
             val offer: Offer = offerRepository.changeStrategy(strategy)
                     .findById(item.offerId)
-                    ?: throw BadArgumentException( "offerId does not exists: " + item.offerId.toString())
+                    ?: throw BadArgumentException("offerId does not exists: " + item.offerId.toString())
 
             // check that the owner is the caller
             if (offer.owner != callerPublicKey)
@@ -338,7 +336,7 @@ class OfferSearchService(
 
             val repository = offerSearchRepository.changeStrategy(strategy)
 
-            if(searchRequestId != null)
+            if (searchRequestId != null)
                 return@supplyAsync repository.findBySearchRequestIdAndOfferId(searchRequestId, offerId)
             else
                 return@supplyAsync repository.findByOfferId(offerId)
@@ -358,7 +356,7 @@ class OfferSearchService(
     fun getDanglingOfferSearches(
             strategy: RepositoryStrategyType,
             byOffer: Boolean? = false,
-            bySearchRequest: Boolean? =false
+            bySearchRequest: Boolean? = false
     ): CompletableFuture<List<OfferSearch>> {
 
         return CompletableFuture.supplyAsync {
@@ -374,7 +372,7 @@ class OfferSearchService(
                 val offers = offerRepository.changeStrategy(strategy).findById(offerIds.distinct())
                 val existedOfferIds: List<Long> = offers.map { it.id }
                 return@supplyAsync allOfferSearches.filter { it.offerId !in existedOfferIds }
-            } else if(bySearchRequest!!) {
+            } else if (bySearchRequest!!) {
                 //get all relevant searchRequests of offerSearches
                 val searchRequestIds: List<Long> = allOfferSearches.map { it.searchRequestId }
                 val searchRequests = searchRequestRepository.changeStrategy(strategy).findById(searchRequestIds)
@@ -432,7 +430,8 @@ class OfferSearchService(
     ): CompletableFuture<List<OfferSearch>> {
 
         return CompletableFuture.supplyAsync({
-            searchRequestRepository.changeStrategy(strategy).findById(id) ?: throw BadArgumentException()
+            searchRequestRepository.changeStrategy(strategy).findById(id)
+                    ?: throw BadArgumentException()
             return@supplyAsync offerSearchRepository.changeStrategy(strategy).cloneOfferSearchOfSearchRequest(id, searchRequest)
         })
     }

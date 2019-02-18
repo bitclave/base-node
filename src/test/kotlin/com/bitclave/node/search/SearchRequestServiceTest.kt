@@ -35,6 +35,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
+import java.util.*
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
@@ -246,19 +247,19 @@ class SearchRequestServiceTest {
         ).get()
 
         offerSearchService.saveNewOfferSearch(
-                OfferSearch(0, result1.owner, result1.id, createdOffer1.id, OfferResultAction.NONE, "","", ArrayList()),
+                OfferSearch(0, result1.owner, result1.id, createdOffer1.id, OfferResultAction.NONE, Date(),"", ArrayList()),
                 strategy
         ).get()
 
         offerSearchService.saveNewOfferSearch(
-                OfferSearch(0, result1.owner, result1.id, createdOffer2.id, OfferResultAction.NONE, "","", ArrayList()),
+                OfferSearch(0, result1.owner, result1.id, createdOffer2.id, OfferResultAction.NONE, Date(),"", ArrayList()),
                 strategy
         ).get()
 
         offerSearchService.complain(1L, createdOffer1.owner, strategy).get()
 
         offerSearchService.saveNewOfferSearch(
-                OfferSearch(0, result2.owner, result2.id, createdOffer1.id, OfferResultAction.NONE, "","", ArrayList()),
+                OfferSearch(0, result2.owner, result2.id, createdOffer1.id, OfferResultAction.NONE, Date(),"", ArrayList()),
                 strategy
         ).get()
 

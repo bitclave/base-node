@@ -39,13 +39,14 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import java.math.BigDecimal
+import java.util.*
 import java.util.stream.LongStream
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-class OfferSearchServiceTest {
+open class OfferSearchServiceTest {
 
     @Autowired
     private lateinit var web3Provider: Web3Provider
@@ -189,7 +190,7 @@ class OfferSearchServiceTest {
 
     fun createOfferSearch(searchRequest: SearchRequest, offer: Offer, events: MutableList<String>) {
         offerSearchService.saveNewOfferSearch(
-                OfferSearch(0, searchRequest.owner, searchRequest.id, offer.id, OfferResultAction.NONE, "","", events),
+                OfferSearch(0, searchRequest.owner, searchRequest.id, offer.id, OfferResultAction.NONE, Date(),"", events),
                 strategy
         ).get()
     }
@@ -302,7 +303,7 @@ class OfferSearchServiceTest {
         assert(result[1].id >= 1L)
         assert(result[1].state == OfferResultAction.COMPLAIN)
         assertThat(result[0].events.toList()).isEqualTo(result[1].events.toList())
-        assert(result[0].lastUpdated == result[1].lastUpdated)
+        assert(result[0].updatedAt == result[1].updatedAt)
         assert(result[0].info == result[1].info)
 
         result = offerSearchService.getOfferSearches(strategy, createdOffer2.id, createdSearchRequest1.id).get()
@@ -324,7 +325,7 @@ class OfferSearchServiceTest {
         assert(result[1].state == OfferResultAction.COMPLAIN)
         assert(result[1].state == OfferResultAction.COMPLAIN)
         assertThat(result[0].events.toList()).isEqualTo(result[1].events.toList())
-        assert(result[0].lastUpdated == result[1].lastUpdated)
+        assert(result[0].updatedAt == result[1].updatedAt)
         assert(result[0].info == result[1].info)
     }
 
