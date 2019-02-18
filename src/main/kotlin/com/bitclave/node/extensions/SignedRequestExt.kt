@@ -7,7 +7,10 @@ import org.bitcoinj.core.ECKey
 import java.math.BigInteger
 import java.util.concurrent.CompletableFuture
 
-private val GSON: Gson = GsonBuilder().disableHtmlEscaping().create()
+private val GSON: Gson = GsonBuilder()
+        .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+        .disableHtmlEscaping()
+        .create()
 
 fun SignedRequest<*>.signMessage(privateKey: String) {
     val key: ECKey = ECKey.fromPrivate(BigInteger(privateKey, 16))
