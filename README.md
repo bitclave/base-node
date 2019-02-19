@@ -38,6 +38,7 @@ sudo npm install -g ganache-cli
 ./start-ganache.sh 
 ```
 
+
 - start your local Postgres instance (Mac)
 ```
 postgres -D .
