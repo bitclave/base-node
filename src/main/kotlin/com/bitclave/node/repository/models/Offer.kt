@@ -24,9 +24,9 @@ data class Offer(
         @ElementCollection(fetch = FetchType.EAGER) val rules: Map<String, CompareAction> = HashMap(),
 
         @Column(columnDefinition = "timestamp")
-        var createdAt: Date = Date(),
+        val createdAt: Date = Date(),
         @Column(columnDefinition = "timestamp")
-        var updatedAt: Date = Date()
+        val updatedAt: Date = Date()
 ) {
 
     enum class CompareAction(
