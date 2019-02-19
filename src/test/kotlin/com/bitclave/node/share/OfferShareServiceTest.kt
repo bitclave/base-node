@@ -100,7 +100,7 @@ class OfferShareServiceTest {
             )
     )
 
-    protected val offerPrices = listOf(offerPrice)
+    protected lateinit var offerPrices: List<OfferPrice>
 
     private val SHARE_DATA_RESPONSE = "SHARE_DATA_RESPONSE"
 
@@ -139,9 +139,9 @@ class OfferShareServiceTest {
                 .changeStrategy(strategy)
                 .saveOffer(offer)
 
-        offerPriceRepositoryStrategy
+        offerPrices = offerPriceRepositoryStrategy
                 .changeStrategy(strategy)
-                .savePrices(offer, offerPrices)
+                .savePrices(offer, listOf(offerPrice))
 
         val searchRequest = searchRequestRepositoryStrategy
                 .changeStrategy(strategy)
@@ -155,7 +155,7 @@ class OfferShareServiceTest {
                         searchRequest.id,
                         1,
                         OfferResultAction.ACCEPT,
-                         "",
+                        "",
                         ArrayList()
                 ))
     }

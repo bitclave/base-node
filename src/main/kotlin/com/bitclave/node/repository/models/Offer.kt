@@ -1,8 +1,8 @@
 package com.bitclave.node.repository.models
 
-import com.fasterxml.jackson.annotation.JsonManagedReference
 import org.hibernate.annotations.ColumnDefault
 import java.math.BigDecimal
+import java.util.*
 import javax.persistence.*
 
 @Entity
@@ -21,9 +21,12 @@ data class Offer(
 
         @ElementCollection(fetch = FetchType.EAGER) val tags: Map<String, String> = HashMap(),
         @ElementCollection(fetch = FetchType.EAGER) val compare: Map<String, String> = HashMap(),
-        @ElementCollection(fetch = FetchType.EAGER) val rules: Map<String, CompareAction> = HashMap()
+        @ElementCollection(fetch = FetchType.EAGER) val rules: Map<String, CompareAction> = HashMap(),
 
-
+        @Column(columnDefinition = "timestamp")
+        var createdAt: Date = Date(),
+        @Column(columnDefinition = "timestamp")
+        var updatedAt: Date = Date()
 ) {
 
     enum class CompareAction(

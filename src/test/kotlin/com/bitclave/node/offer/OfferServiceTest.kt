@@ -25,7 +25,6 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.internal.matchers.Null
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.domain.PageRequest
@@ -66,6 +65,8 @@ class OfferServiceTest {
     private val account: Account = Account(publicKey)
     protected lateinit var strategy: RepositoryStrategyType
 
+    private val ignoreFields = arrayOf("id", "offerPrices", "updatedAt", "createdAt")
+
     private fun getOriginPrices(): List<OfferPrice> {
         return listOf(
                 OfferPrice(
@@ -73,9 +74,9 @@ class OfferServiceTest {
                         "first price description",
                         BigDecimal("0.5").toString(),
                         listOf(
-                                OfferPriceRules(0,"age","10"),
-                                OfferPriceRules(0,"sex","male"),
-                                OfferPriceRules(0,"country","USA")
+                                OfferPriceRules(0, "age", "10"),
+                                OfferPriceRules(0, "sex", "male"),
+                                OfferPriceRules(0, "country", "USA")
                         )
                 ),
                 OfferPrice(
@@ -83,9 +84,9 @@ class OfferServiceTest {
                         "second price description",
                         BigDecimal("0.7").toString(),
                         listOf(
-                                OfferPriceRules(0,"age","20"),
-                                OfferPriceRules(0,"sex","female"),
-                                OfferPriceRules(0,"country","England")
+                                OfferPriceRules(0, "age", "20"),
+                                OfferPriceRules(0, "sex", "female"),
+                                OfferPriceRules(0, "country", "England")
                         )
                 ),
                 OfferPrice(
@@ -93,9 +94,9 @@ class OfferServiceTest {
                         "third price description",
                         BigDecimal("0.9").toString(),
                         listOf(
-                                OfferPriceRules(0,"age","30"),
-                                OfferPriceRules(0,"sex","male"),
-                                OfferPriceRules(0,"country","Israel")
+                                OfferPriceRules(0, "age", "30"),
+                                OfferPriceRules(0, "sex", "male"),
+                                OfferPriceRules(0, "country", "Israel")
                         )
                 ),
                 OfferPrice(
@@ -103,9 +104,9 @@ class OfferServiceTest {
                         "fourth price description",
                         BigDecimal("1.2").toString(),
                         listOf(
-                                OfferPriceRules(0,"age","40"),
-                                OfferPriceRules(0,"sex","male"),
-                                OfferPriceRules(0,"country","Ukraine")
+                                OfferPriceRules(0, "age", "40"),
+                                OfferPriceRules(0, "sex", "male"),
+                                OfferPriceRules(0, "country", "Ukraine")
                         )
                 )
         )
@@ -192,6 +193,8 @@ class OfferServiceTest {
         assertThat(updated.worth).isEqualTo(BigDecimal.ONE.toString())
         assertThat(updated.compare).isEqualTo(changedOffer.compare)
         assertThat(updated.rules).isEqualTo(changedOffer.rules)
+        assertThat(updated.createdAt.time).isEqualTo(created.createdAt.time)
+        assertThat(updated.updatedAt.after(created.updatedAt))
     }
 
     @Test fun `should be update created offer with prices`() {
@@ -227,7 +230,7 @@ class OfferServiceTest {
         assertThat(updated.id).isNotEqualTo(changedOffer.id)
         assertThat(updated.owner).isNotEqualTo(changedOffer.owner)
 
-        assertThat(updated.offerPrices.find{it.id==1L}!!.description).isEqualTo(updatedDescription)
+        assertThat(updated.offerPrices.find { it.id == 1L }!!.description).isEqualTo(updatedDescription)
 
         assertThat(updated.description).isEqualTo(changedOffer.description)
         assertThat(updated.title).isEqualTo(changedOffer.title)
@@ -236,6 +239,7 @@ class OfferServiceTest {
         assertThat(updated.worth).isEqualTo(BigDecimal.ONE.toString())
         assertThat(updated.compare).isEqualTo(changedOffer.compare)
         assertThat(updated.rules).isEqualTo(changedOffer.rules)
+        assertThat(updated.createdAt.time).isEqualTo(created.createdAt.time)
     }
 
     @Test fun `should delete existed offer`() {
@@ -243,7 +247,7 @@ class OfferServiceTest {
 
         var savedListResult = offerService.getOffers(1, account.publicKey, strategy).get()
         assertThat(savedListResult.size).isEqualTo(1)
-        assertThat(savedListResult[0]).isEqualToIgnoringGivenFields(offer, "id","offerPrices")
+        assertThat(savedListResult[0]).isEqualToIgnoringGivenFields(offer, *ignoreFields)
 
         val deletedId = offerService.deleteOffer(1, account.publicKey, strategy).get()
 
@@ -260,9 +264,9 @@ class OfferServiceTest {
 
         var savedListResult = offerService.getOffers(0, account.publicKey, strategy).get()
         assertThat(savedListResult.size).isEqualTo(3)
-        assertThat(savedListResult[0]).isEqualToIgnoringGivenFields(offer, "id","offerPrices")
-        assertThat(savedListResult[1]).isEqualToIgnoringGivenFields(offer, "id","offerPrices")
-        assertThat(savedListResult[2]).isEqualToIgnoringGivenFields(offer, "id","offerPrices")
+        assertThat(savedListResult[0]).isEqualToIgnoringGivenFields(offer, *ignoreFields)
+        assertThat(savedListResult[1]).isEqualToIgnoringGivenFields(offer, *ignoreFields)
+        assertThat(savedListResult[2]).isEqualToIgnoringGivenFields(offer, *ignoreFields)
 
         offerService.deleteOffers(account.publicKey, strategy).get()
 
@@ -276,11 +280,11 @@ class OfferServiceTest {
 
         var result = offerService.getOffers(1, account.publicKey, strategy).get()
         assertThat(result.size).isEqualTo(1)
-        assertThat(result[0]).isEqualToIgnoringGivenFields(offer, "id","offerPrices")
+        assertThat(result[0]).isEqualToIgnoringGivenFields(offer, *ignoreFields)
 
         result = offerService.getOffers(2, account.publicKey, strategy).get()
         assertThat(result.size).isEqualTo(1)
-        assertThat(result[0]).isEqualToIgnoringGivenFields(offer, "id","offerPrices")
+        assertThat(result[0]).isEqualToIgnoringGivenFields(offer, *ignoreFields)
 
         result = offerService.getOffers(3, account.publicKey, strategy).get()
         assertThat(result.size).isEqualTo(0)
@@ -294,8 +298,8 @@ class OfferServiceTest {
         assertThat(result.size).isEqualTo(2)
         assert(result[0].id == 1L)
         assert(result[1].id == 2L)
-        assertThat(result[0]).isEqualToIgnoringGivenFields(offer, "id","offerPrices")
-        assertThat(result[1]).isEqualToIgnoringGivenFields(offer, "id","offerPrices")
+        assertThat(result[0]).isEqualToIgnoringGivenFields(offer, *ignoreFields)
+        assertThat(result[1]).isEqualToIgnoringGivenFields(offer, *ignoreFields)
     }
 
     @Test fun `should return all offers by page`() {

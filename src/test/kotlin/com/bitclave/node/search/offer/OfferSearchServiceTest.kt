@@ -115,7 +115,7 @@ open class OfferSearchServiceTest {
             )
     )
 
-    protected val offerPrices = listOf(offerPrice)
+    protected lateinit var offerPrices: List<OfferPrice>
 
     @Before fun setup() {
         val postgres = PostgresAccountRepositoryImpl(accountCrudRepository)
@@ -173,10 +173,9 @@ open class OfferSearchServiceTest {
                 .changeStrategy(strategy)
                 .saveOffer(offer2)
 
-        offerPriceRepositoryStrategy
+        offerPrices = offerPriceRepositoryStrategy
                 .changeStrategy(strategy)
-                .savePrices(offer, offerPrices)
-
+                .savePrices(offer, listOf(offerPrice))
 
         createdSearchRequest1 = searchRequestRepositoryStrategy.changeStrategy(strategy)
                 .saveSearchRequest(SearchRequest(0, publicKey, emptyMap()))
@@ -295,7 +294,8 @@ open class OfferSearchServiceTest {
         assert(result[0].offer.owner == businessPublicKey)
     }
 
-    @Test fun `all search item states with same owner and offerId should be same when one of them is updated`() {
+    @Test
+    fun `all search item states with same owner and offerId should be same when one of them is updated`() {
         createOfferSearch(createdSearchRequest2, createdOffer1, ArrayList())
         createOfferSearch(createdSearchRequest1, createdOffer2, ArrayList())
 
@@ -334,7 +334,8 @@ open class OfferSearchServiceTest {
         assert(result[0].info == result[1].info)
     }
 
-    @Test fun `delete all OfferSearch objects with state NONE or REJECT when related Offer object is updated`() {
+    @Test
+    fun `delete all OfferSearch objects with state NONE or REJECT when related Offer object is updated`() {
         createOfferSearch(createdSearchRequest1, createdOffer1, ArrayList())
         createOfferSearch(createdSearchRequest2, createdOffer1, ArrayList())
         createOfferSearch(createdSearchRequest1, createdOffer2, ArrayList())
@@ -381,7 +382,8 @@ open class OfferSearchServiceTest {
         assert(result.isNotEmpty())
     }
 
-    @Test fun `delete all OfferSearch objects with state NONE or REJECT when related SearchRequest object is deleted`() {
+    @Test
+    fun `delete all OfferSearch objects with state NONE or REJECT when related SearchRequest object is deleted`() {
         `client can complain to search item`()
         createOfferSearch(createdSearchRequest2, createdOffer1, ArrayList())
         createOfferSearch(createdSearchRequest1, createdOffer2, ArrayList())

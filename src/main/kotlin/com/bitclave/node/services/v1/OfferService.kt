@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
+import java.util.*
 import java.util.concurrent.CompletableFuture
 
 @Service
@@ -28,8 +29,10 @@ class OfferService(
     ): CompletableFuture<Offer> {
 
         return CompletableFuture.supplyAsync {
+            var originalOffer: Offer? = null
+
             if (id > 0) {
-                offerRepository.changeStrategy(strategy)
+                originalOffer = offerRepository.changeStrategy(strategy)
                         .findByIdAndOwner(id, owner) ?: throw BadArgumentException()
             }
 
@@ -47,16 +50,18 @@ class OfferService(
                 }
             }
 
+            val createdAt = originalOffer?.createdAt ?: Date()
             val putOffer = Offer(id,
                     owner,
-                    listOf(),
+                    offer.offerPrices,
                     offer.description,
                     offer.title,
                     offer.imageUrl,
                     offer.worth,
                     offer.tags,
                     offer.compare,
-                    offer.rules
+                    offer.rules,
+                    createdAt
             )
             val processedOffer = offerRepository.changeStrategy(strategy).saveOffer(putOffer)
             offerPriceRepository.changeStrategy(strategy).savePrices(processedOffer, offer.offerPrices)
