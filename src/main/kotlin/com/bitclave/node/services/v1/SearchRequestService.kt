@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
+import java.util.*
 import java.util.concurrent.CompletableFuture
 
 @Service
@@ -25,20 +26,23 @@ class SearchRequestService(
             strategy: RepositoryStrategyType
     ): CompletableFuture<SearchRequest> {
 
-        return CompletableFuture.supplyAsync({
+        return CompletableFuture.supplyAsync {
+            var existedSearchRequest: SearchRequest? = null
             if (id > 0) {
-                repository.changeStrategy(strategy)
+                existedSearchRequest = repository.changeStrategy(strategy)
                         .findByIdAndOwner(id, owner) ?: throw BadArgumentException()
             }
 
+            val createAt = existedSearchRequest?.createdAt ?: Date()
             val updateSearchRequest = SearchRequest(
                     id,
                     owner,
-                    searchRequest.tags
+                    searchRequest.tags,
+                    createAt
             )
 
             repository.changeStrategy(strategy).saveSearchRequest(updateSearchRequest)
-        })
+        }
     }
 
     fun deleteSearchRequest(

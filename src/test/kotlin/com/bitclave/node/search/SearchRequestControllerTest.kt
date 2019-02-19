@@ -16,6 +16,7 @@ import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.util.*
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
@@ -37,14 +38,12 @@ class SearchRequestControllerTest {
     private val searchRequest = SearchRequest(
             0,
             publicKey,
-            mapOf("car" to "true", "color" to "red")
+            mapOf("car" to "true", "color" to "red"),
+            Date(1550561756503),
+            Date(1550561756503)
     )
 
-    private val cloneSearchRequest = SearchRequest(
-            1,
-            publicKey,
-            mapOf("car" to "true", "color" to "red")
-    )
+    private val cloneSearchRequest = searchRequest.copy(1)
 
     @Before fun setup() {
         version = "v1"
@@ -61,6 +60,18 @@ class SearchRequestControllerTest {
     @Test fun `create search request`() {
         this.mvc.perform(post("/$version/client/$publicKey/search/request/")
                 .content(requestSearch.toJsonString())
+                .headers(httpHeaders))
+                .andExpect(status().isOk)
+    }
+
+    @Test fun `create search request without createdAt and updatedAt`() {
+        val strModel = requestSearch.toJsonString()
+        val modelWithoutUpdateAt = strModel
+                .replace(",\"updatedAt\":\"2019-02-19T10:35:56.503+0300\"", "")
+                .replace(",\"createdAt\":\"2019-02-19T10:35:56.503+0300\"", "")
+
+        this.mvc.perform(post("/$version/client/$publicKey/search/request/")
+                .content(modelWithoutUpdateAt)
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }
