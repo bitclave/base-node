@@ -132,7 +132,6 @@ class PostgresOfferSearchRepositoryImpl(
                         targetSearchRequest.id,
                         offerSearch.offerId,
                         OfferResultAction.NONE,
-                        Date(),
                         offerSearch.info,
                         ArrayList()
                 )

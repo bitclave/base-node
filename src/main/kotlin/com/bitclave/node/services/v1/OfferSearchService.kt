@@ -145,10 +145,9 @@ class OfferSearchService(
                             offerSearch.searchRequestId,
                             offerSearch.offerId,
                             OfferResultAction.NONE,
-                            offerSearch.updatedAt,
-//                            offerSearch.lastUpdate,
                             info,
-                            offerSearch.events
+                            offerSearch.events,
+                            offerSearch.updatedAt
                     ))
         }
     }

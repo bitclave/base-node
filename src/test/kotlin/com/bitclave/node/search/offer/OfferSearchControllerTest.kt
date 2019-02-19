@@ -16,9 +16,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.util.*
 
@@ -43,12 +41,12 @@ class OfferSearchControllerTest {
     private val offerSearchModel = OfferSearch(
             0,
             publicKey,
-           1L,
+            1L,
             1L,
             OfferResultAction.NONE,
-            Date(),
             "",
-            ArrayList()
+            ArrayList(),
+            Date(1550561756503)
     )
 
     private val searchRequest = SearchRequest(
@@ -133,6 +131,15 @@ class OfferSearchControllerTest {
     @Test fun `add offer search item`() {
         this.mvc.perform(post("/$version/search/result/")
                 .content(offerSearchRequest.toJsonString())
+                .headers(httpHeaders))
+                .andExpect(status().isCreated)
+    }
+
+    @Test fun `add offer search item without updatedAt field`() {
+        val strModel = offerSearchRequest.toJsonString()
+        val modelWithoutUpdateAt = strModel.replace(",\"updatedAt\":\"2019-02-19T10:35:56.503+0300\"", "")
+        this.mvc.perform(post("/$version/search/result/")
+                .content(modelWithoutUpdateAt)
                 .headers(httpHeaders))
                 .andExpect(status().isCreated)
     }

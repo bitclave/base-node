@@ -11,10 +11,6 @@ import com.bitclave.node.repository.models.*
 import com.bitclave.node.repository.offer.OfferCrudRepository
 import com.bitclave.node.repository.offer.OfferRepositoryStrategy
 import com.bitclave.node.repository.offer.PostgresOfferRepositoryImpl
-import com.bitclave.node.repository.price.OfferPriceCrudRepository
-import com.bitclave.node.repository.price.OfferPriceRepositoryStrategy
-import com.bitclave.node.repository.price.PostgresOfferPriceRepositoryImpl
-import com.bitclave.node.repository.priceRule.OfferPriceRulesCrudRepository
 import com.bitclave.node.repository.search.PostgresSearchRequestRepositoryImpl
 import com.bitclave.node.repository.search.SearchRequestCrudRepository
 import com.bitclave.node.repository.search.SearchRequestRepositoryStrategy
@@ -23,7 +19,6 @@ import com.bitclave.node.repository.search.offer.OfferSearchRepositoryStrategy
 import com.bitclave.node.repository.search.offer.PostgresOfferSearchRepositoryImpl
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferSearchService
-import com.bitclave.node.services.v1.OfferService
 import com.bitclave.node.services.v1.SearchRequestService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
@@ -160,7 +155,7 @@ class SearchRequestServiceTest {
                 mapOf("car" to "false", "color" to "blue")
         )
 
-        val result = searchRequestService.putSearchRequest(1,account.publicKey,updateSearchRequest,strategy).get()
+        val result = searchRequestService.putSearchRequest(1, account.publicKey, updateSearchRequest, strategy).get()
 
         assert(result.id >= 1L)
         assertThat(result.owner).isEqualTo(account.publicKey)
@@ -247,19 +242,43 @@ class SearchRequestServiceTest {
         ).get()
 
         offerSearchService.saveNewOfferSearch(
-                OfferSearch(0, result1.owner, result1.id, createdOffer1.id, OfferResultAction.NONE, Date(),"", ArrayList()),
+                OfferSearch(
+                        0,
+                        result1.owner,
+                        result1.id,
+                        createdOffer1.id,
+                        OfferResultAction.NONE,
+                        "",
+                        ArrayList()
+                ),
                 strategy
         ).get()
 
         offerSearchService.saveNewOfferSearch(
-                OfferSearch(0, result1.owner, result1.id, createdOffer2.id, OfferResultAction.NONE, Date(),"", ArrayList()),
+                OfferSearch(
+                        0,
+                        result1.owner,
+                        result1.id,
+                        createdOffer2.id,
+                        OfferResultAction.NONE,
+                        "",
+                        ArrayList()
+                ),
                 strategy
         ).get()
 
         offerSearchService.complain(1L, createdOffer1.owner, strategy).get()
 
         offerSearchService.saveNewOfferSearch(
-                OfferSearch(0, result2.owner, result2.id, createdOffer1.id, OfferResultAction.NONE, Date(),"", ArrayList()),
+                OfferSearch(
+                        0,
+                        result2.owner,
+                        result2.id,
+                        createdOffer1.id,
+                        OfferResultAction.NONE,
+                        "",
+                        ArrayList()
+                ),
                 strategy
         ).get()
 

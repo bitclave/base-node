@@ -25,9 +25,6 @@ import com.bitclave.node.repository.share.OfferShareCrudRepository
 import com.bitclave.node.repository.share.OfferShareRepositoryStrategy
 import com.bitclave.node.repository.share.PostgresOfferShareRepositoryImpl
 import com.bitclave.node.services.v1.*
-import com.bitclave.node.services.v1.AccountService
-import com.bitclave.node.services.v1.OfferSearchService
-import com.bitclave.node.services.v1.OfferShareService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -112,9 +109,9 @@ open class OfferSearchServiceTest {
             "first price description",
             BigDecimal("0.5").toString(),
             listOf(
-                    OfferPriceRules(0,"age","10"),
-                    OfferPriceRules(0,"sex","male"),
-                    OfferPriceRules(0,"country","USA")
+                    OfferPriceRules(0, "age", "10"),
+                    OfferPriceRules(0, "sex", "male"),
+                    OfferPriceRules(0, "country", "USA")
             )
     )
 
@@ -190,7 +187,15 @@ open class OfferSearchServiceTest {
 
     fun createOfferSearch(searchRequest: SearchRequest, offer: Offer, events: MutableList<String>) {
         offerSearchService.saveNewOfferSearch(
-                OfferSearch(0, searchRequest.owner, searchRequest.id, offer.id, OfferResultAction.NONE, Date(),"", events),
+                OfferSearch(
+                        0,
+                        searchRequest.owner,
+                        searchRequest.id,
+                        offer.id,
+                        OfferResultAction.NONE,
+                        "",
+                        events
+                ),
                 strategy
         ).get()
     }
@@ -238,7 +243,7 @@ open class OfferSearchServiceTest {
         var events = mutableListOf("tram taram")
         createOfferSearch(createdSearchRequest1, createdOffer1, events)
 
-        offerSearchService.addEventTo( "bla bla bla",1L, strategy).get()
+        offerSearchService.addEventTo("bla bla bla", 1L, strategy).get()
 
         val result = offerSearchService.getOffersResult(strategy, createdSearchRequest1.id).get()
         assert(result[0].offerSearch.events.contains("bla bla bla"))
@@ -372,7 +377,7 @@ open class OfferSearchServiceTest {
         result = offerSearchService.getOfferSearches(strategy, createdOffer1.id).get()
         assert(result.isEmpty())
 
-        result = offerSearchService.getOfferSearches(strategy,createdOffer2.id).get()
+        result = offerSearchService.getOfferSearches(strategy, createdOffer2.id).get()
         assert(result.isNotEmpty())
     }
 

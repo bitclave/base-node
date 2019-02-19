@@ -104,7 +104,6 @@ class PostgresSearchRequestRepositoryImpl(
                     createSearchRequest.id,
                     offerSearch.offerId,
                     OfferResultAction.NONE,
-                    Date(),
                     offerSearch.info,
                     ArrayList()
             )

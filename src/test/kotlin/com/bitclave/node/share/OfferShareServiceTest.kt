@@ -149,7 +149,15 @@ class OfferShareServiceTest {
 
         offerSearchRepositoryStrategy
                 .changeStrategy(strategy)
-                .saveSearchResult(OfferSearch(0, searchRequest.owner, searchRequest.id, 1, OfferResultAction.ACCEPT, Date(), "", ArrayList()))
+                .saveSearchResult(OfferSearch(
+                        0,
+                        searchRequest.owner,
+                        searchRequest.id,
+                        1,
+                        OfferResultAction.ACCEPT,
+                         "",
+                        ArrayList()
+                ))
     }
 
     @Test fun `should be create new share data`() {
