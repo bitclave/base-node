@@ -1,5 +1,6 @@
 package com.bitclave.node.repository.models
 
+import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
 
@@ -17,7 +18,7 @@ open class OfferSearch(
 
         @ElementCollection(fetch = FetchType.EAGER) var events: MutableList<String> = ArrayList(),
 
-        @Column(columnDefinition = "timestamp")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
         var updatedAt: Date = Date()
 )
 

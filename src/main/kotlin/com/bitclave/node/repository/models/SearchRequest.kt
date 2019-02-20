@@ -1,5 +1,6 @@
 package com.bitclave.node.repository.models
 
+import org.springframework.format.annotation.DateTimeFormat
 import java.util.*
 import javax.persistence.*
 
@@ -8,9 +9,9 @@ data class SearchRequest(
         @GeneratedValue(strategy = GenerationType.TABLE) @Id val id: Long = 0,
         val owner: String = "",
         @ElementCollection(fetch = FetchType.EAGER) val tags: Map<String, String> = HashMap(),
-        
-        @Column(columnDefinition = "timestamp")
+
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
         val createdAt: Date = Date(),
-        @Column(columnDefinition = "timestamp")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
         val updatedAt: Date = Date()
 )

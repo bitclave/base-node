@@ -1,6 +1,7 @@
 package com.bitclave.node.repository.models
 
 import org.hibernate.annotations.ColumnDefault
+import org.springframework.format.annotation.DateTimeFormat
 import java.math.BigDecimal
 import java.util.*
 import javax.persistence.*
@@ -23,9 +24,9 @@ data class Offer(
         @ElementCollection(fetch = FetchType.EAGER) val compare: Map<String, String> = HashMap(),
         @ElementCollection(fetch = FetchType.EAGER) val rules: Map<String, CompareAction> = HashMap(),
 
-        @Column(columnDefinition = "timestamp")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
         val createdAt: Date = Date(),
-        @Column(columnDefinition = "timestamp")
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
         val updatedAt: Date = Date()
 ) {
 
