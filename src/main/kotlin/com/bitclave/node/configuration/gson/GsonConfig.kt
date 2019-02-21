@@ -1,10 +1,10 @@
 package com.bitclave.node.configuration.gson
 
+import com.bitclave.node.repository.models.SignedRequest
 import com.google.gson.GsonBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.http.converter.json.GsonHttpMessageConverter
-
 
 @Configuration
 class WebConfigurer {
@@ -13,6 +13,7 @@ class WebConfigurer {
     fun gsonHttpMessageConverter(): GsonHttpMessageConverter {
         val converter = GsonHttpMessageConverter()
         converter.gson = GsonBuilder()
+                .registerTypeAdapter(SignedRequest::class.java, SignedRequestDeserializer())
                 .addSerializationExclusionStrategy(AnnotationExcludeStrategy())
                 .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
                 .disableHtmlEscaping()

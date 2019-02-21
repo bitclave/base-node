@@ -19,11 +19,7 @@ fun SignedRequest<*>.signMessage(privateKey: String) {
 
 fun SignedRequest<*>.validateSig(): CompletableFuture<Boolean> {
     return CompletableFuture.supplyAsync {
-
-        val a = GSON.toJson(this.data)
-        val b = this.sig
-        val c = ECKey.signedMessageToKey(a, b)
-
+        val c = ECKey.signedMessageToKey(this.rawData, this.sig)
         c.publicKeyAsHex == this.pk
     }
 }
