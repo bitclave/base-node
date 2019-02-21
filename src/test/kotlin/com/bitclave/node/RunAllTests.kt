@@ -17,12 +17,14 @@ import com.bitclave.node.search.offer.OfferSearchControllerTest
 import com.bitclave.node.search.offer.OfferSearchServiceTest
 import com.bitclave.node.share.OfferShareControllerTest
 import com.bitclave.node.share.OfferShareServiceTest
+import com.bitclave.node.verify.VerifyConsistencyControllerTest
 import com.bitclave.node.verify.VerifyConsistencyIntegrationTest
 import org.junit.runner.RunWith
 import org.junit.runners.Suite
 
 @RunWith(Suite::class)
 @Suite.SuiteClasses(value = [
+    VerifyConsistencyControllerTest::class,
     VerifyConsistencyIntegrationTest::class,
     AuthControllerTest::class,
     AccountServiceTest::class,
