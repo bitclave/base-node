@@ -65,7 +65,7 @@ class AccountServiceTest {
         var nonce = accountService.getNonce(account.publicKey, strategy).get()
 
         val request = SignedRequest("Hello", publicKey, "", ++nonce)
-        request.signMessage(privateKey)
+                .signMessage(privateKey)
 
         val account = accountService.accountBySigMessage(request, strategy).get()
         accountService.validateNonce(request, account).get()
@@ -78,7 +78,7 @@ class AccountServiceTest {
             var nonce = accountService.getNonce(account.publicKey, strategy).get()
 
             val request = SignedRequest("Hello", publicKey, "", ++nonce)
-            request.signMessage(privateKey)
+                    .signMessage(privateKey)
 
             var account = accountService.accountBySigMessage(request, strategy).get()
             accountService.incrementNonce(account, strategy).get()
@@ -94,7 +94,7 @@ class AccountServiceTest {
 
     @Test fun `check signature of signed message`() {
         val request = SignedRequest("Hello", publicKey)
-        request.signMessage(privateKey)
+                .signMessage(privateKey)
 
         val signPublicKey = accountService.checkSigMessage(request).get()
         Assertions.assertThat(signPublicKey).isEqualTo(publicKey)
@@ -103,7 +103,7 @@ class AccountServiceTest {
     @Test fun `get account by signature of message`() {
         accountService.registrationClient(account, strategy).get()
         val request = SignedRequest("Hello", publicKey)
-        request.signMessage(privateKey)
+                .signMessage(privateKey)
 
         val account = accountService.accountBySigMessage(request, strategy).get()
         Assertions.assertThat(account.publicKey).isEqualTo(publicKey)
@@ -147,7 +147,7 @@ class AccountServiceTest {
         }
     }
 
-    @Test (expected = BadArgumentException::class)
+    @Test(expected = BadArgumentException::class)
     fun `expect error - get total count of accounts`() {
         strategy = RepositoryStrategyType.HYBRID
         try {
