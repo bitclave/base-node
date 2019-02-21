@@ -12,9 +12,10 @@ private val GSON: Gson = GsonBuilder()
         .disableHtmlEscaping()
         .create()
 
-fun SignedRequest<*>.signMessage(privateKey: String) {
+fun SignedRequest<*>.signMessage(privateKey: String): SignedRequest<*> {
     val key: ECKey = ECKey.fromPrivate(BigInteger(privateKey, 16))
-    this.sig = key.signMessage(GSON.toJson(this.data))
+    val rawData = GSON.toJson(this.data)
+    return this.copy(sig = key.signMessage(rawData), rawData = rawData)
 }
 
 fun SignedRequest<*>.validateSig(): CompletableFuture<Boolean> {
