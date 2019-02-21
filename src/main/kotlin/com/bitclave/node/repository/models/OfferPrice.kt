@@ -1,6 +1,6 @@
 package com.bitclave.node.repository.models
 
-import com.fasterxml.jackson.annotation.JsonIgnore
+import com.bitclave.node.configuration.gson.Exclude
 import org.hibernate.annotations.ColumnDefault
 import java.math.BigDecimal
 import javax.persistence.*
@@ -19,7 +19,7 @@ data class OfferPrice(
         @OneToMany(mappedBy = "offerPrice", cascade = [CascadeType.REMOVE], fetch = FetchType.EAGER)
         var rules: List<OfferPriceRules> = emptyList()
 ) {
-    @JsonIgnore
+    @Exclude
     @ManyToOne
     @JoinColumn(name = "offer_id")
     var offer: Offer? = null

@@ -1,6 +1,6 @@
 package com.bitclave.node.repository.models
 
-import com.fasterxml.jackson.annotation.JsonIgnore
+import com.bitclave.node.configuration.gson.Exclude
 import javax.persistence.*
 
 @Entity
@@ -16,7 +16,7 @@ data class OfferPriceRules(
 
         var rule: Offer.CompareAction = Offer.CompareAction.EQUALLY
 ) {
-    @JsonIgnore
+    @Exclude
     @ManyToOne
     @JoinColumn(name = "offer_price_id")
     var offerPrice: OfferPrice? = null
