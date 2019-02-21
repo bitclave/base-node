@@ -83,24 +83,6 @@ class OfferSearchControllerTest {
                 .andExpect(status().isOk)
     }
 
-    @Test fun `get dangling offer search list by offer`() {
-        this.mvc.perform(get("/$version/search/result/byOffer")
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
-    }
-
-    @Test fun `get dangling offer search list by searchRequest`() {
-        this.mvc.perform(get("/$version/search/result/bySearchRequest")
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
-    }
-
-    @Test fun `get offerSearches with the same owner and offerId but different content`() {
-        this.mvc.perform(get("/$version/search/result/conflicted")
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
-    }
-
     @Test fun `get the total count of OfferSearches`() {
         this.mvc.perform(get("/$version/search/result/count")
                 .headers(httpHeaders))

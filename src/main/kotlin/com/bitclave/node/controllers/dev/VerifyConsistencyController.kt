@@ -90,4 +90,84 @@ class VerifyConsistencyController(
                 }
     }
 
+    /**
+     * Returns the dangling OfferSearches by Offers
+     *
+     * @return {@link List<OfferSearch>}, Http status - 200.
+     *
+     */
+    @ApiOperation("Returns the dangling OfferSearches by Offers",
+            response = OfferSearch::class, responseContainer = "List")
+    @ApiResponses(value = [
+        ApiResponse(code = 200, message = "Success", response = List::class)
+    ])
+    @RequestMapping(method = [RequestMethod.GET], value = ["/offersearch/byOffer"])
+    fun getDanglingOfferSearchesByOffer(
+
+            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+            @RequestHeader("Strategy", required = false)
+            strategy: String?): CompletableFuture<List<OfferSearch>> {
+
+        return offerSearchService.getDanglingOfferSearches(
+                getStrategyType(strategy),
+                true,
+                false
+        ).exceptionally { e ->
+            logger.error("Request: getDanglingOfferSearchesByOffer raised " + e)
+            throw e
+        }
+    }
+
+    /**
+     * Returns the dangling OfferSearches by SearchRequests
+     *
+     * @return {@link List<OfferSearch>}, Http status - 200.
+     *
+     */
+    @ApiOperation("Returns the dangling OfferSearches by SearchRequests",
+            response = OfferSearch::class, responseContainer = "List")
+    @ApiResponses(value = [
+        ApiResponse(code = 200, message = "Success", response = List::class)
+    ])
+    @RequestMapping(method = [RequestMethod.GET], value = ["/offersearch/bySearchRequest"])
+    fun getDanglingOfferSearchesBySearchRequest(
+
+            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+            @RequestHeader("Strategy", required = false)
+            strategy: String?): CompletableFuture<List<OfferSearch>> {
+
+        return offerSearchService.getDanglingOfferSearches(
+                getStrategyType(strategy),
+                false,
+                true
+        ).exceptionally { e ->
+            logger.error("Request: getDanglingOfferSearchesBySearchRequest raised " + e)
+            throw e
+        }
+    }
+
+    /**
+     * Returns offerSearches with the same owner and offerId but different content (status/events)
+     *
+     * @return {@link List<OfferSearch>}, Http status - 200.
+     *
+     */
+    @ApiOperation("Returns offerSearches with the same owner and offerId but different content (status/events)",
+            response = OfferSearch::class, responseContainer = "List")
+    @ApiResponses(value = [
+        ApiResponse(code = 200, message = "Success", response = List::class)
+    ])
+    @RequestMapping(method = [RequestMethod.GET], value = ["/offersearch/conflicted"])
+    fun getDiffOfferSearches(
+
+            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+            @RequestHeader("Strategy", required = false)
+            strategy: String?): CompletableFuture<List<OfferSearch>> {
+
+        return offerSearchService.getDiffOfferSearches(getStrategyType(strategy)).exceptionally { e ->
+            logger.error("Request: getDiffOfferSearches raised " + e)
+            throw e
+        }
+    }
+
 }
