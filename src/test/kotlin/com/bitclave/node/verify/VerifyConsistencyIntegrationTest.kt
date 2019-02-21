@@ -1,7 +1,5 @@
 package com.bitclave.node.verify
 
-import com.bitclave.node.BaseNodeApplication
-import com.bitclave.node.extensions.toJsonString
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.SignedRequest
 import junit.framework.Assert.assertEquals
@@ -10,18 +8,14 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
+import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
-import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import org.springframework.http.HttpEntity
-
 
 
 @ActiveProfiles("test")
@@ -47,15 +41,14 @@ class VerifyConsistencyIntegrationTest {
         publicKeysRequest = SignedRequest(publicKeys, publicKey)
         publicKeysRequest = SignedRequest(publicKeys, publicKey)
 
-        httpHeaders.set("Accept", "application/json")
-        httpHeaders.set("Content-Type", "application/json")
+        httpHeaders.contentType = MediaType.APPLICATION_JSON
+        httpHeaders.set("Accept", MediaType.APPLICATION_JSON_VALUE)
         httpHeaders.set("Strategy", RepositoryStrategyType.POSTGRES.name)
-
     }
 
     @Test
     fun testHelloVerifyConsistencyController() {
-        val requestEnty = HttpEntity<String>(publicKeysRequest.toJsonString(), httpHeaders)
+        val requestEnty = HttpEntity<SignedRequest<List<String>>>(publicKeysRequest, httpHeaders)
         val result = testRestTemplate.postForEntity("/dev/verify/account/publickeys", requestEnty, Object::class.java)
         assertNotNull(result)
         assertEquals(result.statusCode, HttpStatus.INTERNAL_SERVER_ERROR)
