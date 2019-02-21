@@ -1,5 +1,6 @@
 package com.bitclave.node.verify
 
+import com.bitclave.node.extensions.signMessage
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.SignedRequest
 import junit.framework.Assert.assertEquals
@@ -26,23 +27,20 @@ class VerifyConsistencyIntegrationTest {
     @Autowired
     lateinit var testRestTemplate: TestRestTemplate
 
+    protected val privateKey = "c9574c6138fe689946e4f0273e848a8219a6652288273dc6cf291e09517d0abd"
     private val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
     protected val publicKey2 = "03836649d2e353c332287e8280d1dbb1805cab0bae289ad08db9cc86f040ac6360"
-    protected lateinit var idsRequest: SignedRequest<List<Long>>
     protected lateinit var publicKeysRequest: SignedRequest<List<String>>
     private var httpHeaders: HttpHeaders = HttpHeaders()
 
-    private val ids = mutableListOf(1L, 2L, 3L, 4L)
     private val publicKeys = mutableListOf(publicKey, publicKey2)
 
     @Before fun setup() {
 
-        idsRequest = SignedRequest(ids, publicKey)
-        publicKeysRequest = SignedRequest(publicKeys, publicKey)
         publicKeysRequest = SignedRequest(publicKeys, publicKey)
 
         httpHeaders.contentType = MediaType.APPLICATION_JSON
-        httpHeaders.set("Accept", MediaType.APPLICATION_JSON_VALUE)
+        httpHeaders.accept = mutableListOf(MediaType.APPLICATION_JSON)
         httpHeaders.set("Strategy", RepositoryStrategyType.POSTGRES.name)
     }
 
@@ -51,6 +49,6 @@ class VerifyConsistencyIntegrationTest {
         val requestEnty = HttpEntity<SignedRequest<List<String>>>(publicKeysRequest, httpHeaders)
         val result = testRestTemplate.postForEntity("/dev/verify/account/publickeys", requestEnty, Object::class.java)
         assertNotNull(result)
-        assertEquals(result.statusCode, HttpStatus.INTERNAL_SERVER_ERROR)
+        assertEquals(result.statusCode, HttpStatus.FORBIDDEN)
     }
 }
