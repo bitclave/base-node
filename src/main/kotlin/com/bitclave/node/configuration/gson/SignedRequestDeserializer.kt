@@ -30,8 +30,20 @@ class SignedRequestDeserializer : JsonDeserializer<SignedRequest<*>> {
                 val pk = signedRequest["pk"].asString
                 val sig = signedRequest["sig"].asString
                 val nonce = signedRequest["nonce"].asLong
-                val rawData = signedRequest["data"].asJsonObject.toString()
-                val jsonElementData = signedRequest["data"].asJsonObject
+
+                val rawData: String = when {
+                    signedRequest["data"].isJsonObject ->
+                        signedRequest["data"].asJsonObject.toString()
+
+                    signedRequest["data"].isJsonArray ->
+                        signedRequest["data"].asJsonArray.toString()
+
+                    signedRequest["data"].isJsonNull -> ""
+
+                    else -> signedRequest["data"].toString()
+                }
+
+                val jsonElementData = signedRequest["data"]
 
                 val data: Any = context.deserialize(jsonElementData, dataType)
 
