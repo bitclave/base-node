@@ -194,7 +194,7 @@ class OfferServiceTest {
         assertThat(updated.compare).isEqualTo(changedOffer.compare)
         assertThat(updated.rules).isEqualTo(changedOffer.rules)
         assertThat(updated.createdAt.time).isEqualTo(created.createdAt.time)
-        assertThat(updated.updatedAt.after(created.updatedAt))
+        assertThat(updated.updatedAt.time > created.updatedAt.time)
     }
 
     @Test fun `should be update created offer with prices`() {

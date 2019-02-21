@@ -146,8 +146,7 @@ class OfferSearchService(
                             offerSearch.offerId,
                             OfferResultAction.NONE,
                             info,
-                            offerSearch.events,
-                            offerSearch.updatedAt
+                            offerSearch.events
                     ))
         }
     }
@@ -214,6 +213,8 @@ class OfferSearchService(
                     ?: throw BadArgumentException("searchRequestId id not exist")
 
             item.state = OfferResultAction.COMPLAIN
+            item.updatedAt = Date()
+
             repository.saveSearchResult(item)
 
             var event: OfferSearchEvent = OfferSearchEvent(callerPublicKey, item.state)
@@ -236,6 +237,8 @@ class OfferSearchService(
                     ?: throw AccessDeniedException()
 
             item.state = OfferResultAction.EVALUATE
+            item.updatedAt = Date()
+
             repository.saveSearchResult(item)
 
             var event: OfferSearchEvent = OfferSearchEvent(callerPublicKey, item.state)
@@ -258,6 +261,8 @@ class OfferSearchService(
                     ?: throw BadArgumentException("searchRequestId item id not exist")
 
             item.state = OfferResultAction.REJECT
+            item.updatedAt = Date()
+
             repository.saveSearchResult(item)
 
             var event: OfferSearchEvent = OfferSearchEvent(callerPublicKey, item.state)
@@ -280,6 +285,8 @@ class OfferSearchService(
                     ?: throw BadArgumentException("searchRequestId id not exist")
 
             item.state = OfferResultAction.CLAIMPURCHASE
+            item.updatedAt = Date()
+
             repository.saveSearchResult(item)
 
             var event: OfferSearchEvent = OfferSearchEvent(callerPublicKey, item.state)
@@ -318,6 +325,8 @@ class OfferSearchService(
 //                throw AccessDeniedException()
 
             item.state = OfferResultAction.CONFIRMED
+            item.updatedAt = Date()
+
             repository.saveSearchResult(item)
 
             var event: OfferSearchEventConfirmed = OfferSearchEventConfirmed(callerPublicKey, item.state, "22")

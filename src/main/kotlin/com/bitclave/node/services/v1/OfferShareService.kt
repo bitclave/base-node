@@ -14,6 +14,7 @@ import com.bitclave.node.services.errors.DuplicateException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
+import java.util.*
 import java.util.concurrent.CompletableFuture
 
 @Service
@@ -88,6 +89,7 @@ class OfferShareService(
                     .saveShareData(shareData)
 
             offerSearch.state = OfferResultAction.ACCEPT
+            offerSearch.updatedAt = Date()
 
             offerSearchRepository
                     .changeStrategy(strategy)

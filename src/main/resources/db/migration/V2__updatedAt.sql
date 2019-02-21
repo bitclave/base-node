@@ -1,3 +1,5 @@
+alter table offer_search add column created_at timestamp with time zone default now();
+
 alter table offer_search
   alter column last_updated type timestamp with time zone
   using last_updated::timestamp with time zone;

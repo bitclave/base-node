@@ -142,8 +142,8 @@ class SearchRequestServiceTest {
         assert(result.id >= 1L)
         assertThat(result.owner).isEqualTo(account.publicKey)
         assertThat(result.tags).isEqualTo(searchRequest.tags)
-        assertThat(result.createdAt.after(searchRequest.createdAt))
-        assertThat(result.updatedAt.after(searchRequest.updatedAt))
+        assertThat(result.createdAt.time > searchRequest.createdAt.time)
+        assertThat(result.updatedAt.time > searchRequest.updatedAt.time)
     }
 
     @Test fun `should update existed search request`() {
@@ -166,7 +166,7 @@ class SearchRequestServiceTest {
         assertThat(result.owner).isEqualTo(account.publicKey)
         assertThat(result.tags).isEqualTo(updateSearchRequest.tags)
         assertThat(result.createdAt).isEqualTo(updateSearchRequest.createdAt)
-        assertThat(result.updatedAt.after(updateSearchRequest.updatedAt))
+        assertThat(result.updatedAt.time > updateSearchRequest.updatedAt.time)
 
         savedListResult = searchRequestService.getSearchRequests(1, account.publicKey, strategy).get()
         assertThat(savedListResult.size).isEqualTo(1)

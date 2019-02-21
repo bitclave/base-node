@@ -8,7 +8,7 @@ import javax.persistence.*
 @Table(uniqueConstraints = [
     UniqueConstraint(columnNames = ["searchRequestId", "offerId"])
 ])
-open class OfferSearch(
+data class OfferSearch(
         @GeneratedValue(strategy = GenerationType.TABLE) @Id val id: Long = 0,
         @Column(length = 256) var owner: String = "",
         val searchRequestId: Long = 0,
@@ -18,6 +18,8 @@ open class OfferSearch(
 
         @ElementCollection(fetch = FetchType.EAGER) var events: MutableList<String> = ArrayList(),
 
+        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+        var createdAt: Date = Date(),
         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
         var updatedAt: Date = Date()
 )

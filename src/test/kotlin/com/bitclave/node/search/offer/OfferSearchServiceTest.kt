@@ -246,7 +246,7 @@ open class OfferSearchServiceTest {
 
         val result = offerSearchService.getOffersResult(strategy, createdSearchRequest1.id).get()
         assert(result[0].offerSearch.events.contains("bla bla bla"))
-
+        assert(result[0].offerSearch.updatedAt.time > result[0].offerSearch.createdAt.time)
     }
 
     @Test
@@ -272,6 +272,7 @@ open class OfferSearchServiceTest {
         assert(result[0].offerSearch.state == OfferResultAction.COMPLAIN)
         assert(result[0].offer.id == createdOffer1.id)
         assert(result[0].offer.owner == businessPublicKey)
+        assert(result[0].offerSearch.updatedAt.time > result[0].offerSearch.createdAt.time)
     }
 
     @Test fun `search item state should be ACCEPT`() {
@@ -292,6 +293,7 @@ open class OfferSearchServiceTest {
         assert(result[0].offerSearch.state == OfferResultAction.ACCEPT)
         assert(result[0].offer.id == createdOffer1.id)
         assert(result[0].offer.owner == businessPublicKey)
+        assert(result[0].offerSearch.updatedAt.time > result[0].offerSearch.createdAt.time)
     }
 
     @Test
@@ -308,7 +310,6 @@ open class OfferSearchServiceTest {
         assert(result[1].id >= 1L)
         assert(result[1].state == OfferResultAction.COMPLAIN)
         assertThat(result[0].events.toList()).isEqualTo(result[1].events.toList())
-        assert(result[0].updatedAt == result[1].updatedAt)
         assert(result[0].info == result[1].info)
 
         result = offerSearchService.getOfferSearches(strategy, createdOffer2.id, createdSearchRequest1.id).get()
@@ -330,7 +331,6 @@ open class OfferSearchServiceTest {
         assert(result[1].state == OfferResultAction.COMPLAIN)
         assert(result[1].state == OfferResultAction.COMPLAIN)
         assertThat(result[0].events.toList()).isEqualTo(result[1].events.toList())
-        assert(result[0].updatedAt == result[1].updatedAt)
         assert(result[0].info == result[1].info)
     }
 
