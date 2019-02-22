@@ -153,4 +153,10 @@ class OfferControllerTest {
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }
+
+    @Test fun `get offer by owner and tag`() {
+        this.mvc.perform(get("/$version/client/$publicKey/offer/tag/car")
+                .headers(httpHeaders))
+                .andExpect(status().isOk)
+    }
 }
