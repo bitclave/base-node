@@ -324,4 +324,15 @@ class OfferServiceTest {
         var result = offerService.getOfferTotalCount(strategy).get()
         assert(result == 4L)
     }
+
+    @Test fun `should return offers by owner and tag`() {
+        `should be create new offer`()
+        `should be create new offer`()
+
+        var result = offerService.getOfferByOwnerAndTag(account.publicKey, "car", strategy).get()
+        assertThat(result.size).isEqualTo(2)
+
+        result = offerService.getOfferByOwnerAndTag(account.publicKey, "age", strategy).get()
+        assertThat(result.size).isEqualTo(0)
+    }
 }

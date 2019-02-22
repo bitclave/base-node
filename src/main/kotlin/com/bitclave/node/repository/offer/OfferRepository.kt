@@ -25,4 +25,6 @@ interface OfferRepository {
     fun findAll(pageable: Pageable): Page<Offer>
 
     fun getTotalCount(): Long
+
+    fun getOfferByOwnerAndTag(owner: String, tagKey: String): List<Offer>
 }
