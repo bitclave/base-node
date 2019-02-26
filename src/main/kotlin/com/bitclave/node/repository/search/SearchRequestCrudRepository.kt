@@ -1,7 +1,9 @@
 package com.bitclave.node.repository.search
 
 import com.bitclave.node.repository.models.SearchRequest
+import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.PagingAndSortingRepository
+import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 
@@ -18,5 +20,8 @@ interface SearchRequestCrudRepository : PagingAndSortingRepository<SearchRequest
     fun deleteByOwner(owner: String): Long
 
     fun findByIdAndOwner(id: Long, owner: String): SearchRequest?
+
+    @Query("FROM SearchRequest s JOIN  s.tags t WHERE s.owner = :owner and KEY(t) = :tagKey")
+    fun getRequestByOwnerAndTag(@Param("owner") owner: String, @Param("tagKey") tagKey: String): List<SearchRequest>
 
 }

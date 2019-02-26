@@ -138,4 +138,16 @@ class OfferService(
 
         }
     }
+
+    fun getOfferByOwnerAndTag(
+            owner: String,
+            tagKey: String,
+            strategy: RepositoryStrategyType
+    ): CompletableFuture<List<Offer>> {
+
+        return CompletableFuture.supplyAsync({
+            val repository = offerRepository.changeStrategy(strategy)
+            return@supplyAsync repository.getOfferByOwnerAndTag(owner, tagKey)
+        })
+    }
 }

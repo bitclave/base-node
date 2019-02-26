@@ -124,4 +124,8 @@ class PostgresSearchRequestRepositoryImpl(
     override fun getTotalCount(): Long {
         return repository.count()
     }
+
+    override fun getRequestByOwnerAndTag(owner: String, tagKey: String): List<SearchRequest> {
+        return repository.getRequestByOwnerAndTag(owner, tagKey)
+    }
 }
