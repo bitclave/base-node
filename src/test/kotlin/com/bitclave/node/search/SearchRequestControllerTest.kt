@@ -32,6 +32,7 @@ class SearchRequestControllerTest {
     private val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
     protected lateinit var requestSearch: SignedRequest<SearchRequest>
     protected lateinit var requestSearchId: SignedRequest<Long>
+    protected lateinit var requestSearchQuery: SignedRequest<String>
     protected lateinit var cloneRequestSearch: SignedRequest<SearchRequest>
     private var httpHeaders: HttpHeaders = HttpHeaders()
 
@@ -51,10 +52,18 @@ class SearchRequestControllerTest {
         requestSearch = SignedRequest(searchRequest, publicKey)
         requestSearchId = SignedRequest(1, publicKey)
         cloneRequestSearch = SignedRequest(cloneSearchRequest, publicKey)
+        requestSearchQuery = SignedRequest("search query", publicKey)
 
         httpHeaders.set("Accept", "application/json")
         httpHeaders.set("Content-Type", "application/json")
         httpHeaders.set("Strategy", RepositoryStrategyType.POSTGRES.name)
+    }
+
+    @Test fun `create search request by query string`() {
+        this.mvc.perform(post("/$version/client/$publicKey/search/request/1/query/")
+                .content(requestSearchQuery.toJsonString())
+                .headers(httpHeaders))
+                .andExpect(status().isCreated)
     }
 
     @Test fun `create search request`() {

@@ -2,7 +2,6 @@ package com.bitclave.node.repository.search.offer
 
 import com.bitclave.node.repository.models.OfferSearch
 import org.springframework.data.jpa.repository.Query
-import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
@@ -10,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional
 @Repository
 @Transactional
 interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Long> {
+
+    fun deleteAllBySearchRequestId(id: Long): Long
 
     fun findBySearchRequestId(id: Long): List<OfferSearch>
 
@@ -23,7 +24,7 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     fun findByOwnerAndOfferId(owner: String, offerId: Long): List<OfferSearch>
 
-    @Query(value ="SELECT s.* from offer_search s, " +
+    @Query(value = "SELECT s.* from offer_search s, " +
             "( " +
             "SELECT b.offer_id, b.owner from " +
             "(" +
