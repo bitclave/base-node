@@ -88,6 +88,12 @@ class SearchRequestServiceTest {
             mapOf("car" to "true", "color" to "red")
     )
 
+    private val searchRequest3 = SearchRequest(
+            0,
+            account.publicKey,
+            mapOf("bike" to "true", "color" to "black")
+    )
+
     protected val offer = Offer(
             0,
             account.publicKey,
@@ -449,5 +455,38 @@ class SearchRequestServiceTest {
         } catch (e: Throwable) {
             throw e.cause!!
         }
+    }
+
+    @Test fun `should return search requests by owner and tag key`() {
+        searchRequestService.putSearchRequest(
+                0,
+                account.publicKey,
+                searchRequest,
+                strategy
+        ).get()
+
+        searchRequestService.putSearchRequest(
+                0,
+                account.publicKey,
+                searchRequest2,
+                strategy
+        ).get()
+
+
+        searchRequestService.putSearchRequest(
+                0,
+                account.publicKey,
+                searchRequest3,
+                strategy
+        ).get()
+
+        var result = searchRequestService.getRequestByOwnerAndTag(account.publicKey, "color", strategy).get()
+        assertThat(result.size).isEqualTo(3)
+
+        result = searchRequestService.getRequestByOwnerAndTag(account.publicKey, "car", strategy).get()
+        assertThat(result.size).isEqualTo(2)
+
+        result = searchRequestService.getRequestByOwnerAndTag(account.publicKey, "notexist", strategy).get()
+        assertThat(result.size).isEqualTo(0)
     }
 }

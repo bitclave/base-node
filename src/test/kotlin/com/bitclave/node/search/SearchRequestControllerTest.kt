@@ -130,4 +130,10 @@ class SearchRequestControllerTest {
                 .andExpect(status().isOk)
     }
 
+    @Test fun `get search request by owner and tag`() {
+        this.mvc.perform(get("/$version/client/$publicKey/search/request/tag/car")
+                .headers(httpHeaders))
+                .andExpect(status().isOk)
+    }
+
 }

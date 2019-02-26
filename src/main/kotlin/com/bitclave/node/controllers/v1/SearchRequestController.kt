@@ -332,4 +332,37 @@ class SearchRequestController(
         }
     }
 
+    /**
+     * Return list of existed search requests by owner (Public key of creator) and tag key.
+     *
+     * @return {@link List<SearchRequest>}, Http status - 200.
+     */
+    @ApiOperation(
+            "get existed search requests by owner and tag key",
+            response = SearchRequest::class,
+            responseContainer = "List"
+    )
+    @ApiResponses(value = [
+        ApiResponse(code = 200, message = "Success", response = List::class)
+    ])
+    @RequestMapping(method = [RequestMethod.GET], value = ["/tag/{tag}"])
+    fun getRequestsByOwnerAndTag(
+            @ApiParam("owner who create search requests")
+            @PathVariable("owner")
+            owner: String,
+
+            @ApiParam("tag key of a search request")
+            @PathVariable(value = "tag", required = false)
+            tag: String,
+
+            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+            @RequestHeader("Strategy", required = false)
+            strategy: String?): CompletableFuture<List<SearchRequest>> {
+
+        return searchRequestService.getRequestByOwnerAndTag(owner, tag, getStrategyType(strategy)).exceptionally { e ->
+            logger.error("Request: getRequestsByOwnerAndTag/" + owner + "/" + tag + " raised " + e)
+            throw e
+        }
+    }
+
 }

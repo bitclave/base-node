@@ -27,4 +27,6 @@ interface SearchRequestRepository {
     fun findAll(pageable: Pageable): Page<SearchRequest>
 
     fun getTotalCount(): Long
+
+    fun getRequestByOwnerAndTag(owner: String, tagKey: String): List<SearchRequest>
 }

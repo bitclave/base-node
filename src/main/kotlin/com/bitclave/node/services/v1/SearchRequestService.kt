@@ -179,4 +179,16 @@ class SearchRequestService(
             return@supplyAsync searchRequest
         }
     }
+
+    fun getRequestByOwnerAndTag(
+            owner: String,
+            tagKey: String,
+            strategy: RepositoryStrategyType
+    ): CompletableFuture<List<SearchRequest>> {
+
+        return CompletableFuture.supplyAsync({
+            val repository = repository.changeStrategy(strategy)
+            return@supplyAsync repository.getRequestByOwnerAndTag(owner, tagKey)
+        })
+    }
 }
