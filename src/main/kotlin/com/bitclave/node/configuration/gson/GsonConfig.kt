@@ -23,7 +23,7 @@ class WebConfigurer {
                 .registerTypeAdapter(Json::class.java, SpringfoxJsonSerializer())
                 .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
                 .serializeNulls()
-//                .setPrettyPrinting()
+                .setPrettyPrinting()
                 .disableHtmlEscaping()
                 .create()
         return converter
