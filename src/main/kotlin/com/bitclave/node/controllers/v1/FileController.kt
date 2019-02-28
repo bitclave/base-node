@@ -81,7 +81,9 @@ class FileController(
 
         class Token : TypeToken<SignedRequest<String>>()
 
-        val sign: SignedRequest<String> = Gson().fromJson(signature, Token().type)
+        val signRaw: SignedRequest<String> = Gson().fromJson(signature, Token().type)
+        val rawData = Gson().toJson(signRaw.data)
+        val sign: SignedRequest<String> = signRaw.copy(rawData = rawData)
 
         return accountService
                 .accountBySigMessage(sign, getStrategyType(strategy))
