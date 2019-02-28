@@ -17,22 +17,26 @@ import java.util.*
 class PostgresOfferSearchRepositoryImpl(
         val repository: OfferSearchCrudRepository,
         val searchRequestRepository: SearchRequestRepository
-        ) : OfferSearchRepository {
+) : OfferSearchRepository {
 
     override fun saveSearchResult(list: List<OfferSearch>) {
         repository.save(list)
     }
 
+    override fun deleteAllBySearchRequestId(id: Long): Long {
+        return repository.deleteAllBySearchRequestId(id)
+    }
+
     override fun saveSearchResult(item: OfferSearch) {
         val searchRequest = searchRequestRepository.findById(item.searchRequestId)
-        if(searchRequest != null) {
+        if (searchRequest != null) {
             var id = item.id
             item.owner = searchRequest.owner
             repository.save(item) ?: throw DataNotSavedException()
 
             var relatedOfferSearches = findByOwnerAndOfferId(searchRequest.owner, item.offerId)
 
-            if(relatedOfferSearches.size > 1) {
+            if (relatedOfferSearches.size > 1) {
                 if (id > 0) {// if it was an update then update all related OfferSearches
                     for (offerSearch: OfferSearch in relatedOfferSearches) {
                         if (offerSearch.id != item.id) {
@@ -57,8 +61,7 @@ class PostgresOfferSearchRepositoryImpl(
                     }
                 }
             }
-        }
-        else throw BadArgumentException("search request id not exist")
+        } else throw BadArgumentException("search request id not exist")
     }
 
     override fun findById(id: Long): OfferSearch? {
@@ -125,7 +128,7 @@ class PostgresOfferSearchRepositoryImpl(
 
         var toBeSavedOfferSearched: MutableList<OfferSearch> = mutableListOf()
         for (offerSearch: OfferSearch in copiedOfferSearchList) {
-            if(existedOfferSearchList.find { it.offerId == offerSearch.offerId && it.owner == offerSearch.owner } == null) {
+            if (existedOfferSearchList.find { it.offerId == offerSearch.offerId && it.owner == offerSearch.owner } == null) {
                 val newOfferSearch = OfferSearch(
                         0,
                         targetSearchRequest.owner,

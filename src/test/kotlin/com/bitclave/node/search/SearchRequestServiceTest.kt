@@ -11,12 +11,16 @@ import com.bitclave.node.repository.models.*
 import com.bitclave.node.repository.offer.OfferCrudRepository
 import com.bitclave.node.repository.offer.OfferRepositoryStrategy
 import com.bitclave.node.repository.offer.PostgresOfferRepositoryImpl
+import com.bitclave.node.repository.rtSearch.RtSearchRepositoryImpl
 import com.bitclave.node.repository.search.PostgresSearchRequestRepositoryImpl
 import com.bitclave.node.repository.search.SearchRequestCrudRepository
 import com.bitclave.node.repository.search.SearchRequestRepositoryStrategy
 import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.repository.search.offer.OfferSearchRepositoryStrategy
 import com.bitclave.node.repository.search.offer.PostgresOfferSearchRepositoryImpl
+import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepository
+import com.bitclave.node.services.errors.BadArgumentException
+import com.bitclave.node.services.errors.NotFoundException
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferSearchService
 import com.bitclave.node.services.v1.SearchRequestService
@@ -24,6 +28,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.domain.PageRequest
@@ -31,6 +36,7 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import java.util.*
+import java.util.concurrent.CompletableFuture
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
@@ -56,6 +62,11 @@ class SearchRequestServiceTest {
 
     @Autowired
     protected lateinit var offerCrudRepository: OfferCrudRepository
+
+    @Autowired
+    protected lateinit var querySearchRequestCrudRepository: QuerySearchRequestCrudRepository
+
+    protected val rtSearchRepository = Mockito.mock(RtSearchRepositoryImpl::class.java)
 
     private val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
 
@@ -116,8 +127,12 @@ class SearchRequestServiceTest {
         val offerSearchRepository = PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository, searchRequestRepository)
         val offerSearchRepositoryStrategy = OfferSearchRepositoryStrategy(offerSearchRepository)
 
-
-        searchRequestService = SearchRequestService(requestRepositoryStrategy)
+        searchRequestService = SearchRequestService(
+                requestRepositoryStrategy,
+                offerSearchRepositoryStrategy,
+                querySearchRequestCrudRepository,
+                rtSearchRepository
+        )
 
         offerSearchService = OfferSearchService(
                 requestRepositoryStrategy,
@@ -337,6 +352,109 @@ class SearchRequestServiceTest {
 
         var result = searchRequestService.getSearchRequestTotalCount(strategy).get()
         assert(result == 4L)
+    }
+
+    @Test fun `should be create QuerySearchRequest`() {
+        val list: List<Long> = arrayListOf(1, 2, 3)
+
+        val searchRequestWithRtSearch = searchRequestService.putSearchRequest(
+                0,
+                publicKey,
+                SearchRequest(0, publicKey, mapOf("rtSearch" to "true")),
+                strategy
+        ).get()
+
+        val searchQueryText = "some data"
+        Mockito.`when`(rtSearchRepository.getOffersIdByQuery(searchQueryText))
+                .thenReturn(CompletableFuture.completedFuture(list))
+
+        val searchRequest = searchRequestService.createSearchRequestByQuery(
+                searchRequestWithRtSearch.id, publicKey, searchQueryText, strategy
+        ).get()
+
+        val queryRequestsByOwner = querySearchRequestCrudRepository
+                .findAllByOwner(publicKey)
+        val existedSearchRequest = searchRequestCrudRepository.findOne(searchRequest.id)
+
+        assertThat(existedSearchRequest)
+        assertThat(queryRequestsByOwner.size == 1)
+        assertThat(queryRequestsByOwner[0].query).isEqualTo(searchQueryText)
+    }
+
+    @Test fun `should be create offersSearch items`() {
+        val list: List<Long> = arrayListOf(1, 2, 3)
+
+        val searchRequestWithRtSearch = searchRequestService.putSearchRequest(
+                0,
+                publicKey,
+                SearchRequest(0, publicKey, mapOf("rtSearch" to "true")),
+                strategy
+        ).get()
+
+        val searchQueryText = "some data"
+        Mockito.`when`(rtSearchRepository.getOffersIdByQuery(searchQueryText))
+                .thenReturn(CompletableFuture.completedFuture(list))
+
+        val searchRequest = searchRequestService.createSearchRequestByQuery(
+                searchRequestWithRtSearch.id, publicKey, searchQueryText, strategy
+        ).get()
+
+        val searchResult = offerSearchCrudRepository.findBySearchRequestId(searchRequest.id)
+        assert(searchResult.size == 3)
+        assert(searchResult.filter { list.indexOf(it.offerId) > -1 }.size == 3)
+    }
+
+    @Test fun `should be delete all old offersSearch items by query`() {
+        val searchRequestWithRtSearch = searchRequestService.putSearchRequest(
+                0,
+                publicKey,
+                SearchRequest(0, publicKey, mapOf("rtSearch" to "true")),
+                strategy
+        ).get()
+
+        val list = arrayListOf<Long>(4, 5)
+        Mockito.`when`(rtSearchRepository.getOffersIdByQuery("some data"))
+                .thenReturn(CompletableFuture.completedFuture(list))
+
+        val searchRequest = searchRequestService.createSearchRequestByQuery(
+                searchRequestWithRtSearch.id, publicKey, "some data", strategy
+        ).get()
+
+        searchRequestService.createSearchRequestByQuery(
+                searchRequest.id, publicKey, "some data", strategy
+        ).get()
+
+        val searchResult = offerSearchCrudRepository.findByOwner(publicKey)
+        assert(searchResult.size == 2)
+        assert(searchResult.filter { list.indexOf(it.offerId) > -1 }.size == 2)
+    }
+
+    @Test(expected = NotFoundException::class)
+    fun `should be throw by unknown searchRequestId`() {
+        try {
+            searchRequestService.createSearchRequestByQuery(
+                    1234343, publicKey, "some data", strategy
+            ).get()
+        } catch (e: Throwable) {
+            throw e.cause!!
+        }
+    }
+
+    @Test(expected = BadArgumentException::class)
+    fun `should be throw by searchRequestId not has rtSearch tag`() {
+        val searchRequestWithoutRtSearch = searchRequestService.putSearchRequest(
+                0,
+                publicKey,
+                SearchRequest(0, publicKey, emptyMap()),
+                strategy
+        ).get()
+        try {
+            searchRequestService.createSearchRequestByQuery(
+                    searchRequestWithoutRtSearch.id, publicKey, "some data", strategy
+            ).get()
+        } catch (e: Throwable) {
+            throw e.cause!!
+        }
     }
 
     @Test fun `should return search requests by owner and tag key`() {

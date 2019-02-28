@@ -7,6 +7,8 @@ import org.springframework.data.domain.Pageable
 
 interface OfferSearchRepository {
 
+    fun deleteAllBySearchRequestId(id: Long): Long
+
     fun saveSearchResult(list: List<OfferSearch>)
 
     fun saveSearchResult(item: OfferSearch)

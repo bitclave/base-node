@@ -18,6 +18,9 @@ flyway:
   password: ${JDBC_DATABASE_PASSWORD}
   locations: db/migration
 
+rtsearch:
+  url: ${RT_SEARCH_URL}
+
 server:
   port: 8080
 

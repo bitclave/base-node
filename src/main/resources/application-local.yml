@@ -21,8 +21,8 @@ flyway:
 server:
   port: 8080
 
-elastic:
-  url: 'http://localhost:9200'
+rtsearch:
+  url: 'http://localhost:5002'
 
 hybrid:
   nodeUrl: http://localhost:9545/
