@@ -11,10 +11,6 @@ import com.bitclave.node.repository.models.*
 import com.bitclave.node.repository.offer.OfferCrudRepository
 import com.bitclave.node.repository.offer.OfferRepositoryStrategy
 import com.bitclave.node.repository.offer.PostgresOfferRepositoryImpl
-import com.bitclave.node.repository.price.OfferPriceCrudRepository
-import com.bitclave.node.repository.price.OfferPriceRepositoryStrategy
-import com.bitclave.node.repository.price.PostgresOfferPriceRepositoryImpl
-import com.bitclave.node.repository.priceRule.OfferPriceRulesCrudRepository
 import com.bitclave.node.repository.search.PostgresSearchRequestRepositoryImpl
 import com.bitclave.node.repository.search.SearchRequestCrudRepository
 import com.bitclave.node.repository.search.SearchRequestRepositoryStrategy
@@ -23,7 +19,6 @@ import com.bitclave.node.repository.search.offer.OfferSearchRepositoryStrategy
 import com.bitclave.node.repository.search.offer.PostgresOfferSearchRepositoryImpl
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferSearchService
-import com.bitclave.node.services.v1.OfferService
 import com.bitclave.node.services.v1.SearchRequestService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
@@ -35,6 +30,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
+import java.util.*
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
@@ -105,6 +101,8 @@ class SearchRequestServiceTest {
             "url"
     )
 
+    private val ignoredFields = arrayOf("id", "createdAt", "updatedAt")
+
     @Before fun setup() {
         val postgres = PostgresAccountRepositoryImpl(accountCrudRepository)
         val hybrid = HybridAccountRepositoryImpl(web3Provider, hybridProperties)
@@ -150,6 +148,8 @@ class SearchRequestServiceTest {
         assert(result.id >= 1L)
         assertThat(result.owner).isEqualTo(account.publicKey)
         assertThat(result.tags).isEqualTo(searchRequest.tags)
+        assertThat(result.createdAt.time > searchRequest.createdAt.time)
+        assertThat(result.updatedAt.time > searchRequest.updatedAt.time)
     }
 
     @Test fun `should update existed search request`() {
@@ -157,19 +157,22 @@ class SearchRequestServiceTest {
 
         var savedListResult = searchRequestService.getSearchRequests(1, account.publicKey, strategy).get()
         assertThat(savedListResult.size).isEqualTo(1)
-        assertThat(savedListResult[0]).isEqualToIgnoringGivenFields(searchRequest, "id")
+        assertThat(savedListResult[0]).isEqualToIgnoringGivenFields(searchRequest, *ignoredFields)
 
-        val updateSearchRequest = SearchRequest(
-                1,
-                account.publicKey,
-                mapOf("car" to "false", "color" to "blue")
+        val existedRequest = savedListResult[0]
+
+        val updateSearchRequest = existedRequest.copy(
+                owner = account.publicKey,
+                tags = mapOf("car" to "false", "color" to "blue")
         )
 
-        val result = searchRequestService.putSearchRequest(1,account.publicKey,updateSearchRequest,strategy).get()
+        val result = searchRequestService.putSearchRequest(1, account.publicKey, updateSearchRequest, strategy).get()
 
         assert(result.id >= 1L)
         assertThat(result.owner).isEqualTo(account.publicKey)
         assertThat(result.tags).isEqualTo(updateSearchRequest.tags)
+        assertThat(result.createdAt).isEqualTo(updateSearchRequest.createdAt)
+        assertThat(result.updatedAt.time > updateSearchRequest.updatedAt.time)
 
         savedListResult = searchRequestService.getSearchRequests(1, account.publicKey, strategy).get()
         assertThat(savedListResult.size).isEqualTo(1)
@@ -180,7 +183,7 @@ class SearchRequestServiceTest {
 
         var savedListResult = searchRequestService.getSearchRequests(1, account.publicKey, strategy).get()
         assertThat(savedListResult.size).isEqualTo(1)
-        assertThat(savedListResult[0]).isEqualToIgnoringGivenFields(searchRequest, "id")
+        assertThat(savedListResult[0]).isEqualToIgnoringGivenFields(searchRequest, *ignoredFields)
 
         val deletedId = searchRequestService.deleteSearchRequest(1, account.publicKey, strategy).get()
 
@@ -197,9 +200,9 @@ class SearchRequestServiceTest {
 
         var savedListResult = searchRequestService.getSearchRequests(0, account.publicKey, strategy).get()
         assertThat(savedListResult.size).isEqualTo(3)
-        assertThat(savedListResult[0]).isEqualToIgnoringGivenFields(searchRequest, "id")
-        assertThat(savedListResult[1]).isEqualToIgnoringGivenFields(searchRequest, "id")
-        assertThat(savedListResult[2]).isEqualToIgnoringGivenFields(searchRequest, "id")
+        assertThat(savedListResult[0]).isEqualToIgnoringGivenFields(searchRequest, *ignoredFields)
+        assertThat(savedListResult[1]).isEqualToIgnoringGivenFields(searchRequest, *ignoredFields)
+        assertThat(savedListResult[2]).isEqualToIgnoringGivenFields(searchRequest, *ignoredFields)
 
         searchRequestService.deleteSearchRequests(account.publicKey, strategy).get()
 
@@ -214,11 +217,11 @@ class SearchRequestServiceTest {
 
         var result = searchRequestService.getSearchRequests(1, account.publicKey, strategy).get()
         assertThat(result.size).isEqualTo(1)
-        assertThat(result[0]).isEqualToIgnoringGivenFields(searchRequest, "id")
+        assertThat(result[0]).isEqualToIgnoringGivenFields(searchRequest, *ignoredFields)
 
         result = searchRequestService.getSearchRequests(2, account.publicKey, strategy).get()
         assertThat(result.size).isEqualTo(1)
-        assertThat(result[0]).isEqualToIgnoringGivenFields(searchRequest, "id")
+        assertThat(result[0]).isEqualToIgnoringGivenFields(searchRequest, *ignoredFields)
 
         result = searchRequestService.getSearchRequests(3, account.publicKey, strategy).get()
         assertThat(result.size).isEqualTo(0)
@@ -232,8 +235,8 @@ class SearchRequestServiceTest {
         assertThat(result.size).isEqualTo(2)
         assert(result[0].id == 1L)
         assert(result[1].id == 2L)
-        assertThat(result[0]).isEqualToIgnoringGivenFields(searchRequest, "id")
-        assertThat(result[1]).isEqualToIgnoringGivenFields(searchRequest, "id")
+        assertThat(result[0]).isEqualToIgnoringGivenFields(searchRequest, *ignoredFields)
+        assertThat(result[1]).isEqualToIgnoringGivenFields(searchRequest, *ignoredFields)
     }
 
     @Test fun `should clone existed search request with related offerSearches`() {
@@ -252,25 +255,49 @@ class SearchRequestServiceTest {
         ).get()
 
         offerSearchService.saveNewOfferSearch(
-                OfferSearch(0, result1.owner, result1.id, createdOffer1.id, OfferResultAction.NONE, "","", ArrayList()),
+                OfferSearch(
+                        0,
+                        result1.owner,
+                        result1.id,
+                        createdOffer1.id,
+                        OfferResultAction.NONE,
+                        "",
+                        ArrayList()
+                ),
                 strategy
         ).get()
 
         offerSearchService.saveNewOfferSearch(
-                OfferSearch(0, result1.owner, result1.id, createdOffer2.id, OfferResultAction.NONE, "","", ArrayList()),
+                OfferSearch(
+                        0,
+                        result1.owner,
+                        result1.id,
+                        createdOffer2.id,
+                        OfferResultAction.NONE,
+                        "",
+                        ArrayList()
+                ),
                 strategy
         ).get()
 
         offerSearchService.complain(1L, createdOffer1.owner, strategy).get()
 
         offerSearchService.saveNewOfferSearch(
-                OfferSearch(0, result2.owner, result2.id, createdOffer1.id, OfferResultAction.NONE, "","", ArrayList()),
+                OfferSearch(
+                        0,
+                        result2.owner,
+                        result2.id,
+                        createdOffer1.id,
+                        OfferResultAction.NONE,
+                        "",
+                        ArrayList()
+                ),
                 strategy
         ).get()
 
         val clonedRequest = searchRequestService.cloneSearchRequestWithOfferSearches(account.publicKey, result1, strategy).get()
 
-        assertThat(clonedRequest).isEqualToIgnoringGivenFields(searchRequest, "id")
+        assertThat(clonedRequest).isEqualToIgnoringGivenFields(searchRequest, *ignoredFields)
 
         val savedListResult = searchRequestService.getSearchRequests(clonedRequest.id, account.publicKey, strategy).get()
         assertThat(savedListResult.size).isEqualTo(1)

@@ -6,7 +6,6 @@ import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.DataNotSavedException
-import com.bitclave.node.services.errors.NotFoundException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -83,9 +82,9 @@ class PostgresSearchRequestRepositoryImpl(
                 .toList()
     }
 
-     override fun cloneSearchRequestWithOfferSearches(request: SearchRequest): SearchRequest {
+    override fun cloneSearchRequestWithOfferSearches(request: SearchRequest): SearchRequest {
         var existingRequest = repository.findOne(request.id)
-        if(existingRequest == null) return throw BadArgumentException("SearchRequest does not exist: " + request.id.toString())
+        if (existingRequest == null) return throw BadArgumentException("SearchRequest does not exist: " + request.id.toString())
 
         var relatedOfferSearches = offerSearchRepository.findBySearchRequestId(existingRequest.id)
 
@@ -105,7 +104,6 @@ class PostgresSearchRequestRepositoryImpl(
                     createSearchRequest.id,
                     offerSearch.offerId,
                     OfferResultAction.NONE,
-                    Date().toString(),
                     offerSearch.info,
                     ArrayList()
             )

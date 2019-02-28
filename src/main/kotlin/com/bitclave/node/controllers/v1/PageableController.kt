@@ -34,19 +34,19 @@ class PageableController(
     @ApiResponses(value = [
         ApiResponse(code = 200, message = "Success", response = Page::class)
     ])
-    @RequestMapping(value = "offers", method = [RequestMethod.GET], params = [ "page", "size"])
+    @RequestMapping(value = ["offers"], method = [RequestMethod.GET], params = ["page", "size"])
     fun getPageableOffers(
-        @ApiParam("Optional page number to retrieve a particular page. If not specified this API retrieves first page.")
-        @RequestParam( "page" )
-        page: Int?,
+            @ApiParam("Optional page number to retrieve a particular page. If not specified this API retrieves first page.")
+            @RequestParam("page")
+            page: Int?,
 
-        @ApiParam("Optional page size to include number of offers in a page. Defaults to 20.")
-        @RequestParam( "size" )
-        size: Int?,
+            @ApiParam("Optional page size to include number of offers in a page. Defaults to 20.")
+            @RequestParam("size")
+            size: Int?,
 
-        @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
-        @RequestHeader("Strategy", required = false)
-        strategy: String?): CompletableFuture<Page<Offer>> {
+            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+            @RequestHeader("Strategy", required = false)
+            strategy: String?): CompletableFuture<Page<Offer>> {
 
         if (page == null || size == null) {
             return offerService.getPageableOffers(PageRequest(0, 20), getStrategyType(strategy)
@@ -69,14 +69,14 @@ class PageableController(
     @ApiResponses(value = [
         ApiResponse(code = 200, message = "Success", response = Page::class)
     ])
-    @RequestMapping(value = "search/requests", method = [RequestMethod.GET], params = [ "page", "size"])
+    @RequestMapping(value = ["search/requests"], method = [RequestMethod.GET], params = ["page", "size"])
     fun getPageableSearchRequests(
             @ApiParam("Optional page number to retrieve a particular page. If not specified this API retrieves first page.")
-            @RequestParam( "page" )
+            @RequestParam("page")
             page: Int?,
 
             @ApiParam("Optional page size to include number of offers in a page. Defaults to 20.")
-            @RequestParam( "size" )
+            @RequestParam("size")
             size: Int?,
 
             @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
@@ -94,9 +94,9 @@ class PageableController(
 
         return searchRequestService.getPageableRequests(
                 PageRequest(page, size), getStrategyType(strategy)).exceptionally { e ->
-                    logger.error("Request: getPageableSearchRequests/" + page!!.toString() + "/" + size!!.toString() + " raised " + e)
-                    throw e
-                }
+            logger.error("Request: getPageableSearchRequests/" + page!!.toString() + "/" + size!!.toString() + " raised " + e)
+            throw e
+        }
     }
 
     @ApiOperation(
@@ -106,14 +106,14 @@ class PageableController(
     @ApiResponses(value = [
         ApiResponse(code = 200, message = "Success", response = Page::class)
     ])
-    @RequestMapping(value = "search/results", method = [RequestMethod.GET], params = [ "page", "size"])
+    @RequestMapping(value = ["search/results"], method = [RequestMethod.GET], params = ["page", "size"])
     fun getPageableOfferSearch(
             @ApiParam("Optional page number to retrieve a particular page. If not specified this API retrieves first page.")
-            @RequestParam( "page" )
+            @RequestParam("page")
             page: Int?,
 
             @ApiParam("Optional page size to include number of offers in a page. Defaults to 20.")
-            @RequestParam( "size" )
+            @RequestParam("size")
             size: Int?,
 
             @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
@@ -131,8 +131,8 @@ class PageableController(
 
         return offerSearchService.getPageableOfferSearches(
                 PageRequest(page, size), getStrategyType(strategy)).exceptionally { e ->
-                    logger.error("Request: getPageableOfferSearch/" + page!!.toString() + "/" + size!!.toString() + " raised " + e)
-                    throw e
-                }
+            logger.error("Request: getPageableOfferSearch/" + page!!.toString() + "/" + size!!.toString() + " raised " + e)
+            throw e
+        }
     }
 }

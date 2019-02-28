@@ -36,6 +36,7 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import java.math.BigDecimal
+import java.util.*
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
@@ -93,13 +94,13 @@ class OfferShareServiceTest {
             "first price description",
             BigDecimal("0.5").toString(),
             listOf(
-                    OfferPriceRules(0,"age","10"),
-                    OfferPriceRules(0,"sex","male"),
-                    OfferPriceRules(0,"country","USA")
+                    OfferPriceRules(0, "age", "10"),
+                    OfferPriceRules(0, "sex", "male"),
+                    OfferPriceRules(0, "country", "USA")
             )
     )
 
-    protected val offerPrices = listOf(offerPrice)
+    protected lateinit var offerPrices: List<OfferPrice>
 
     private val SHARE_DATA_RESPONSE = "SHARE_DATA_RESPONSE"
 
@@ -138,9 +139,9 @@ class OfferShareServiceTest {
                 .changeStrategy(strategy)
                 .saveOffer(offer)
 
-        offerPriceRepositoryStrategy
+        offerPrices = offerPriceRepositoryStrategy
                 .changeStrategy(strategy)
-                .savePrices(offer, offerPrices)
+                .savePrices(offer, listOf(offerPrice))
 
         val searchRequest = searchRequestRepositoryStrategy
                 .changeStrategy(strategy)
@@ -148,7 +149,15 @@ class OfferShareServiceTest {
 
         offerSearchRepositoryStrategy
                 .changeStrategy(strategy)
-                .saveSearchResult(OfferSearch(0, searchRequest.owner, searchRequest.id, 1, OfferResultAction.ACCEPT ,"", "", ArrayList()))
+                .saveSearchResult(OfferSearch(
+                        0,
+                        searchRequest.owner,
+                        searchRequest.id,
+                        1,
+                        OfferResultAction.ACCEPT,
+                        "",
+                        ArrayList()
+                ))
     }
 
     @Test fun `should be create new share data`() {

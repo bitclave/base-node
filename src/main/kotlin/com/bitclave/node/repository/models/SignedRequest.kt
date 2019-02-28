@@ -1,10 +1,9 @@
 package com.bitclave.node.repository.models
 
-data class SignedRequest<out T>(
-
+data class SignedRequest<T>(
         val data: T? = null,
         val pk: String = "",
-        var sig: String = "",
-        val nonce: Long = 0
-
+        val sig: String = "",
+        val nonce: Long = 0,
+        val rawData: String = ""
 )

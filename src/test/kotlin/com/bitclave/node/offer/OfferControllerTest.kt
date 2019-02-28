@@ -21,6 +21,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.math.BigDecimal
+import java.util.*
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
@@ -44,9 +45,9 @@ class OfferControllerTest {
                     "first price description",
                     BigDecimal("0.5").toString(),
                     listOf(
-                            OfferPriceRules(0,"age","10"),
-                            OfferPriceRules(0,"sex","male"),
-                            OfferPriceRules(0,"country","USA")
+                            OfferPriceRules(0, "age", "10"),
+                            OfferPriceRules(0, "sex", "male"),
+                            OfferPriceRules(0, "country", "USA")
                     )
             ),
             OfferPrice(
@@ -54,9 +55,9 @@ class OfferControllerTest {
                     "second price description",
                     BigDecimal("0.7").toString(),
                     listOf(
-                            OfferPriceRules(0,"age","20"),
-                            OfferPriceRules(0,"sex","female"),
-                            OfferPriceRules(0,"country","England")
+                            OfferPriceRules(0, "age", "20"),
+                            OfferPriceRules(0, "sex", "female"),
+                            OfferPriceRules(0, "country", "England")
                     )
             ),
             OfferPrice(
@@ -64,9 +65,9 @@ class OfferControllerTest {
                     "third price description",
                     BigDecimal("0.9").toString(),
                     listOf(
-                            OfferPriceRules(0,"age","30"),
-                            OfferPriceRules(0,"sex","male"),
-                            OfferPriceRules(0,"country","Israel")
+                            OfferPriceRules(0, "age", "30"),
+                            OfferPriceRules(0, "sex", "male"),
+                            OfferPriceRules(0, "country", "Israel")
                     )
             ),
             OfferPrice(
@@ -74,9 +75,9 @@ class OfferControllerTest {
                     "fourth price description",
                     BigDecimal("1.2").toString(),
                     listOf(
-                            OfferPriceRules(0,"age","40"),
-                            OfferPriceRules(0,"sex","male"),
-                            OfferPriceRules(0,"country","Ukraine")
+                            OfferPriceRules(0, "age", "40"),
+                            OfferPriceRules(0, "sex", "male"),
+                            OfferPriceRules(0, "country", "Ukraine")
                     )
             )
     )
@@ -91,7 +92,9 @@ class OfferControllerTest {
             BigDecimal.TEN.toString(),
             mapOf("car" to "true", "color" to "red"),
             mapOf("age" to "18", "salary" to "1000"),
-            mapOf("age" to Offer.CompareAction.MORE_OR_EQUAL, "salary" to Offer.CompareAction.MORE_OR_EQUAL)
+            mapOf("age" to Offer.CompareAction.MORE_OR_EQUAL, "salary" to Offer.CompareAction.MORE_OR_EQUAL),
+            Date(1550561756503),
+            Date(1550561756503)
     )
 
     @Before fun setup() {
@@ -107,6 +110,18 @@ class OfferControllerTest {
     @Test fun `create offer`() {
         this.mvc.perform(put("/$version/client/$publicKey/offer/")
                 .content(requestOffer.toJsonString())
+                .headers(httpHeaders))
+                .andExpect(status().isOk)
+    }
+
+    @Test fun `create offer without createdAt and updatedAt`() {
+        val strModel = requestOffer.toJsonString()
+        val modelWithoutUpdateAt = strModel
+                .replace(",\"updatedAt\":\"2019-02-19T10:35:56.503+0300\"", "")
+                .replace(",\"createdAt\":\"2019-02-19T10:35:56.503+0300\"", "")
+
+        this.mvc.perform(put("/$version/client/$publicKey/offer/")
+                .content(modelWithoutUpdateAt)
                 .headers(httpHeaders))
                 .andExpect(status().isOk)
     }

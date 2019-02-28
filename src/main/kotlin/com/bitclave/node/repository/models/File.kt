@@ -1,6 +1,6 @@
 package com.bitclave.node.repository.models
 
-import com.fasterxml.jackson.annotation.JsonIgnore
+import com.bitclave.node.configuration.gson.Exclude
 import org.hibernate.annotations.ColumnDefault
 import javax.persistence.*
 
@@ -20,7 +20,7 @@ data class UploadedFile(
         @Column(nullable = false) @ColumnDefault("0")
         var size: Long = 0,
 
-        @JsonIgnore
+        @Exclude
         @Lob
         var data: ByteArray? = null
-) {}
+)

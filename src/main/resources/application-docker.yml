@@ -11,6 +11,13 @@ spring:
     username: ${JDBC_DATABASE_USERNAME}
     password: ${JDBC_DATABASE_PASSWORD}
 
+flyway:
+  baseline-on-migrate: true
+  url: ${JDBC_DATABASE_URL}
+  user: ${JDBC_DATABASE_USERNAME}
+  password: ${JDBC_DATABASE_PASSWORD}
+  locations: db/migration
+
 server:
   port: 8080
 

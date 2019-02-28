@@ -3,7 +3,6 @@ package com.bitclave.node.repository.search.offer
 import com.bitclave.node.repository.models.OfferResultAction
 import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.repository.models.SearchRequest
-import com.bitclave.node.repository.search.SearchRequestCrudRepository
 import com.bitclave.node.repository.search.SearchRequestRepository
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.DataNotSavedException
@@ -38,7 +37,7 @@ class PostgresOfferSearchRepositoryImpl(
                     for (offerSearch: OfferSearch in relatedOfferSearches) {
                         if (offerSearch.id != item.id) {
                             offerSearch.state = item.state
-                            offerSearch.lastUpdated = item.lastUpdated
+                            offerSearch.updatedAt = item.updatedAt
                             offerSearch.events = item.events
                             offerSearch.info = item.info
                         }
@@ -49,7 +48,7 @@ class PostgresOfferSearchRepositoryImpl(
                     for (offerSearch: OfferSearch in relatedOfferSearches) {
                         if (offerSearch.id != item.id) {
                             item.state = offerSearch.state
-                            item.lastUpdated = offerSearch.lastUpdated
+                            item.updatedAt = offerSearch.updatedAt
                             item.events.addAll(offerSearch.events)
                             item.info = offerSearch.info
                             repository.save(item)
@@ -133,7 +132,6 @@ class PostgresOfferSearchRepositoryImpl(
                         targetSearchRequest.id,
                         offerSearch.offerId,
                         OfferResultAction.NONE,
-                        Date().toString(),
                         offerSearch.info,
                         ArrayList()
                 )

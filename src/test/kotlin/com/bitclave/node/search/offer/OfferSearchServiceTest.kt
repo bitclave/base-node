@@ -25,9 +25,6 @@ import com.bitclave.node.repository.share.OfferShareCrudRepository
 import com.bitclave.node.repository.share.OfferShareRepositoryStrategy
 import com.bitclave.node.repository.share.PostgresOfferShareRepositoryImpl
 import com.bitclave.node.services.v1.*
-import com.bitclave.node.services.v1.AccountService
-import com.bitclave.node.services.v1.OfferSearchService
-import com.bitclave.node.services.v1.OfferShareService
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -39,13 +36,14 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import java.math.BigDecimal
+import java.util.*
 import java.util.stream.LongStream
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-class OfferSearchServiceTest {
+open class OfferSearchServiceTest {
 
     @Autowired
     private lateinit var web3Provider: Web3Provider
@@ -111,13 +109,13 @@ class OfferSearchServiceTest {
             "first price description",
             BigDecimal("0.5").toString(),
             listOf(
-                    OfferPriceRules(0,"age","10"),
-                    OfferPriceRules(0,"sex","male"),
-                    OfferPriceRules(0,"country","USA")
+                    OfferPriceRules(0, "age", "10"),
+                    OfferPriceRules(0, "sex", "male"),
+                    OfferPriceRules(0, "country", "USA")
             )
     )
 
-    protected val offerPrices = listOf(offerPrice)
+    protected lateinit var offerPrices: List<OfferPrice>
 
     @Before fun setup() {
         val postgres = PostgresAccountRepositoryImpl(accountCrudRepository)
@@ -175,10 +173,9 @@ class OfferSearchServiceTest {
                 .changeStrategy(strategy)
                 .saveOffer(offer2)
 
-        offerPriceRepositoryStrategy
+        offerPrices = offerPriceRepositoryStrategy
                 .changeStrategy(strategy)
-                .savePrices(offer, offerPrices)
-
+                .savePrices(offer, listOf(offerPrice))
 
         createdSearchRequest1 = searchRequestRepositoryStrategy.changeStrategy(strategy)
                 .saveSearchRequest(SearchRequest(0, publicKey, emptyMap()))
@@ -189,7 +186,15 @@ class OfferSearchServiceTest {
 
     fun createOfferSearch(searchRequest: SearchRequest, offer: Offer, events: MutableList<String>) {
         offerSearchService.saveNewOfferSearch(
-                OfferSearch(0, searchRequest.owner, searchRequest.id, offer.id, OfferResultAction.NONE, "","", events),
+                OfferSearch(
+                        0,
+                        searchRequest.owner,
+                        searchRequest.id,
+                        offer.id,
+                        OfferResultAction.NONE,
+                        "",
+                        events
+                ),
                 strategy
         ).get()
     }
@@ -237,11 +242,11 @@ class OfferSearchServiceTest {
         var events = mutableListOf("tram taram")
         createOfferSearch(createdSearchRequest1, createdOffer1, events)
 
-        offerSearchService.addEventTo( "bla bla bla",1L, strategy).get()
+        offerSearchService.addEventTo("bla bla bla", 1L, strategy).get()
 
         val result = offerSearchService.getOffersResult(strategy, createdSearchRequest1.id).get()
         assert(result[0].offerSearch.events.contains("bla bla bla"))
-
+        assert(result[0].offerSearch.updatedAt.time > result[0].offerSearch.createdAt.time)
     }
 
     @Test
@@ -267,6 +272,7 @@ class OfferSearchServiceTest {
         assert(result[0].offerSearch.state == OfferResultAction.COMPLAIN)
         assert(result[0].offer.id == createdOffer1.id)
         assert(result[0].offer.owner == businessPublicKey)
+        assert(result[0].offerSearch.updatedAt.time > result[0].offerSearch.createdAt.time)
     }
 
     @Test fun `search item state should be ACCEPT`() {
@@ -287,9 +293,11 @@ class OfferSearchServiceTest {
         assert(result[0].offerSearch.state == OfferResultAction.ACCEPT)
         assert(result[0].offer.id == createdOffer1.id)
         assert(result[0].offer.owner == businessPublicKey)
+        assert(result[0].offerSearch.updatedAt.time > result[0].offerSearch.createdAt.time)
     }
 
-    @Test fun `all search item states with same owner and offerId should be same when one of them is updated`() {
+    @Test
+    fun `all search item states with same owner and offerId should be same when one of them is updated`() {
         createOfferSearch(createdSearchRequest2, createdOffer1, ArrayList())
         createOfferSearch(createdSearchRequest1, createdOffer2, ArrayList())
 
@@ -302,7 +310,6 @@ class OfferSearchServiceTest {
         assert(result[1].id >= 1L)
         assert(result[1].state == OfferResultAction.COMPLAIN)
         assertThat(result[0].events.toList()).isEqualTo(result[1].events.toList())
-        assert(result[0].lastUpdated == result[1].lastUpdated)
         assert(result[0].info == result[1].info)
 
         result = offerSearchService.getOfferSearches(strategy, createdOffer2.id, createdSearchRequest1.id).get()
@@ -324,11 +331,11 @@ class OfferSearchServiceTest {
         assert(result[1].state == OfferResultAction.COMPLAIN)
         assert(result[1].state == OfferResultAction.COMPLAIN)
         assertThat(result[0].events.toList()).isEqualTo(result[1].events.toList())
-        assert(result[0].lastUpdated == result[1].lastUpdated)
         assert(result[0].info == result[1].info)
     }
 
-    @Test fun `delete all OfferSearch objects with state NONE or REJECT when related Offer object is updated`() {
+    @Test
+    fun `delete all OfferSearch objects with state NONE or REJECT when related Offer object is updated`() {
         createOfferSearch(createdSearchRequest1, createdOffer1, ArrayList())
         createOfferSearch(createdSearchRequest2, createdOffer1, ArrayList())
         createOfferSearch(createdSearchRequest1, createdOffer2, ArrayList())
@@ -371,11 +378,12 @@ class OfferSearchServiceTest {
         result = offerSearchService.getOfferSearches(strategy, createdOffer1.id).get()
         assert(result.isEmpty())
 
-        result = offerSearchService.getOfferSearches(strategy,createdOffer2.id).get()
+        result = offerSearchService.getOfferSearches(strategy, createdOffer2.id).get()
         assert(result.isNotEmpty())
     }
 
-    @Test fun `delete all OfferSearch objects with state NONE or REJECT when related SearchRequest object is deleted`() {
+    @Test
+    fun `delete all OfferSearch objects with state NONE or REJECT when related SearchRequest object is deleted`() {
         `client can complain to search item`()
         createOfferSearch(createdSearchRequest2, createdOffer1, ArrayList())
         createOfferSearch(createdSearchRequest1, createdOffer2, ArrayList())

@@ -7,20 +7,24 @@ import org.bitcoinj.core.ECKey
 import java.math.BigInteger
 import java.util.concurrent.CompletableFuture
 
-private val GSON: Gson = GsonBuilder().disableHtmlEscaping().create()
+private val GSON: Gson = GsonBuilder()
+        .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+        .disableHtmlEscaping()
+        .create()
 
-fun SignedRequest<*>.signMessage(privateKey: String) {
+fun <T> SignedRequest<T>.signMessage(privateKey: String): SignedRequest<T> {
     val key: ECKey = ECKey.fromPrivate(BigInteger(privateKey, 16))
-    this.sig = key.signMessage(GSON.toJson(this.data))
+    val rawData = GSON.toJson(this.data)
+    return this.copy(sig = key.signMessage(rawData), rawData = rawData)
 }
 
 fun SignedRequest<*>.validateSig(): CompletableFuture<Boolean> {
     return CompletableFuture.supplyAsync {
+        if (this.sig.isBlank()) {
+            return@supplyAsync false
+        }
 
-        val a = GSON.toJson(this.data)
-        val b = this.sig
-        val c = ECKey.signedMessageToKey(a, b)
-
+        val c = ECKey.signedMessageToKey(this.rawData, this.sig)
         c.publicKeyAsHex == this.pk
     }
 }

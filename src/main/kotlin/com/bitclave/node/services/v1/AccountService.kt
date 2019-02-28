@@ -26,7 +26,6 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
                 .thenApply { isValid ->
                     if (!isValid) {
                         throw AccessDeniedException()
-//                        throw RuntimeException("Signature verification failed")
                     }
 
                     request.pk.toLowerCase()
@@ -107,7 +106,7 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
         return CompletableFuture.supplyAsync {
             accountRepository.changeStrategy(strategy)
                     .findByPublicKey(account.publicKey) ?: throw NotFoundException(
-                        "User with baseID " + account.publicKey.toString()+ "does not exist")
+                    "User with baseID " + account.publicKey.toString() + "does not exist")
         }
     }
 

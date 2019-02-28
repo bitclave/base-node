@@ -4,12 +4,12 @@ spring:
       ddlAuto: create-drop
 
   datasource:
-#     data: classpath*:data-docker.sql
-#     driverClassName: org.postgresql.Driver
-#     platform: postgres
-#     url: jdbc:postgresql://localhost:5432/testdb
-#     username: postgres
-#     password: bitclave
+    #     data: classpath*:data-docker.sql
+    #     driverClassName: org.postgresql.Driver
+    #     platform: postgres
+    #     url: jdbc:postgresql://localhost:5432/testdb
+    #     username: postgres
+    #     password: bitclave
 
 
     driverClassName: org.h2.Driver
@@ -17,6 +17,13 @@ spring:
     username: postgres1
     password: bitclave1
 
+flyway:
+  enabled: false
+  baseline-on-migrate: true
+  url: jdbc:h2:mem:db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+  user: postgres1
+  password: bitclave1
+  locations: db/migration
 
 hybrid:
   nodeUrl: http://localhost:9545/
