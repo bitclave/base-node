@@ -210,4 +210,35 @@ class OfferController(
         }
     }
 
+    /**
+     * Return list of already created offers by owner (Public key of creator) and tag key.
+     *
+     * @return {@link List<Offer>}, Http status - 200.
+     */
+    @ApiOperation(
+            "get already created offers by owner and tag key", response = Offer::class, responseContainer = "List"
+    )
+    @ApiResponses(value = [
+        ApiResponse(code = 200, message = "Success", response = List::class)
+    ])
+    @RequestMapping(method = [RequestMethod.GET], value = ["/tag/{tag}"])
+    fun getOffersByOwnerAndTag(
+            @ApiParam("owner who create offer(s)", required = true)
+            @PathVariable("owner", required = true)
+            owner: String,
+
+            @ApiParam("tag key of a offer.")
+            @PathVariable(value = "tag", required = true)
+            tag: String,
+
+            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+            @RequestHeader("Strategy", required = false)
+            strategy: String?): CompletableFuture<List<Offer>> {
+
+        return offerService.getOfferByOwnerAndTag(owner, tag, getStrategyType(strategy)).exceptionally { e ->
+            logger.error("Request: getOffersByOwnerAndTag/" + owner + "/" + tag + " raised " + e)
+            throw e
+        }
+    }
+
 }

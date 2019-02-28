@@ -77,4 +77,8 @@ class PostgresOfferRepositoryImpl(
     override fun getTotalCount(): Long {
         return repository.count()
     }
+
+    override fun getOfferByOwnerAndTag(owner: String, tagKey: String): List<Offer> {
+        return repository.getOfferByOwnerAndTag(owner, tagKey)
+    }
 }
