@@ -167,7 +167,18 @@ class SearchRequestService(
             val querySearchRequest = QuerySearchRequest(0, owner, query)
 
             querySearchRequestCrudRepository.save(querySearchRequest)
-            val searchResult = rtSearchRepository.getOffersIdByQuery(query).get()
+
+            val existedOfferSearches = offerSearchRepository
+                    .changeStrategy(strategyType)
+                    .findBySearchRequestId(id)
+                    .map { it.offerId }
+                    .toSet()
+
+            val searchResult = rtSearchRepository
+                    .getOffersIdByQuery(query)
+                    .get()
+                    .filter { !existedOfferSearches.contains(it) }
+
             val offerSearchResult = searchResult.map {
                 OfferSearch(0, owner, searchRequest.id, it)
             }
