@@ -160,9 +160,9 @@ class SearchRequestService(
                 throw BadArgumentException("SearchRequest not has rtSearch tag")
             }
 
-            offerSearchRepository
+            val result = repository
                     .changeStrategy(strategyType)
-                    .deleteAllBySearchRequestId(id)
+                    .saveSearchRequest(searchRequest.copy(updatedAt = Date()))
 
             val querySearchRequest = QuerySearchRequest(0, owner, query)
 
@@ -172,11 +172,13 @@ class SearchRequestService(
                 OfferSearch(0, owner, searchRequest.id, it)
             }
 
-            offerSearchRepository
+            offerSearchResult.forEach {
+                offerSearchRepository
                     .changeStrategy(strategyType)
-                    .saveSearchResult(offerSearchResult)
+                    .saveSearchResult(it)
+            }
 
-            return@supplyAsync searchRequest
+            return@supplyAsync result
         }
     }
 
