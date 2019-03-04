@@ -68,26 +68,7 @@ class OfferSearchService(
                 if (offerSearch != null) arrayListOf(offerSearch) else emptyList<OfferSearch>()
             }
 
-            // "ids" is list of offer Ids that are associated with the searchRequests in "result" above
-            // Note: we should handle case where multiple OfferSearches have pointer to the same offer Id
-//            val ids: Map<Long, OfferSearch> = result.associate { Pair(it.offerId, it) }
-
-//            val offers = offerRepository.changeStrategy(strategy)
-//                    .findById(ids.keys.toList())
-
-            val l = mutableListOf<OfferSearchResultItem>()
-            for (offerSearch: OfferSearch in result) {
-                val offer: Offer? = offerRepository.changeStrategy(strategy).findById(offerSearch.offerId)
-                if (offer != null) {
-                    val item: OfferSearchResultItem = OfferSearchResultItem(offerSearch, offer)
-                    l.add(item)
-                }
-            }
-            l
-
-//            offers.filter { ids.containsKey(it.id) }
-//                    .map { OfferSearchResultItem(ids[it.id]!!, it) }
-
+            offerSearchListToResult(result, offerRepository.changeStrategy(strategy))
         }
     }
 
@@ -107,20 +88,9 @@ class OfferSearchService(
 //            val offerSearches = repository.findBySearchRequestIds(searchRequestIds)
             val offerSearches = repository.findByOwner(owner)
 
-            //get all relevant offer of offerSearches
-            val offerIds: List<Long> = offerSearches.map { it.offerId }
-            val offers = offerRepository.changeStrategy(strategy).findById(offerIds).distinct()
-
-            //merge all relevant offer and offerSearches together
-            val returnList = mutableListOf<OfferSearchResultItem>()
-            for (offerSearch: OfferSearch in offerSearches) {
-                val offer: Offer? = offers.find { it.id == offerSearch.offerId }
-                if (offer != null) {
-                    val item = OfferSearchResultItem(offerSearch, offer)
-                    returnList.add(item)
-                }
-            }
-            returnList
+            offerSearchListToResult(
+                    offerSearches, offerRepository.changeStrategy(strategy)
+            )
         }
     }
 
@@ -479,22 +449,44 @@ class OfferSearchService(
                     .map { it.offerId }
                     .toSet()
 
-            val searchResult = rtSearchRepository
+            val offerIds = rtSearchRepository
                     .getOffersIdByQuery(query)
                     .get()
+
+            val offerIdsWithoutExisted = offerIds
                     .filter { !existedOfferSearches.contains(it) }
 
-            val offerSearchResult = searchResult.map {
+            val offerSearches = offerIdsWithoutExisted.map {
                 OfferSearch(0, owner, searchRequest.id, it)
             }
 
-            offerSearchResult.forEach {
+            offerSearches.forEach {
                 offerSearchRepository
                         .changeStrategy(strategyType)
                         .saveSearchResult(it)
             }
 
-            return@supplyAsync getOffersResult(strategyType, searchRequestId, null).get()
+            val offerSearchResult = offerSearchRepository.changeStrategy(strategyType)
+                    .findBySearchRequestIdAndOfferIds(searchRequestId, offerIds)
+
+            return@supplyAsync offerSearchListToResult(
+                    offerSearchResult, offerRepository.changeStrategy(strategyType)
+            )
         }
+    }
+
+    private fun offerSearchListToResult(
+            offerSearch: List<OfferSearch>,
+            offersRepository: OfferRepository
+    ): List<OfferSearchResultItem> {
+        val offerIds = offerSearch.map { it.offerId }
+                .distinct()
+        val offers = offersRepository
+                .findById(offerIds)
+                .groupBy{ it.id }
+
+        val withExistedOffers = offerSearch.filter { offers.containsKey(it.offerId) }
+
+        return withExistedOffers.map { OfferSearchResultItem(it, offers.getValue(it.offerId)[0]) }
     }
 }
