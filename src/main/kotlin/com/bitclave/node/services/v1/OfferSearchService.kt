@@ -4,10 +4,13 @@ import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.*
 import com.bitclave.node.repository.offer.OfferRepository
+import com.bitclave.node.repository.rtSearch.RtSearchRepository
 import com.bitclave.node.repository.search.SearchRequestRepository
 import com.bitclave.node.repository.search.offer.OfferSearchRepository
+import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepository
 import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.errors.BadArgumentException
+import com.bitclave.node.services.errors.NotFoundException
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import org.springframework.beans.factory.annotation.Qualifier
@@ -39,7 +42,9 @@ class OfferSearchEventConfirmed(
 class OfferSearchService(
         private val searchRequestRepository: RepositoryStrategy<SearchRequestRepository>,
         private val offerRepository: RepositoryStrategy<OfferRepository>,
-        private val offerSearchRepository: RepositoryStrategy<OfferSearchRepository>
+        private val offerSearchRepository: RepositoryStrategy<OfferSearchRepository>,
+        private val querySearchRequestCrudRepository: QuerySearchRequestCrudRepository,
+        private val rtSearchRepository: RtSearchRepository
 ) {
     fun getOffersResult(
             strategy: RepositoryStrategyType,
@@ -63,26 +68,7 @@ class OfferSearchService(
                 if (offerSearch != null) arrayListOf(offerSearch) else emptyList<OfferSearch>()
             }
 
-            // "ids" is list of offer Ids that are associated with the searchRequests in "result" above
-            // Note: we should handle case where multiple OfferSearches have pointer to the same offer Id
-//            val ids: Map<Long, OfferSearch> = result.associate { Pair(it.offerId, it) }
-
-//            val offers = offerRepository.changeStrategy(strategy)
-//                    .findById(ids.keys.toList())
-
-            val l = mutableListOf<OfferSearchResultItem>()
-            for (offerSearch: OfferSearch in result) {
-                val offer: Offer? = offerRepository.changeStrategy(strategy).findById(offerSearch.offerId)
-                if (offer != null) {
-                    val item: OfferSearchResultItem = OfferSearchResultItem(offerSearch, offer)
-                    l.add(item)
-                }
-            }
-            l
-
-//            offers.filter { ids.containsKey(it.id) }
-//                    .map { OfferSearchResultItem(ids[it.id]!!, it) }
-
+            offerSearchListToResult(result, offerRepository.changeStrategy(strategy))
         }
     }
 
@@ -102,20 +88,9 @@ class OfferSearchService(
 //            val offerSearches = repository.findBySearchRequestIds(searchRequestIds)
             val offerSearches = repository.findByOwner(owner)
 
-            //get all relevant offer of offerSearches
-            val offerIds: List<Long> = offerSearches.map { it.offerId }
-            val offers = offerRepository.changeStrategy(strategy).findById(offerIds).distinct()
-
-            //merge all relevant offer and offerSearches together
-            val returnList = mutableListOf<OfferSearchResultItem>()
-            for (offerSearch: OfferSearch in offerSearches) {
-                val offer: Offer? = offers.find { it.id == offerSearch.offerId }
-                if (offer != null) {
-                    val item = OfferSearchResultItem(offerSearch, offer)
-                    returnList.add(item)
-                }
-            }
-            returnList
+            offerSearchListToResult(
+                    offerSearches, offerRepository.changeStrategy(strategy)
+            )
         }
     }
 
@@ -442,5 +417,76 @@ class OfferSearchService(
                     ?: throw BadArgumentException()
             return@supplyAsync offerSearchRepository.changeStrategy(strategy).cloneOfferSearchOfSearchRequest(id, searchRequest)
         })
+    }
+
+    fun createOfferSearchesByQuery(
+            searchRequestId: Long,
+            owner: String,
+            query: String,
+            strategyType: RepositoryStrategyType
+    ): CompletableFuture<List<OfferSearchResultItem>> {
+        return CompletableFuture.supplyAsync {
+            val searchRequest = searchRequestRepository
+                    .changeStrategy(strategyType)
+                    .findById(searchRequestId)
+                    ?: throw NotFoundException("search request not found by id: $searchRequestId")
+
+            if (searchRequest.tags.keys.indexOf("rtSearch") <= -1) {
+                throw BadArgumentException("SearchRequest not has rtSearch tag")
+            }
+
+            searchRequestRepository
+                    .changeStrategy(strategyType)
+                    .saveSearchRequest(searchRequest.copy(updatedAt = Date()))
+
+            val querySearchRequest = QuerySearchRequest(0, owner, query)
+
+            querySearchRequestCrudRepository.save(querySearchRequest)
+
+            val existedOfferSearches = offerSearchRepository
+                    .changeStrategy(strategyType)
+                    .findBySearchRequestId(searchRequestId)
+                    .map { it.offerId }
+                    .toSet()
+
+            val offerIds = rtSearchRepository
+                    .getOffersIdByQuery(query)
+                    .get()
+
+            val offerIdsWithoutExisted = offerIds
+                    .filter { !existedOfferSearches.contains(it) }
+
+            val offerSearches = offerIdsWithoutExisted.map {
+                OfferSearch(0, owner, searchRequest.id, it)
+            }
+
+            offerSearches.forEach {
+                offerSearchRepository
+                        .changeStrategy(strategyType)
+                        .saveSearchResult(it)
+            }
+
+            val offerSearchResult = offerSearchRepository.changeStrategy(strategyType)
+                    .findBySearchRequestIdAndOfferIds(searchRequestId, offerIds)
+
+            return@supplyAsync offerSearchListToResult(
+                    offerSearchResult, offerRepository.changeStrategy(strategyType)
+            )
+        }
+    }
+
+    private fun offerSearchListToResult(
+            offerSearch: List<OfferSearch>,
+            offersRepository: OfferRepository
+    ): List<OfferSearchResultItem> {
+        val offerIds = offerSearch.map { it.offerId }
+                .distinct()
+        val offers = offersRepository
+                .findById(offerIds)
+                .groupBy{ it.id }
+
+        val withExistedOffers = offerSearch.filter { offers.containsKey(it.offerId) }
+
+        return withExistedOffers.map { OfferSearchResultItem(it, offers.getValue(it.offerId)[0]) }
     }
 }

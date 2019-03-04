@@ -2,13 +2,8 @@ package com.bitclave.node.services.v1
 
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
-import com.bitclave.node.repository.models.OfferSearch
-import com.bitclave.node.repository.models.QuerySearchRequest
 import com.bitclave.node.repository.models.SearchRequest
-import com.bitclave.node.repository.rtSearch.RtSearchRepository
 import com.bitclave.node.repository.search.SearchRequestRepository
-import com.bitclave.node.repository.search.offer.OfferSearchRepository
-import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepository
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
 import org.springframework.beans.factory.annotation.Qualifier
@@ -21,10 +16,7 @@ import java.util.concurrent.CompletableFuture
 @Service
 @Qualifier("v1")
 class SearchRequestService(
-        private val repository: RepositoryStrategy<SearchRequestRepository>,
-        private val offerSearchRepository: RepositoryStrategy<OfferSearchRepository>,
-        private val querySearchRequestCrudRepository: QuerySearchRequestCrudRepository,
-        private val rtSearchRepository: RtSearchRepository
+        private val repository: RepositoryStrategy<SearchRequestRepository>
 ) {
 
     fun putSearchRequest(
@@ -143,53 +135,6 @@ class SearchRequestService(
 
             return@supplyAsync repository.getTotalCount()
 
-        }
-    }
-
-    fun createSearchRequestByQuery(
-            id: Long,
-            owner: String,
-            query: String,
-            strategyType: RepositoryStrategyType): CompletableFuture<SearchRequest> {
-        return CompletableFuture.supplyAsync {
-            val searchRequest = repository
-                    .changeStrategy(strategyType)
-                    .findById(id) ?: throw NotFoundException("search request not found by id: $id")
-
-            if (searchRequest.tags.keys.indexOf("rtSearch") <= -1) {
-                throw BadArgumentException("SearchRequest not has rtSearch tag")
-            }
-
-            val result = repository
-                    .changeStrategy(strategyType)
-                    .saveSearchRequest(searchRequest.copy(updatedAt = Date()))
-
-            val querySearchRequest = QuerySearchRequest(0, owner, query)
-
-            querySearchRequestCrudRepository.save(querySearchRequest)
-
-            val existedOfferSearches = offerSearchRepository
-                    .changeStrategy(strategyType)
-                    .findBySearchRequestId(id)
-                    .map { it.offerId }
-                    .toSet()
-
-            val searchResult = rtSearchRepository
-                    .getOffersIdByQuery(query)
-                    .get()
-                    .filter { !existedOfferSearches.contains(it) }
-
-            val offerSearchResult = searchResult.map {
-                OfferSearch(0, owner, searchRequest.id, it)
-            }
-
-            offerSearchResult.forEach {
-                offerSearchRepository
-                    .changeStrategy(strategyType)
-                    .saveSearchResult(it)
-            }
-
-            return@supplyAsync result
         }
     }
 

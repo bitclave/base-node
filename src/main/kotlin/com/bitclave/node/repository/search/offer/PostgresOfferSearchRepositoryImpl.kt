@@ -90,6 +90,10 @@ class PostgresOfferSearchRepositoryImpl(
         return repository.findBySearchRequestIdAndOfferId(searchRequestId, offerId)
     }
 
+    override fun findBySearchRequestIdAndOfferIds(searchRequestId: Long, offerIds: List<Long>): List<OfferSearch> {
+        return repository.findBySearchRequestIdAndOfferIdIn(searchRequestId, offerIds)
+    }
+
     override fun findByOwner(owner: String): List<OfferSearch> {
         return repository.findByOwner(owner)
     }

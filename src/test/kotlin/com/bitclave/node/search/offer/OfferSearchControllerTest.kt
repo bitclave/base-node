@@ -69,6 +69,14 @@ class OfferSearchControllerTest {
         httpHeaders.set("Strategy", RepositoryStrategyType.POSTGRES.name)
     }
 
+    @Test fun `create offerSearches request by query string`() {
+        this.mvc.perform(post("/$version/search/query/")
+                .content(offerSearchIdRequest.toJsonString())
+                .param("q", "some query string")
+                .headers(httpHeaders))
+                .andExpect(status().isCreated)
+    }
+
     @Test fun `get offer search list by searchRequestId`() {
         this.mvc.perform(get("/$version/search/result/")
                 .param("searchRequestId", "1")
