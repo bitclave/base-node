@@ -4,10 +4,13 @@ import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.*
 import com.bitclave.node.repository.offer.OfferRepository
+import com.bitclave.node.repository.rtSearch.RtSearchRepository
 import com.bitclave.node.repository.search.SearchRequestRepository
 import com.bitclave.node.repository.search.offer.OfferSearchRepository
+import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepository
 import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.errors.BadArgumentException
+import com.bitclave.node.services.errors.NotFoundException
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import org.springframework.beans.factory.annotation.Qualifier
@@ -39,7 +42,9 @@ class OfferSearchEventConfirmed(
 class OfferSearchService(
         private val searchRequestRepository: RepositoryStrategy<SearchRequestRepository>,
         private val offerRepository: RepositoryStrategy<OfferRepository>,
-        private val offerSearchRepository: RepositoryStrategy<OfferSearchRepository>
+        private val offerSearchRepository: RepositoryStrategy<OfferSearchRepository>,
+        private val querySearchRequestCrudRepository: QuerySearchRequestCrudRepository,
+        private val rtSearchRepository: RtSearchRepository
 ) {
     fun getOffersResult(
             strategy: RepositoryStrategyType,
@@ -442,5 +447,54 @@ class OfferSearchService(
                     ?: throw BadArgumentException()
             return@supplyAsync offerSearchRepository.changeStrategy(strategy).cloneOfferSearchOfSearchRequest(id, searchRequest)
         })
+    }
+
+    fun createOfferSearchesByQuery(
+            searchRequestId: Long,
+            owner: String,
+            query: String,
+            strategyType: RepositoryStrategyType
+    ): CompletableFuture<List<OfferSearchResultItem>> {
+        return CompletableFuture.supplyAsync {
+            val searchRequest = searchRequestRepository
+                    .changeStrategy(strategyType)
+                    .findById(searchRequestId)
+                    ?: throw NotFoundException("search request not found by id: $searchRequestId")
+
+            if (searchRequest.tags.keys.indexOf("rtSearch") <= -1) {
+                throw BadArgumentException("SearchRequest not has rtSearch tag")
+            }
+
+            searchRequestRepository
+                    .changeStrategy(strategyType)
+                    .saveSearchRequest(searchRequest.copy(updatedAt = Date()))
+
+            val querySearchRequest = QuerySearchRequest(0, owner, query)
+
+            querySearchRequestCrudRepository.save(querySearchRequest)
+
+            val existedOfferSearches = offerSearchRepository
+                    .changeStrategy(strategyType)
+                    .findBySearchRequestId(searchRequestId)
+                    .map { it.offerId }
+                    .toSet()
+
+            val searchResult = rtSearchRepository
+                    .getOffersIdByQuery(query)
+                    .get()
+                    .filter { !existedOfferSearches.contains(it) }
+
+            val offerSearchResult = searchResult.map {
+                OfferSearch(0, owner, searchRequest.id, it)
+            }
+
+            offerSearchResult.forEach {
+                offerSearchRepository
+                        .changeStrategy(strategyType)
+                        .saveSearchResult(it)
+            }
+
+            return@supplyAsync getOffersResult(strategyType, searchRequestId, null).get()
+        }
     }
 }
