@@ -178,7 +178,6 @@ open class OfferSearchServiceTest {
         strategy = RepositoryStrategyType.POSTGRES
         accountService.registrationClient(account, strategy)
 
-
         createdOffer1 = offerRepositoryStrategy
                 .changeStrategy(strategy)
                 .saveOffer(offer)
@@ -186,6 +185,12 @@ open class OfferSearchServiceTest {
         createdOffer2 = offerRepositoryStrategy
                 .changeStrategy(strategy)
                 .saveOffer(offer2)
+
+        for (i in 0 until 5) {
+            offerRepositoryStrategy
+                    .changeStrategy(strategy)
+                    .saveOffer(offer)
+        }
 
         offerPrices = offerPriceRepositoryStrategy
                 .changeStrategy(strategy)
