@@ -2,10 +2,8 @@ package com.bitclave.node.clientData
 
 import com.bitclave.node.ContractDeployer
 import com.bitclave.node.repository.RepositoryStrategyType
-import com.bitclave.node.services.errors.NotImplementedException
 import org.junit.After
 import org.junit.Before
-import org.junit.Test
 import org.springframework.beans.factory.annotation.Autowired
 
 class ClientProfileServiceHybridTest : ClientProfileServiceTest() {
@@ -13,14 +11,15 @@ class ClientProfileServiceHybridTest : ClientProfileServiceTest() {
     @Autowired
     private lateinit var contractDeployer: ContractDeployer
 
-    @Before override fun setup() {
+    @Before
+    override fun setup() {
         super.setup()
         contractDeployer.deploy()
         strategy = RepositoryStrategyType.HYBRID
     }
 
-    @After fun revertHybridState() {
+    @After
+    fun revertHybridState() {
         contractDeployer.revertNode()
     }
-
 }

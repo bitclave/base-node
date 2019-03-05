@@ -27,7 +27,7 @@ class VerifyConsistencyControllerTest {
     private lateinit var mvc: MockMvc
 
     private val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
-    protected val publicKey2 = "03836649d2e353c332287e8280d1dbb1805cab0bae289ad08db9cc86f040ac6360"
+    private val publicKey2 = "03836649d2e353c332287e8280d1dbb1805cab0bae289ad08db9cc86f040ac6360"
     protected lateinit var idsRequest: SignedRequest<List<Long>>
     protected lateinit var publicKeysRequest: SignedRequest<List<String>>
     private var httpHeaders: HttpHeaders = HttpHeaders()
@@ -35,7 +35,8 @@ class VerifyConsistencyControllerTest {
     private val ids = mutableListOf(1L, 2L, 3L, 4L)
     private val publicKeys = mutableListOf(publicKey, publicKey2)
 
-    @Before fun setup() {
+    @Before
+    fun setup() {
 
         idsRequest = SignedRequest(ids, publicKey)
         publicKeysRequest = SignedRequest(publicKeys, publicKey)
@@ -44,45 +45,62 @@ class VerifyConsistencyControllerTest {
         httpHeaders.set("Accept", "application/json")
         httpHeaders.set("Content-Type", "application/json")
         httpHeaders.set("Strategy", RepositoryStrategyType.POSTGRES.name)
-
     }
 
-    @Test fun `get offer search list by ids`() {
-        this.mvc.perform(post("/dev/verify/offersearch/ids")
+    @Test
+    fun `get offer search list by ids`() {
+        this.mvc.perform(
+            post("/dev/verify/offersearch/ids")
                 .content(idsRequest.toJsonString())
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
     }
 
-    @Test fun `get account list by publicKeys`() {
-        this.mvc.perform(post("/dev/verify/account/publickeys")
+    @Test
+    fun `get account list by publicKeys`() {
+        this.mvc.perform(
+            post("/dev/verify/account/publickeys")
                 .content(publicKeysRequest.toJsonString())
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
     }
 
-    @Test fun `expected error - get account list by publicKeys`() {
-        this.mvc.perform(post("/dev/verify/account/publickeys")
+    @Test
+    fun `expected error - get account list by publicKeys`() {
+        this.mvc.perform(
+            post("/dev/verify/account/publickeys")
                 .content(publicKey)
-                .headers(httpHeaders))
-                .andExpect(status().is4xxClientError)
+                .headers(httpHeaders)
+        )
+            .andExpect(status().is4xxClientError)
     }
 
-    @Test fun `get dangling offer search list by offer`() {
-        this.mvc.perform(get("/dev/verify/offersearch/byOffer")
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
+    @Test
+    fun `get dangling offer search list by offer`() {
+        this.mvc.perform(
+            get("/dev/verify/offersearch/byOffer")
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
     }
 
-    @Test fun `get dangling offer search list by searchRequest`() {
-        this.mvc.perform(get("/dev/verify/offersearch/bySearchRequest")
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
+    @Test
+    fun `get dangling offer search list by searchRequest`() {
+        this.mvc.perform(
+            get("/dev/verify/offersearch/bySearchRequest")
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
     }
 
-    @Test fun `get offerSearches with the same owner and offerId but different content`() {
-        this.mvc.perform(get("/dev/verify/offersearch/conflicted")
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
+    @Test
+    fun `get offerSearches with the same owner and offerId but different content`() {
+        this.mvc.perform(
+            get("/dev/verify/offersearch/conflicted")
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
     }
 }

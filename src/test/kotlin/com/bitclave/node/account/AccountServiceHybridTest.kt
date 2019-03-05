@@ -11,7 +11,8 @@ class AccountServiceHybridTest : AccountServiceTest() {
     @Autowired
     private lateinit var contractDeployer: ContractDeployer
 
-    @Before override fun setup() {
+    @Before
+    override fun setup() {
         super.setup()
         contractDeployer.deploy()
 
@@ -22,5 +23,4 @@ class AccountServiceHybridTest : AccountServiceTest() {
     fun revertHybridState() {
         contractDeployer.revertNode()
     }
-
 }

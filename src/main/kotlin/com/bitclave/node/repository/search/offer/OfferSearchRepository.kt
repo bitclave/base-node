@@ -31,7 +31,10 @@ interface OfferSearchRepository {
 
     fun findByOwnerAndOfferId(owner: String, offerId: Long): List<OfferSearch>
 
-    fun cloneOfferSearchOfSearchRequest(id: Long, searchRequest: SearchRequest): List<OfferSearch>
+    fun cloneOfferSearchOfSearchRequest(
+        sourceSearchRequestId: Long,
+        targetSearchRequest: SearchRequest
+    ): List<OfferSearch>
 
     fun findAll(pageable: Pageable): Page<OfferSearch>
 
@@ -39,7 +42,6 @@ interface OfferSearchRepository {
 
     fun getTotalCount(): Long
 
-    //get offerSearches with the same owner and offerId but different content (status/events)
+    // get offerSearches with the same owner and offerId but different content (status/events)
     fun findAllDiff(): List<OfferSearch>
-
 }

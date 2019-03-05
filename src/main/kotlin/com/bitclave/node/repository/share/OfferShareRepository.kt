@@ -11,5 +11,4 @@ interface OfferShareRepository {
     fun findByOfferOwnerAndAccepted(offerOwner: String, accepted: Boolean): List<OfferShareData>
 
     fun findByOfferOwner(offerOwner: String): List<OfferShareData>
-
 }

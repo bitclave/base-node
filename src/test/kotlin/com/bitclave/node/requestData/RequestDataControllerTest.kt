@@ -14,7 +14,8 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 @ActiveProfiles("test")
@@ -35,7 +36,8 @@ class RequestDataControllerTest {
     protected lateinit var requestDataResponse: SignedRequest<String>
     private var httpHeaders: HttpHeaders = HttpHeaders()
 
-    @Before fun setup() {
+    @Before
+    fun setup() {
         version = "v1"
 
         requestDataRequest = SignedRequest(RequestData(), from)
@@ -46,36 +48,48 @@ class RequestDataControllerTest {
         httpHeaders.set("Strategy", RepositoryStrategyType.POSTGRES.name)
     }
 
-    @Test fun `get request by state`() {
-        this.mvc.perform(get("/$version/data/request/")
+    @Test
+    fun `get request by state`() {
+        this.mvc.perform(
+            get("/$version/data/request/")
                 .param("from", from)
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
 
-        this.mvc.perform(get("/$version/data/request/")
+        this.mvc.perform(
+            get("/$version/data/request/")
                 .param("from", from)
                 .param("to", to)
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
 
-        this.mvc.perform(get("/$version/data/request/")
+        this.mvc.perform(
+            get("/$version/data/request/")
                 .param("to", to)
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
     }
 
-    @Test fun `create request for client`() {
-        this.mvc.perform(post("/$version/data/request/")
+    @Test
+    fun `create request for client`() {
+        this.mvc.perform(
+            post("/$version/data/request/")
                 .content(requestDataRequest.toJsonString())
-                .headers(httpHeaders))
-                .andExpect(status().isCreated)
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isCreated)
     }
 
-    @Test fun `grant access for client`() {
-        this.mvc.perform(post("/$version/data/grant/request/")
+    @Test
+    fun `grant access for client`() {
+        this.mvc.perform(
+            post("/$version/data/grant/request/")
                 .content(requestDataRequest.toJsonString())
-                .headers(httpHeaders))
-                .andExpect(status().isCreated)
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isCreated)
     }
-
 }

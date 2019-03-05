@@ -14,5 +14,4 @@ interface RequestDataCrudRepository : CrudRepository<RequestData, Long> {
     fun findByToPk(to: String): List<RequestData>
 
     fun findByFromPkAndToPk(from: String, to: String): RequestData?
-
 }

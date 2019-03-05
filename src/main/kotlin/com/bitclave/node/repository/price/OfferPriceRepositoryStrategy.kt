@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 
 @Component
-class OfferPriceRepositoryStrategy (
+class OfferPriceRepositoryStrategy(
     @Qualifier("postgres")
     private val postgres: PostgresOfferPriceRepositoryImpl
 ) : RepositoryStrategy<OfferPriceRepository> {

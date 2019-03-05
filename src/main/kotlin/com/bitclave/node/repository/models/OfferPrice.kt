@@ -3,21 +3,30 @@ package com.bitclave.node.repository.models
 import com.bitclave.node.configuration.gson.Exclude
 import org.hibernate.annotations.ColumnDefault
 import java.math.BigDecimal
-import javax.persistence.*
+import javax.persistence.CascadeType
+import javax.persistence.Column
+import javax.persistence.Entity
+import javax.persistence.FetchType
+import javax.persistence.GeneratedValue
+import javax.persistence.GenerationType
+import javax.persistence.Id
+import javax.persistence.JoinColumn
+import javax.persistence.ManyToOne
+import javax.persistence.OneToMany
 
 @Entity
 data class OfferPrice(
-        @GeneratedValue(strategy = GenerationType.TABLE) @Id
-        val id: Long = 0,
+    @GeneratedValue(strategy = GenerationType.TABLE) @Id
+    val id: Long = 0,
 
-        @Column(length = 256)
-        var description: String = "",
+    @Column(length = 256)
+    var description: String = "",
 
-        @ColumnDefault("0")
-        var worth: String = BigDecimal.ZERO.toString(),
+    @ColumnDefault("0")
+    var worth: String = BigDecimal.ZERO.toString(),
 
-        @OneToMany(mappedBy = "offerPrice", cascade = [CascadeType.REMOVE], fetch = FetchType.EAGER)
-        var rules: List<OfferPriceRules> = emptyList()
+    @OneToMany(mappedBy = "offerPrice", cascade = [CascadeType.REMOVE], fetch = FetchType.EAGER)
+    var rules: List<OfferPriceRules> = emptyList()
 ) {
     @Exclude
     @ManyToOne

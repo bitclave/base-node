@@ -7,7 +7,14 @@ import com.bitclave.node.repository.account.AccountCrudRepository
 import com.bitclave.node.repository.account.AccountRepositoryStrategy
 import com.bitclave.node.repository.account.HybridAccountRepositoryImpl
 import com.bitclave.node.repository.account.PostgresAccountRepositoryImpl
-import com.bitclave.node.repository.models.*
+import com.bitclave.node.repository.models.Account
+import com.bitclave.node.repository.models.Offer
+import com.bitclave.node.repository.models.OfferPrice
+import com.bitclave.node.repository.models.OfferPriceRules
+import com.bitclave.node.repository.models.OfferResultAction
+import com.bitclave.node.repository.models.OfferSearch
+import com.bitclave.node.repository.models.OfferShareData
+import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.offer.OfferCrudRepository
 import com.bitclave.node.repository.offer.OfferRepositoryStrategy
 import com.bitclave.node.repository.offer.PostgresOfferRepositoryImpl
@@ -36,13 +43,17 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import java.math.BigDecimal
-import java.util.*
+import java.util.ArrayList
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class OfferShareServiceTest {
+
+    companion object {
+        private const val SHARE_DATA_RESPONSE = "SHARE_DATA_RESPONSE"
+    }
 
     @Autowired
     private lateinit var web3Provider: Web3Provider
@@ -72,39 +83,38 @@ class OfferShareServiceTest {
     protected lateinit var offerSearchCrudRepository: OfferSearchCrudRepository
 
     private val accountClient: Account =
-            Account("02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea")
+        Account("02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea")
     private val accountBusiness: Account =
-            Account("03836649d2e353c332287e8280d1dbb1805cab0bae289ad08db9cc86f040ac6360")
+        Account("03836649d2e353c332287e8280d1dbb1805cab0bae289ad08db9cc86f040ac6360")
     protected lateinit var strategy: RepositoryStrategyType
 
     private val offer = Offer(
-            0,
-            accountBusiness.publicKey,
-            listOf(),
-            "is desc",
-            "is title",
-            "is image url",
-            BigDecimal.TEN.toString(),
-            mapOf("car" to "true", "color" to "red"),
-            mapOf("age" to "18", "salary" to "1000"),
-            mapOf("age" to Offer.CompareAction.MORE_OR_EQUAL, "salary" to Offer.CompareAction.MORE_OR_EQUAL)
+        0,
+        accountBusiness.publicKey,
+        listOf(),
+        "is desc",
+        "is title",
+        "is image url",
+        BigDecimal.TEN.toString(),
+        mapOf("car" to "true", "color" to "red"),
+        mapOf("age" to "18", "salary" to "1000"),
+        mapOf("age" to Offer.CompareAction.MORE_OR_EQUAL, "salary" to Offer.CompareAction.MORE_OR_EQUAL)
     )
     protected val offerPrice = OfferPrice(
-            0,
-            "first price description",
-            BigDecimal("0.5").toString(),
-            listOf(
-                    OfferPriceRules(0, "age", "10"),
-                    OfferPriceRules(0, "sex", "male"),
-                    OfferPriceRules(0, "country", "USA")
-            )
+        0,
+        "first price description",
+        BigDecimal("0.5").toString(),
+        listOf(
+            OfferPriceRules(0, "age", "10"),
+            OfferPriceRules(0, "sex", "male"),
+            OfferPriceRules(0, "country", "USA")
+        )
     )
 
     protected lateinit var offerPrices: List<OfferPrice>
 
-    private val SHARE_DATA_RESPONSE = "SHARE_DATA_RESPONSE"
-
-    @Before fun setup() {
+    @Before
+    fun setup() {
         val postgres = PostgresAccountRepositoryImpl(accountCrudRepository)
         val hybrid = HybridAccountRepositoryImpl(web3Provider, hybridProperties)
         val repositoryStrategy = AccountRepositoryStrategy(postgres, hybrid)
@@ -115,20 +125,23 @@ class OfferShareServiceTest {
         val offerShareRepository = PostgresOfferShareRepositoryImpl(offerShareCrudRepository)
         val shareRepositoryStrategy = OfferShareRepositoryStrategy(offerShareRepository)
 
-        val searchRequestRepository = PostgresSearchRequestRepositoryImpl(searchRequestCrudRepository, offerSearchCrudRepository)
+        val searchRequestRepository =
+            PostgresSearchRequestRepositoryImpl(searchRequestCrudRepository, offerSearchCrudRepository)
         val searchRequestRepositoryStrategy = SearchRequestRepositoryStrategy(searchRequestRepository)
 
-        val offerSearchRepository = PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository, searchRequestRepository)
+        val offerSearchRepository =
+            PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository, searchRequestRepository)
         val offerSearchRepositoryStrategy = OfferSearchRepositoryStrategy(offerSearchRepository)
 
-        val offerPriceRepository = PostgresOfferPriceRepositoryImpl(offerPriceCrudRepository, offerPriceRuleCrudRepository)
+        val offerPriceRepository =
+            PostgresOfferPriceRepositoryImpl(offerPriceCrudRepository, offerPriceRuleCrudRepository)
         val offerPriceRepositoryStrategy = OfferPriceRepositoryStrategy(offerPriceRepository)
 
         offerShareService = OfferShareService(
-                shareRepositoryStrategy,
-                offerRepositoryStrategy,
-                offerSearchRepositoryStrategy,
-                searchRequestRepositoryStrategy
+            shareRepositoryStrategy,
+            offerRepositoryStrategy,
+            offerSearchRepositoryStrategy,
+            searchRequestRepositoryStrategy
         )
 
         strategy = RepositoryStrategyType.POSTGRES
@@ -136,62 +149,67 @@ class OfferShareServiceTest {
         accountService.registrationClient(accountBusiness, strategy)
 
         offerRepositoryStrategy
-                .changeStrategy(strategy)
-                .saveOffer(offer)
+            .changeStrategy(strategy)
+            .saveOffer(offer)
 
         offerPrices = offerPriceRepositoryStrategy
-                .changeStrategy(strategy)
-                .savePrices(offer, listOf(offerPrice))
+            .changeStrategy(strategy)
+            .savePrices(offer, listOf(offerPrice))
 
         val searchRequest = searchRequestRepositoryStrategy
-                .changeStrategy(strategy)
-                .saveSearchRequest(SearchRequest(0, accountClient.publicKey, emptyMap()))
+            .changeStrategy(strategy)
+            .saveSearchRequest(SearchRequest(0, accountClient.publicKey, emptyMap()))
 
         offerSearchRepositoryStrategy
-                .changeStrategy(strategy)
-                .saveSearchResult(OfferSearch(
-                        0,
-                        searchRequest.owner,
-                        searchRequest.id,
-                        1,
-                        OfferResultAction.ACCEPT,
-                        "",
-                        ArrayList()
-                ))
+            .changeStrategy(strategy)
+            .saveSearchResult(
+                OfferSearch(
+                    0,
+                    searchRequest.owner,
+                    searchRequest.id,
+                    1,
+                    OfferResultAction.ACCEPT,
+                    "",
+                    ArrayList()
+                )
+            )
     }
 
-    @Test fun `should be create new share data`() {
+    @Test
+    fun `should be create new share data`() {
         val projectId = offerPrices[0].id
 
         val originShareData = OfferShareData(
-                1L,
-                accountBusiness.publicKey,
-                accountClient.publicKey,
-                SHARE_DATA_RESPONSE,
-                BigDecimal.ZERO.toString(),
-                true,
-                projectId
+            1L,
+            accountBusiness.publicKey,
+            accountClient.publicKey,
+            SHARE_DATA_RESPONSE,
+            BigDecimal.ZERO.toString(),
+            true,
+            projectId
         )
 
         offerShareService.grantAccess(accountClient.publicKey, originShareData, strategy).get()
     }
 
-    @Test fun `should be business accept share data`() {
+    @Test
+    fun `should be business accept share data`() {
         `should be create new share data`()
         offerShareService.acceptShareData(
-                accountBusiness.publicKey,
-                1L,
-                BigDecimal("0.5"),
-                strategy
+            accountBusiness.publicKey,
+            1L,
+            BigDecimal("0.5"),
+            strategy
         ).get()
     }
 
-    @Test fun `should be find created share data`() {
+    @Test
+    fun `should be find created share data`() {
         `should be create new share data`()
         val result = offerShareService.getShareData(
-                accountBusiness.publicKey,
-                null,
-                strategy
+            accountBusiness.publicKey,
+            null,
+            strategy
         ).get()
 
         assertThat(result.size == 1)
@@ -204,25 +222,26 @@ class OfferShareServiceTest {
         assertThat(BigDecimal(shareData.worth) == BigDecimal.ZERO)
     }
 
-    @Test fun `should return search requests by owner`() {
+    @Test
+    fun `should return search requests by owner`() {
         `should be find created share data`()
         offerShareService.acceptShareData(
-                accountBusiness.publicKey,
-                1,
-                BigDecimal("0.5"),
-                strategy
+            accountBusiness.publicKey,
+            1,
+            BigDecimal("0.5"),
+            strategy
         ).get()
         var result = offerShareService.getShareData(
-                accountBusiness.publicKey,
-                false,
-                strategy
+            accountBusiness.publicKey,
+            false,
+            strategy
         ).get()
         assertThat(result.isEmpty())
 
         result = offerShareService.getShareData(
-                accountBusiness.publicKey,
-                null,
-                strategy
+            accountBusiness.publicKey,
+            null,
+            strategy
         ).get()
 
         assertThat(result.size == 1)
@@ -235,5 +254,4 @@ class OfferShareServiceTest {
         assertThat(shareData.clientResponse == SHARE_DATA_RESPONSE)
         assertThat(BigDecimal(shareData.worth) == BigDecimal.TEN)
     }
-
 }

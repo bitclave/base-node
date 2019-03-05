@@ -28,5 +28,4 @@ class SwaggerConfig {
                         "https://github.com/bitclave/base-node/issues"), "MIT", "license url",
                 emptyList())
     }
-
 }

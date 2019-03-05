@@ -34,5 +34,4 @@ class PostgresRequestDataRepositoryImpl(val repository: RequestDataCrudRepositor
         repository.delete(repository.findByFromPk(publicKey))
         repository.delete(repository.findByToPk(publicKey))
     }
-
 }

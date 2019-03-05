@@ -17,14 +17,12 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.internal.matchers.Null
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
-import java.math.BigDecimal
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
@@ -51,7 +49,8 @@ class FileServiceTest {
 
     private val testFile = MockMultipartFile("data", "filename.txt", "text/plain", "some xml".toByteArray())
 
-    @Before fun setup() {
+    @Before
+    fun setup() {
         val postgres = PostgresAccountRepositoryImpl(accountCrudRepository)
         val hybrid = HybridAccountRepositoryImpl(web3Provider, hybridProperties)
         val repositoryStrategy = AccountRepositoryStrategy(postgres, hybrid)
@@ -66,7 +65,8 @@ class FileServiceTest {
         accountService.registrationClient(account, strategy)
     }
 
-    @Test fun `should be create new file`() {
+    @Test
+    fun `should be create new file`() {
 
         val result = fileService.saveFile(testFile, account.publicKey, 0, strategy).get()
 
@@ -77,8 +77,11 @@ class FileServiceTest {
         assertThat(result.size).isEqualTo(8)
     }
 
-    @Test fun `should be update created file`() {
-        val updateFile = MockMultipartFile("data", "filenameUpdated.txt", "text/plain", "some updated xml".toByteArray())
+    @Test
+    fun `should be update created file`() {
+        val updateFile = MockMultipartFile(
+            "data", "filenameUpdated.txt", "text/plain", "some updated xml".toByteArray()
+        )
 
         val created = fileService.saveFile(testFile, account.publicKey, 0, strategy).get()
 
@@ -93,7 +96,8 @@ class FileServiceTest {
         assertThat(updated.size).isEqualTo(16)
     }
 
-    @Test fun `should delete existed file`() {
+    @Test
+    fun `should delete existed file`() {
         `should be create new file`()
 
         var savedResult = fileService.getFile(1, account.publicKey, strategy).get()
@@ -108,7 +112,8 @@ class FileServiceTest {
         assertThat(savedResult).isNull()
     }
 
-    @Test fun `should return file by id and owner`() {
+    @Test
+    fun `should return file by id and owner`() {
         `should be create new file`()
 
         var savedResult = fileService.getFile(1, account.publicKey, strategy).get()
@@ -119,5 +124,4 @@ class FileServiceTest {
 
         assertThat(savedResult).isNull()
     }
-
 }

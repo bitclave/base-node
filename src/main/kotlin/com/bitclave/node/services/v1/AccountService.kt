@@ -23,64 +23,65 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
 
     fun checkSigMessage(request: SignedRequest<*>): CompletableFuture<String> {
         return request.validateSig()
-                .thenApply { isValid ->
-                    if (!isValid) {
-                        throw AccessDeniedException()
-                    }
-
-                    request.pk.toLowerCase()
+            .thenApply { isValid ->
+                if (!isValid) {
+                    throw AccessDeniedException()
                 }
+
+                request.pk.toLowerCase()
+            }
     }
 
     fun accountBySigMessage(
-            request: SignedRequest<*>,
-            strategy: RepositoryStrategyType
+        request: SignedRequest<*>,
+        strategy: RepositoryStrategyType
     ): CompletableFuture<Account> {
 
         try {
             return checkSigMessage(request)
-                    .thenApply(accountRepository.changeStrategy(strategy)::findByPublicKey)
-                    .thenApply { account: Account? ->
+                .thenApply(accountRepository.changeStrategy(strategy)::findByPublicKey)
+                .thenApply { account: Account? ->
 
-                        if (account == null) {
-                            throw NotFoundException()
-                        }
-
-                        if (request.data == null) {
-                            throw BadArgumentException()
-                        }
-                        account
+                    if (account == null) {
+                        throw NotFoundException()
                     }
+
+                    if (request.data == null) {
+                        throw BadArgumentException()
+                    }
+                    account
+                }
         } catch (e: Exception) {
-            logger.error("Request: " + request.toString() + " raised " + e)
+            logger.error("Request: $request raised $e")
             throw BadArgumentException(e.localizedMessage)
         }
     }
 
     fun validateNonce(request: SignedRequest<*>, account: Account): CompletableFuture<Account> {
-        return CompletableFuture.supplyAsync({
+        return CompletableFuture.supplyAsync {
             if (request.nonce != account.nonce + 1) {
                 throw BadArgumentException()
             }
             account
-        })
+        }
     }
 
-    fun incrementNonce(account: Account,
-                       strategy: RepositoryStrategyType
+    fun incrementNonce(
+        account: Account,
+        strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
-        return CompletableFuture.runAsync({
+        return CompletableFuture.runAsync {
             account.nonce++
             accountRepository.changeStrategy(strategy).saveAccount(account)
-        })
+        }
     }
 
     fun getNonce(publicKey: String, strategy: RepositoryStrategyType): CompletableFuture<Long> {
-        return CompletableFuture.supplyAsync({
+        return CompletableFuture.supplyAsync {
             val account = accountRepository.changeStrategy(strategy).findByPublicKey(publicKey)
 
             account?.nonce ?: 0
-        })
+        }
     }
 
     fun registrationClient(account: Account, strategy: RepositoryStrategyType): CompletableFuture<Account> {
@@ -90,13 +91,14 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
             }
             accountRepository.changeStrategy(strategy)
             if (accountRepository.changeStrategy(strategy)
-                            .findByPublicKey(account.publicKey) != null) {
+                    .findByPublicKey(account.publicKey) != null
+            ) {
                 throw AlreadyRegisteredException()
             }
 
             val createdAccount = Account(account.publicKey, 1L)
             accountRepository.changeStrategy(strategy)
-                    .saveAccount(createdAccount)
+                .saveAccount(createdAccount)
 
             createdAccount
         }
@@ -105,31 +107,32 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
     fun existAccount(account: Account, strategy: RepositoryStrategyType): CompletableFuture<Account> {
         return CompletableFuture.supplyAsync {
             accountRepository.changeStrategy(strategy)
-                    .findByPublicKey(account.publicKey) ?: throw NotFoundException(
-                    "User with baseID " + account.publicKey.toString() + "does not exist")
+                .findByPublicKey(account.publicKey) ?: throw NotFoundException(
+                "User with baseID ${account.publicKey} does not exist"
+            )
         }
     }
 
     fun deleteAccount(clientId: String, strategy: RepositoryStrategyType): CompletableFuture<Void> {
-        return CompletableFuture.runAsync({
+        return CompletableFuture.runAsync {
             accountRepository.changeStrategy(strategy)
-                    .deleteAccount(clientId)
-        })
+                .deleteAccount(clientId)
+        }
     }
 
     fun getAccounts(
-            strategy: RepositoryStrategyType,
-            publicKeys: List<String>
+        strategy: RepositoryStrategyType,
+        publicKeys: List<String>
     ): CompletableFuture<List<Account>> {
 
         return CompletableFuture.supplyAsync {
             accountRepository.changeStrategy(strategy)
-                    .findByPublicKey(publicKeys)
+                .findByPublicKey(publicKeys)
         }
     }
 
     fun getAccountTotalCount(
-            strategy: RepositoryStrategyType
+        strategy: RepositoryStrategyType
     ): CompletableFuture<Long> {
 
         return CompletableFuture.supplyAsync {
@@ -137,8 +140,6 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
             val repository = accountRepository.changeStrategy(strategy)
 
             return@supplyAsync repository.getTotalCount()
-
         }
     }
-
 }

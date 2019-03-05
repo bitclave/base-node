@@ -13,5 +13,4 @@ interface FileRepository {
     fun findByPublicKey(publicKey: String): List<UploadedFile>
 
     fun findByIdAndPublicKey(id: Long, publicKey: String): UploadedFile?
-
 }

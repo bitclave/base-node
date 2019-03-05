@@ -8,9 +8,9 @@ import java.math.BigInteger
 import java.util.concurrent.CompletableFuture
 
 private val GSON: Gson = GsonBuilder()
-        .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
-        .disableHtmlEscaping()
-        .create()
+    .setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
+    .disableHtmlEscaping()
+    .create()
 
 fun <T> SignedRequest<T>.signMessage(privateKey: String): SignedRequest<T> {
     val key: ECKey = ECKey.fromPrivate(BigInteger(privateKey, 16))

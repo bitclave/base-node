@@ -38,7 +38,8 @@ class ClientProfileServiceTest {
     protected lateinit var data: Map<String, String>
     protected lateinit var strategy: RepositoryStrategyType
 
-    @Before fun setup() {
+    @Before
+    fun setup() {
         val postgres = PostgresClientDataRepositoryImpl(clientDataCrudRepository)
         val hybrid = HybridClientDataRepositoryImpl(web3Provider, hybridProperties)
         val dataClientRepositoryStrategy = ClientDataRepositoryStrategy(postgres, hybrid)
@@ -50,17 +51,20 @@ class ClientProfileServiceTest {
         strategy = RepositoryStrategyType.POSTGRES
     }
 
-    @Test fun `get client raw data by public key`() {
+    @Test
+    fun `get client raw data by public key`() {
         `update client data by public key`()
         val resultData = clientProfileService.getData(publicKey, strategy).get()
         Assertions.assertThat(resultData).isEqualTo(data)
     }
 
-    @Test fun `update client data by public key`() {
+    @Test
+    fun `update client data by public key`() {
         clientProfileService.updateData(publicKey, data, strategy).get()
     }
 
-    @Test fun `update part of client data by public key`() {
+    @Test
+    fun `update part of client data by public key`() {
         clientProfileService.updateData(publicKey, data, strategy).get()
         val updatedData = mapOf("email" to "Bob@email.com", "lastname" to "bob-lastname").toMutableMap()
         clientProfileService.updateData(publicKey, updatedData, strategy).get()
@@ -88,11 +92,11 @@ class ClientProfileServiceTest {
         Assertions.assertThat(result == updatedData)
     }
 
-    @Test fun `delete client raw data by public key`() {
+    @Test
+    fun `delete client raw data by public key`() {
         `update client data by public key`()
         clientProfileService.deleteData(publicKey, strategy).get()
         val resultData = clientProfileService.getData(publicKey, strategy).get()
         Assertions.assertThat(resultData).isEmpty()
     }
-
 }

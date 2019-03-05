@@ -9,5 +9,4 @@ interface SiteRepository {
     fun findByOrigin(origin: String): Site?
 
     fun deleteByOrigin(origin: String): Long
-
 }

@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component
 
 @Component
 class SearchRequestRepositoryStrategy(
-        @Qualifier("postgres")
-        private val postgres: PostgresSearchRequestRepositoryImpl
+    @Qualifier("postgres")
+    private val postgres: PostgresSearchRequestRepositoryImpl
 
 ) : RepositoryStrategy<SearchRequestRepository> {
 
@@ -18,5 +18,4 @@ class SearchRequestRepositoryStrategy(
             RepositoryStrategyType.HYBRID -> postgres
         }
     }
-
 }

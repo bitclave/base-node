@@ -22,6 +22,8 @@ interface SearchRequestCrudRepository : PagingAndSortingRepository<SearchRequest
     fun findByIdAndOwner(id: Long, owner: String): SearchRequest?
 
     @Query("FROM SearchRequest s JOIN  s.tags t WHERE s.owner = :owner and KEY(t) = :tagKey")
-    fun getRequestByOwnerAndTag(@Param("owner") owner: String, @Param("tagKey") tagKey: String): List<SearchRequest>
-
+    fun getRequestByOwnerAndTag(
+        @Param("owner") owner: String,
+        @Param("tagKey") tagKey: String
+    ): List<SearchRequest>
 }

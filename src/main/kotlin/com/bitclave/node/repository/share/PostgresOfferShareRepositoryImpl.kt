@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component
 @Component
 @Qualifier("postgres")
 class PostgresOfferShareRepositoryImpl(
-        val repository: OfferShareCrudRepository
+    val repository: OfferShareCrudRepository
 ) : OfferShareRepository {
 
     override fun saveShareData(shareData: OfferShareData) {
@@ -26,5 +26,4 @@ class PostgresOfferShareRepositoryImpl(
     override fun findByOfferOwner(offerOwner: String): List<OfferShareData> {
         return repository.findByOfferOwner(offerOwner)
     }
-
 }

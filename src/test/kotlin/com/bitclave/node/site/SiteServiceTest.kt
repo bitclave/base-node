@@ -49,12 +49,13 @@ class SiteServiceTest {
     protected lateinit var strategy: RepositoryStrategyType
 
     private val site = Site(
-            0,
-            origin,
-            account.publicKey
+        0,
+        origin,
+        account.publicKey
     )
 
-    @Before fun setup() {
+    @Before
+    fun setup() {
         val postgres = PostgresAccountRepositoryImpl(accountCrudRepository)
         val hybrid = HybridAccountRepositoryImpl(web3Provider, hybridProperties)
         val repositoryStrategy = AccountRepositoryStrategy(postgres, hybrid)
@@ -68,16 +69,18 @@ class SiteServiceTest {
         accountService.registrationClient(account, strategy)
     }
 
-    @Test fun `should be save information of site`() {
+    @Test
+    fun `should be save information of site`() {
         val id = siteService.saveSiteInformation(
-                site,
-                strategy
+            site,
+            strategy
         ).get()
 
         assert(id >= 1L)
     }
 
-    @Test fun `should found information of site by origin`() {
+    @Test
+    fun `should found information of site by origin`() {
         `should be save information of site`()
 
         val result = siteService.getSite(origin, strategy).get()
@@ -100,19 +103,17 @@ class SiteServiceTest {
     @Test(expected = BadArgumentException::class)
     fun `should be excepted by wrong origin`() {
         val badSiteInfo = Site(
-                0,
-                "http://www.site.com",
-                publicKey
+            0,
+            "http://www.site.com",
+            publicKey
         )
         try {
             siteService.saveSiteInformation(
-                    badSiteInfo,
-                    strategy
+                badSiteInfo,
+                strategy
             ).get()
-
         } catch (e: Exception) {
             throw e.cause!!
         }
     }
-
 }

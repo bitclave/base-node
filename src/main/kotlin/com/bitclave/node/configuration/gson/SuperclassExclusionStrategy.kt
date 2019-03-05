@@ -33,11 +33,10 @@ class SuperclassExclusionStrategy : ExclusionStrategy {
     }
 
     private fun getField(theClass: Class<*>, fieldName: String): Field? {
-        try {
-            return theClass.getDeclaredField(fieldName)
+        return try {
+            theClass.getDeclaredField(fieldName)
         } catch (e: Exception) {
-            return null
+            null
         }
-
     }
 }

@@ -11,14 +11,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
+import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import org.springframework.mock.web.MockMultipartFile
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-import javassist.CtMethod.ConstParameter.string
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
@@ -36,11 +36,11 @@ class FileControllerTest {
     protected lateinit var testFile: MockMultipartFile
     private var httpHeaders: HttpHeaders = HttpHeaders()
 
-
-    @Before fun setup() {
+    @Before
+    fun setup() {
         version = "v1"
-        requestPk = SignedRequest<String>(publicKey, publicKey)
-        requestFileId = SignedRequest<Long>(1, publicKey)
+        requestPk = SignedRequest(publicKey, publicKey)
+        requestFileId = SignedRequest(1, publicKey)
 
         testFile = MockMultipartFile("data", "filename.txt", "text/plain", "some xml".toByteArray())
 
@@ -49,36 +49,47 @@ class FileControllerTest {
         httpHeaders.set("Strategy", RepositoryStrategyType.POSTGRES.name)
     }
 
-    @Test fun `upload new file`() {
-        this.mvc.perform(MockMvcRequestBuilders.fileUpload("/$version/file/$publicKey/")
+    @Test
+    fun `upload new file`() {
+        this.mvc.perform(
+            MockMvcRequestBuilders.fileUpload("/$version/file/$publicKey/")
                 .file(testFile)
                 .param("signature", requestPk.toJsonString())
                 .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().isOk)
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+        )
+            .andExpect(status().isOk)
     }
 
-    @Test fun `update existing file`() {
-        this.mvc.perform(MockMvcRequestBuilders.fileUpload("/$version/file/$publicKey/1/")
+    @Test
+    fun `update existing file`() {
+        this.mvc.perform(
+            MockMvcRequestBuilders.fileUpload("/$version/file/$publicKey/1/")
                 .file(testFile)
                 .param("signature", requestPk.toJsonString())
                 .accept(MediaType.APPLICATION_JSON)
-                .contentType(MediaType.MULTIPART_FORM_DATA))
-                .andExpect(status().isOk)
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+        )
+            .andExpect(status().isOk)
     }
 
-    @Test fun `delete file`() {
-        this.mvc.perform(delete("/$version/file/$publicKey/1/")
+    @Test
+    fun `delete file`() {
+        this.mvc.perform(
+            delete("/$version/file/$publicKey/1/")
                 .content(requestFileId.toJsonString())
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
     }
 
-    @Test fun `get file by owner and id`() {
-        this.mvc.perform(get("/$version/file/$publicKey/1/")
+    @Test
+    fun `get file by owner and id`() {
+        this.mvc.perform(
+            get("/$version/file/$publicKey/1/")
                 .content(requestFileId.toJsonString())
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
     }
-
 }

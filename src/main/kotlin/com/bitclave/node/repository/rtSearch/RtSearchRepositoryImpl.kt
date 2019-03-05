@@ -11,21 +11,21 @@ import java.util.concurrent.CompletableFuture
 
 @Repository
 class RtSearchRepositoryImpl(
-        rtSearchProperties: RtSearchProperties,
-        converter: GsonHttpMessageConverter
+    rtSearchProperties: RtSearchProperties,
+    converter: GsonHttpMessageConverter
 ) : RtSearchRepository {
 
     private val restTemplate: RestTemplate = RestTemplateBuilder()
-            .messageConverters(converter)
-            .rootUri(rtSearchProperties.url).build()
+        .messageConverters(converter)
+        .rootUri(rtSearchProperties.url).build()
 
     override fun getOffersIdByQuery(query: String): CompletableFuture<List<Long>> {
         return CompletableFuture.supplyAsync {
             val offerIdsResponse = restTemplate.exchange(
-                    "/v1/search/?q={query}",
-                    HttpMethod.GET, null,
-                    object : ParameterizedTypeReference<List<Long>>() {},
-                    mapOf("query" to query )
+                "/v1/search/?q={query}",
+                HttpMethod.GET, null,
+                object : ParameterizedTypeReference<List<Long>>() {},
+                mapOf("query" to query)
             )
 
             return@supplyAsync offerIdsResponse.body

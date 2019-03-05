@@ -14,9 +14,12 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import java.util.*
+import java.util.Date
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
@@ -36,16 +39,17 @@ class SearchRequestControllerTest {
     private var httpHeaders: HttpHeaders = HttpHeaders()
 
     private val searchRequest = SearchRequest(
-            0,
-            publicKey,
-            mapOf("car" to "true", "color" to "red"),
-            Date(1550561756503),
-            Date(1550561756503)
+        0,
+        publicKey,
+        mapOf("car" to "true", "color" to "red"),
+        Date(1550561756503),
+        Date(1550561756503)
     )
 
     private val cloneSearchRequest = searchRequest.copy(1)
 
-    @Before fun setup() {
+    @Before
+    fun setup() {
         version = "v1"
 
         requestSearch = SignedRequest(searchRequest, publicKey)
@@ -57,74 +61,103 @@ class SearchRequestControllerTest {
         httpHeaders.set("Strategy", RepositoryStrategyType.POSTGRES.name)
     }
 
-    @Test fun `create search request`() {
-        this.mvc.perform(post("/$version/client/$publicKey/search/request/")
+    @Test
+    fun `create search request`() {
+        this.mvc.perform(
+            post("/$version/client/$publicKey/search/request/")
                 .content(requestSearch.toJsonString())
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
     }
 
-    @Test fun `create search request without createdAt and updatedAt`() {
+    @Test
+    fun `create search request without createdAt and updatedAt`() {
         val strModel = requestSearch.toJsonString()
         val modelWithoutUpdateAt = strModel
-                .replace(",\"updatedAt\":\"2019-02-19T10:35:56.503+0300\"", "")
-                .replace(",\"createdAt\":\"2019-02-19T10:35:56.503+0300\"", "")
+            .replace(",\"updatedAt\":\"2019-02-19T10:35:56.503+0300\"", "")
+            .replace(",\"createdAt\":\"2019-02-19T10:35:56.503+0300\"", "")
 
-        this.mvc.perform(post("/$version/client/$publicKey/search/request/")
+        this.mvc.perform(
+            post("/$version/client/$publicKey/search/request/")
                 .content(modelWithoutUpdateAt)
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
     }
 
-    @Test fun `update search request`() {
-        this.mvc.perform(post("/$version/client/$publicKey/search/request/1/")
+    @Test
+    fun `update search request`() {
+        this.mvc.perform(
+            post("/$version/client/$publicKey/search/request/1/")
                 .content(cloneRequestSearch.toJsonString())
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
     }
 
-    @Test fun `delete search request`() {
-        this.mvc.perform(delete("/$version/client/$publicKey/search/request/1/")
+    @Test
+    fun `delete search request`() {
+        this.mvc.perform(
+            delete("/$version/client/$publicKey/search/request/1/")
                 .content(requestSearchId.toJsonString())
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
     }
 
-    @Test fun `get search request by owner`() {
-        this.mvc.perform(get("/$version/client/$publicKey/search/request/")
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
+    @Test
+    fun `get search request by owner`() {
+        this.mvc.perform(
+            get("/$version/client/$publicKey/search/request/")
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
     }
 
-    @Test fun `get search request by owner and id`() {
-        this.mvc.perform(get("/$version/client/$publicKey/search/request/1/")
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
+    @Test
+    fun `get search request by owner and id`() {
+        this.mvc.perform(
+            get("/$version/client/$publicKey/search/request/1/")
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
     }
 
-    @Test fun `clone search request`() {
-        this.mvc.perform(put("/$version/client/$publicKey/search/request/")
+    @Test
+    fun `clone search request`() {
+        this.mvc.perform(
+            put("/$version/client/$publicKey/search/request/")
                 .content(cloneRequestSearch.toJsonString())
-                .headers(httpHeaders))
-                .andExpect(status().isCreated)
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isCreated)
     }
 
-    @Test fun `get search requests by page`() {
-        this.mvc.perform(get("/$version/search/requests?page=0&size=2")
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
+    @Test
+    fun `get search requests by page`() {
+        this.mvc.perform(
+            get("/$version/search/requests?page=0&size=2")
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
     }
 
-    @Test fun `get the total count of search requests`() {
-        this.mvc.perform(get("/$version/client/$publicKey/search/request/count")
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
+    @Test
+    fun `get the total count of search requests`() {
+        this.mvc.perform(
+            get("/$version/client/$publicKey/search/request/count")
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
     }
 
-    @Test fun `get search request by owner and tag`() {
-        this.mvc.perform(get("/$version/client/$publicKey/search/request/tag/car")
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
+    @Test
+    fun `get search request by owner and tag`() {
+        this.mvc.perform(
+            get("/$version/client/$publicKey/search/request/tag/car")
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
     }
-
 }

@@ -7,11 +7,11 @@ import org.springframework.stereotype.Component
 
 @Component
 class AccountRepositoryStrategy(
-        @Qualifier("postgres")
-        private val postgres: PostgresAccountRepositoryImpl,
+    @Qualifier("postgres")
+    private val postgres: PostgresAccountRepositoryImpl,
 
-        @Qualifier("hybrid")
-        private val hybrid: HybridAccountRepositoryImpl
+    @Qualifier("hybrid")
+    private val hybrid: HybridAccountRepositoryImpl
 
 ) : RepositoryStrategy<AccountRepository> {
 
@@ -21,5 +21,4 @@ class AccountRepositoryStrategy(
             RepositoryStrategyType.HYBRID -> hybrid
         }
     }
-
 }

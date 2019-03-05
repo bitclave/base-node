@@ -19,7 +19,8 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     fun findBySearchRequestIdAndOfferId(searchRequestId: Long, offerId: Long): List<OfferSearch>
 
     fun findBySearchRequestIdAndOfferIdIn(
-            searchRequestId: Long, offerIds: List<Long>
+        searchRequestId: Long,
+        offerIds: List<Long>
     ): List<OfferSearch>
 
     fun findBySearchRequestIdIn(searchRequestIds: List<Long>): List<OfferSearch>
@@ -28,7 +29,8 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     fun findByOwnerAndOfferId(owner: String, offerId: Long): List<OfferSearch>
 
-    @Query(value = "SELECT s.* from offer_search s, " +
+    @Query(
+        value = "SELECT s.* from offer_search s, " +
             "( " +
             "SELECT b.offer_id, b.owner from " +
             "(" +
@@ -57,7 +59,7 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
             ") a " +
             "where s.offer_id = a.offer_id " +
             "and s.owner = a.owner",
-            nativeQuery = true)
+        nativeQuery = true
+    )
     fun findAllDiff(): List<OfferSearch>
-
 }

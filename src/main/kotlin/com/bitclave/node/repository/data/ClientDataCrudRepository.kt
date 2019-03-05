@@ -10,5 +10,4 @@ import org.springframework.transaction.annotation.Transactional
 interface ClientDataCrudRepository : CrudRepository<ClientData, String> {
 
     fun deleteByPublicKey(key: String)
-
 }

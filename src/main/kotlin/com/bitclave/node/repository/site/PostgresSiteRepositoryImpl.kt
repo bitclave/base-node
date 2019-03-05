@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component
 @Component
 @Qualifier("postgres")
 class PostgresSiteRepositoryImpl(
-        val repository: SiteCrudRepository
+    val repository: SiteCrudRepository
 ) : SiteRepository {
 
     override fun saveSite(site: Site): Site {
@@ -26,5 +26,4 @@ class PostgresSiteRepositoryImpl(
         }
         return site?.id ?: 0
     }
-
 }

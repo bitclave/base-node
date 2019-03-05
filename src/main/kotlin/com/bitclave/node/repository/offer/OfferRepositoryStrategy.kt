@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component
 
 @Component
 class OfferRepositoryStrategy(
-        @Qualifier("postgres")
-        private val postgres: PostgresOfferRepositoryImpl
+    @Qualifier("postgres")
+    private val postgres: PostgresOfferRepositoryImpl
 
 ) : RepositoryStrategy<OfferRepository> {
 
@@ -18,5 +18,4 @@ class OfferRepositoryStrategy(
             RepositoryStrategyType.HYBRID -> postgres
         }
     }
-
 }

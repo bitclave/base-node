@@ -10,5 +10,4 @@ import org.springframework.transaction.annotation.Transactional
 interface SiteCrudRepository : CrudRepository<Site, Long> {
 
     fun findByOrigin(origin: String): Site?
-
 }

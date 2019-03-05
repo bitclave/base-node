@@ -69,63 +69,64 @@ class OfferServiceTest {
 
     private fun getOriginPrices(): List<OfferPrice> {
         return listOf(
-                OfferPrice(
-                        0,
-                        "first price description",
-                        BigDecimal("0.5").toString(),
-                        listOf(
-                                OfferPriceRules(0, "age", "10"),
-                                OfferPriceRules(0, "sex", "male"),
-                                OfferPriceRules(0, "country", "USA")
-                        )
-                ),
-                OfferPrice(
-                        0,
-                        "second price description",
-                        BigDecimal("0.7").toString(),
-                        listOf(
-                                OfferPriceRules(0, "age", "20"),
-                                OfferPriceRules(0, "sex", "female"),
-                                OfferPriceRules(0, "country", "England")
-                        )
-                ),
-                OfferPrice(
-                        0,
-                        "third price description",
-                        BigDecimal("0.9").toString(),
-                        listOf(
-                                OfferPriceRules(0, "age", "30"),
-                                OfferPriceRules(0, "sex", "male"),
-                                OfferPriceRules(0, "country", "Israel")
-                        )
-                ),
-                OfferPrice(
-                        0,
-                        "fourth price description",
-                        BigDecimal("1.2").toString(),
-                        listOf(
-                                OfferPriceRules(0, "age", "40"),
-                                OfferPriceRules(0, "sex", "male"),
-                                OfferPriceRules(0, "country", "Ukraine")
-                        )
+            OfferPrice(
+                0,
+                "first price description",
+                BigDecimal("0.5").toString(),
+                listOf(
+                    OfferPriceRules(0, "age", "10"),
+                    OfferPriceRules(0, "sex", "male"),
+                    OfferPriceRules(0, "country", "USA")
                 )
+            ),
+            OfferPrice(
+                0,
+                "second price description",
+                BigDecimal("0.7").toString(),
+                listOf(
+                    OfferPriceRules(0, "age", "20"),
+                    OfferPriceRules(0, "sex", "female"),
+                    OfferPriceRules(0, "country", "England")
+                )
+            ),
+            OfferPrice(
+                0,
+                "third price description",
+                BigDecimal("0.9").toString(),
+                listOf(
+                    OfferPriceRules(0, "age", "30"),
+                    OfferPriceRules(0, "sex", "male"),
+                    OfferPriceRules(0, "country", "Israel")
+                )
+            ),
+            OfferPrice(
+                0,
+                "fourth price description",
+                BigDecimal("1.2").toString(),
+                listOf(
+                    OfferPriceRules(0, "age", "40"),
+                    OfferPriceRules(0, "sex", "male"),
+                    OfferPriceRules(0, "country", "Ukraine")
+                )
+            )
         )
     }
 
     private val offer = Offer(
-            0,
-            account.publicKey,
-            listOf(),
-            "is desc",
-            "is title",
-            "is image url",
-            BigDecimal.TEN.toString(),
-            mapOf("car" to "true", "color" to "red"),
-            mapOf("age" to "18", "salary" to "1000"),
-            mapOf("age" to Offer.CompareAction.MORE_OR_EQUAL, "salary" to Offer.CompareAction.MORE_OR_EQUAL)
+        0,
+        account.publicKey,
+        listOf(),
+        "is desc",
+        "is title",
+        "is image url",
+        BigDecimal.TEN.toString(),
+        mapOf("car" to "true", "color" to "red"),
+        mapOf("age" to "18", "salary" to "1000"),
+        mapOf("age" to Offer.CompareAction.MORE_OR_EQUAL, "salary" to Offer.CompareAction.MORE_OR_EQUAL)
     )
 
-    @Before fun setup() {
+    @Before
+    fun setup() {
         val postgres = PostgresAccountRepositoryImpl(accountCrudRepository)
         val hybrid = HybridAccountRepositoryImpl(web3Provider, hybridProperties)
         val repositoryStrategy = AccountRepositoryStrategy(postgres, hybrid)
@@ -134,7 +135,8 @@ class OfferServiceTest {
         val postgresOfferRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
         val offerServiceStrategy = OfferRepositoryStrategy(postgresOfferRepository)
 
-        val postgresOfferPriceRepository = PostgresOfferPriceRepositoryImpl(offerPriceCrudRepository, offerPriceRulesCrudRepository)
+        val postgresOfferPriceRepository =
+            PostgresOfferPriceRepositoryImpl(offerPriceCrudRepository, offerPriceRulesCrudRepository)
         val offerPriceServiceStrategy = OfferPriceRepositoryStrategy(postgresOfferPriceRepository)
 
         offerService = OfferService(offerServiceStrategy, offerPriceServiceStrategy)
@@ -143,7 +145,8 @@ class OfferServiceTest {
         accountService.registrationClient(account, strategy)
     }
 
-    @Test fun `should be create new offer`() {
+    @Test
+    fun `should be create new offer`() {
 
         val oneOffer = this.offer.copy()
         oneOffer.offerPrices = getOriginPrices()
@@ -162,18 +165,19 @@ class OfferServiceTest {
         assertThat(result.offerPrices.size).isEqualTo(4)
     }
 
-    @Test fun `should be update created offer without prices`() {
+    @Test
+    fun `should be update created offer without prices`() {
         val changedOffer = Offer(
-                34,
-                "dsdsdsdsd",
-                listOf(),
-                "is desc111",
-                "is title111",
-                "is image url111",
-                BigDecimal.ONE.toString(),
-                mapOf("color" to "red"),
-                mapOf("salary" to "1000"),
-                mapOf("salary" to Offer.CompareAction.MORE)
+            34,
+            "dsdsdsdsd",
+            listOf(),
+            "is desc111",
+            "is title111",
+            "is image url111",
+            BigDecimal.ONE.toString(),
+            mapOf("color" to "red"),
+            mapOf("salary" to "1000"),
+            mapOf("salary" to Offer.CompareAction.MORE)
         )
 
         val created = offerService.putOffer(0, account.publicKey, offer, strategy).get()
@@ -197,21 +201,22 @@ class OfferServiceTest {
         assertThat(updated.updatedAt.time > created.updatedAt.time)
     }
 
-    @Test fun `should be update created offer with prices`() {
+    @Test
+    fun `should be update created offer with prices`() {
         val oneOffer = this.offer.copy()
         oneOffer.offerPrices = getOriginPrices()
 
         val changedOffer = Offer(
-                34,
-                "dsdsdsdsd",
-                getOriginPrices(),
-                "is desc111",
-                "is title111",
-                "is image url111",
-                BigDecimal.ONE.toString(),
-                mapOf("color" to "red"),
-                mapOf("salary" to "1000"),
-                mapOf("salary" to Offer.CompareAction.MORE)
+            34,
+            "dsdsdsdsd",
+            getOriginPrices(),
+            "is desc111",
+            "is title111",
+            "is image url111",
+            BigDecimal.ONE.toString(),
+            mapOf("color" to "red"),
+            mapOf("salary" to "1000"),
+            mapOf("salary" to Offer.CompareAction.MORE)
         )
 
         val created = offerService.putOffer(0, account.publicKey, oneOffer, strategy).get()
@@ -221,7 +226,6 @@ class OfferServiceTest {
         val updatedDescription = "updated"
         changedOffer.offerPrices = created.offerPrices
         changedOffer.offerPrices.find { it.id == 1L }?.description = updatedDescription
-
 
         val updated = offerService.putOffer(created.id, account.publicKey, changedOffer, strategy).get()
 
@@ -242,7 +246,8 @@ class OfferServiceTest {
         assertThat(updated.createdAt.time).isEqualTo(created.createdAt.time)
     }
 
-    @Test fun `should delete existed offer`() {
+    @Test
+    fun `should delete existed offer`() {
         `should be create new offer`()
 
         var savedListResult = offerService.getOffers(1, account.publicKey, strategy).get()
@@ -257,7 +262,8 @@ class OfferServiceTest {
         assertThat(savedListResult.size).isEqualTo(0)
     }
 
-    @Test fun `should delete existed offers`() {
+    @Test
+    fun `should delete existed offers`() {
         `should be create new offer`()
         `should be create new offer`()
         `should be create new offer`()
@@ -274,7 +280,8 @@ class OfferServiceTest {
         assertThat(savedListResult.size).isEqualTo(0)
     }
 
-    @Test fun `should return offers by id and owner`() {
+    @Test
+    fun `should return offers by id and owner`() {
         `should be create new offer`()
         `should be create new offer`()
 
@@ -290,7 +297,8 @@ class OfferServiceTest {
         assertThat(result.size).isEqualTo(0)
     }
 
-    @Test fun `should return offers by owner`() {
+    @Test
+    fun `should return offers by owner`() {
         `should be create new offer`()
         `should be create new offer`()
 
@@ -302,7 +310,8 @@ class OfferServiceTest {
         assertThat(result[1]).isEqualToIgnoringGivenFields(offer, *ignoreFields)
     }
 
-    @Test fun `should return all offers by page`() {
+    @Test
+    fun `should return all offers by page`() {
         `should be create new offer`()
         `should be create new offer`()
         `should be create new offer`()
@@ -319,17 +328,19 @@ class OfferServiceTest {
         assert(secondPage.last().id == 4L)
     }
 
-    @Test fun `get total count of offers`() {
+    @Test
+    fun `get total count of offers`() {
         `should be create new offer`()
         `should be create new offer`()
         `should be create new offer`()
         `should be create new offer`()
 
-        var result = offerService.getOfferTotalCount(strategy).get()
+        val result = offerService.getOfferTotalCount(strategy).get()
         assert(result == 4L)
     }
 
-    @Test fun `should return offers by owner and tag`() {
+    @Test
+    fun `should return offers by owner and tag`() {
         `should be create new offer`()
         `should be create new offer`()
 

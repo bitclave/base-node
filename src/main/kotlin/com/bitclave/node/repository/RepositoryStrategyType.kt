@@ -4,5 +4,4 @@ enum class RepositoryStrategyType {
 
     POSTGRES,
     HYBRID
-
 }

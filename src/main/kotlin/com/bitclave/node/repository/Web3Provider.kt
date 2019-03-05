@@ -9,7 +9,7 @@ import org.web3j.protocol.core.Response
 import org.web3j.protocol.http.HttpService
 
 @Component
-class Web3Provider(private val hybridProperties: HybridProperties) {
+class Web3Provider(hybridProperties: HybridProperties) {
 
     private val service = HttpService(hybridProperties.nodeUrl)
 
@@ -19,23 +19,22 @@ class Web3Provider(private val hybridProperties: HybridProperties) {
 
     fun hybridRevert() {
         Request<Int, HybridRevert>(
-                "evm_revert",
-                arrayListOf(1),
-                service,
-                HybridRevert::class.java
+            "evm_revert",
+            arrayListOf(1),
+            service,
+            HybridRevert::class.java
         ).send()
     }
 
     fun hybridSnapshot() {
         Request<String, HybridSnapshot>(
-                "evm_snapshot",
-                emptyList(),
-                service,
-                HybridSnapshot::class.java
+            "evm_snapshot",
+            emptyList(),
+            service,
+            HybridSnapshot::class.java
         ).send()
     }
 
     private class HybridRevert : Response<Boolean>()
     private class HybridSnapshot : Response<String>()
-
 }
