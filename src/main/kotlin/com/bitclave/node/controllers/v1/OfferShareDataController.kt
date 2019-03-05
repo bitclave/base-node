@@ -13,7 +13,13 @@ import io.swagger.annotations.ApiResponses
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestHeader
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestMethod
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.ResponseStatus
+import org.springframework.web.bind.annotation.RestController
 import java.math.BigDecimal
 import java.util.concurrent.CompletableFuture
 
@@ -22,8 +28,8 @@ private val logger = KotlinLogging.logger {}
 @RestController
 @RequestMapping("/v1/data/")
 class OfferShareDataController(
-        @Qualifier("v1") private val accountService: AccountService,
-        @Qualifier("v1") private val offerShareData: OfferShareService
+    @Qualifier("v1") private val accountService: AccountService,
+    @Qualifier("v1") private val offerShareData: OfferShareService
 ) : AbstractController() {
 
     /**
@@ -32,29 +38,35 @@ class OfferShareDataController(
      *
      * @return List of {@link OfferShareData}, or empty list. Http status - 200.
      */
-    @ApiOperation("Returns a list of requests",
-            response = OfferShareData::class, responseContainer = "List")
-    @ApiResponses(value = [
-        ApiResponse(code = 200, message = "Success", response = OfferShareData::class,
-                responseContainer = "List")
-    ])
+    @ApiOperation(
+        "Returns a list of requests",
+        response = OfferShareData::class, responseContainer = "List"
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                code = 200, message = "Success", response = OfferShareData::class,
+                responseContainer = "List"
+            )
+        ]
+    )
     @RequestMapping(method = [RequestMethod.GET], value = ["offer/"])
     fun getShareData(
-            @ApiParam("id of offer owner")
-            @RequestParam("owner")
-            offerOwner: String,
+        @ApiParam("id of offer owner")
+        @RequestParam("owner")
+        offerOwner: String,
 
-            @ApiParam("accepted or not", required = false)
-            @RequestParam("accepted", required = false)
-            accepted: Boolean?,
+        @ApiParam("accepted or not", required = false)
+        @RequestParam("accepted", required = false)
+        accepted: Boolean?,
 
-            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
-            @RequestHeader("Strategy", required = false)
-            strategy: String?
+        @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
     ): CompletableFuture<List<OfferShareData>> {
 
         return offerShareData.getShareData(offerOwner, accepted, getStrategyType(strategy)).exceptionally { e ->
-            logger.error("Request: getShareData/" + offerOwner + "/" + accepted!!.toString() + " raised " + e)
+            logger.error("Request: getShareData/$offerOwner/$accepted raised $e")
             throw e
         }
     }
@@ -65,45 +77,47 @@ class OfferShareDataController(
      *
      * @return id of created request.
      *
-     * @exception   {@link BadArgumentException} - 400
+     * @exception {@link BadArgumentException} - 400
      *              {@link AccessDeniedException} - 403
      *              {@link NotFoundException} - 404
      *              {@link DuplicateException} - 409
      *              {@link DataNotSaved} - 500
      */
     @ApiOperation("Grant access data for offer")
-    @ApiResponses(value = [
-        ApiResponse(code = 201, message = "Created"),
-        ApiResponse(code = 400, message = "BadArgumentException"),
-        ApiResponse(code = 403, message = "AccessDeniedException"),
-        ApiResponse(code = 404, message = "NotFoundException"),
-        ApiResponse(code = 409, message = "DuplicateException"),
-        ApiResponse(code = 500, message = "DataNotSaved")
-    ])
+    @ApiResponses(
+        value = [
+            ApiResponse(code = 201, message = "Created"),
+            ApiResponse(code = 400, message = "BadArgumentException"),
+            ApiResponse(code = 403, message = "AccessDeniedException"),
+            ApiResponse(code = 404, message = "NotFoundException"),
+            ApiResponse(code = 409, message = "DuplicateException"),
+            ApiResponse(code = 500, message = "DataNotSaved")
+        ]
+    )
     @RequestMapping(method = [RequestMethod.POST], value = ["grant/offer/"])
     @ResponseStatus(HttpStatus.CREATED)
     fun grantAccess(
-            @ApiParam("Grant access data for offer", required = true)
-            @RequestBody
-            request: SignedRequest<OfferShareData>,
+        @ApiParam("Grant access data for offer", required = true)
+        @RequestBody
+        request: SignedRequest<OfferShareData>,
 
-            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
-            @RequestHeader("Strategy", required = false)
-            strategy: String?
+        @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
     ): CompletableFuture<Void> {
 
         return accountService
-                .accountBySigMessage(request, getStrategyType(strategy))
-                .thenCompose { account: Account -> accountService.validateNonce(request, account) }
-                .thenAcceptAsync {
-                    offerShareData.grantAccess(it.publicKey, request.data!!, getStrategyType(strategy))
-                            .get()
+            .accountBySigMessage(request, getStrategyType(strategy))
+            .thenCompose { account: Account -> accountService.validateNonce(request, account) }
+            .thenAcceptAsync {
+                offerShareData.grantAccess(it.publicKey, request.data!!, getStrategyType(strategy))
+                    .get()
 
-                    accountService.incrementNonce(it, getStrategyType(strategy)).get()
-                }.exceptionally { e ->
-                    logger.error("Request: grantAccess/" + request.toString() + " raised " + e)
-                    throw e
-                }
+                accountService.incrementNonce(it, getStrategyType(strategy)).get()
+            }.exceptionally { e ->
+                logger.error("Request: grantAccess/$request raised $e")
+                throw e
+            }
     }
 
     /**
@@ -112,49 +126,50 @@ class OfferShareDataController(
      *
      * @return http status 202
      *
-     * @exception   {@link BadArgumentException} - 400
+     * @exception {@link BadArgumentException} - 400
      *              {@link AccessDeniedException} - 403
      *              {@link NotFoundException} - 404
      *              {@link DataNotSaved} - 500
      */
     @ApiOperation("Business accepted what match offer data with client data and pay worth.")
-    @ApiResponses(value = [
-        ApiResponse(code = 202, message = "Accepted"),
-        ApiResponse(code = 400, message = "BadArgumentException"),
-        ApiResponse(code = 403, message = "AccessDeniedException"),
-        ApiResponse(code = 404, message = "NotFoundException"),
-        ApiResponse(code = 500, message = "DataNotSaved")
-    ])
+    @ApiResponses(
+        value = [
+            ApiResponse(code = 202, message = "Accepted"),
+            ApiResponse(code = 400, message = "BadArgumentException"),
+            ApiResponse(code = 403, message = "AccessDeniedException"),
+            ApiResponse(code = 404, message = "NotFoundException"),
+            ApiResponse(code = 500, message = "DataNotSaved")
+        ]
+    )
     @RequestMapping(method = [RequestMethod.PATCH], value = ["offer/"])
     @ResponseStatus(HttpStatus.ACCEPTED)
     fun accept(
-            @ApiParam("id of offer", required = true)
-            @RequestParam("offerSearchId")
-            offerSearchId: Long,
+        @ApiParam("id of offer", required = true)
+        @RequestParam("offerSearchId")
+        offerSearchId: Long,
 
-            @ApiParam("SignedRequest with value of worth", required = true)
-            @RequestBody request: SignedRequest<BigDecimal>,
+        @ApiParam("SignedRequest with value of worth", required = true)
+        @RequestBody request: SignedRequest<BigDecimal>,
 
-            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
-            @RequestHeader("Strategy", required = false)
-            strategy: String?
+        @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
     ): CompletableFuture<Void> {
 
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
-                .thenCompose { account: Account -> accountService.validateNonce(request, account) }
-                .thenAcceptAsync {
-                    offerShareData.acceptShareData(
-                            it.publicKey,
-                            offerSearchId,
-                            request.data!!,
-                            getStrategyType(strategy)
-                    ).get()
+            .thenCompose { account: Account -> accountService.validateNonce(request, account) }
+            .thenAcceptAsync {
+                offerShareData.acceptShareData(
+                    it.publicKey,
+                    offerSearchId,
+                    request.data!!,
+                    getStrategyType(strategy)
+                ).get()
 
-                    accountService.incrementNonce(it, getStrategyType(strategy)).get()
-                }.exceptionally { e ->
-                    logger.error("Request: accept/" + offerSearchId.toString() + "/" + request.toString() + " raised " + e)
-                    throw e
-                }
+                accountService.incrementNonce(it, getStrategyType(strategy)).get()
+            }.exceptionally { e ->
+                logger.error("Request: accept/$offerSearchId/$request raised $e")
+                throw e
+            }
     }
-
 }

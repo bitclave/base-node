@@ -13,7 +13,13 @@ import io.swagger.annotations.ApiResponses
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestHeader
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestMethod
+import org.springframework.web.bind.annotation.RequestParam
+import org.springframework.web.bind.annotation.ResponseStatus
+import org.springframework.web.bind.annotation.RestController
 import java.util.concurrent.CompletableFuture
 
 private val logger = KotlinLogging.logger {}
@@ -21,8 +27,8 @@ private val logger = KotlinLogging.logger {}
 @RestController
 @RequestMapping("/v1/data/")
 class RequestDataController(
-        @Qualifier("v1") private val accountService: AccountService,
-        @Qualifier("v1") private val requestDataService: RequestDataService
+    @Qualifier("v1") private val accountService: AccountService,
+    @Qualifier("v1") private val requestDataService: RequestDataService
 ) : AbstractController() {
 
     /**
@@ -32,40 +38,49 @@ class RequestDataController(
      * @param fromPk - Optional public key of the user that issued data access request.
      * @param toPk - Optional public key of the user that is expected to
      * approve data access request to his personal data.
-     * @param state - {@link RequestData.RequestDataState}.
      *
      * @return List of {@link RequestData}, or empty list. Http status - 200.
      *
      * @exception {@link BadArgumentException} - 400
      */
-    @ApiOperation("Returns a list of outstanding data access requests,\n" +
+    @ApiOperation(
+        "Returns a list of outstanding data access requests,\n" +
             "where data access requests meet the provided search criteria.\n" +
             "API called must provided one of fromPk or toPk.",
-            response = RequestData::class, responseContainer = "List")
-    @ApiResponses(value = [
-        ApiResponse(code = 200, message = "Success", response = RequestData::class,
-                responseContainer = "List"),
-        ApiResponse(code = 400, message = "BadArgumentException")
-    ])
+        response = RequestData::class, responseContainer = "List"
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(
+                code = 200, message = "Success", response = RequestData::class,
+                responseContainer = "List"
+            ),
+            ApiResponse(code = 400, message = "BadArgumentException")
+        ]
+    )
     @RequestMapping(method = [RequestMethod.GET], value = ["request/"])
     fun getRequestByState(
-            @ApiParam("Optional if use toPk. Public key of the user " +
-                    "that issued data access request.", required = false)
-            @RequestParam("fromPk", required = false)
-            fromPk: String?,
+        @ApiParam(
+            "Optional if use toPk. Public key of the user " +
+                "that issued data access request.", required = false
+        )
+        @RequestParam("fromPk", required = false)
+        fromPk: String?,
 
-            @ApiParam("Optional if use fromPk. Public key of the user that is expected to\n" +
-                    "approve data access request to his personal data.", required = false)
-            @RequestParam("toPk", required = false)
-            toPk: String?,
+        @ApiParam(
+            "Optional if use fromPk. Public key of the user that is expected to\n" +
+                "approve data access request to his personal data.", required = false
+        )
+        @RequestParam("toPk", required = false)
+        toPk: String?,
 
-            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
-            @RequestHeader("Strategy", required = false)
-            strategy: String?
+        @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
     ): CompletableFuture<List<RequestData>> {
 
         return requestDataService.getRequestByStatus(fromPk, toPk, getStrategyType(strategy)).exceptionally { e ->
-            logger.error("Request: getRequestByState/" + fromPk + "/" + toPk + " raised " + e)
+            logger.error("Request: getRequestByState/$fromPk/$toPk raised $e")
             throw e
         }
     }
@@ -76,47 +91,49 @@ class RequestDataController(
      *
      * @return id of created request.
      *
-     * @exception   {@link BadArgumentException} - 400
+     * @exception {@link BadArgumentException} - 400
      *              {@link AccessDeniedException} - 403
      *              {@link NotFoundException} - 404
      *              {@link DataNotSaved} - 500
      */
     @ApiOperation("Create request for get private client data.", response = Long::class)
-    @ApiResponses(value = [
-        ApiResponse(code = 201, message = "Created", response = Long::class),
-        ApiResponse(code = 400, message = "BadArgumentException"),
-        ApiResponse(code = 403, message = "AccessDeniedException"),
-        ApiResponse(code = 404, message = "NotFoundException"),
-        ApiResponse(code = 500, message = "DataNotSaved")
-    ])
+    @ApiResponses(
+        value = [
+            ApiResponse(code = 201, message = "Created", response = Long::class),
+            ApiResponse(code = 400, message = "BadArgumentException"),
+            ApiResponse(code = 403, message = "AccessDeniedException"),
+            ApiResponse(code = 404, message = "NotFoundException"),
+            ApiResponse(code = 500, message = "DataNotSaved")
+        ]
+    )
     @RequestMapping(method = [RequestMethod.POST], value = ["request/"])
     @ResponseStatus(HttpStatus.CREATED)
     fun request(
-            @ApiParam("info of request for privacy client data", required = true)
-            @RequestBody
-            request: SignedRequest<RequestData>,
+        @ApiParam("info of request for privacy client data", required = true)
+        @RequestBody
+        request: SignedRequest<RequestData>,
 
-            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
-            @RequestHeader("Strategy", required = false)
-            strategy: String?
+        @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
     ): CompletableFuture<Long> {
 
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
-                .thenCompose { account: Account -> accountService.validateNonce(request, account) }
-                .thenCompose { account: Account ->
-                    val result = requestDataService.request(
-                            account.publicKey,
-                            request.data!!,
-                            getStrategyType(strategy)
-                    ).get()
+            .thenCompose { account: Account -> accountService.validateNonce(request, account) }
+            .thenCompose { account: Account ->
+                val result = requestDataService.request(
+                    account.publicKey,
+                    request.data!!,
+                    getStrategyType(strategy)
+                ).get()
 
-                    accountService.incrementNonce(account, getStrategyType(strategy)).get()
+                accountService.incrementNonce(account, getStrategyType(strategy)).get()
 
-                    CompletableFuture.completedFuture(result)
-                }.exceptionally { e ->
-                    logger.error("Request: request/" + request.toString() + " raised " + e)
-                    throw e
-                }
+                CompletableFuture.completedFuture(result)
+            }.exceptionally { e ->
+                logger.error("Request: request/$request raised $e")
+                throw e
+            }
     }
 
     /**
@@ -125,48 +142,49 @@ class RequestDataController(
      *
      * @return id of created request.
      *
-     * @exception   {@link BadArgumentException} - 400
+     * @exception {@link BadArgumentException} - 400
      *              {@link AccessDeniedException} - 403
      *              {@link NotFoundException} - 404
      *              {@link DataNotSaved} - 500
      */
     @ApiOperation("Grant access for get private client data.", response = Long::class)
-    @ApiResponses(value = [
-        ApiResponse(code = 201, message = "Created", response = Long::class),
-        ApiResponse(code = 400, message = "BadArgumentException"),
-        ApiResponse(code = 403, message = "AccessDeniedException"),
-        ApiResponse(code = 404, message = "NotFoundException"),
-        ApiResponse(code = 500, message = "DataNotSaved")
-    ])
+    @ApiResponses(
+        value = [
+            ApiResponse(code = 201, message = "Created", response = Long::class),
+            ApiResponse(code = 400, message = "BadArgumentException"),
+            ApiResponse(code = 403, message = "AccessDeniedException"),
+            ApiResponse(code = 404, message = "NotFoundException"),
+            ApiResponse(code = 500, message = "DataNotSaved")
+        ]
+    )
     @RequestMapping(method = [RequestMethod.POST], value = ["grant/request/"])
     @ResponseStatus(HttpStatus.CREATED)
     fun grantAccess(
-            @ApiParam("info of request for privacy client data", required = true)
-            @RequestBody
-            request: SignedRequest<RequestData>,
+        @ApiParam("info of request for privacy client data", required = true)
+        @RequestBody
+        request: SignedRequest<RequestData>,
 
-            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
-            @RequestHeader("Strategy", required = false)
-            strategy: String?
+        @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
     ): CompletableFuture<Long> {
 
         return accountService
-                .accountBySigMessage(request, getStrategyType(strategy))
-                .thenCompose { account: Account -> accountService.validateNonce(request, account) }
-                .thenCompose { account: Account ->
-                    val result = requestDataService.grantAccess(
-                            account.publicKey,
-                            request.data!!,
-                            getStrategyType(strategy)
-                    ).get()
+            .accountBySigMessage(request, getStrategyType(strategy))
+            .thenCompose { account: Account -> accountService.validateNonce(request, account) }
+            .thenCompose { account: Account ->
+                val result = requestDataService.grantAccess(
+                    account.publicKey,
+                    request.data!!,
+                    getStrategyType(strategy)
+                ).get()
 
-                    accountService.incrementNonce(account, getStrategyType(strategy)).get()
+                accountService.incrementNonce(account, getStrategyType(strategy)).get()
 
-                    CompletableFuture.completedFuture(result)
-                }.exceptionally { e ->
-                    logger.error("Request: grantAccess/" + request.toString() + " raised " + e)
-                    throw e
-                }
+                CompletableFuture.completedFuture(result)
+            }.exceptionally { e ->
+                logger.error("Request: grantAccess/$request raised $e")
+                throw e
+            }
     }
-
 }

@@ -48,7 +48,8 @@ class AccountServiceTest {
     protected lateinit var account2: Account
     protected lateinit var strategy: RepositoryStrategyType
 
-    @Before fun setup() {
+    @Before
+    fun setup() {
         account = Account(publicKey)
         account2 = Account(publicKey2)
         val postgres = PostgresAccountRepositoryImpl(accountCrudRepository)
@@ -60,12 +61,13 @@ class AccountServiceTest {
         strategy = RepositoryStrategyType.POSTGRES
     }
 
-    @Test fun `check nonce`() {
+    @Test
+    fun `check nonce`() {
         accountService.registrationClient(account, strategy).get()
         var nonce = accountService.getNonce(account.publicKey, strategy).get()
 
         val request = SignedRequest("Hello", publicKey, "", ++nonce)
-                .signMessage(privateKey)
+            .signMessage(privateKey)
 
         val account = accountService.accountBySigMessage(request, strategy).get()
         accountService.validateNonce(request, account).get()
@@ -78,7 +80,7 @@ class AccountServiceTest {
             var nonce = accountService.getNonce(account.publicKey, strategy).get()
 
             val request = SignedRequest("Hello", publicKey, "", ++nonce)
-                    .signMessage(privateKey)
+                .signMessage(privateKey)
 
             var account = accountService.accountBySigMessage(request, strategy).get()
             accountService.incrementNonce(account, strategy).get()
@@ -86,35 +88,38 @@ class AccountServiceTest {
             account = accountService.accountBySigMessage(request, strategy).get()
 
             accountService.validateNonce(request, account).get()
-
         } catch (e: Exception) {
             throw e.cause!!
         }
     }
 
-    @Test fun `check signature of signed message`() {
+    @Test
+    fun `check signature of signed message`() {
         val request = SignedRequest("Hello", publicKey)
-                .signMessage(privateKey)
+            .signMessage(privateKey)
 
         val signPublicKey = accountService.checkSigMessage(request).get()
         Assertions.assertThat(signPublicKey).isEqualTo(publicKey)
     }
 
-    @Test fun `get account by signature of message`() {
+    @Test
+    fun `get account by signature of message`() {
         accountService.registrationClient(account, strategy).get()
         val request = SignedRequest("Hello", publicKey)
-                .signMessage(privateKey)
+            .signMessage(privateKey)
 
         val account = accountService.accountBySigMessage(request, strategy).get()
         Assertions.assertThat(account.publicKey).isEqualTo(publicKey)
     }
 
-    @Test fun `register new client`() {
+    @Test
+    fun `register new client`() {
         val regAccount = accountService.registrationClient(account, strategy).get()
         Assertions.assertThat(regAccount.publicKey).isEqualTo(publicKey)
     }
 
-    @Test fun `delete client`() {
+    @Test
+    fun `delete client`() {
         val regAccount = accountService.registrationClient(account, strategy).get()
         Assertions.assertThat(regAccount.publicKey).isEqualTo(publicKey)
         accountService.deleteAccount(account.publicKey, strategy).get()
@@ -132,7 +137,8 @@ class AccountServiceTest {
         }
     }
 
-    @Test fun `check client already registered`() {
+    @Test
+    fun `check client already registered`() {
         accountService.registrationClient(account, strategy).get()
         val existAccount = accountService.existAccount(account, strategy).get()
         Assertions.assertThat(existAccount.publicKey).isEqualTo(publicKey)
@@ -157,18 +163,19 @@ class AccountServiceTest {
         }
     }
 
-    @Test fun `get accounts`() {
+    @Test
+    fun `get accounts`() {
         accountService.registrationClient(account, strategy).get()
         accountService.registrationClient(account2, strategy).get()
-        val existAccounts = accountService.getAccounts(strategy, mutableListOf<String>(publicKey, publicKey2)).get()
+        val existAccounts = accountService.getAccounts(strategy, mutableListOf(publicKey, publicKey2)).get()
         Assertions.assertThat(existAccounts.size).isEqualTo(2)
     }
 
-    @Test fun `get total count of accounts`() {
+    @Test
+    fun `get total count of accounts`() {
         strategy = RepositoryStrategyType.POSTGRES
         `register new client`()
-        var result = accountService.getAccountTotalCount(strategy).get()
+        val result = accountService.getAccountTotalCount(strategy).get()
         assert(result == 1L)
     }
-
 }

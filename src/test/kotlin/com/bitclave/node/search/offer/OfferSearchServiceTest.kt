@@ -7,7 +7,14 @@ import com.bitclave.node.repository.account.AccountCrudRepository
 import com.bitclave.node.repository.account.AccountRepositoryStrategy
 import com.bitclave.node.repository.account.HybridAccountRepositoryImpl
 import com.bitclave.node.repository.account.PostgresAccountRepositoryImpl
-import com.bitclave.node.repository.models.*
+import com.bitclave.node.repository.models.Account
+import com.bitclave.node.repository.models.Offer
+import com.bitclave.node.repository.models.OfferPrice
+import com.bitclave.node.repository.models.OfferPriceRules
+import com.bitclave.node.repository.models.OfferResultAction
+import com.bitclave.node.repository.models.OfferSearch
+import com.bitclave.node.repository.models.OfferShareData
+import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.offer.OfferCrudRepository
 import com.bitclave.node.repository.offer.OfferRepositoryStrategy
 import com.bitclave.node.repository.offer.PostgresOfferRepositoryImpl
@@ -28,7 +35,12 @@ import com.bitclave.node.repository.share.OfferShareRepositoryStrategy
 import com.bitclave.node.repository.share.PostgresOfferShareRepositoryImpl
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
-import com.bitclave.node.services.v1.*
+import com.bitclave.node.services.v1.AccountService
+import com.bitclave.node.services.v1.OfferSearchService
+import com.bitclave.node.services.v1.OfferService
+import com.bitclave.node.services.v1.OfferShareService
+import com.bitclave.node.services.v1.SearchRequestService
+import com.google.gson.Gson
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -42,7 +54,7 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import java.math.BigDecimal
-import java.util.*
+import java.util.ArrayList
 import java.util.concurrent.CompletableFuture
 import java.util.stream.LongStream
 
@@ -50,10 +62,14 @@ import java.util.stream.LongStream
 @RunWith(SpringRunner::class)
 @SpringBootTest
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
-open class OfferSearchServiceTest {
+class OfferSearchServiceTest {
+
+    @Autowired
+    private lateinit var gson: Gson
 
     @Autowired
     private lateinit var web3Provider: Web3Provider
+
     @Autowired
     private lateinit var hybridProperties: HybridProperties
 
@@ -99,37 +115,38 @@ open class OfferSearchServiceTest {
     protected lateinit var createdSearchRequest2: SearchRequest
 
     protected val offer = Offer(
-            0,
-            businessPublicKey,
-            listOf(),
-            "desc",
-            "title",
-            "url"
+        0,
+        businessPublicKey,
+        listOf(),
+        "desc",
+        "title",
+        "url"
     )
 
     protected val offer2 = Offer(
-            0,
-            businessPublicKey,
-            listOf(),
-            "desc",
-            "title",
-            "url"
+        0,
+        businessPublicKey,
+        listOf(),
+        "desc",
+        "title",
+        "url"
     )
 
     protected val offerPrice = OfferPrice(
-            0,
-            "first price description",
-            BigDecimal("0.5").toString(),
-            listOf(
-                    OfferPriceRules(0, "age", "10"),
-                    OfferPriceRules(0, "sex", "male"),
-                    OfferPriceRules(0, "country", "USA")
-            )
+        0,
+        "first price description",
+        BigDecimal("0.5").toString(),
+        listOf(
+            OfferPriceRules(0, "age", "10"),
+            OfferPriceRules(0, "sex", "male"),
+            OfferPriceRules(0, "country", "USA")
+        )
     )
 
     protected lateinit var offerPrices: List<OfferPrice>
 
-    @Before fun setup() {
+    @Before
+    fun setup() {
         val postgres = PostgresAccountRepositoryImpl(accountCrudRepository)
         val hybrid = HybridAccountRepositoryImpl(web3Provider, hybridProperties)
         val repositoryStrategy = AccountRepositoryStrategy(postgres, hybrid)
@@ -138,106 +155,110 @@ open class OfferSearchServiceTest {
         val offerShareRepository = PostgresOfferShareRepositoryImpl(offerShareCrudRepository)
         val shareRepositoryStrategy = OfferShareRepositoryStrategy(offerShareRepository)
 
-        val searchRequestRepository = PostgresSearchRequestRepositoryImpl(searchRequestCrudRepository, offerSearchCrudRepository)
+        val searchRequestRepository =
+            PostgresSearchRequestRepositoryImpl(searchRequestCrudRepository, offerSearchCrudRepository)
         val searchRequestRepositoryStrategy = SearchRequestRepositoryStrategy(searchRequestRepository)
 
         val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
 
-        val offerSearchRepository = PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository, searchRequestRepository)
+        val offerSearchRepository =
+            PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository, searchRequestRepository)
         val offerSearchRepositoryStrategy = OfferSearchRepositoryStrategy(offerSearchRepository)
 
-        val offerPriceRepository = PostgresOfferPriceRepositoryImpl(offerPriceCrudRepository, offerPriceRuleCrudRepository)
+        val offerPriceRepository =
+            PostgresOfferPriceRepositoryImpl(offerPriceCrudRepository, offerPriceRuleCrudRepository)
         val offerPriceRepositoryStrategy = OfferPriceRepositoryStrategy(offerPriceRepository)
 
-
         offerShareService = OfferShareService(
-                shareRepositoryStrategy,
-                offerRepositoryStrategy,
-                offerSearchRepositoryStrategy,
-                searchRequestRepositoryStrategy
+            shareRepositoryStrategy,
+            offerRepositoryStrategy,
+            offerSearchRepositoryStrategy,
+            searchRequestRepositoryStrategy
         )
 
         offerSearchService = OfferSearchService(
-                searchRequestRepositoryStrategy,
-                offerRepositoryStrategy,
-                offerSearchRepositoryStrategy,
-                querySearchRequestCrudRepository,
-                rtSearchRepository
+            searchRequestRepositoryStrategy,
+            offerRepositoryStrategy,
+            offerSearchRepositoryStrategy,
+            querySearchRequestCrudRepository,
+            rtSearchRepository,
+            gson
         )
 
         offerService = OfferService(
-                offerRepositoryStrategy,
-                offerPriceRepositoryStrategy
+            offerRepositoryStrategy,
+            offerPriceRepositoryStrategy
         )
 
         searchRequestService = SearchRequestService(
-                searchRequestRepositoryStrategy
+            searchRequestRepositoryStrategy
         )
 
         strategy = RepositoryStrategyType.POSTGRES
         accountService.registrationClient(account, strategy)
 
         createdOffer1 = offerRepositoryStrategy
-                .changeStrategy(strategy)
-                .saveOffer(offer)
+            .changeStrategy(strategy)
+            .saveOffer(offer)
 
         createdOffer2 = offerRepositoryStrategy
-                .changeStrategy(strategy)
-                .saveOffer(offer2)
+            .changeStrategy(strategy)
+            .saveOffer(offer2)
 
         for (i in 0 until 5) {
             offerRepositoryStrategy
-                    .changeStrategy(strategy)
-                    .saveOffer(offer)
+                .changeStrategy(strategy)
+                .saveOffer(offer)
         }
 
         offerPrices = offerPriceRepositoryStrategy
-                .changeStrategy(strategy)
-                .savePrices(offer, listOf(offerPrice))
+            .changeStrategy(strategy)
+            .savePrices(offer, listOf(offerPrice))
 
         createdSearchRequest1 = searchRequestRepositoryStrategy.changeStrategy(strategy)
-                .saveSearchRequest(SearchRequest(0, publicKey, emptyMap()))
+            .saveSearchRequest(SearchRequest(0, publicKey, emptyMap()))
 
         createdSearchRequest2 = searchRequestRepositoryStrategy.changeStrategy(strategy)
-                .saveSearchRequest(SearchRequest(0, publicKey, emptyMap()))
+            .saveSearchRequest(SearchRequest(0, publicKey, emptyMap()))
     }
 
     fun createOfferSearch(searchRequest: SearchRequest, offer: Offer, events: MutableList<String>) {
         offerSearchService.saveNewOfferSearch(
-                OfferSearch(
-                        0,
-                        searchRequest.owner,
-                        searchRequest.id,
-                        offer.id,
-                        OfferResultAction.NONE,
-                        "",
-                        events
-                ),
-                strategy
+            OfferSearch(
+                0,
+                searchRequest.owner,
+                searchRequest.id,
+                offer.id,
+                OfferResultAction.NONE,
+                "",
+                events
+            ),
+            strategy
         ).get()
     }
 
-    @Test fun `should be create QuerySearchRequest`() {
+    @Test
+    fun `should be create QuerySearchRequest`() {
         val list: List<Long> = arrayListOf(1, 2, 3)
 
         val searchRequestWithRtSearch = searchRequestService.putSearchRequest(
-                0,
-                publicKey,
-                SearchRequest(0, publicKey, mapOf("rtSearch" to "true")),
-                strategy
+            0,
+            publicKey,
+            SearchRequest(0, publicKey, mapOf("rtSearch" to "true")),
+            strategy
         ).get()
 
         val searchQueryText = "some data"
         Mockito.`when`(rtSearchRepository.getOffersIdByQuery(searchQueryText))
-                .thenReturn(CompletableFuture.completedFuture(list))
+            .thenReturn(CompletableFuture.completedFuture(list))
 
         val offersResult = offerSearchService.createOfferSearchesByQuery(
-                searchRequestWithRtSearch.id, publicKey, searchQueryText, strategy
+            searchRequestWithRtSearch.id, publicKey, searchQueryText, strategy
         ).get()
 
         val queryRequestsByOwner = querySearchRequestCrudRepository
-                .findAllByOwner(publicKey)
+            .findAllByOwner(publicKey)
         val existedSearchRequest = searchRequestCrudRepository.findOne(searchRequestWithRtSearch.id)
 
         assertThat(existedSearchRequest)
@@ -246,52 +267,54 @@ open class OfferSearchServiceTest {
         assertThat(offersResult.size == list.size)
     }
 
-    @Test fun `should be create offersSearch items`() {
+    @Test
+    fun `should be create offersSearch items`() {
         val list: List<Long> = arrayListOf(1, 2, 3)
 
         val searchRequestWithRtSearch = searchRequestService.putSearchRequest(
-                0,
-                publicKey,
-                SearchRequest(0, publicKey, mapOf("rtSearch" to "true")),
-                strategy
+            0,
+            publicKey,
+            SearchRequest(0, publicKey, mapOf("rtSearch" to "true")),
+            strategy
         ).get()
 
         val searchQueryText = "some data"
         Mockito.`when`(rtSearchRepository.getOffersIdByQuery(searchQueryText))
-                .thenReturn(CompletableFuture.completedFuture(list))
+            .thenReturn(CompletableFuture.completedFuture(list))
 
         val offersResult = offerSearchService.createOfferSearchesByQuery(
-                searchRequestWithRtSearch.id, publicKey, searchQueryText, strategy
+            searchRequestWithRtSearch.id, publicKey, searchQueryText, strategy
         ).get()
 
         val searchResult = offerSearchCrudRepository
-                .findBySearchRequestId(searchRequestWithRtSearch.id)
+            .findBySearchRequestId(searchRequestWithRtSearch.id)
         assert(searchResult.size == 3)
         assert(searchResult.filter { list.indexOf(it.offerId) > -1 }.size == 3)
         assertThat(offersResult.size == list.size)
     }
 
-    @Test fun `should be delete all old offersSearch items by query`() {
+    @Test
+    fun `should be delete all old offersSearch items by query`() {
         val searchRequestWithRtSearch = searchRequestService.putSearchRequest(
-                0,
-                publicKey,
-                SearchRequest(0, publicKey, mapOf("rtSearch" to "true")),
-                strategy
+            0,
+            publicKey,
+            SearchRequest(0, publicKey, mapOf("rtSearch" to "true")),
+            strategy
         ).get()
 
         val firstList = arrayListOf<Long>(1, 2, 4, 5)
         Mockito.`when`(rtSearchRepository.getOffersIdByQuery("some data"))
-                .thenReturn(CompletableFuture.completedFuture(firstList))
+            .thenReturn(CompletableFuture.completedFuture(firstList))
 
         offerSearchService.createOfferSearchesByQuery(
-                searchRequestWithRtSearch.id, publicKey, "some data", strategy
+            searchRequestWithRtSearch.id, publicKey, "some data", strategy
         ).get()
 
         val secondList = arrayListOf<Long>(4, 5)
         Mockito.`when`(rtSearchRepository.getOffersIdByQuery("some data"))
-                .thenReturn(CompletableFuture.completedFuture(secondList))
+            .thenReturn(CompletableFuture.completedFuture(secondList))
         offerSearchService.createOfferSearchesByQuery(
-                searchRequestWithRtSearch.id, publicKey, "some data", strategy
+            searchRequestWithRtSearch.id, publicKey, "some data", strategy
         ).get()
 
         val searchResult = offerSearchCrudRepository.findByOwner(publicKey)
@@ -303,7 +326,7 @@ open class OfferSearchServiceTest {
     fun `should be throw by unknown searchRequestId`() {
         try {
             offerSearchService.createOfferSearchesByQuery(
-                    1234343, publicKey, "some data", strategy
+                1234343, publicKey, "some data", strategy
             ).get()
         } catch (e: Throwable) {
             throw e.cause!!
@@ -313,14 +336,14 @@ open class OfferSearchServiceTest {
     @Test(expected = BadArgumentException::class)
     fun `should be throw by searchRequestId not has rtSearch tag`() {
         val searchRequestWithoutRtSearch = searchRequestService.putSearchRequest(
-                0,
-                publicKey,
-                SearchRequest(0, publicKey, emptyMap()),
-                strategy
+            0,
+            publicKey,
+            SearchRequest(0, publicKey, emptyMap()),
+            strategy
         ).get()
         try {
             offerSearchService.createOfferSearchesByQuery(
-                    searchRequestWithoutRtSearch.id, publicKey, "some data", strategy
+                searchRequestWithoutRtSearch.id, publicKey, "some data", strategy
             ).get()
         } catch (e: Throwable) {
             throw e.cause!!
@@ -367,7 +390,7 @@ open class OfferSearchServiceTest {
 
     @Test
     fun `should be add EVENT as serialized object into array`() {
-        var events = mutableListOf("tram taram")
+        val events = mutableListOf("tram taram")
         createOfferSearch(createdSearchRequest1, createdOffer1, events)
 
         offerSearchService.addEventTo("bla bla bla", 1L, strategy).get()
@@ -389,7 +412,8 @@ open class OfferSearchServiceTest {
         assert(result[0].offer.owner == businessPublicKey)
     }
 
-    @Test fun `client can complain to search item`() {
+    @Test
+    fun `client can complain to search item`() {
         `should be create new offer search item and get result by clientId and search request id`()
 
         offerSearchService.complain(1L, businessPublicKey, strategy).get()
@@ -403,16 +427,18 @@ open class OfferSearchServiceTest {
         assert(result[0].offerSearch.updatedAt.time > result[0].offerSearch.createdAt.time)
     }
 
-    @Test fun `search item state should be ACCEPT`() {
+    @Test
+    fun `search item state should be ACCEPT`() {
         `should be create new offer search item and get result by clientId and search request id`()
 
         val projectId = offerPrices[0].id
-        val offerShareData = OfferShareData(1L, businessPublicKey, publicKey, "response", BigDecimal.ZERO.toString(), true, projectId)
+        val offerShareData =
+            OfferShareData(1L, businessPublicKey, publicKey, "response", BigDecimal.ZERO.toString(), true, projectId)
 
         offerShareService.grantAccess(
-                publicKey,
-                offerShareData,
-                strategy
+            publicKey,
+            offerShareData,
+            strategy
         ).get()
 
         val result = offerSearchService.getOffersResult(strategy, createdSearchRequest1.id).get()
@@ -446,7 +472,8 @@ open class OfferSearchServiceTest {
         assert(result[0].state == OfferResultAction.NONE)
     }
 
-    @Test fun `a new offerSearch item should be sync with related offerSearch items if exists`() {
+    @Test
+    fun `a new offerSearch item should be sync with related offerSearch items if exists`() {
         `client can complain to search item`()
 
         createOfferSearch(createdSearchRequest2, createdOffer1, ArrayList())
@@ -472,16 +499,16 @@ open class OfferSearchServiceTest {
         assert(result.size == 2)
 
         val changedOffer = Offer(
-                createdOffer1.id,
-                createdOffer1.owner,
-                listOf(),
-                "is desc111",
-                "is title111",
-                "is image url111",
-                BigDecimal.ONE.toString(),
-                mapOf("color" to "red"),
-                mapOf("salary" to "1000"),
-                mapOf("salary" to Offer.CompareAction.MORE)
+            createdOffer1.id,
+            createdOffer1.owner,
+            listOf(),
+            "is desc111",
+            "is title111",
+            "is image url111",
+            BigDecimal.ONE.toString(),
+            mapOf("color" to "red"),
+            mapOf("salary" to "1000"),
+            mapOf("salary" to Offer.CompareAction.MORE)
         )
 
         offerService.putOffer(createdOffer1.id, createdOffer1.owner, changedOffer, strategy).get()
@@ -493,7 +520,8 @@ open class OfferSearchServiceTest {
         assert(result.isNotEmpty())
     }
 
-    @Test fun `delete all OfferSearch objects when related Offer object is deleted`() {
+    @Test
+    fun `delete all OfferSearch objects when related Offer object is deleted`() {
         createOfferSearch(createdSearchRequest1, createdOffer1, ArrayList())
         createOfferSearch(createdSearchRequest2, createdOffer1, ArrayList())
         createOfferSearch(createdSearchRequest1, createdOffer2, ArrayList())
@@ -531,46 +559,51 @@ open class OfferSearchServiceTest {
         assert(result.isEmpty())
     }
 
-    @Test fun `get all dangling OfferSearch objects by SearchRequest`() {
+    @Test
+    fun `get all dangling OfferSearch objects by SearchRequest`() {
         `delete all OfferSearch objects with state NONE or REJECT when related SearchRequest object is deleted`()
 
-        var result = offerSearchService.getDanglingOfferSearches(strategy, false, true).get()
+        val result = offerSearchService.getDanglingOfferSearches(strategy, false, true).get()
         assert(result.size == 1)
         assert(result[0].searchRequestId == createdSearchRequest1.id)
     }
 
-    @Test fun `get all dangling OfferSearch objects by Offer`() {
+    @Test
+    fun `get all dangling OfferSearch objects by Offer`() {
         `delete all OfferSearch objects when related Offer object is deleted`()
 
-        var result = offerSearchService.getDanglingOfferSearches(strategy, true, false).get()
+        val result = offerSearchService.getDanglingOfferSearches(strategy, true, false).get()
         assert(result.isEmpty())
     }
 
-    @Test fun `get offerSearches with the same owner and offerId but different content`() {
+    @Test
+    fun `get offerSearches with the same owner and offerId but different content`() {
         `a new offerSearch item should be sync with related offerSearch items if exists`()
 
-        var result = offerSearchService.getDiffOfferSearches(strategy).get()
+        val result = offerSearchService.getDiffOfferSearches(strategy).get()
         assert(result.isEmpty())
     }
 
-    @Test fun `get total count of offerSearches`() {
+    @Test
+    fun `get total count of offerSearches`() {
         createOfferSearch(createdSearchRequest1, createdOffer1, ArrayList())
         createOfferSearch(createdSearchRequest2, createdOffer1, ArrayList())
         createOfferSearch(createdSearchRequest1, createdOffer2, ArrayList())
 
-        var result = offerSearchService.getOfferSearchTotalCount(strategy).get()
+        val result = offerSearchService.getOfferSearchTotalCount(strategy).get()
         assert(result == 3L)
     }
 
-    @Test fun `should return all offersearch results by page`() {
-        LongStream.range(0, 4).forEach { id ->
+    @Test
+    fun `should return all offersearch results by page`() {
+        LongStream.range(0, 4).forEach {
             val offer = Offer(
-                    0,
-                    businessPublicKey,
-                    listOf(),
-                    "desc",
-                    "title",
-                    "url"
+                0,
+                businessPublicKey,
+                listOf(),
+                "desc",
+                "title",
+                "url"
             )
 
             offerCrudRepository.save(offer)
@@ -579,8 +612,8 @@ open class OfferSearchServiceTest {
             searchRequestCrudRepository.save(request)
 
             offerSearchService.saveNewOfferSearch(
-                    OfferSearch(0, request.owner, request.id, offer.id, OfferResultAction.NONE),
-                    strategy
+                OfferSearch(0, request.owner, request.id, offer.id, OfferResultAction.NONE),
+                strategy
             ).get()
         }
 
@@ -595,12 +628,14 @@ open class OfferSearchServiceTest {
         assert(secondPage.last().id == 4L)
     }
 
-    @Test fun `clone all OfferSearch objects when from search request to search request`() {
+    @Test
+    fun `clone all OfferSearch objects when from search request to search request`() {
         createOfferSearch(createdSearchRequest1, createdOffer1, ArrayList())
         createOfferSearch(createdSearchRequest1, createdOffer2, ArrayList())
         createOfferSearch(createdSearchRequest2, createdOffer2, ArrayList())
 
-        offerSearchService.cloneOfferSearchOfSearchRequest(createdSearchRequest1.id, createdSearchRequest2, strategy).get()
+        offerSearchService.cloneOfferSearchOfSearchRequest(createdSearchRequest1.id, createdSearchRequest2, strategy)
+            .get()
 
         val result = offerSearchService.getOffersResult(strategy, createdSearchRequest2.id).get()
         assertThat(result.size).isEqualTo(2)

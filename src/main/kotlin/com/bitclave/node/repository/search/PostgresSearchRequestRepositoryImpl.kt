@@ -10,17 +10,17 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
-import java.util.*
+import java.util.ArrayList
 
 @Component
 @Qualifier("postgres")
 class PostgresSearchRequestRepositoryImpl(
-        val repository: SearchRequestCrudRepository,
-        val offerSearchRepository: OfferSearchCrudRepository
+    val repository: SearchRequestCrudRepository,
+    val offerSearchRepository: OfferSearchCrudRepository
 ) : SearchRequestRepository {
 
     override fun saveSearchRequest(request: SearchRequest): SearchRequest {
-        var id = request.id;
+        val id = request.id
         repository.save(request) ?: throw DataNotSavedException()
 
         if (id > 0) {
@@ -64,8 +64,8 @@ class PostgresSearchRequestRepositoryImpl(
 
     override fun findById(ids: List<Long>): List<SearchRequest> {
         return repository.findAll(ids)
-                .asSequence()
-                .toList()
+            .asSequence()
+            .toList()
     }
 
     override fun findByOwner(owner: String): List<SearchRequest> {
@@ -78,34 +78,34 @@ class PostgresSearchRequestRepositoryImpl(
 
     override fun findAll(): List<SearchRequest> {
         return repository.findAll()
-                .asSequence()
-                .toList()
+            .asSequence()
+            .toList()
     }
 
     override fun cloneSearchRequestWithOfferSearches(request: SearchRequest): SearchRequest {
-        var existingRequest = repository.findOne(request.id)
-        if (existingRequest == null) return throw BadArgumentException("SearchRequest does not exist: " + request.id.toString())
+        val existingRequest = repository.findOne(request.id)
+            ?: throw BadArgumentException("SearchRequest does not exist: ${request.id}")
 
-        var relatedOfferSearches = offerSearchRepository.findBySearchRequestId(existingRequest.id)
+        val relatedOfferSearches = offerSearchRepository.findBySearchRequestId(existingRequest.id)
 
         val createSearchRequest = SearchRequest(
-                0,
-                request.owner,
-                request.tags
+            0,
+            request.owner,
+            request.tags
         )
 
         repository.save(createSearchRequest)
 
-        var toBeSavedOfferSearched: MutableList<OfferSearch> = mutableListOf()
+        val toBeSavedOfferSearched: MutableList<OfferSearch> = mutableListOf()
         for (offerSearch: OfferSearch in relatedOfferSearches) {
             val newOfferSearch = OfferSearch(
-                    0,
-                    createSearchRequest.owner,
-                    createSearchRequest.id,
-                    offerSearch.offerId,
-                    OfferResultAction.NONE,
-                    offerSearch.info,
-                    ArrayList()
+                0,
+                createSearchRequest.owner,
+                createSearchRequest.id,
+                offerSearch.offerId,
+                OfferResultAction.NONE,
+                offerSearch.info,
+                ArrayList()
             )
             toBeSavedOfferSearched.add(newOfferSearch)
         }

@@ -10,13 +10,13 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
-import java.util.*
+import java.util.ArrayList
 
 @Component
 @Qualifier("postgres")
 class PostgresOfferSearchRepositoryImpl(
-        val repository: OfferSearchCrudRepository,
-        val searchRequestRepository: SearchRequestRepository
+    val repository: OfferSearchCrudRepository,
+    val searchRequestRepository: SearchRequestRepository
 ) : OfferSearchRepository {
 
     override fun saveSearchResult(list: List<OfferSearch>) {
@@ -30,14 +30,14 @@ class PostgresOfferSearchRepositoryImpl(
     override fun saveSearchResult(item: OfferSearch) {
         val searchRequest = searchRequestRepository.findById(item.searchRequestId)
         if (searchRequest != null) {
-            var id = item.id
+            val id = item.id
             item.owner = searchRequest.owner
             repository.save(item) ?: throw DataNotSavedException()
 
-            var relatedOfferSearches = findByOwnerAndOfferId(searchRequest.owner, item.offerId)
+            val relatedOfferSearches = findByOwnerAndOfferId(searchRequest.owner, item.offerId)
 
             if (relatedOfferSearches.size > 1) {
-                if (id > 0) {// if it was an update then update all related OfferSearches
+                if (id > 0) { // if it was an update then update all related OfferSearches
                     for (offerSearch: OfferSearch in relatedOfferSearches) {
                         if (offerSearch.id != item.id) {
                             offerSearch.state = item.state
@@ -47,8 +47,8 @@ class PostgresOfferSearchRepositoryImpl(
                         }
                     }
                     repository.save(relatedOfferSearches)
-                } else {// if it was an new insert then update it according related OfferSearches if exists
-                    //TODO can be implemented more efficient insert
+                } else { // if it was an new insert then update it according related OfferSearches if exists
+                    // TODO can be implemented more efficient insert
                     for (offerSearch: OfferSearch in relatedOfferSearches) {
                         if (offerSearch.id != item.id) {
                             item.state = offerSearch.state
@@ -70,8 +70,8 @@ class PostgresOfferSearchRepositoryImpl(
 
     override fun findById(ids: List<Long>): List<OfferSearch> {
         return repository.findAll(ids)
-                .asSequence()
-                .toList()
+            .asSequence()
+            .toList()
     }
 
     override fun findBySearchRequestId(id: Long): List<OfferSearch> {
@@ -99,12 +99,12 @@ class PostgresOfferSearchRepositoryImpl(
     }
 
     override fun findByOwnerAndOfferId(owner: String, offerId: Long): List<OfferSearch> {
-        //val searchRequestList = searchRequestRepository.findByOwner(owner)
-        //val searchRequestIDs = searchRequestList.map { it.id }.toSet()
+        // val searchRequestList = searchRequestRepository.findByOwner(owner)
+        // val searchRequestIDs = searchRequestList.map { it.id }.toSet()
 
-        //val offerSearchList = repository.findByOfferId(offerId)
+        // val offerSearchList = repository.findByOfferId(offerId)
 
-        //return offerSearchList.filter { searchRequestIDs.contains(it.searchRequestId) }
+        // return offerSearchList.filter { searchRequestIDs.contains(it.searchRequestId) }
         return repository.findByOwnerAndOfferId(owner, offerId)
     }
 
@@ -114,8 +114,8 @@ class PostgresOfferSearchRepositoryImpl(
 
     override fun findAll(): List<OfferSearch> {
         return repository.findAll()
-                .asSequence()
-                .toList()
+            .asSequence()
+            .toList()
     }
 
     override fun findAllDiff(): List<OfferSearch> {
@@ -126,21 +126,27 @@ class PostgresOfferSearchRepositoryImpl(
         return repository.count()
     }
 
-    override fun cloneOfferSearchOfSearchRequest(sourceSearchRequestId: Long, targetSearchRequest: SearchRequest): List<OfferSearch> {
+    override fun cloneOfferSearchOfSearchRequest(
+        sourceSearchRequestId: Long,
+        targetSearchRequest: SearchRequest
+    ): List<OfferSearch> {
         val copiedOfferSearchList = repository.findBySearchRequestId(sourceSearchRequestId)
         val existedOfferSearchList = repository.findBySearchRequestId(targetSearchRequest.id)
 
-        var toBeSavedOfferSearched: MutableList<OfferSearch> = mutableListOf()
+        val toBeSavedOfferSearched: MutableList<OfferSearch> = mutableListOf()
         for (offerSearch: OfferSearch in copiedOfferSearchList) {
-            if (existedOfferSearchList.find { it.offerId == offerSearch.offerId && it.owner == offerSearch.owner } == null) {
+            val exist = existedOfferSearchList
+                .find { it.offerId == offerSearch.offerId && it.owner == offerSearch.owner }
+
+            if (exist == null) {
                 val newOfferSearch = OfferSearch(
-                        0,
-                        targetSearchRequest.owner,
-                        targetSearchRequest.id,
-                        offerSearch.offerId,
-                        OfferResultAction.NONE,
-                        offerSearch.info,
-                        ArrayList()
+                    0,
+                    targetSearchRequest.owner,
+                    targetSearchRequest.id,
+                    offerSearch.offerId,
+                    OfferResultAction.NONE,
+                    offerSearch.info,
+                    ArrayList()
                 )
                 toBeSavedOfferSearched.add(newOfferSearch)
             }

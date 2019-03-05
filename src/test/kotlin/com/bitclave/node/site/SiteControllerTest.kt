@@ -34,12 +34,13 @@ class SiteControllerTest {
     private var httpHeaders: HttpHeaders = HttpHeaders()
 
     private val site = Site(
-            0,
-            origin,
-            publicKey
+        0,
+        origin,
+        publicKey
     )
 
-    @Before fun setup() {
+    @Before
+    fun setup() {
         version = "v1"
 
         siteRequest = SignedRequest(site, publicKey)
@@ -49,17 +50,20 @@ class SiteControllerTest {
         httpHeaders.set("Strategy", RepositoryStrategyType.POSTGRES.name)
     }
 
-    @Test fun `save information of site`() {
+    @Test
+    fun `save information of site`() {
 //        this.mvc.perform(post("/$version/site/")
 //                .content(siteRequest.toJsonString())
 //                .headers(httpHeaders))
 //                .andExpect(status().isOk)
     }
 
-    @Test fun `get information by origin`() {
-        this.mvc.perform(get("/$version/site/$origin/")
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
+    @Test
+    fun `get information by origin`() {
+        this.mvc.perform(
+            get("/$version/site/$origin/")
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
     }
-
 }

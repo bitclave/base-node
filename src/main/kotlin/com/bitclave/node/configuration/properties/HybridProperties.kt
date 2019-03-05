@@ -7,16 +7,17 @@ import java.math.BigInteger
 @Component
 @ConfigurationProperties("hybrid")
 data class HybridProperties(
-        var nodeUrl: String = "",
-        var ownerPrivateKey: String = "",
-        var contracts: HybridContracts = HybridContracts()
+    var nodeUrl: String = "",
+    var ownerPrivateKey: String = "",
+    var contracts: HybridContracts = HybridContracts()
 )
 
 data class HybridContracts(
-        var nameService: HybridContractData = HybridContractData()
+    var nameService: HybridContractData = HybridContractData()
 )
 
 data class HybridContractData(
-        var address: String = "",
-        var gasPrice: BigInteger = BigInteger.ZERO,
-        var gasLimit: BigInteger = BigInteger.ZERO)
+    var address: String = "",
+    var gasPrice: BigInteger = BigInteger.ZERO,
+    var gasLimit: BigInteger = BigInteger.ZERO
+)

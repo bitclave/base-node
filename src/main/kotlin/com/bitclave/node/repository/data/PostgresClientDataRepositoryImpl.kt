@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component
 @Component
 @Qualifier("postgres")
 class PostgresClientDataRepositoryImpl(
-        val repository: ClientDataCrudRepository
+    private val repository: ClientDataCrudRepository
 ) : ClientDataRepository {
 
     override fun allKeys(): Array<String> {
@@ -26,5 +26,4 @@ class PostgresClientDataRepositoryImpl(
     override fun deleteData(publicKey: String) {
         repository.deleteByPublicKey(publicKey)
     }
-
 }

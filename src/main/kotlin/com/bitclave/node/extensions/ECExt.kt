@@ -12,25 +12,25 @@ import java.security.spec.ECPoint
 import java.security.spec.ECPublicKeySpec
 import java.security.spec.InvalidKeySpecException
 
-fun ECPoint(str: String): ECPoint {
-    return ECPublicKey(str.fromHex()).w
+fun ecPoint(str: String): ECPoint {
+    return ecPublicKey(str.fromHex()).w
 }
 
 fun ECPoint.compressedString(): String {
     return ECKey.fromPublicOnly(
-            ECKey.CURVE.curve.createPoint(this.affineX, this.affineY).getEncoded(true)
+        ECKey.CURVE.curve.createPoint(this.affineX, this.affineY).getEncoded(true)
     ).publicKeyAsHex
 }
 
 fun ECPoint.uncompressedString(): String {
     return ECKey.fromPublicOnly(
-            ECKey.CURVE.curve.createPoint(this.affineX, this.affineY).getEncoded(false)
+        ECKey.CURVE.curve.createPoint(this.affineX, this.affineY).getEncoded(false)
     ).publicKeyAsHex
 }
 
 // https://stackoverflow.com/a/26159150/440168
 @Throws(NoSuchAlgorithmException::class, InvalidKeySpecException::class)
-fun ECPublicKey(arr: ByteArray): ECPublicKey {
+fun ecPublicKey(arr: ByteArray): ECPublicKey {
     val spec = ECNamedCurveTable.getParameterSpec("secp256k1")
     val kf = KeyFactory.getInstance("ECDSA", BouncyCastleProvider())
     val params = ECNamedCurveSpec("secp256k1", spec.curve, spec.g, spec.n)

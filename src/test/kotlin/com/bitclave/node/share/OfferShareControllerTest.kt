@@ -14,7 +14,9 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 import java.math.BigDecimal
 
@@ -34,15 +36,18 @@ class OfferShareControllerTest {
     protected lateinit var worthRequest: SignedRequest<BigDecimal>
     private var httpHeaders: HttpHeaders = HttpHeaders()
 
-    @Before fun setup() {
+    @Before
+    fun setup() {
         version = "v1"
 
-        shareDataRequest = SignedRequest(OfferShareData(
+        shareDataRequest = SignedRequest(
+            OfferShareData(
                 1,
                 publicKey,
                 "",
                 BigDecimal.ONE.toString()
-        ), publicKey)
+            ), publicKey
+        )
         worthRequest = SignedRequest(BigDecimal.TEN, publicKey)
 
         httpHeaders.set("Accept", "application/json")
@@ -50,34 +55,45 @@ class OfferShareControllerTest {
         httpHeaders.set("Strategy", RepositoryStrategyType.POSTGRES.name)
     }
 
-    @Test fun `create share data`() {
-        this.mvc.perform(post("/$version/data/grant/offer/")
+    @Test
+    fun `create share data`() {
+        this.mvc.perform(
+            post("/$version/data/grant/offer/")
                 .content(shareDataRequest.toJsonString())
-                .headers(httpHeaders))
-                .andExpect(status().isCreated)
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isCreated)
     }
 
-    @Test fun `accept shared data`() {
-        this.mvc.perform(patch("/$version/data/offer/")
+    @Test
+    fun `accept shared data`() {
+        this.mvc.perform(
+            patch("/$version/data/offer/")
                 .param("offerSearchId", "1")
                 .content(worthRequest.toJsonString())
-                .headers(httpHeaders))
-                .andExpect(status().isAccepted)
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isAccepted)
     }
 
-    @Test fun `get share data by owner`() {
-        this.mvc.perform(get("/$version/data/offer/")
+    @Test
+    fun `get share data by owner`() {
+        this.mvc.perform(
+            get("/$version/data/offer/")
                 .param("owner", publicKey)
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
     }
 
-    @Test fun `get share data by owner and accepted`() {
-        this.mvc.perform(get("/$version/data/offer/")
+    @Test
+    fun `get share data by owner and accepted`() {
+        this.mvc.perform(
+            get("/$version/data/offer/")
                 .param("owner", publicKey)
                 .param("accepted", "true")
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
     }
-
 }

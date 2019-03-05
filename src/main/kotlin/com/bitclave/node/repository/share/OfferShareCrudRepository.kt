@@ -12,5 +12,4 @@ interface OfferShareCrudRepository : CrudRepository<OfferShareData, Long> {
     fun findByOfferOwner(owner: String): List<OfferShareData>
 
     fun findByOfferOwnerAndAccepted(owner: String, accepted: Boolean): List<OfferShareData>
-
 }

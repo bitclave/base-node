@@ -25,6 +25,11 @@ import org.springframework.test.context.junit4.SpringRunner
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class RequestDataServiceTest {
 
+    companion object {
+        protected val REQUEST_DATA: String = "REQUEST_DATA"
+        protected val RESPONSE_DATA: String = "RESPONSE_DATA"
+    }
+
     @Autowired
     private lateinit var web3Provider: Web3Provider
     @Autowired
@@ -37,13 +42,12 @@ class RequestDataServiceTest {
     protected val from = "03836649d2e353c332287e8280d1dbb1805cab0bae289ad08db9cc86f040ac6360"
     protected val to = "023ea422076488339515e88a4110b9c6784d5cb1c0fa6a5a111b799a0e9b6aa720"
 
-    protected val REQUEST_DATA: String = "REQUEST_DATA"
-    protected val RESPONSE_DATA: String = "RESPONSE_DATA"
     protected lateinit var request: RequestData
 
     protected lateinit var strategy: RepositoryStrategyType
 
-    @Before fun setup() {
+    @Before
+    fun setup() {
         request = RequestData(1, "", to, REQUEST_DATA)
 
         val postgres = PostgresRequestDataRepositoryImpl(requestDataCrudRepository)
@@ -55,13 +59,14 @@ class RequestDataServiceTest {
         strategy = RepositoryStrategyType.POSTGRES
     }
 
-    @Test fun `get request by from`() {
+    @Test
+    fun `get request by from`() {
         `create request to client`()
 
         val resultRequests = requestDataService.getRequestByStatus(
-                from,
-                null,
-                strategy
+            from,
+            null,
+            strategy
         ).get()
 
         Assertions.assertThat(resultRequests.size).isEqualTo(1)
@@ -69,13 +74,14 @@ class RequestDataServiceTest {
         assertRequestData(request)
     }
 
-    @Test fun `get request by to`() {
+    @Test
+    fun `get request by to`() {
         `create request to client`()
 
         val resultRequests = requestDataService.getRequestByStatus(
-                null,
-                to,
-                strategy
+            null,
+            to,
+            strategy
         ).get()
 
         Assertions.assertThat(resultRequests.size).isEqualTo(1)
@@ -83,13 +89,14 @@ class RequestDataServiceTest {
         assertRequestData(request)
     }
 
-    @Test fun `get request by from and to`() {
+    @Test
+    fun `get request by from and to`() {
         `create request to client`()
 
         val resultRequests = requestDataService.getRequestByStatus(
-                from,
-                to,
-                strategy
+            from,
+            to,
+            strategy
         ).get()
 
         Assertions.assertThat(resultRequests.size).isEqualTo(1)
@@ -97,9 +104,9 @@ class RequestDataServiceTest {
         assertRequestData(request)
     }
 
-    protected open fun assertRequestData(
-            request: RequestData,
-            responseData: String = ""
+    protected fun assertRequestData(
+        request: RequestData,
+        responseData: String = ""
     ) {
         Assertions.assertThat(request.fromPk).isEqualTo(from)
         Assertions.assertThat(request.toPk).isEqualTo(to)
@@ -108,19 +115,21 @@ class RequestDataServiceTest {
         Assertions.assertThat(request.responseData).isEqualTo(responseData)
     }
 
-    @Test fun `create request to client`() {
+    @Test
+    fun `create request to client`() {
         val id = requestDataService.request(from, request, strategy).get()
         Assertions.assertThat(id).isEqualTo(1L)
     }
 
-    @Test fun `grant access to client with accept`() {
+    @Test
+    fun `grant access to client with accept`() {
         val grantRequest = RequestData(0, from, to, "", RESPONSE_DATA)
         val id = requestDataService.grantAccess(to, grantRequest, strategy).get()
         Assertions.assertThat(id).isEqualTo(1L)
         val resultRequests = requestDataService.getRequestByStatus(
-                from,
-                to,
-                strategy
+            from,
+            to,
+            strategy
         ).get()
 
         assert(resultRequests.size == 1)
@@ -133,7 +142,8 @@ class RequestDataServiceTest {
         Assertions.assertThat(resultRequest.responseData).isEqualTo(RESPONSE_DATA)
     }
 
-    @Test fun `delete response and requests by From and To`() {
+    @Test
+    fun `delete response and requests by From and To`() {
         var id = requestDataService.request(from, request, strategy).get()
         Assertions.assertThat(id).isEqualTo(1L)
 
@@ -143,18 +153,17 @@ class RequestDataServiceTest {
 
         requestDataService.deleteRequestsAndResponses(from, strategy).get()
         var resultList = requestDataService.getRequestByStatus(
-                from,
-                to,
-                strategy
+            from,
+            to,
+            strategy
         ).get()
         Assertions.assertThat(resultList.size).isEqualTo(0)
 
         resultList = requestDataService.getRequestByStatus(
-                to,
-                from,
-                strategy
+            to,
+            from,
+            strategy
         ).get()
         Assertions.assertThat(resultList.size).isEqualTo(0)
     }
-
 }

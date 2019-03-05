@@ -16,5 +16,4 @@ interface FileCrudRepository : CrudRepository<UploadedFile, String> {
     fun deleteByIdAndPublicKey(id: Long, publicKey: String): Long
 
     fun findByIdAndPublicKey(id: Long, publicKey: String): UploadedFile?
-
 }

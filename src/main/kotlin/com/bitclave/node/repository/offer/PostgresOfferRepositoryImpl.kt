@@ -12,13 +12,14 @@ import org.springframework.stereotype.Component
 @Component
 @Qualifier("postgres")
 class PostgresOfferRepositoryImpl(
-        val repository: OfferCrudRepository,
-        val offerSearchRepository: OfferSearchCrudRepository) : OfferRepository {
+    val repository: OfferCrudRepository,
+    val offerSearchRepository: OfferSearchCrudRepository
+) : OfferRepository {
 
     override fun saveOffer(offer: Offer): Offer {
-        var id = offer.id
+        val id = offer.id
         repository.save(offer) ?: throw DataNotSavedException()
-        if(id > 0) {
+        if (id > 0) {
             var relatedOfferSearches = offerSearchRepository.findByOfferId(offer.id)
             relatedOfferSearches = relatedOfferSearches.filterIndexed { ix, element ->
                 element.state == OfferResultAction.NONE || element.state == OfferResultAction.REJECT
@@ -31,7 +32,7 @@ class PostgresOfferRepositoryImpl(
     override fun deleteOffer(id: Long, owner: String): Long {
         val count = repository.deleteByIdAndOwner(id, owner)
         if (count > 0) {
-            var relatedOfferSearches = offerSearchRepository.findByOfferId(id)
+            val relatedOfferSearches = offerSearchRepository.findByOfferId(id)
 
             offerSearchRepository.delete(relatedOfferSearches)
 

@@ -1,10 +1,9 @@
 package com.bitclave.node.verify
 
-import com.bitclave.node.extensions.signMessage
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.SignedRequest
-import junit.framework.Assert.assertEquals
-import junit.framework.Assert.assertNotNull
+import junit.framework.TestCase.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -18,7 +17,6 @@ import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 
-
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -27,15 +25,15 @@ class VerifyConsistencyIntegrationTest {
     @Autowired
     lateinit var testRestTemplate: TestRestTemplate
 
-    protected val privateKey = "c9574c6138fe689946e4f0273e848a8219a6652288273dc6cf291e09517d0abd"
     private val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
-    protected val publicKey2 = "03836649d2e353c332287e8280d1dbb1805cab0bae289ad08db9cc86f040ac6360"
+    private val publicKey2 = "03836649d2e353c332287e8280d1dbb1805cab0bae289ad08db9cc86f040ac6360"
     protected lateinit var publicKeysRequest: SignedRequest<List<String>>
     private var httpHeaders: HttpHeaders = HttpHeaders()
 
     private val publicKeys = mutableListOf(publicKey, publicKey2)
 
-    @Before fun setup() {
+    @Before
+    fun setup() {
 
         publicKeysRequest = SignedRequest(publicKeys, publicKey)
 

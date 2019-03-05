@@ -9,5 +9,4 @@ interface ClientDataRepository {
     fun updateData(publicKey: String, data: Map<String, String>)
 
     fun deleteData(publicKey: String)
-
 }

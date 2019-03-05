@@ -1,27 +1,38 @@
 package com.bitclave.node.repository.models
 
 import org.springframework.format.annotation.DateTimeFormat
-import java.util.*
-import javax.persistence.*
+import java.util.ArrayList
+import java.util.Date
+import javax.persistence.Column
+import javax.persistence.ElementCollection
+import javax.persistence.Entity
+import javax.persistence.FetchType
+import javax.persistence.GeneratedValue
+import javax.persistence.GenerationType
+import javax.persistence.Id
+import javax.persistence.Table
+import javax.persistence.UniqueConstraint
 
 @Entity
-@Table(uniqueConstraints = [
-    UniqueConstraint(columnNames = ["searchRequestId", "offerId"])
-])
+@Table(
+    uniqueConstraints = [
+        UniqueConstraint(columnNames = ["searchRequestId", "offerId"])
+    ]
+)
 data class OfferSearch(
-        @GeneratedValue(strategy = GenerationType.TABLE) @Id val id: Long = 0,
-        @Column(length = 256) var owner: String = "",
-        val searchRequestId: Long = 0,
-        val offerId: Long = 0,
-        var state: OfferResultAction = OfferResultAction.NONE,
-        @Column(length = 4096) var info: String = "[]",
+    @GeneratedValue(strategy = GenerationType.TABLE) @Id val id: Long = 0,
+    @Column(length = 256) var owner: String = "",
+    val searchRequestId: Long = 0,
+    val offerId: Long = 0,
+    var state: OfferResultAction = OfferResultAction.NONE,
+    @Column(length = 4096) var info: String = "[]",
 
-        @ElementCollection(fetch = FetchType.EAGER) var events: MutableList<String> = ArrayList(),
+    @ElementCollection(fetch = FetchType.EAGER) var events: MutableList<String> = ArrayList(),
 
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-        var createdAt: Date = Date(),
-        @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
-        var updatedAt: Date = Date()
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    var createdAt: Date = Date(),
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    var updatedAt: Date = Date()
 )
 
 enum class OfferResultAction {

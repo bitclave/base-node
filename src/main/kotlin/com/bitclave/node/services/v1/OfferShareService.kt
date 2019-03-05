@@ -14,21 +14,21 @@ import com.bitclave.node.services.errors.DuplicateException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
-import java.util.*
+import java.util.Date
 import java.util.concurrent.CompletableFuture
 
 @Service
 @Qualifier("v1")
 class OfferShareService(
-        private val offerShareRepository: RepositoryStrategy<OfferShareRepository>,
-        private val offerRepository: RepositoryStrategy<OfferRepository>,
-        private val offerSearchRepository: RepositoryStrategy<OfferSearchRepository>,
-        private val searchRequestRepository: RepositoryStrategy<SearchRequestRepository>
+    private val offerShareRepository: RepositoryStrategy<OfferShareRepository>,
+    private val offerRepository: RepositoryStrategy<OfferRepository>,
+    private val offerSearchRepository: RepositoryStrategy<OfferSearchRepository>,
+    private val searchRequestRepository: RepositoryStrategy<SearchRequestRepository>
 ) {
     fun getShareData(
-            offerOwner: String,
-            accepted: Boolean?,
-            strategy: RepositoryStrategyType
+        offerOwner: String,
+        accepted: Boolean?,
+        strategy: RepositoryStrategyType
     ): CompletableFuture<List<OfferShareData>> {
 
         return CompletableFuture.supplyAsync {
@@ -42,77 +42,78 @@ class OfferShareService(
     }
 
     fun grantAccess(
-            clientId: String,
-            data: OfferShareData,
-            strategy: RepositoryStrategyType
+        clientId: String,
+        data: OfferShareData,
+        strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
 
         return CompletableFuture.runAsync {
             val offerSearch = offerSearchRepository.changeStrategy(strategy)
-                    .findById(data.offerSearchId)
-                    ?: throw BadArgumentException("offer search id not exist")
+                .findById(data.offerSearchId)
+                ?: throw BadArgumentException("offer search id not exist")
 
             searchRequestRepository.changeStrategy(strategy)
-                    .findByIdAndOwner(offerSearch.searchRequestId, clientId)
-                    ?: throw BadArgumentException("searchRequestId does not exist")
+                .findByIdAndOwner(offerSearch.searchRequestId, clientId)
+                ?: throw BadArgumentException("searchRequestId does not exist")
 
             if (data.clientResponse.isEmpty()) {
                 throw BadArgumentException("empty response data")
             }
 
             if (offerShareRepository
-                            .changeStrategy(strategy)
-                            .findByOfferSearchId(data.offerSearchId) != null) {
+                    .changeStrategy(strategy)
+                    .findByOfferSearchId(data.offerSearchId) != null
+            ) {
                 throw DuplicateException()
             }
 
             val offer = offerRepository
-                    .changeStrategy(strategy)
-                    .findById(offerSearch.offerId)
-                    ?: throw BadArgumentException("offer id not exist")
+                .changeStrategy(strategy)
+                .findById(offerSearch.offerId)
+                ?: throw BadArgumentException("offer id not exist")
 
             val price = offer.offerPrices.find { it.id == data.priceId }
-                    ?: throw BadArgumentException("priceId should be in offer")
+                ?: throw BadArgumentException("priceId should be in offer")
 
             val shareData = OfferShareData(
-                    offerSearch.id,
-                    offer.owner,
-                    clientId,
-                    data.clientResponse,
-                    price.worth,
-                    false,
-                    data.priceId
+                offerSearch.id,
+                offer.owner,
+                clientId,
+                data.clientResponse,
+                price.worth,
+                false,
+                data.priceId
             )
 
             offerShareRepository
-                    .changeStrategy(strategy)
-                    .saveShareData(shareData)
+                .changeStrategy(strategy)
+                .saveShareData(shareData)
 
             offerSearch.state = OfferResultAction.ACCEPT
             offerSearch.updatedAt = Date()
 
             offerSearchRepository
-                    .changeStrategy(strategy)
-                    .saveSearchResult(offerSearch)
+                .changeStrategy(strategy)
+                .saveSearchResult(offerSearch)
         }
     }
 
     fun acceptShareData(
-            offerOwner: String,
-            offerSearchId: Long,
-            worth: BigDecimal,
-            strategy: RepositoryStrategyType
+        offerOwner: String,
+        offerSearchId: Long,
+        worth: BigDecimal,
+        strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
         return CompletableFuture.runAsync {
             offerSearchRepository
-                    .changeStrategy(strategy)
-                    .findById(offerSearchId)
-                    ?: throw BadArgumentException("offer search id not exist")
+                .changeStrategy(strategy)
+                .findById(offerSearchId)
+                ?: throw BadArgumentException("offer search id not exist")
 
             val originShareData = offerShareRepository
-                    .changeStrategy(strategy)
-                    .findByOfferSearchId(offerSearchId)
-                    ?: throw BadArgumentException("share data id not exist")
+                .changeStrategy(strategy)
+                .findByOfferSearchId(offerSearchId)
+                ?: throw BadArgumentException("share data id not exist")
 
             if (offerOwner != originShareData.offerOwner) {
                 throw AccessDeniedException()
@@ -122,21 +123,18 @@ class OfferShareService(
                 throw BadArgumentException("incorrect worth value")
             }
 
-
             val shareData = OfferShareData(
-                    originShareData.offerSearchId,
-                    originShareData.offerOwner,
-                    originShareData.clientId,
-                    originShareData.clientResponse,
-                    originShareData.worth,
-                    true,
-                    originShareData.priceId
+                originShareData.offerSearchId,
+                originShareData.offerOwner,
+                originShareData.clientId,
+                originShareData.clientResponse,
+                originShareData.worth,
+                true,
+                originShareData.priceId
             )
 
             offerShareRepository.changeStrategy(strategy)
-                    .saveShareData(shareData)
+                .saveShareData(shareData)
         }
     }
-
-
 }

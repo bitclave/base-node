@@ -16,9 +16,13 @@ import org.springframework.http.HttpHeaders
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import java.util.*
+import java.util.ArrayList
+import java.util.Date
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
@@ -39,23 +43,24 @@ class OfferSearchControllerTest {
     private var httpHeaders: HttpHeaders = HttpHeaders()
 
     private val offerSearchModel = OfferSearch(
-            0,
-            publicKey,
-            1L,
-            1L,
-            OfferResultAction.NONE,
-            "",
-            ArrayList(),
-            Date(1550561756503)
+        0,
+        publicKey,
+        1L,
+        1L,
+        OfferResultAction.NONE,
+        "",
+        ArrayList(),
+        Date(1550561756503)
     )
 
     private val searchRequest = SearchRequest(
-            0,
-            publicKey,
-            mapOf("car" to "true", "color" to "red")
+        0,
+        publicKey,
+        mapOf("car" to "true", "color" to "red")
     )
 
-    @Before fun setup() {
+    @Before
+    fun setup() {
         version = "v1"
 
         offerSearchRequest = SignedRequest(offerSearchModel, publicKey)
@@ -69,81 +74,114 @@ class OfferSearchControllerTest {
         httpHeaders.set("Strategy", RepositoryStrategyType.POSTGRES.name)
     }
 
-    @Test fun `create offerSearches request by query string`() {
-        this.mvc.perform(post("/$version/search/query/")
+    @Test
+    fun `create offerSearches request by query string`() {
+        this.mvc.perform(
+            post("/$version/search/query/")
                 .content(offerSearchIdRequest.toJsonString())
                 .param("q", "some query string")
-                .headers(httpHeaders))
-                .andExpect(status().isCreated)
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isCreated)
     }
 
-    @Test fun `get offer search list by searchRequestId`() {
-        this.mvc.perform(get("/$version/search/result/")
+    @Test
+    fun `get offer search list by searchRequestId`() {
+        this.mvc.perform(
+            get("/$version/search/result/")
                 .param("searchRequestId", "1")
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
     }
 
-    @Test fun `get offer search list by offerSearchId`() {
-        this.mvc.perform(get("/$version/search/result/")
+    @Test
+    fun `get offer search list by offerSearchId`() {
+        this.mvc.perform(
+            get("/$version/search/result/")
                 .param("offerSearchId", "1")
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
     }
 
-    @Test fun `get the total count of OfferSearches`() {
-        this.mvc.perform(get("/$version/search/result/count")
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
+    @Test
+    fun `get the total count of OfferSearches`() {
+        this.mvc.perform(
+            get("/$version/search/result/count")
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
     }
 
-    @Test fun `get offer search list by owner`() {
-        this.mvc.perform(get("/$version/search/result/user")
+    @Test
+    fun `get offer search list by owner`() {
+        this.mvc.perform(
+            get("/$version/search/result/user")
                 .param("owner", publicKey)
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
     }
 
-    @Test fun `add event`() {
-        this.mvc.perform(patch("/$version/search/result/event/1")
+    @Test
+    fun `add event`() {
+        this.mvc.perform(
+            patch("/$version/search/result/event/1")
                 .content(offerEventRequest.toJsonString())
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
     }
 
-    @Test fun `complain to search result`() {
-        this.mvc.perform(patch("/$version/search/result/1")
+    @Test
+    fun `complain to search result`() {
+        this.mvc.perform(
+            patch("/$version/search/result/1")
                 .content(offerSearchIdRequest.toJsonString())
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
     }
 
-    @Test fun `add offer search item`() {
-        this.mvc.perform(post("/$version/search/result/")
+    @Test
+    fun `add offer search item`() {
+        this.mvc.perform(
+            post("/$version/search/result/")
                 .content(offerSearchRequest.toJsonString())
-                .headers(httpHeaders))
-                .andExpect(status().isCreated)
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isCreated)
     }
 
-    @Test fun `add offer search item without updatedAt field`() {
+    @Test
+    fun `add offer search item without updatedAt field`() {
         val strModel = offerSearchRequest.toJsonString()
         val modelWithoutUpdateAt = strModel.replace(",\"updatedAt\":\"2019-02-19T10:35:56.503+0300\"", "")
-        this.mvc.perform(post("/$version/search/result/")
+        this.mvc.perform(
+            post("/$version/search/result/")
                 .content(modelWithoutUpdateAt)
-                .headers(httpHeaders))
-                .andExpect(status().isCreated)
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isCreated)
     }
 
-    @Test fun `get offer search by page`() {
-        this.mvc.perform(get("/$version/search/results?page=0&size=2")
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
+    @Test
+    fun `get offer search by page`() {
+        this.mvc.perform(
+            get("/$version/search/results?page=0&size=2")
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
     }
 
-    @Test fun `clone offer search of search request`() {
-        this.mvc.perform(put("/$version/search/result/$publicKey/1")
+    @Test
+    fun `clone offer search of search request`() {
+        this.mvc.perform(
+            put("/$version/search/result/$publicKey/1")
                 .content(requestSearch.toJsonString())
-                .headers(httpHeaders))
-                .andExpect(status().isOk)
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
     }
 }

@@ -7,11 +7,11 @@ import org.springframework.stereotype.Component
 
 @Component
 class RequestDataRepositoryStrategy(
-        @Qualifier("postgres")
-        private val postgres: PostgresRequestDataRepositoryImpl,
+    @Qualifier("postgres")
+    private val postgres: PostgresRequestDataRepositoryImpl,
 
-        @Qualifier("hybrid")
-        private val hybrid: HybridRequestDataRepositoryImpl
+    @Qualifier("hybrid")
+    private val hybrid: HybridRequestDataRepositoryImpl
 
 ) : RepositoryStrategy<RequestDataRepository> {
 
@@ -21,5 +21,4 @@ class RequestDataRepositoryStrategy(
             RepositoryStrategyType.HYBRID -> hybrid
         }
     }
-
 }

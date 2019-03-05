@@ -26,6 +26,7 @@ apply plugin: 'eclipse'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'jacoco'
 apply plugin: 'com.github.kt3k.coveralls'
+apply from: "$rootDir/ktlint.gradle"
 
 group = 'com.bitclave.node'
 version = '0.0.1'
@@ -47,6 +48,7 @@ jacocoTestReport {
         html.enabled = true
     }
     afterEvaluate {
+        //noinspection GroovyAssignabilityCheck
         classDirectories = files(classDirectories.files.collect {
             fileTree(dir: it, exclude: ['com/bitclave/node/services/errors/**', '**/generated/**'])
         })
@@ -56,6 +58,8 @@ jacocoTestReport {
 coveralls {
     sourceDirs += ['src/main/kotlin']
 }
+
+compileKotlin.dependsOn ktlint
 
 task compileSolidity(type: JavaExec) {
     def solidityGenerator = new JavaClassGeneratorMojo()

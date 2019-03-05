@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component
 @Component
 @Qualifier("postgres")
 class PostgresFileRepositoryImpl(
-        val repository: FileCrudRepository
+    val repository: FileCrudRepository
 ) : FileRepository {
 
     override fun findById(id: Long): UploadedFile? {

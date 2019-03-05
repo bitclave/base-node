@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component
 
 @Component
 class FileRepositoryStrategy(
-        @Qualifier("postgres")
-        private val postgres: PostgresFileRepositoryImpl
+    @Qualifier("postgres")
+    private val postgres: PostgresFileRepositoryImpl
 
 ) : RepositoryStrategy<FileRepository> {
 
@@ -18,5 +18,4 @@ class FileRepositoryStrategy(
             RepositoryStrategyType.HYBRID -> postgres
         }
     }
-
 }

@@ -9,7 +9,7 @@ class KeyPairUtils {
 
         fun isValidPublicKey(publicKey: String): Boolean {
             return try {
-                val pk =BigInteger(publicKey, 16)
+                val pk = BigInteger(publicKey, 16)
                 val point = ECKey.CURVE.curve.decodePoint(pk.toByteArray())
 
                 point.isValid
@@ -17,6 +17,5 @@ class KeyPairUtils {
                 false
             }
         }
-
     }
 }

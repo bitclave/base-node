@@ -13,7 +13,12 @@ import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.web.bind.annotation.*
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestBody
+import org.springframework.web.bind.annotation.RequestHeader
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestMethod
+import org.springframework.web.bind.annotation.RestController
 import java.util.concurrent.CompletableFuture
 
 private val logger = KotlinLogging.logger {}
@@ -21,8 +26,8 @@ private val logger = KotlinLogging.logger {}
 @RestController
 @RequestMapping("/v1/site/")
 class SiteController(
-        @Qualifier("v1") private val accountService: AccountService,
-        @Qualifier("v1") private val siteService: SiteService
+    @Qualifier("v1") private val accountService: AccountService,
+    @Qualifier("v1") private val siteService: SiteService
 ) : AbstractController() {
 
     /**
@@ -32,49 +37,53 @@ class SiteController(
      *
      * @return {@link Long}, Http status - 200.
      *
-     * @exception   {@link BadArgumentException} - 400
+     * @exception {@link BadArgumentException} - 400
      *              {@link AccessDeniedException} - 403
      *              {@link DataNotSaved} - 500
      */
 
-    @ApiOperation("Save information of site",
-            response = Long::class)
-    @ApiResponses(value = [
-        ApiResponse(code = 200, message = "Success", response = Long::class),
-        ApiResponse(code = 400, message = "BadArgumentException"),
-        ApiResponse(code = 403, message = "AccessDeniedException"),
-        ApiResponse(code = 500, message = "DataNotSaved")
-    ])
-    //@RequestMapping(method = [RequestMethod.POST])
+    @ApiOperation(
+        "Save information of site",
+        response = Long::class
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(code = 200, message = "Success", response = Long::class),
+            ApiResponse(code = 400, message = "BadArgumentException"),
+            ApiResponse(code = 403, message = "AccessDeniedException"),
+            ApiResponse(code = 500, message = "DataNotSaved")
+        ]
+    )
+    // @RequestMapping(method = [RequestMethod.POST])
     fun saveSiteInformation(
-            @ApiParam("where client sends SearchRequest and signature of the message.", required = true)
-            @RequestBody
-            request: SignedRequest<Site>,
+        @ApiParam("where client sends SearchRequest and signature of the message.", required = true)
+        @RequestBody
+        request: SignedRequest<Site>,
 
-            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
-            @RequestHeader("Strategy", required = false)
-            strategy: String?
+        @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
     ): CompletableFuture<Long> {
 
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
-                .thenCompose { account: Account -> accountService.validateNonce(request, account) }
-                .thenCompose {
-                    if (it.publicKey != request.data!!.publicKey) {
-                        throw BadArgumentException()
-                    }
-
-                    val result = siteService.saveSiteInformation(
-                            request.data,
-                            getStrategyType(strategy)
-                    )
-
-                    accountService.incrementNonce(it, getStrategyType(strategy))
-
-                    result
-                }.exceptionally { e ->
-                    logger.error("Request: saveSiteInformation/" + request.toString() + " raised " + e)
-                    throw e
+            .thenCompose { account: Account -> accountService.validateNonce(request, account) }
+            .thenCompose {
+                if (it.publicKey != request.data!!.publicKey) {
+                    throw BadArgumentException()
                 }
+
+                val result = siteService.saveSiteInformation(
+                    request.data,
+                    getStrategyType(strategy)
+                )
+
+                accountService.incrementNonce(it, getStrategyType(strategy))
+
+                result
+            }.exceptionally { e ->
+                logger.error("Request: saveSiteInformation/$request raised $e")
+                throw e
+            }
     }
 
     /**
@@ -82,31 +91,32 @@ class SiteController(
      *
      * @return {@link Site}, Http status - 200.
      *
-     * @exception   {@link NotFoundException} - 404
+     * @exception {@link NotFoundException} - 404
      */
     @ApiOperation(
-            "Get {@link Site} by origin of site",
-            response = Site::class
+        "Get information by origin of site",
+        response = Site::class
     )
-    @ApiResponses(value = [
-        ApiResponse(code = 200, message = "Success", response = Site::class),
-        ApiResponse(code = 404, message = "NotFoundException")
-    ])
+    @ApiResponses(
+        value = [
+            ApiResponse(code = 200, message = "Success", response = Site::class),
+            ApiResponse(code = 404, message = "NotFoundException")
+        ]
+    )
     @RequestMapping(method = [RequestMethod.GET], value = ["{origin:.+}"])
     fun getPublicKeyByOrigin(
-            @ApiParam("Site origin")
-            @PathVariable("origin")
-            origin: String,
+        @ApiParam("Site origin")
+        @PathVariable("origin")
+        origin: String,
 
-            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
-            @RequestHeader("Strategy", required = false)
-            strategy: String?
+        @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
     ): CompletableFuture<Site> {
 
         return siteService.getSite(origin, getStrategyType(strategy)).exceptionally { e ->
-            logger.error("Request: getPublicKeyByOrigin/" + origin + " raised " + e)
+            logger.error("Request: getPublicKeyByOrigin/$origin raised $e")
             throw e
         }
     }
-
 }

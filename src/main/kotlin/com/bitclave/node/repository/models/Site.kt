@@ -8,8 +8,8 @@ import javax.persistence.Id
 
 @Entity
 data class Site(
-        @Exclude @GeneratedValue(strategy = GenerationType.TABLE) @Id val id: Long = 0,
-        val origin: String = "",
-        val publicKey: String = "",
-        val confidential: Boolean = false
+    @Exclude @GeneratedValue(strategy = GenerationType.TABLE) @Id val id: Long = 0,
+    val origin: String = "",
+    val publicKey: String = "",
+    val confidential: Boolean = false
 )

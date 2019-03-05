@@ -10,49 +10,48 @@ import java.util.concurrent.CompletableFuture
 @Service
 @Qualifier("v1")
 class ClientProfileService(
-        private val clientDataRepository: RepositoryStrategy<ClientDataRepository>
+    private val clientDataRepository: RepositoryStrategy<ClientDataRepository>
 ) {
 
     fun getData(publicKey: String, strategy: RepositoryStrategyType): CompletableFuture<Map<String, String>> {
-        return CompletableFuture.supplyAsync({
+        return CompletableFuture.supplyAsync {
             if ("first" == publicKey) {
                 return@supplyAsync hashMapOf("firstName" to "Adam", "lastName" to "Base")
             }
 
             clientDataRepository.changeStrategy(strategy)
-                    .getData(publicKey)
-        })
+                .getData(publicKey)
+        }
     }
 
     fun updateData(
-            publicKey: String,
-            data: Map<String, String>,
-            strategy: RepositoryStrategyType
+        publicKey: String,
+        data: Map<String, String>,
+        strategy: RepositoryStrategyType
     ): CompletableFuture<Map<String, String>> {
 
-        return CompletableFuture.supplyAsync({
+        return CompletableFuture.supplyAsync {
             val oldData = clientDataRepository.changeStrategy(strategy)
-                    .getData(publicKey)
-                    .toMutableMap()
+                .getData(publicKey)
+                .toMutableMap()
 
             oldData.putAll(data)
 
             clientDataRepository.changeStrategy(strategy)
-                    .updateData(publicKey, oldData)
+                .updateData(publicKey, oldData)
 
             data
-        })
+        }
     }
 
     fun deleteData(
-            publicKey: String,
-            strategy: RepositoryStrategyType
+        publicKey: String,
+        strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
 
-        return CompletableFuture.runAsync({
+        return CompletableFuture.runAsync {
             clientDataRepository.changeStrategy(strategy)
-                    .deleteData(publicKey)
-        })
+                .deleteData(publicKey)
+        }
     }
-
 }

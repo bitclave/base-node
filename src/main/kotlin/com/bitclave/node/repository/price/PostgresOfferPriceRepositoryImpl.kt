@@ -11,8 +11,8 @@ import org.springframework.stereotype.Component
 @Component
 @Qualifier("postgres")
 class PostgresOfferPriceRepositoryImpl(
-        val repository: OfferPriceCrudRepository,
-        val rulesRepository: OfferPriceRulesCrudRepository
+    val repository: OfferPriceCrudRepository,
+    val rulesRepository: OfferPriceRulesCrudRepository
 ) : OfferPriceRepository {
     override fun savePrices(offer: Offer, prices: List<OfferPrice>): List<OfferPrice> {
         val copyPrices = prices.map { it.copy() }
@@ -26,7 +26,6 @@ class PostgresOfferPriceRepositoryImpl(
                 rule.offerPrice = savedPrice
                 rulesRepository.save(rule) ?: throw DataNotSavedException()
             }
-
         }
         return repository.findByOfferId(offer.id)
     }

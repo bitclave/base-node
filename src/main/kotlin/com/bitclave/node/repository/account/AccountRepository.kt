@@ -13,5 +13,4 @@ interface AccountRepository {
     fun deleteAccount(publicKey: String)
 
     fun getTotalCount(): Long
-
 }

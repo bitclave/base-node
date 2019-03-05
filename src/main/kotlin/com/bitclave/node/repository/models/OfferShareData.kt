@@ -7,11 +7,11 @@ import javax.persistence.Id
 
 @Entity
 data class OfferShareData(
-        @Id val offerSearchId: Long = 0,
-        val offerOwner: String = "",
-        val clientId: String = "",
-        @Column(columnDefinition = "TEXT") val clientResponse: String = "",
-        val worth: String = BigDecimal.ZERO.toString(),
-        val accepted: Boolean = false,
-        val priceId: Long = 0
+    @Id val offerSearchId: Long = 0,
+    val offerOwner: String = "",
+    val clientId: String = "",
+    @Column(columnDefinition = "TEXT") val clientResponse: String = "",
+    val worth: String = BigDecimal.ZERO.toString(),
+    val accepted: Boolean = false,
+    val priceId: Long = 0
 )

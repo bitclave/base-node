@@ -23,25 +23,27 @@ import org.junit.runner.RunWith
 import org.junit.runners.Suite
 
 @RunWith(Suite::class)
-@Suite.SuiteClasses(value = [
-    VerifyConsistencyControllerTest::class,
-    VerifyConsistencyIntegrationTest::class,
-    AuthControllerTest::class,
-    AccountServiceTest::class,
-    AccountServiceHybridTest::class,
-    ClientProfileControllerTest::class,
-    ClientProfileServiceTest::class,
-    ClientProfileServiceHybridTest::class,
-    RequestDataServiceHybridTest::class,
-    RequestDataControllerTest::class,
-    RequestDataServiceTest::class,
-    OfferControllerTest::class,
-    OfferServiceTest::class,
-    SearchRequestControllerTest::class,
-    SearchRequestServiceTest::class,
-    OfferSearchControllerTest::class,
-    OfferSearchServiceTest::class,
-    OfferShareControllerTest::class,
-    OfferShareServiceTest::class
-])
+@Suite.SuiteClasses(
+    value = [
+        VerifyConsistencyControllerTest::class,
+        VerifyConsistencyIntegrationTest::class,
+        AuthControllerTest::class,
+        AccountServiceTest::class,
+        AccountServiceHybridTest::class,
+        ClientProfileControllerTest::class,
+        ClientProfileServiceTest::class,
+        ClientProfileServiceHybridTest::class,
+        RequestDataServiceHybridTest::class,
+        RequestDataControllerTest::class,
+        RequestDataServiceTest::class,
+        OfferControllerTest::class,
+        OfferServiceTest::class,
+        SearchRequestControllerTest::class,
+        SearchRequestServiceTest::class,
+        OfferSearchControllerTest::class,
+        OfferSearchServiceTest::class,
+        OfferShareControllerTest::class,
+        OfferShareServiceTest::class
+    ]
+)
 class RunAllTests

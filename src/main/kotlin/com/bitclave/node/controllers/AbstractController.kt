@@ -8,7 +8,6 @@ abstract class AbstractController {
         return if (string.isNullOrEmpty())
             RepositoryStrategyType.POSTGRES
         else
-            RepositoryStrategyType.valueOf(string!!)
+            RepositoryStrategyType.valueOf(string)
     }
-
 }

@@ -5,6 +5,18 @@ BASE-NODE is the implementation of the Node component in BASE platform.
 [![Coverage Status](https://coveralls.io/repos/github/bitclave/base-node/badge.svg?branch=develop)](https://coveralls.io/github/bitclave/base-node?branch=develop)
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
+# Lint:
+- If you use IntelliJ IDEA, you can call <code>gradlew installKtlintIdeaProject</code> for configure code-style.
+- Also you can load config file for codestyle from root dir 'kotlin-codestyle.xml'
+- Use for Intellij IDEA (Cherished keys for text formatting):
+- ctrl + alt + O is Optimize imports
+- ctrl + alt + L is Reformat code
+
+- For Mac Os see:
+- [Default key map](https://resources.jetbrains.com/storage/products/intellij-idea/docs/IntelliJIDEA_ReferenceCard.pdf)
+
+- For auto-formatting call <code>gradlew ktlintFormat</code>
+
 # Notes
 - BASE-NODE API is available [here](https://base2-bitclva-com.herokuapp.com/swagger-ui.html#)
 
