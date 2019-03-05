@@ -84,7 +84,7 @@ class PostgresSearchRequestRepositoryImpl(
 
     override fun cloneSearchRequestWithOfferSearches(request: SearchRequest): SearchRequest {
         var existingRequest = repository.findOne(request.id)
-        if (existingRequest == null) return throw BadArgumentException("SearchRequest does not exist: " + request.id.toString())
+        existingRequest ?: return throw BadArgumentException("SearchRequest does not exist: " + request.id.toString())
 
         var relatedOfferSearches = offerSearchRepository.findBySearchRequestId(existingRequest.id)
 
@@ -95,23 +95,25 @@ class PostgresSearchRequestRepositoryImpl(
         )
 
         repository.save(createSearchRequest)
+        if (createSearchRequest.id <= 0L) return throw DataNotSavedException()
 
-        var toBeSavedOfferSearched: MutableList<OfferSearch> = mutableListOf()
-        for (offerSearch: OfferSearch in relatedOfferSearches) {
-            val newOfferSearch = OfferSearch(
-                    0,
-                    createSearchRequest.owner,
-                    createSearchRequest.id,
-                    offerSearch.offerId,
-                    OfferResultAction.NONE,
-                    offerSearch.info,
-                    ArrayList()
-            )
-            toBeSavedOfferSearched.add(newOfferSearch)
+        if(relatedOfferSearches.isNotEmpty()) {
+            var toBeSavedOfferSearched: MutableList<OfferSearch> = mutableListOf()
+            for (offerSearch: OfferSearch in relatedOfferSearches) {
+                val newOfferSearch = OfferSearch(
+                        0,
+                        createSearchRequest.owner,
+                        createSearchRequest.id,
+                        offerSearch.offerId,
+                        OfferResultAction.NONE,
+                        offerSearch.info,
+                        ArrayList()
+                )
+                toBeSavedOfferSearched.add(newOfferSearch)
+            }
+
+            offerSearchRepository.save(toBeSavedOfferSearched)
         }
-
-        offerSearchRepository.save(toBeSavedOfferSearched)
-
         return createSearchRequest
     }
 
