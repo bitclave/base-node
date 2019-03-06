@@ -17,7 +17,7 @@ import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
 import com.google.gson.Gson
-import org.slf4j.LoggerFactory
+import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -53,7 +53,8 @@ class OfferSearchService(
     private val rtSearchRepository: RtSearchRepository,
     private val gson: Gson
 ) {
-    var logger = LoggerFactory.getLogger(OfferSearchService::class.java)
+//    var logger = LoggerFactory.getLogger(OfferSearchService::class.java)
+    private val logger = KotlinLogging.logger {}
 
     fun getOffersResult(
         strategy: RepositoryStrategyType,
