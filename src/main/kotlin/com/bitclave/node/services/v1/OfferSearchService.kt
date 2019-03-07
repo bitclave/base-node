@@ -485,11 +485,9 @@ class OfferSearchService(
                 }
 
                 val saveEach = measureTimeMillis {
-                    offerSearches.forEach {
-                        offerSearchRepository
+                    offerSearchRepository
                             .changeStrategy(strategyType)
-                            .saveSearchResult(it)
-                    }
+                            .saveSearchResult(offerSearches)
                 }
                 logger.debug("measure: createOfferSearchesByQuery -> saveEach: $saveEach")
 

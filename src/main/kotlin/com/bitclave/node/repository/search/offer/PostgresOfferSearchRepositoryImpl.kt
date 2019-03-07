@@ -19,49 +19,76 @@ class PostgresOfferSearchRepositoryImpl(
     val searchRequestRepository: SearchRequestRepository
 ) : OfferSearchRepository {
 
-    override fun saveSearchResult(list: List<OfferSearch>) {
-        repository.save(list)
-    }
-
     override fun deleteAllBySearchRequestId(id: Long): Long {
         return repository.deleteAllBySearchRequestId(id)
     }
 
-    override fun saveSearchResult(item: OfferSearch) {
-        val searchRequest = searchRequestRepository.findById(item.searchRequestId)
-        if (searchRequest != null) {
-            val id = item.id
-            item.owner = searchRequest.owner
-            repository.save(item) ?: throw DataNotSavedException()
+    override fun saveSearchResult(list: List<OfferSearch>) {
+        val searchRequestsIds = list
+            .map { it.searchRequestId }
+            .distinct()
 
-            val relatedOfferSearches = findByOwnerAndOfferId(searchRequest.owner, item.offerId)
+        val existedRequests = searchRequestRepository.findById(searchRequestsIds)
+        if (searchRequestsIds.size != existedRequests.size) {
+            throw throw BadArgumentException("search request id not exist")
+        }
 
-            if (relatedOfferSearches.size > 1) {
-                if (id > 0) { // if it was an update then update all related OfferSearches
-                    for (offerSearch: OfferSearch in relatedOfferSearches) {
-                        if (offerSearch.id != item.id) {
-                            offerSearch.state = item.state
-                            offerSearch.updatedAt = item.updatedAt
-                            offerSearch.events = item.events
-                            offerSearch.info = item.info
-                        }
-                    }
-                    repository.save(relatedOfferSearches)
-                } else { // if it was an new insert then update it according related OfferSearches if exists
-                    // TODO can be implemented more efficient insert
-                    for (offerSearch: OfferSearch in relatedOfferSearches) {
-                        if (offerSearch.id != item.id) {
-                            item.state = offerSearch.state
-                            item.updatedAt = offerSearch.updatedAt
-                            item.events.addAll(offerSearch.events)
-                            item.info = offerSearch.info
-                            repository.save(item)
-                            break
-                        }
-                    }
+        val owners = list
+            .map { it.owner }
+            .distinct()
+
+        val allOffersByOwner = when {
+            list.size == 1 -> repository
+                .findByOwnerAndOfferId(list[0].owner, list[0].offerId)
+                .toMutableList()
+
+            list.size > 1 -> repository
+                .findByOwnerIn(owners)
+                .toMutableList()
+
+            else -> mutableListOf()
+        }
+
+        list.forEach { offer ->
+            val relatedOfferSearches = allOffersByOwner
+                .filter {
+                    it.id > 0 &&
+                        it.offerId == offer.offerId &&
+                        it.owner == offer.owner
                 }
+
+            relatedOfferSearches.forEach { it.updatedAt = offer.updatedAt }
+
+            when {
+                offer.id > 0 -> relatedOfferSearches.forEach { related ->
+                    related.state = offer.state
+                    related.events = offer.events
+                    related.info = offer.info
+                }
+
+                relatedOfferSearches.isNotEmpty() -> {
+                    val firstItem = relatedOfferSearches[0]
+                    val events = offer.events
+                        .toMutableList()
+                    events.addAll(firstItem.events)
+
+                    val copiedOffer = offer.copy(
+                        state = firstItem.state,
+                        events = events,
+                        info = firstItem.info
+                    )
+                    allOffersByOwner.add(copiedOffer)
+                }
+
+                relatedOfferSearches.isEmpty() -> allOffersByOwner.add(offer.copy())
             }
-        } else throw BadArgumentException("search request id not exist")
+        }
+
+        repository.save(allOffersByOwner) ?: throw DataNotSavedException()
+    }
+
+    override fun saveSearchResult(item: OfferSearch) {
+        saveSearchResult(listOf(item))
     }
 
     override fun findById(id: Long): OfferSearch? {
