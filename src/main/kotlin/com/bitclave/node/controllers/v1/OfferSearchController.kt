@@ -14,6 +14,8 @@ import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
@@ -66,7 +68,13 @@ class OfferSearchController(
         @ApiParam("sends full text search query string")
         @RequestParam(value = "q")
         query: String,
+        @ApiParam("Optional page number to retrieve a particular page. If not specified this API retrieves first page.")
+        @RequestParam("page", defaultValue = "0", required = false)
+        page: Int,
 
+        @ApiParam("Optional page size to include number of offerSearch items in a page. Defaults to 20.")
+        @RequestParam("size", defaultValue = "20", required = false)
+        size: Int,
         @ApiParam(
             "where client already existed search request id (who has rtSearch tag)" +
                 " and signature of the message.", required = true
@@ -77,7 +85,7 @@ class OfferSearchController(
         @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
         @RequestHeader("Strategy", required = false)
         strategy: String?
-    ): CompletableFuture<List<OfferSearchResultItem>> {
+    ): CompletableFuture<Page<OfferSearchResultItem>> {
 
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
             .thenCompose { account: Account -> accountService.validateNonce(request, account) }
@@ -86,6 +94,7 @@ class OfferSearchController(
                     request.data!!,
                     it.publicKey,
                     query,
+                    PageRequest(page, size),
                     getStrategyType(strategy)
                 ).get()
 

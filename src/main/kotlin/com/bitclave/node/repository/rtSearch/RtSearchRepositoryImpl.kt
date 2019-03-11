@@ -3,6 +3,8 @@ package com.bitclave.node.repository.rtSearch
 import com.bitclave.node.configuration.properties.RtSearchProperties
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.core.ParameterizedTypeReference
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpMethod
 import org.springframework.http.converter.json.GsonHttpMessageConverter
 import org.springframework.stereotype.Repository
@@ -19,13 +21,17 @@ class RtSearchRepositoryImpl(
         .messageConverters(converter)
         .rootUri(rtSearchProperties.url).build()
 
-    override fun getOffersIdByQuery(query: String): CompletableFuture<List<Long>> {
+    override fun getOffersIdByQuery(query: String, pageRequest: PageRequest): CompletableFuture<Page<Long>> {
         return CompletableFuture.supplyAsync {
             val offerIdsResponse = restTemplate.exchange(
-                "/v1/search/?q={query}",
+                "/v1/search/?q={query}&page={page}&size={size}",
                 HttpMethod.GET, null,
-                object : ParameterizedTypeReference<List<Long>>() {},
-                mapOf("query" to query)
+                object : ParameterizedTypeReference<Page<Long>>() {},
+                mapOf(
+                    "query" to query,
+                    "page" to pageRequest.pageNumber,
+                    "size" to pageRequest.pageSize
+                )
             )
 
             return@supplyAsync offerIdsResponse.body

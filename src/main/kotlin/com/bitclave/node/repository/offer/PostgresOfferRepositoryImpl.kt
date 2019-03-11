@@ -21,7 +21,7 @@ class PostgresOfferRepositoryImpl(
         repository.save(offer) ?: throw DataNotSavedException()
         if (id > 0) {
             var relatedOfferSearches = offerSearchRepository.findByOfferId(offer.id)
-            relatedOfferSearches = relatedOfferSearches.filterIndexed { ix, element ->
+            relatedOfferSearches = relatedOfferSearches.filterIndexed { _, element ->
                 element.state == OfferResultAction.NONE || element.state == OfferResultAction.REJECT
             }
             offerSearchRepository.delete(relatedOfferSearches)

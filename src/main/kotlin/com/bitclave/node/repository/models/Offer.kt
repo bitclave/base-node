@@ -21,7 +21,7 @@ data class Offer(
     @Column(length = 256) val owner: String = "",
 
     @OneToMany(mappedBy = "offer", cascade = [CascadeType.REMOVE], fetch = FetchType.EAGER)
-    var offerPrices: List<OfferPrice> = emptyList(),
+    val offerPrices: List<OfferPrice> = emptyList(),
 
     @Column(length = 512) val description: String = "",
     @Column(length = 256) val title: String = "",
