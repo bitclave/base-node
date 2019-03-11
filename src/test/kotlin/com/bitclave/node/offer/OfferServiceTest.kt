@@ -148,8 +148,7 @@ class OfferServiceTest {
     @Test
     fun `should be create new offer`() {
 
-        val oneOffer = this.offer.copy()
-        oneOffer.offerPrices = getOriginPrices()
+        val oneOffer = this.offer.copy(offerPrices = getOriginPrices())
 
         val result = offerService.putOffer(0, account.publicKey, oneOffer, strategy).get()
 
@@ -203,10 +202,9 @@ class OfferServiceTest {
 
     @Test
     fun `should be update created offer with prices`() {
-        val oneOffer = this.offer.copy()
-        oneOffer.offerPrices = getOriginPrices()
+        val oneOffer = this.offer.copy(offerPrices = getOriginPrices())
 
-        val changedOffer = Offer(
+        var changedOffer = Offer(
             34,
             "dsdsdsdsd",
             getOriginPrices(),
@@ -224,7 +222,8 @@ class OfferServiceTest {
         assert(created.id == 1L)
 
         val updatedDescription = "updated"
-        changedOffer.offerPrices = created.offerPrices
+        changedOffer = changedOffer.copy(offerPrices = created.offerPrices)
+
         changedOffer.offerPrices.find { it.id == 1L }?.description = updatedDescription
 
         val updated = offerService.putOffer(created.id, account.publicKey, changedOffer, strategy).get()

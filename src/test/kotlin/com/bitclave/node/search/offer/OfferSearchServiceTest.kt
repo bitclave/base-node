@@ -49,6 +49,8 @@ import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
@@ -144,6 +146,7 @@ class OfferSearchServiceTest {
     )
 
     protected lateinit var offerPrices: List<OfferPrice>
+    private val searchPageRequest: PageRequest = PageRequest(0, 20)
 
     @Before
     fun setup() {
@@ -240,7 +243,7 @@ class OfferSearchServiceTest {
 
     @Test
     fun `should be create QuerySearchRequest`() {
-        val list: List<Long> = arrayListOf(1, 2, 3)
+        val list: Page<Long> = PageImpl(arrayListOf<Long>(1, 2, 3), searchPageRequest, 1)
 
         val searchRequestWithRtSearch = searchRequestService.putSearchRequest(
             0,
@@ -250,11 +253,11 @@ class OfferSearchServiceTest {
         ).get()
 
         val searchQueryText = "some data"
-        Mockito.`when`(rtSearchRepository.getOffersIdByQuery(searchQueryText))
+        Mockito.`when`(rtSearchRepository.getOffersIdByQuery(searchQueryText, searchPageRequest))
             .thenReturn(CompletableFuture.completedFuture(list))
 
         val offersResult = offerSearchService.createOfferSearchesByQuery(
-            searchRequestWithRtSearch.id, publicKey, searchQueryText, strategy
+            searchRequestWithRtSearch.id, publicKey, searchQueryText, searchPageRequest, strategy
         ).get()
 
         val queryRequestsByOwner = querySearchRequestCrudRepository
@@ -267,66 +270,11 @@ class OfferSearchServiceTest {
         assertThat(offersResult.size == list.size)
     }
 
-    @Test
-    fun `should be create offersSearch items`() {
-        val list: List<Long> = arrayListOf(1, 2, 3)
-
-        val searchRequestWithRtSearch = searchRequestService.putSearchRequest(
-            0,
-            publicKey,
-            SearchRequest(0, publicKey, mapOf("rtSearch" to "true")),
-            strategy
-        ).get()
-
-        val searchQueryText = "some data"
-        Mockito.`when`(rtSearchRepository.getOffersIdByQuery(searchQueryText))
-            .thenReturn(CompletableFuture.completedFuture(list))
-
-        val offersResult = offerSearchService.createOfferSearchesByQuery(
-            searchRequestWithRtSearch.id, publicKey, searchQueryText, strategy
-        ).get()
-
-        val searchResult = offerSearchCrudRepository
-            .findBySearchRequestId(searchRequestWithRtSearch.id)
-        assert(searchResult.size == 3)
-        assert(searchResult.filter { list.indexOf(it.offerId) > -1 }.size == 3)
-        assertThat(offersResult.size == list.size)
-    }
-
-    @Test
-    fun `should be delete all old offersSearch items by query`() {
-        val searchRequestWithRtSearch = searchRequestService.putSearchRequest(
-            0,
-            publicKey,
-            SearchRequest(0, publicKey, mapOf("rtSearch" to "true")),
-            strategy
-        ).get()
-
-        val firstList = arrayListOf<Long>(1, 2, 4, 5)
-        Mockito.`when`(rtSearchRepository.getOffersIdByQuery("some data"))
-            .thenReturn(CompletableFuture.completedFuture(firstList))
-
-        offerSearchService.createOfferSearchesByQuery(
-            searchRequestWithRtSearch.id, publicKey, "some data", strategy
-        ).get()
-
-        val secondList = arrayListOf<Long>(4, 5)
-        Mockito.`when`(rtSearchRepository.getOffersIdByQuery("some data"))
-            .thenReturn(CompletableFuture.completedFuture(secondList))
-        offerSearchService.createOfferSearchesByQuery(
-            searchRequestWithRtSearch.id, publicKey, "some data", strategy
-        ).get()
-
-        val searchResult = offerSearchCrudRepository.findByOwner(publicKey)
-        assert(searchResult.size == 2)
-        assert(searchResult.filter { secondList.indexOf(it.offerId) > -1 }.size == 2)
-    }
-
     @Test(expected = NotFoundException::class)
     fun `should be throw by unknown searchRequestId`() {
         try {
             offerSearchService.createOfferSearchesByQuery(
-                1234343, publicKey, "some data", strategy
+                1234343, publicKey, "some data", searchPageRequest, strategy
             ).get()
         } catch (e: Throwable) {
             throw e.cause!!
@@ -343,7 +291,7 @@ class OfferSearchServiceTest {
         ).get()
         try {
             offerSearchService.createOfferSearchesByQuery(
-                searchRequestWithoutRtSearch.id, publicKey, "some data", strategy
+                searchRequestWithoutRtSearch.id, publicKey, "some data", searchPageRequest, strategy
             ).get()
         } catch (e: Throwable) {
             throw e.cause!!
