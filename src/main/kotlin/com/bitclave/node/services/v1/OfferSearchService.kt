@@ -20,6 +20,7 @@ import com.google.gson.Gson
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import java.util.Date
@@ -432,8 +433,9 @@ class OfferSearchService(
         searchRequestId: Long,
         owner: String,
         query: String,
+        pageRequest: PageRequest,
         strategyType: RepositoryStrategyType
-    ): CompletableFuture<List<OfferSearchResultItem>> {
+    ): CompletableFuture<Page<OfferSearchResultItem>> {
         return CompletableFuture.supplyAsync {
             val searchRequest = searchRequestRepository
                 .changeStrategy(strategyType)
@@ -455,29 +457,32 @@ class OfferSearchService(
             val existedOfferSearches = offerSearchRepository
                 .changeStrategy(strategyType)
                 .findBySearchRequestId(searchRequestId)
+
+            val offerIds = rtSearchRepository
+                .getOffersIdByQuery(query, pageRequest)
+                .get()
+
+            val setOfExistedOfferSearch = existedOfferSearches
                 .map { it.offerId }
                 .toSet()
 
-            val offerIds = rtSearchRepository
-                .getOffersIdByQuery(query)
-                .get()
-
             val offerIdsWithoutExisted = offerIds
-                .filter { !existedOfferSearches.contains(it) }
+                .filter { !setOfExistedOfferSearch.contains(it) }
 
             val offerSearches = offerIdsWithoutExisted.map {
                 OfferSearch(0, owner, searchRequest.id, it)
             }
-            offerSearchRepository
-                .changeStrategy(strategyType)
-                .saveSearchResult(offerSearches)
+                .toMutableList()
 
-            val offerSearchResult = offerSearchRepository.changeStrategy(strategyType)
-                .findBySearchRequestIdAndOfferIds(searchRequestId, offerIds)
+            offerSearches.addAll(existedOfferSearches)
 
-            offerSearchListToResult(
-                offerSearchResult, offerRepository.changeStrategy(strategyType)
+            val resultItems = offerSearchListToResult(
+                offerSearches, offerRepository.changeStrategy(strategyType)
             )
+
+            val pageable = PageRequest(offerIds.number, offerIds.size, offerIds.sort)
+
+            PageImpl(resultItems, pageable, offerIds.totalElements) as Page<OfferSearchResultItem>
         }
     }
 

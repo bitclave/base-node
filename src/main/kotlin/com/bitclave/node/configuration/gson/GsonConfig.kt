@@ -14,6 +14,7 @@ class GsonConfig {
 
     companion object {
         val GSON = GsonBuilder()
+            .registerTypeAdapter(Page::class.java, PageResponseDeserializer())
             .registerTypeAdapter(Page::class.java, PageSerializer())
             .registerTypeAdapter(SignedRequest::class.java, SignedRequestDeserializer())
             .addSerializationExclusionStrategy(AnnotationExcludeStrategy())
