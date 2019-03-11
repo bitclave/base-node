@@ -106,7 +106,7 @@ class OfferSearchService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
         return CompletableFuture.runAsync {
-            searchRequestRepository.changeStrategy(strategy)
+            val searchRequest = searchRequestRepository.changeStrategy(strategy)
                 .findById(offerSearch.searchRequestId)
                 ?: throw BadArgumentException("search request id not exist")
 
@@ -124,7 +124,7 @@ class OfferSearchService(
                 .saveSearchResult(
                     OfferSearch(
                         0,
-                        offerSearch.owner,
+                        searchRequest.owner,
                         offerSearch.searchRequestId,
                         offerSearch.offerId,
                         OfferResultAction.NONE,
