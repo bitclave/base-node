@@ -24,7 +24,6 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import java.util.Date
 import java.util.concurrent.CompletableFuture
-import kotlin.system.measureTimeMillis
 
 open class OfferSearchEvent(
     _updater: String,
@@ -53,7 +52,7 @@ class OfferSearchService(
     private val rtSearchRepository: RtSearchRepository,
     private val gson: Gson
 ) {
-//    var logger = LoggerFactory.getLogger(OfferSearchService::class.java)
+    //    var logger = LoggerFactory.getLogger(OfferSearchService::class.java)
     private val logger = KotlinLogging.logger {}
 
     fun getOffersResult(
@@ -96,15 +95,8 @@ class OfferSearchService(
 //            val searchRequestIds: List<Long> = searchRequestList.map { it.id }
 //            val offerSearches = repository.findBySearchRequestIds(searchRequestIds)
 
-            var result: List<OfferSearchResultItem> = emptyList()
-            val fullBlock = measureTimeMillis {
-                val offerSearches = repository.findByOwner(owner)
-                result = offerSearchListToResult(offerSearches, offerRepository.changeStrategy(strategy))
-            }
-
-            logger.debug("measure: getOffersAndOfferSearchesByOwnerResult -> fullBlock: $fullBlock")
-
-            result
+            val offerSearches = repository.findByOwner(owner)
+            offerSearchListToResult(offerSearches, offerRepository.changeStrategy(strategy))
         }
     }
 
@@ -443,67 +435,49 @@ class OfferSearchService(
         strategyType: RepositoryStrategyType
     ): CompletableFuture<List<OfferSearchResultItem>> {
         return CompletableFuture.supplyAsync {
-            var result: List<OfferSearchResultItem> = emptyList()
-            val fullBlockMeasure = measureTimeMillis {
-                val searchRequest = searchRequestRepository
-                    .changeStrategy(strategyType)
-                    .findById(searchRequestId)
-                    ?: throw NotFoundException("search request not found by id: $searchRequestId")
+            val searchRequest = searchRequestRepository
+                .changeStrategy(strategyType)
+                .findById(searchRequestId)
+                ?: throw NotFoundException("search request not found by id: $searchRequestId")
 
-                if (searchRequest.tags.keys.indexOf("rtSearch") <= -1) {
-                    throw BadArgumentException("SearchRequest not has rtSearch tag")
-                }
-
-                searchRequestRepository
-                    .changeStrategy(strategyType)
-                    .saveSearchRequest(searchRequest.copy(updatedAt = Date()))
-
-                val querySearchRequest = QuerySearchRequest(0, owner, query)
-
-                querySearchRequestCrudRepository.save(querySearchRequest)
-
-                val existedOfferSearches = offerSearchRepository
-                    .changeStrategy(strategyType)
-                    .findBySearchRequestId(searchRequestId)
-                    .map { it.offerId }
-                    .toSet()
-
-                var offerIds: List<Long> = emptyList()
-                val getFromRtSearch = measureTimeMillis {
-                    offerIds = rtSearchRepository
-                        .getOffersIdByQuery(query)
-                        .get()
-                }
-
-                logger.debug("measure: createOfferSearchesByQuery -> getFromRtSearch: $getFromRtSearch")
-
-                val offerIdsWithoutExisted = offerIds
-                    .filter { !existedOfferSearches.contains(it) }
-
-                val offerSearches = offerIdsWithoutExisted.map {
-                    OfferSearch(0, owner, searchRequest.id, it)
-                }
-
-                val saveEach = measureTimeMillis {
-                    offerSearchRepository
-                            .changeStrategy(strategyType)
-                            .saveSearchResult(offerSearches)
-                }
-                logger.debug("measure: createOfferSearchesByQuery -> saveEach: $saveEach")
-
-                val findForResult = measureTimeMillis {
-                    val offerSearchResult = offerSearchRepository.changeStrategy(strategyType)
-                        .findBySearchRequestIdAndOfferIds(searchRequestId, offerIds)
-
-                    result = offerSearchListToResult(
-                        offerSearchResult, offerRepository.changeStrategy(strategyType)
-                    )
-                }
-                logger.debug("measure: createOfferSearchesByQuery -> findForResult: $findForResult")
+            if (searchRequest.tags.keys.indexOf("rtSearch") <= -1) {
+                throw BadArgumentException("SearchRequest not has rtSearch tag")
             }
-            logger.debug("measure: createOfferSearchesByQuery -> fullBlockMeasure: $fullBlockMeasure")
 
-            return@supplyAsync result
+            searchRequestRepository
+                .changeStrategy(strategyType)
+                .saveSearchRequest(searchRequest.copy(updatedAt = Date()))
+
+            val querySearchRequest = QuerySearchRequest(0, owner, query)
+
+            querySearchRequestCrudRepository.save(querySearchRequest)
+
+            val existedOfferSearches = offerSearchRepository
+                .changeStrategy(strategyType)
+                .findBySearchRequestId(searchRequestId)
+                .map { it.offerId }
+                .toSet()
+
+            val offerIds = rtSearchRepository
+                .getOffersIdByQuery(query)
+                .get()
+
+            val offerIdsWithoutExisted = offerIds
+                .filter { !existedOfferSearches.contains(it) }
+
+            val offerSearches = offerIdsWithoutExisted.map {
+                OfferSearch(0, owner, searchRequest.id, it)
+            }
+            offerSearchRepository
+                .changeStrategy(strategyType)
+                .saveSearchResult(offerSearches)
+
+            val offerSearchResult = offerSearchRepository.changeStrategy(strategyType)
+                .findBySearchRequestIdAndOfferIds(searchRequestId, offerIds)
+
+            offerSearchListToResult(
+                offerSearchResult, offerRepository.changeStrategy(strategyType)
+            )
         }
     }
 
@@ -511,19 +485,13 @@ class OfferSearchService(
         offerSearch: List<OfferSearch>,
         offersRepository: OfferRepository
     ): List<OfferSearchResultItem> {
-        var result: List<OfferSearchResultItem> = emptyList()
-        val fullBlock = measureTimeMillis {
-            val offerIds = offerSearch.map { it.offerId }
-                .distinct()
-            val offers = offersRepository
-                .findById(offerIds)
-                .groupBy { it.id }
+        val offerIds = offerSearch.map { it.offerId }
+            .distinct()
+        val offers = offersRepository
+            .findById(offerIds)
+            .groupBy { it.id }
 
-            val withExistedOffers = offerSearch.filter { offers.containsKey(it.offerId) }
-            result = withExistedOffers.map { OfferSearchResultItem(it, offers.getValue(it.offerId)[0]) }
-        }
-        logger.debug("measure: offerSearchListToResult -> fullBlock: $fullBlock")
-
-        return result
+        val withExistedOffers = offerSearch.filter { offers.containsKey(it.offerId) }
+        return withExistedOffers.map { OfferSearchResultItem(it, offers.getValue(it.offerId)[0]) }
     }
 }
