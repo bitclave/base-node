@@ -44,4 +44,6 @@ interface OfferSearchRepository {
 
     // get offerSearches with the same owner and offerId but different content (status/events)
     fun findAllDiff(): List<OfferSearch>
+
+    fun countBySearchRequestId(id: Long): Long
 }

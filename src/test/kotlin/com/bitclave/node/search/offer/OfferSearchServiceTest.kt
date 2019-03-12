@@ -543,6 +543,22 @@ class OfferSearchServiceTest {
     }
 
     @Test
+    fun `get total count of offerSearches by searchRequestIds`() {
+        createOfferSearch(createdSearchRequest1, createdOffer1, ArrayList())
+        createOfferSearch(createdSearchRequest2, createdOffer1, ArrayList())
+        createOfferSearch(createdSearchRequest1, createdOffer2, ArrayList())
+
+        val ids = arrayListOf(createdSearchRequest1.id, createdSearchRequest1.id, createdSearchRequest2.id, 123L)
+        val result = offerSearchService
+            .getOfferSearchCountBySearchRequestIds(ids, strategy)
+            .get()
+
+        assertThat(result[createdSearchRequest1.id] == 2L)
+        assertThat(result[createdSearchRequest2.id] == 1L)
+        assertThat(result[123] == 0L)
+    }
+
+    @Test
     fun `should return all offersearch results by page`() {
         LongStream.range(0, 4).forEach {
             val offer = Offer(

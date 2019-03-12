@@ -199,7 +199,6 @@ class OfferSearchController(
     )
     @RequestMapping(method = [RequestMethod.GET], value = ["/result/count"])
     fun getOfferSearchTotalCount(
-
         @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
         @RequestHeader("Strategy", required = false)
         strategy: String?
@@ -207,6 +206,41 @@ class OfferSearchController(
 
         return offerSearchService.getOfferSearchTotalCount(getStrategyType(strategy)).exceptionally { e ->
             logger.error("Request: getOfferSearchTotalCount raised $e")
+            throw e
+        }
+    }
+
+    /**
+     * Returns the total count of OfferSearches for each search request id
+     *
+     * @return {@link Map<Long, Long>} where Map<SearchRequestId,count>, Http status - 200.
+     *
+     */
+    @ApiOperation(
+        "Returns the total count of OfferSearches for each search request id",
+        response = Long::class
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(code = 200, message = "Success", response = Long::class)
+        ]
+    )
+    @RequestMapping(method = [RequestMethod.GET], value = ["/count"])
+    fun getOfferSearchCountBySearchRequest(
+        @ApiParam("search request ids list")
+        @RequestParam("ids", required = true, defaultValue = "")
+        searchRequestIds: List<Long>,
+
+        @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
+    ): CompletableFuture<Map<Long, Long>> {
+
+        return offerSearchService.getOfferSearchCountBySearchRequestIds(
+            searchRequestIds,
+            getStrategyType(strategy)
+        ).exceptionally { e ->
+            logger.error("Request: getOfferSearchCountBySearchRequest raised $e")
             throw e
         }
     }

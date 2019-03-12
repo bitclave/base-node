@@ -115,6 +115,16 @@ class OfferSearchControllerTest {
     }
 
     @Test
+    fun `get the total count of OfferSearches by searchRequestIds`() {
+        this.mvc.perform(
+            get("/$version/search/count")
+                .param("ids", "1,2,3")
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
+    }
+
+    @Test
     fun `get offer search list by owner`() {
         this.mvc.perform(
             get("/$version/search/result/user")
