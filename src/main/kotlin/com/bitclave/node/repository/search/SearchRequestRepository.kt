@@ -18,6 +18,8 @@ interface SearchRequestRepository {
 
     fun findByOwner(owner: String): List<SearchRequest>
 
+    fun findByOwnerAndTagsIn(owner: String, tagKeys: List<String>): List<SearchRequest>
+
     fun findByIdAndOwner(id: Long, owner: String): SearchRequest?
 
     fun findAll(): List<SearchRequest>

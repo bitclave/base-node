@@ -81,23 +81,40 @@ class OfferSearchService(
         }
     }
 
-    fun getOffersAndOfferSearchesByOwnerResult(
+    fun getOffersAndOfferSearchesByParams(
         strategy: RepositoryStrategyType,
-        owner: String
+        owner: String,
+        unique: Boolean = false,
+        group: List<String> = emptyList(),
+        state: List<String> = emptyList()
     ): CompletableFuture<List<OfferSearchResultItem>> {
 
         return CompletableFuture.supplyAsync {
             val repository = offerSearchRepository.changeStrategy(strategy)
-
-            // get all searchRequests of the user
-//            val searchRequestList = searchRequestRepository.changeStrategy(strategy).findByOwner(owner)
-
-            // get all relevant offerSearches of searchRequests
-//            val searchRequestIds: List<Long> = searchRequestList.map { it.id }
-//            val offerSearches = repository.findBySearchRequestIds(searchRequestIds)
+            val stateSet = state.map { OfferResultAction.valueOf(it) }.toSet()
 
             val offerSearches = repository.findByOwner(owner)
-            offerSearchListToResult(offerSearches, offerRepository.changeStrategy(strategy))
+            val searchRequests = if (group.isNotEmpty()) {
+                searchRequestRepository
+                    .changeStrategy(strategy)
+                    .findByOwnerAndTagsIn(owner, group)
+                    .groupBy { it.id }
+            } else {
+                emptyMap()
+            }
+
+            val filteredByGroupAndState = offerSearches
+                .filter { searchRequests.isEmpty() || searchRequests.contains(it.searchRequestId) }
+                .filter { state.isEmpty() || stateSet.contains(it.state) }
+
+            val filteredByUnique = if (unique) {
+                filteredByGroupAndState.groupBy { it.offerId }
+                    .values.map { it[0] }
+            } else {
+                filteredByGroupAndState
+            }
+
+            offerSearchListToResult(filteredByUnique, offerRepository.changeStrategy(strategy))
         }
     }
 

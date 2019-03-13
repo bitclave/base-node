@@ -168,14 +168,29 @@ class OfferSearchController(
         @RequestParam(value = "owner", required = false)
         owner: String,
 
+        @ApiParam("return unique by offerId")
+        @RequestParam(value = "unique", required = false, defaultValue = "0")
+        unique: Boolean,
+
+        @ApiParam("query by groups in tags")
+        @RequestParam(value = "group", required = false, defaultValue = "")
+        group: List<String>,
+
+        @ApiParam("query by state")
+        @RequestParam(value = "state", required = false, defaultValue = "")
+        state: List<String>,
+
         @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
         @RequestHeader("Strategy", required = false)
         strategy: String?
     ): CompletableFuture<List<OfferSearchResultItem>> {
 
-        return offerSearchService.getOffersAndOfferSearchesByOwnerResult(
+        return offerSearchService.getOffersAndOfferSearchesByParams(
             getStrategyType(strategy),
-            owner
+            owner,
+            unique,
+            group,
+            state
         ).exceptionally { e ->
             logger.error("Request: getResultByOwner/$owner raised $e")
             throw e
