@@ -180,17 +180,26 @@ class OfferSearchController(
         @RequestParam(value = "state", required = false, defaultValue = "")
         state: List<String>,
 
+        @ApiParam("Optional page number to retrieve a particular page. If not specified this API retrieves first page.")
+        @RequestParam("page", defaultValue = "0", required = false)
+        page: Int,
+
+        @ApiParam("Optional page size to include number of offerSearchResult items in a page. Defaults to 20.")
+        @RequestParam("size", defaultValue = "20", required = false)
+        size: Int,
+
         @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
         @RequestHeader("Strategy", required = false)
         strategy: String?
-    ): CompletableFuture<List<OfferSearchResultItem>> {
+    ): CompletableFuture<Page<OfferSearchResultItem>> {
 
         return offerSearchService.getOffersAndOfferSearchesByParams(
             getStrategyType(strategy),
             owner,
             unique,
             group,
-            state
+            state,
+            PageRequest(page, size)
         ).exceptionally { e ->
             logger.error("Request: getResultByOwner/$owner raised $e")
             throw e

@@ -55,10 +55,12 @@ class PostgresOfferRepositoryImpl(
         return repository.findById(id)
     }
 
-    override fun findById(ids: List<Long>): List<Offer> {
-        return repository.findAll(ids)
-                .asSequence()
-                .toList()
+    override fun findByIds(ids: List<Long>, pageable: Pageable): Page<Offer> {
+        return repository.findAllByIdIn(ids, pageable)
+    }
+
+    override fun findByIds(ids: List<Long>): List<Offer> {
+        return repository.findAll(ids).toList()
     }
 
     override fun findByIdAndOwner(id: Long, owner: String): Offer? {
@@ -67,8 +69,7 @@ class PostgresOfferRepositoryImpl(
 
     override fun findAll(): List<Offer> {
         return repository.findAll()
-                .asSequence()
-                .toList()
+            .toList()
     }
 
     override fun findAll(pageable: Pageable): Page<Offer> {

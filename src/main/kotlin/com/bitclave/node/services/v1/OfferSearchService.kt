@@ -17,7 +17,6 @@ import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
 import com.google.gson.Gson
-import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
@@ -53,8 +52,6 @@ class OfferSearchService(
     private val rtSearchRepository: RtSearchRepository,
     private val gson: Gson
 ) {
-    //    var logger = LoggerFactory.getLogger(OfferSearchService::class.java)
-    private val logger = KotlinLogging.logger {}
 
     fun getOffersResult(
         strategy: RepositoryStrategyType,
@@ -86,8 +83,9 @@ class OfferSearchService(
         owner: String,
         unique: Boolean = false,
         group: List<String> = emptyList(),
-        state: List<String> = emptyList()
-    ): CompletableFuture<List<OfferSearchResultItem>> {
+        state: List<String> = emptyList(),
+        pageRequest: PageRequest = PageRequest(0, Int.MAX_VALUE)
+    ): CompletableFuture<Page<OfferSearchResultItem>> {
 
         return CompletableFuture.supplyAsync {
             val repository = offerSearchRepository.changeStrategy(strategy)
@@ -114,7 +112,7 @@ class OfferSearchService(
                 filteredByGroupAndState
             }
 
-            offerSearchListToResult(filteredByUnique, offerRepository.changeStrategy(strategy))
+            offerSearchPageToResult(filteredByUnique, offerRepository.changeStrategy(strategy), pageRequest)
         }
     }
 
@@ -379,7 +377,7 @@ class OfferSearchService(
                 byOffer!! -> {
                     // get all relevant offers of offerSearches
                     val offerIds: List<Long> = allOfferSearches.map { it.offerId }
-                    val offers = offerRepository.changeStrategy(strategy).findById(offerIds.distinct())
+                    val offers = offerRepository.changeStrategy(strategy).findByIds(offerIds.distinct())
                     val existedOfferIds: List<Long> = offers.map { it.id }
                     return@supplyAsync allOfferSearches.filter { it.offerId !in existedOfferIds }
                 }
@@ -510,10 +508,29 @@ class OfferSearchService(
         val offerIds = offerSearch.map { it.offerId }
             .distinct()
         val offers = offersRepository
-            .findById(offerIds)
+            .findByIds(offerIds)
             .groupBy { it.id }
 
         val withExistedOffers = offerSearch.filter { offers.containsKey(it.offerId) }
         return withExistedOffers.map { OfferSearchResultItem(it, offers.getValue(it.offerId)[0]) }
+    }
+
+    private fun offerSearchPageToResult(
+        offerSearch: List<OfferSearch>,
+        offersRepository: OfferRepository,
+        pageRequest: PageRequest
+    ): Page<OfferSearchResultItem> {
+        val offerIds = offerSearch.map { it.offerId }
+            .distinct()
+
+        val offers = offersRepository
+            .findByIds(offerIds, pageRequest)
+        val groupedOffers = offers.groupBy { it.id }
+
+        val withExistedOffers = offerSearch.filter { groupedOffers.containsKey(it.offerId) }
+        val content = withExistedOffers.map { OfferSearchResultItem(it, groupedOffers.getValue(it.offerId)[0]) }
+        val pageable = PageRequest(offers.number, offers.size, offers.sort)
+
+        return PageImpl(content, pageable, offers.totalElements)
     }
 }

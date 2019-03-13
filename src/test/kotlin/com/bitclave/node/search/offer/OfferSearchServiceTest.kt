@@ -318,7 +318,10 @@ class OfferSearchServiceTest {
         createOfferSearch(createdSearchRequest2, createdOffer1, ArrayList())
         createOfferSearch(createdSearchRequest2, createdOffer2, ArrayList())
 
-        val result = offerSearchService.getOffersAndOfferSearchesByParams(strategy, publicKey).get()
+        val result = offerSearchService.getOffersAndOfferSearchesByParams(strategy, publicKey)
+            .get()
+            .content
+
         assert(result.size == 4)
         assert(result[0].offerSearch.offerId == result[0].offer.id)
         assert(result[1].offerSearch.offerId == result[1].offer.id)
@@ -345,6 +348,7 @@ class OfferSearchServiceTest {
                 unique = false,
                 group = arrayListOf("interest_education")
             ).get()
+            .content
 
         assert(result.size == 2)
         assert(result[0].offerSearch.offerId == result[0].offer.id)
@@ -366,6 +370,7 @@ class OfferSearchServiceTest {
         val allOffersByOwner = offerSearchService
             .getOffersAndOfferSearchesByParams(strategy, publicKey)
             .get()
+            .content
 
         assertThat(allOffersByOwner.size == 2)
 
@@ -381,6 +386,7 @@ class OfferSearchServiceTest {
                 group = emptyList(),
                 state = arrayListOf(OfferResultAction.COMPLAIN.toString())
             ).get()
+            .content
 
         assert(result.size == 1)
         assert(result[0].offerSearch.id == complainTo)
@@ -393,6 +399,7 @@ class OfferSearchServiceTest {
                 group = emptyList(),
                 state = arrayListOf(OfferResultAction.NONE.toString())
             ).get()
+            .content
 
         assert(result.size == 1)
         assert(result[0].offerSearch.offerId == createdOffer2.id)
@@ -417,6 +424,7 @@ class OfferSearchServiceTest {
                 unique = true,
                 group = arrayListOf("interest_education")
             ).get()
+            .content
 
         assert(result.size == 2)
         assert(result[0].offerSearch.offerId == result[0].offer.id)
@@ -428,6 +436,7 @@ class OfferSearchServiceTest {
                 publicKey,
                 unique = true
             ).get()
+            .content
 
         assert(result.size == 2)
         assert(result[0].offerSearch.offerId == result[0].offer.id)
