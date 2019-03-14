@@ -415,6 +415,25 @@ class OfferSearchService(
         }
     }
 
+    fun getOfferSearchCountBySearchRequestIds(
+        searchRequestIds: List<Long>,
+        strategy: RepositoryStrategyType
+    ): CompletableFuture<Map<Long, Long>> {
+
+        return CompletableFuture.supplyAsync {
+            val uniqueRequestIds = searchRequestIds.distinct()
+
+            val result = HashMap<Long, Long>()
+            val repository = offerSearchRepository.changeStrategy(strategy)
+
+            uniqueRequestIds.forEach {
+                result[it] = repository.countBySearchRequestId(it)
+            }
+
+            result
+        }
+    }
+
     fun cloneOfferSearchOfSearchRequest(
         id: Long,
         searchRequest: SearchRequest,

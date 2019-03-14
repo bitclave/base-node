@@ -64,4 +64,6 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         nativeQuery = true
     )
     fun findAllDiff(): List<OfferSearch>
+
+    fun countBySearchRequestId(id: Long): Long
 }

@@ -181,4 +181,6 @@ class PostgresOfferSearchRepositoryImpl(
 
         return repository.save(toBeSavedOfferSearched).toList()
     }
+
+    override fun countBySearchRequestId(id: Long): Long = repository.countBySearchRequestId(id)
 }
