@@ -334,11 +334,17 @@ class SearchRequestServiceTest {
             searchRequestService.getSearchRequests(clonedRequest.id, account.publicKey, strategy).get()
         assertThat(savedListResult.size).isEqualTo(1)
 
-        val offerSearches = offerSearchService.getOffersResult(strategy, result1.id).get()
+        val offerSearches = offerSearchService.getOffersResult(strategy, result1.id)
+            .get()
+            .content
+
         assertThat(offerSearches.size).isEqualTo(2)
         assert(offerSearches[0].offerSearch.state != offerSearches[1].offerSearch.state)
 
-        val clonedOfferSearches = offerSearchService.getOffersResult(strategy, clonedRequest.id).get()
+        val clonedOfferSearches = offerSearchService.getOffersResult(strategy, clonedRequest.id)
+            .get()
+            .content
+
         assertThat(clonedOfferSearches.size).isEqualTo(2)
         assert(clonedOfferSearches[0].offerSearch.state == OfferResultAction.NONE)
         assert(clonedOfferSearches[1].offerSearch.state == OfferResultAction.NONE)
