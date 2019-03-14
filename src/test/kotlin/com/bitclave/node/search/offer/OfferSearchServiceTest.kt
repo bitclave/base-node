@@ -147,6 +147,7 @@ class OfferSearchServiceTest {
 
     protected lateinit var offerPrices: List<OfferPrice>
     private val searchPageRequest: PageRequest = PageRequest(0, 20)
+    private lateinit var searchRequestRepositoryStrategy: SearchRequestRepositoryStrategy
 
     @Before
     fun setup() {
@@ -160,7 +161,7 @@ class OfferSearchServiceTest {
 
         val searchRequestRepository =
             PostgresSearchRequestRepositoryImpl(searchRequestCrudRepository, offerSearchCrudRepository)
-        val searchRequestRepositoryStrategy = SearchRequestRepositoryStrategy(searchRequestRepository)
+        searchRequestRepositoryStrategy = SearchRequestRepositoryStrategy(searchRequestRepository)
 
         val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
@@ -317,12 +318,129 @@ class OfferSearchServiceTest {
         createOfferSearch(createdSearchRequest2, createdOffer1, ArrayList())
         createOfferSearch(createdSearchRequest2, createdOffer2, ArrayList())
 
-        val result = offerSearchService.getOffersAndOfferSearchesByOwnerResult(strategy, publicKey).get()
+        val result = offerSearchService.getOffersAndOfferSearchesByParams(strategy, publicKey)
+            .get()
+            .content
+
         assert(result.size == 4)
         assert(result[0].offerSearch.offerId == result[0].offer.id)
         assert(result[1].offerSearch.offerId == result[1].offer.id)
         assert(result[2].offerSearch.offerId == result[2].offer.id)
         assert(result[3].offerSearch.offerId == result[3].offer.id)
+    }
+
+    @Test
+    fun `should be return by group and owner`() {
+        val searchRequest1 = searchRequestRepositoryStrategy.changeStrategy(strategy)
+            .saveSearchRequest(SearchRequest(0, publicKey, mapOf("interest_education" to "true")))
+
+        val searchRequest2 = searchRequestRepositoryStrategy.changeStrategy(strategy)
+            .saveSearchRequest(SearchRequest(0, publicKey, mapOf("interest_health_&_wellness" to "true")))
+
+        createOfferSearch(searchRequest1, createdOffer2, ArrayList())
+        createOfferSearch(searchRequest1, createdOffer1, ArrayList())
+        createOfferSearch(searchRequest2, createdOffer2, ArrayList())
+
+        val result = offerSearchService
+            .getOffersAndOfferSearchesByParams(
+                strategy,
+                publicKey,
+                unique = false,
+                group = arrayListOf("interest_education")
+            ).get()
+            .content
+
+        assert(result.size == 2)
+        assert(result[0].offerSearch.offerId == result[0].offer.id)
+        assert(result[1].offerSearch.offerId == result[1].offer.id)
+    }
+
+    @Test
+    fun `should be return by state and owner`() {
+        val searchRequest1 = searchRequestRepositoryStrategy.changeStrategy(strategy)
+            .saveSearchRequest(SearchRequest(0, publicKey, mapOf("interest_education" to "true")))
+
+        val searchRequest2 = searchRequestRepositoryStrategy.changeStrategy(strategy)
+            .saveSearchRequest(SearchRequest(0, businessPublicKey, mapOf("interest_health_&_wellness" to "true")))
+
+        createOfferSearch(searchRequest1, createdOffer2, ArrayList())
+        createOfferSearch(searchRequest1, createdOffer1, ArrayList())
+        createOfferSearch(searchRequest2, createdOffer2, ArrayList())
+
+        val allOffersByOwner = offerSearchService
+            .getOffersAndOfferSearchesByParams(strategy, publicKey)
+            .get()
+            .content
+
+        assertThat(allOffersByOwner.size == 2)
+
+        val complainTo = allOffersByOwner[0].offerSearch.id
+        offerSearchService.complain(complainTo, publicKey, strategy).get()
+        offerSearchService.reject(allOffersByOwner[1].offerSearch.id, publicKey, strategy).get()
+
+        var result = offerSearchService
+            .getOffersAndOfferSearchesByParams(
+                strategy,
+                publicKey,
+                unique = false,
+                group = emptyList(),
+                state = arrayListOf(OfferResultAction.COMPLAIN.toString())
+            ).get()
+            .content
+
+        assert(result.size == 1)
+        assert(result[0].offerSearch.id == complainTo)
+
+        result = offerSearchService
+            .getOffersAndOfferSearchesByParams(
+                strategy,
+                businessPublicKey,
+                unique = false,
+                group = emptyList(),
+                state = arrayListOf(OfferResultAction.NONE.toString())
+            ).get()
+            .content
+
+        assert(result.size == 1)
+        assert(result[0].offerSearch.offerId == createdOffer2.id)
+    }
+
+    @Test
+    fun `should be return by unique (by offerId) and owner`() {
+        val searchRequest1 = searchRequestRepositoryStrategy.changeStrategy(strategy)
+            .saveSearchRequest(SearchRequest(0, publicKey, mapOf("interest_education" to "true")))
+
+        val searchRequest2 = searchRequestRepositoryStrategy.changeStrategy(strategy)
+            .saveSearchRequest(SearchRequest(0, publicKey, mapOf("interest_health_&_wellness" to "true")))
+
+        createOfferSearch(searchRequest1, createdOffer2, ArrayList())
+        createOfferSearch(searchRequest1, createdOffer1, ArrayList())
+        createOfferSearch(searchRequest2, createdOffer2, ArrayList())
+
+        var result = offerSearchService
+            .getOffersAndOfferSearchesByParams(
+                strategy,
+                publicKey,
+                unique = true,
+                group = arrayListOf("interest_education")
+            ).get()
+            .content
+
+        assert(result.size == 2)
+        assert(result[0].offerSearch.offerId == result[0].offer.id)
+        assert(result[1].offerSearch.offerId == result[1].offer.id)
+
+        result = offerSearchService
+            .getOffersAndOfferSearchesByParams(
+                strategy,
+                publicKey,
+                unique = true
+            ).get()
+            .content
+
+        assert(result.size == 2)
+        assert(result[0].offerSearch.offerId == result[0].offer.id)
+        assert(result[1].offerSearch.offerId == result[1].offer.id)
     }
 
     @Test

@@ -63,13 +63,20 @@ class PostgresSearchRequestRepositoryImpl(
     }
 
     override fun findById(ids: List<Long>): List<SearchRequest> {
-        return repository.findAll(ids)
-            .asSequence()
-            .toList()
+        return repository.findAll(ids).toList()
     }
 
     override fun findByOwner(owner: String): List<SearchRequest> {
         return repository.findByOwner(owner)
+    }
+
+    override fun findByOwnerAndTagsIn(owner: String, tagKeys: List<String>): List<SearchRequest> {
+        val result = mutableListOf<SearchRequest>()
+        tagKeys.forEach {
+            result.addAll(repository.getRequestByOwnerAndTag(owner, it))
+        }
+
+        return result
     }
 
     override fun findByIdAndOwner(id: Long, owner: String): SearchRequest? {
@@ -77,9 +84,7 @@ class PostgresSearchRequestRepositoryImpl(
     }
 
     override fun findAll(): List<SearchRequest> {
-        return repository.findAll()
-            .asSequence()
-            .toList()
+        return repository.findAll().toList()
     }
 
     override fun cloneSearchRequestWithOfferSearches(request: SearchRequest): SearchRequest {
