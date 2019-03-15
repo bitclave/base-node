@@ -19,6 +19,8 @@ interface OfferSearchRepository {
 
     fun findBySearchRequestId(id: Long): List<OfferSearch>
 
+    fun findBySearchRequestId(id: Long, pageable: Pageable): Page<OfferSearch>
+
     fun findBySearchRequestIds(ids: List<Long>): List<OfferSearch>
 
     fun findByOfferId(id: Long): List<OfferSearch>

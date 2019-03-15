@@ -105,6 +105,10 @@ class PostgresOfferSearchRepositoryImpl(
         return repository.findBySearchRequestId(id)
     }
 
+    override fun findBySearchRequestId(id: Long, pageable: Pageable): Page<OfferSearch> {
+        return repository.findBySearchRequestId(id, pageable)
+    }
+
     override fun findBySearchRequestIds(ids: List<Long>): List<OfferSearch> {
         return repository.findBySearchRequestIdIn(ids)
     }
