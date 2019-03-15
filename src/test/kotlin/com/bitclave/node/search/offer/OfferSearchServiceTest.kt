@@ -333,6 +333,50 @@ class OfferSearchServiceTest {
     }
 
     @Test
+    fun `should be valid page size and count of items`() {
+        createOfferSearch(createdSearchRequest1, createdOffer1, ArrayList())
+        createOfferSearch(createdSearchRequest1, createdOffer2, ArrayList())
+        createOfferSearch(createdSearchRequest2, createdOffer1, ArrayList())
+        createOfferSearch(createdSearchRequest2, createdOffer2, ArrayList())
+
+        var result = offerSearchService.getOffersAndOfferSearchesByParams(
+            strategy, publicKey, false, emptyList(), emptyList(), PageRequest(0, 2))
+            .get()
+            .content
+
+        assert(result.size == 2)
+        assert(result[0].offerSearch.id == 1L)
+        assert(result[1].offerSearch.id == 2L)
+
+        result = offerSearchService.getOffersAndOfferSearchesByParams(
+            strategy, publicKey, false, emptyList(), emptyList(), PageRequest(1, 2))
+            .get()
+            .content
+
+        assert(result.size == 2)
+        assert(result[0].offerSearch.id == 3L)
+        assert(result[1].offerSearch.id == 4L)
+
+        result = offerSearchService.getOffersAndOfferSearchesByParams(
+            strategy, publicKey, false, emptyList(), emptyList(), PageRequest(0, 20))
+            .get()
+            .content
+
+        assert(result.size == 4)
+        assert(result[0].offerSearch.id == 1L)
+        assert(result[1].offerSearch.id == 2L)
+        assert(result[2].offerSearch.id == 3L)
+        assert(result[3].offerSearch.id == 4L)
+
+        result = offerSearchService.getOffersAndOfferSearchesByParams(
+            strategy, publicKey, false, emptyList(), emptyList(), PageRequest(5, 20))
+            .get()
+            .content
+
+        assert(result.size == 0)
+    }
+
+    @Test
     fun `should be return by group and owner`() {
         val searchRequest1 = searchRequestRepositoryStrategy.changeStrategy(strategy)
             .saveSearchRequest(SearchRequest(0, publicKey, mapOf("interest_education" to "true")))

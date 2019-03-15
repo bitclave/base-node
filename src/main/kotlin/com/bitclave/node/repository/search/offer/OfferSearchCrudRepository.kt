@@ -1,6 +1,8 @@
 package com.bitclave.node.repository.search.offer
 
 import com.bitclave.node.repository.models.OfferSearch
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.stereotype.Repository
@@ -13,6 +15,8 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     fun deleteAllBySearchRequestId(id: Long): Long
 
     fun findBySearchRequestId(id: Long): List<OfferSearch>
+
+    fun findBySearchRequestId(id: Long, pageable: Pageable): Page<OfferSearch>
 
     fun findByOfferId(id: Long): List<OfferSearch>
 

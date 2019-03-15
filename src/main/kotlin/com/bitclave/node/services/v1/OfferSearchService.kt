@@ -57,7 +57,7 @@ class OfferSearchService(
         strategy: RepositoryStrategyType,
         searchRequestId: Long = 0,
         offerSearchId: Long = 0,
-        pageRequest: PageRequest = PageRequest(0, Int.MAX_VALUE)
+        pageRequest: PageRequest = PageRequest(0, 20)
     ): CompletableFuture<Page<OfferSearchResultItem>> {
 
         return CompletableFuture.supplyAsync {
@@ -68,13 +68,25 @@ class OfferSearchService(
             val repository = offerSearchRepository.changeStrategy(strategy)
 
             // "result" is list of OfferSearches with searchRequestId as was requested in API call
-            val result = if (searchRequestId > 0) {
-                repository.findBySearchRequestId(searchRequestId)
+            val result: Page<OfferSearch> = if (searchRequestId > 0) {
+                repository.findBySearchRequestId(searchRequestId, pageRequest)
             } else {
+
                 val offerSearch: OfferSearch? = repository.findById(offerSearchId)
-                if (offerSearch != null) arrayListOf(offerSearch) else emptyList<OfferSearch>()
+                val arrayOfferSearch = if (offerSearch != null && pageRequest.pageNumber == 0) {
+                    arrayListOf(offerSearch)
+                } else {
+                    emptyList<OfferSearch>()
+                }
+
+                val pageable = PageRequest(pageRequest.pageNumber, pageRequest.pageSize)
+                PageImpl(arrayOfferSearch, pageable, arrayOfferSearch.size.toLong())
             }
-            offerSearchPageToResult(result, offerRepository.changeStrategy(strategy), pageRequest)
+
+            val content = offerSearchListToResult(result.content, offerRepository.changeStrategy(strategy))
+            val pageable = PageRequest(result.number, result.size, result.sort)
+
+            PageImpl(content, pageable, result.totalElements)
         }
     }
 
@@ -84,7 +96,7 @@ class OfferSearchService(
         unique: Boolean = false,
         group: List<String> = emptyList(),
         state: List<String> = emptyList(),
-        pageRequest: PageRequest = PageRequest(0, Int.MAX_VALUE)
+        pageRequest: PageRequest = PageRequest(0, 20)
     ): CompletableFuture<Page<OfferSearchResultItem>> {
 
         return CompletableFuture.supplyAsync {
@@ -112,7 +124,16 @@ class OfferSearchService(
                 filteredByGroupAndState
             }
 
-            offerSearchPageToResult(filteredByUnique, offerRepository.changeStrategy(strategy), pageRequest)
+            val subItems = filteredByUnique.subList(
+                Math.min(pageRequest.pageNumber * pageRequest.pageSize, filteredByUnique.size),
+                Math.min((pageRequest.pageNumber + 1) * pageRequest.pageSize, filteredByUnique.size)
+            )
+
+            val content = offerSearchListToResult(subItems, offerRepository.changeStrategy(strategy))
+
+            val pageable = PageRequest(pageRequest.pageNumber, pageRequest.pageSize)
+
+            PageImpl(content, pageable, filteredByUnique.size.toLong())
         }
     }
 
@@ -532,24 +553,5 @@ class OfferSearchService(
 
         val withExistedOffers = offerSearch.filter { offers.containsKey(it.offerId) }
         return withExistedOffers.map { OfferSearchResultItem(it, offers.getValue(it.offerId)[0]) }
-    }
-
-    private fun offerSearchPageToResult(
-        offerSearch: List<OfferSearch>,
-        offersRepository: OfferRepository,
-        pageRequest: PageRequest
-    ): Page<OfferSearchResultItem> {
-        val offerIds = offerSearch.map { it.offerId }
-            .distinct()
-
-        val offers = offersRepository
-            .findByIds(offerIds, pageRequest)
-        val groupedOffers = offers.groupBy { it.id }
-
-        val withExistedOffers = offerSearch.filter { groupedOffers.containsKey(it.offerId) }
-        val content = withExistedOffers.map { OfferSearchResultItem(it, groupedOffers.getValue(it.offerId)[0]) }
-        val pageable = PageRequest(offers.number, offers.size, offers.sort)
-
-        return PageImpl(content, pageable, offers.totalElements)
     }
 }
