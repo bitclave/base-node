@@ -90,6 +90,8 @@ class OfferSearchControllerTest {
         this.mvc.perform(
             get("/$version/search/result/")
                 .param("searchRequestId", "1")
+                .param("page", "0")
+                .param("size", "20")
                 .headers(httpHeaders)
         )
             .andExpect(status().isOk)
@@ -100,6 +102,8 @@ class OfferSearchControllerTest {
         this.mvc.perform(
             get("/$version/search/result/")
                 .param("offerSearchId", "1")
+                .param("page", "0")
+                .param("size", "20")
                 .headers(httpHeaders)
         )
             .andExpect(status().isOk)

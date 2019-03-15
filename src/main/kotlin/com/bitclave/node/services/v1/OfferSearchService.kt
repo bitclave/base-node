@@ -55,26 +55,26 @@ class OfferSearchService(
 
     fun getOffersResult(
         strategy: RepositoryStrategyType,
-        searchRequestId: Long? = null,
-        offerSearchId: Long? = null
-    ): CompletableFuture<List<OfferSearchResultItem>> {
+        searchRequestId: Long = 0,
+        offerSearchId: Long = 0,
+        pageRequest: PageRequest = PageRequest(0, Int.MAX_VALUE)
+    ): CompletableFuture<Page<OfferSearchResultItem>> {
 
         return CompletableFuture.supplyAsync {
-            if (searchRequestId == null && offerSearchId == null) {
+            if (searchRequestId <= 0 && offerSearchId <= 0) {
                 throw BadArgumentException("specify parameter searchRequestId or offerSearchId")
             }
 
             val repository = offerSearchRepository.changeStrategy(strategy)
 
             // "result" is list of OfferSearches with searchRequestId as was requested in API call
-            val result = if (searchRequestId != null) {
+            val result = if (searchRequestId > 0) {
                 repository.findBySearchRequestId(searchRequestId)
             } else {
-                val offerSearch: OfferSearch? = repository.findById(offerSearchId!!)
+                val offerSearch: OfferSearch? = repository.findById(offerSearchId)
                 if (offerSearch != null) arrayListOf(offerSearch) else emptyList<OfferSearch>()
             }
-
-            offerSearchListToResult(result, offerRepository.changeStrategy(strategy))
+            offerSearchPageToResult(result, offerRepository.changeStrategy(strategy), pageRequest)
         }
     }
 

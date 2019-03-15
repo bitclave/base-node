@@ -303,7 +303,10 @@ class OfferSearchServiceTest {
     fun `should be create new offer search item and get result by clientId and search request id`() {
         createOfferSearch(createdSearchRequest1, createdOffer1, ArrayList())
 
-        val result = offerSearchService.getOffersResult(strategy, createdSearchRequest1.id).get()
+        val result = offerSearchService.getOffersResult(strategy, createdSearchRequest1.id)
+            .get()
+            .content
+
         assert(result.isNotEmpty())
         assert(result[0].offerSearch.id >= 1L)
         assert(result[0].offerSearch.state == OfferResultAction.NONE)
@@ -461,7 +464,10 @@ class OfferSearchServiceTest {
 
         offerSearchService.addEventTo("bla bla bla", 1L, strategy).get()
 
-        val result = offerSearchService.getOffersResult(strategy, createdSearchRequest1.id).get()
+        val result = offerSearchService.getOffersResult(strategy, createdSearchRequest1.id)
+            .get()
+            .content
+
         assert(result[0].offerSearch.events.contains("bla bla bla"))
         assert(result[0].offerSearch.updatedAt.time > result[0].offerSearch.createdAt.time)
     }
@@ -470,7 +476,10 @@ class OfferSearchServiceTest {
     fun `should be create new offer search item and get result by clientId and offer search id`() {
         createOfferSearch(createdSearchRequest1, createdOffer1, ArrayList())
 
-        val result = offerSearchService.getOffersResult(strategy, null, createdSearchRequest1.id).get()
+        val result = offerSearchService.getOffersResult(strategy, 0, createdSearchRequest1.id)
+            .get()
+            .content
+
         assert(result.size == 1)
         assert(result[0].offerSearch.id == createdSearchRequest1.id)
         assert(result[0].offerSearch.state == OfferResultAction.NONE)
@@ -484,7 +493,10 @@ class OfferSearchServiceTest {
 
         offerSearchService.complain(1L, businessPublicKey, strategy).get()
 
-        val result = offerSearchService.getOffersResult(strategy, createdSearchRequest1.id).get()
+        val result = offerSearchService.getOffersResult(strategy, createdSearchRequest1.id)
+            .get()
+            .content
+
         assert(result.isNotEmpty())
         assert(result[0].offerSearch.id >= 1L)
         assert(result[0].offerSearch.state == OfferResultAction.COMPLAIN)
@@ -507,7 +519,10 @@ class OfferSearchServiceTest {
             strategy
         ).get()
 
-        val result = offerSearchService.getOffersResult(strategy, createdSearchRequest1.id).get()
+        val result = offerSearchService.getOffersResult(strategy, createdSearchRequest1.id)
+            .get()
+            .content
+
         assert(result.size == 1)
         assert(result[0].offerSearch.id == createdSearchRequest1.id)
         assert(result[0].offerSearch.state == OfferResultAction.ACCEPT)
@@ -719,7 +734,10 @@ class OfferSearchServiceTest {
         offerSearchService.cloneOfferSearchOfSearchRequest(createdSearchRequest1.id, createdSearchRequest2, strategy)
             .get()
 
-        val result = offerSearchService.getOffersResult(strategy, createdSearchRequest2.id).get()
+        val result = offerSearchService.getOffersResult(strategy, createdSearchRequest2.id)
+            .get()
+            .content
+
         assertThat(result.size).isEqualTo(2)
     }
 }
