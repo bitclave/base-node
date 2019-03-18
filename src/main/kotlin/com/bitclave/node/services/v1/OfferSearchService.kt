@@ -527,12 +527,16 @@ class OfferSearchService(
             val offerSearches = offerIdsWithoutExisted.map {
                 OfferSearch(0, owner, searchRequest.id, it)
             }
-                .toMutableList()
 
-            offerSearches.addAll(existedOfferSearches)
+            offerSearchRepository
+                .changeStrategy(strategyType)
+                .saveSearchResult(offerSearches)
+
+            val offerSearchResult = offerSearchRepository.changeStrategy(strategyType)
+                .findBySearchRequestIdAndOfferIds(searchRequestId, offerIds.content)
 
             val resultItems = offerSearchListToResult(
-                offerSearches, offerRepository.changeStrategy(strategyType)
+                offerSearchResult, offerRepository.changeStrategy(strategyType)
             )
 
             val pageable = PageRequest(offerIds.number, offerIds.size, offerIds.sort)
