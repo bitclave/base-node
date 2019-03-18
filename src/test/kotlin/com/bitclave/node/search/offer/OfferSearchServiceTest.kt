@@ -271,6 +271,61 @@ class OfferSearchServiceTest {
         assertThat(offersResult.size == list.size)
     }
 
+    @Test
+    fun `should be create offersSearch items`() {
+        val list: Page<Long> = PageImpl(arrayListOf<Long>(1, 2, 3), searchPageRequest, 1)
+
+        val searchRequestWithRtSearch = searchRequestService.putSearchRequest(
+            0,
+            publicKey,
+            SearchRequest(0, publicKey, mapOf("rtSearch" to "true")),
+            strategy
+        ).get()
+
+        val searchQueryText = "some data"
+        Mockito.`when`(rtSearchRepository.getOffersIdByQuery(searchQueryText, searchPageRequest))
+            .thenReturn(CompletableFuture.completedFuture(list))
+
+        val offersResult = offerSearchService.createOfferSearchesByQuery(
+            searchRequestWithRtSearch.id, publicKey, searchQueryText, searchPageRequest, strategy
+        ).get()
+
+        val searchResult = offerSearchCrudRepository
+            .findBySearchRequestId(searchRequestWithRtSearch.id)
+        assert(searchResult.size == 3)
+        assert(searchResult.filter { list.indexOf(it.offerId) > -1 }.size == 3)
+        assertThat(offersResult.size == list.size)
+    }
+
+    @Test
+    fun `should be delete all old offersSearch items by query`() {
+        val searchRequestWithRtSearch = searchRequestService.putSearchRequest(
+            0,
+            publicKey,
+            SearchRequest(0, publicKey, mapOf("rtSearch" to "true")),
+            strategy
+        ).get()
+
+        val firstList: Page<Long> = PageImpl(arrayListOf<Long>(1, 2, 3, 4, 5), searchPageRequest, 1)
+        Mockito.`when`(rtSearchRepository.getOffersIdByQuery("some data", searchPageRequest))
+            .thenReturn(CompletableFuture.completedFuture(firstList))
+
+        offerSearchService.createOfferSearchesByQuery(
+            searchRequestWithRtSearch.id, publicKey, "some data", searchPageRequest, strategy
+        ).get()
+
+        val secondList: Page<Long> = PageImpl(arrayListOf<Long>(4, 5), searchPageRequest, 1)
+        Mockito.`when`(rtSearchRepository.getOffersIdByQuery("some data", searchPageRequest))
+            .thenReturn(CompletableFuture.completedFuture(secondList))
+        offerSearchService.createOfferSearchesByQuery(
+            searchRequestWithRtSearch.id, publicKey, "some data", searchPageRequest, strategy
+        ).get()
+
+        val searchResult = offerSearchCrudRepository.findByOwner(publicKey)
+        assert(searchResult.size == 2)
+        assert(searchResult.filter { secondList.indexOf(it.offerId) > -1 }.size == 2)
+    }
+
     @Test(expected = NotFoundException::class)
     fun `should be throw by unknown searchRequestId`() {
         try {
@@ -340,7 +395,8 @@ class OfferSearchServiceTest {
         createOfferSearch(createdSearchRequest2, createdOffer2, ArrayList())
 
         var result = offerSearchService.getOffersAndOfferSearchesByParams(
-            strategy, publicKey, false, emptyList(), emptyList(), PageRequest(0, 2))
+            strategy, publicKey, false, emptyList(), emptyList(), PageRequest(0, 2)
+        )
             .get()
             .content
 
@@ -349,7 +405,8 @@ class OfferSearchServiceTest {
         assert(result[1].offerSearch.id == 2L)
 
         result = offerSearchService.getOffersAndOfferSearchesByParams(
-            strategy, publicKey, false, emptyList(), emptyList(), PageRequest(1, 2))
+            strategy, publicKey, false, emptyList(), emptyList(), PageRequest(1, 2)
+        )
             .get()
             .content
 
@@ -358,7 +415,8 @@ class OfferSearchServiceTest {
         assert(result[1].offerSearch.id == 4L)
 
         result = offerSearchService.getOffersAndOfferSearchesByParams(
-            strategy, publicKey, false, emptyList(), emptyList(), PageRequest(0, 20))
+            strategy, publicKey, false, emptyList(), emptyList(), PageRequest(0, 20)
+        )
             .get()
             .content
 
@@ -369,7 +427,8 @@ class OfferSearchServiceTest {
         assert(result[3].offerSearch.id == 4L)
 
         result = offerSearchService.getOffersAndOfferSearchesByParams(
-            strategy, publicKey, false, emptyList(), emptyList(), PageRequest(5, 20))
+            strategy, publicKey, false, emptyList(), emptyList(), PageRequest(5, 20)
+        )
             .get()
             .content
 
