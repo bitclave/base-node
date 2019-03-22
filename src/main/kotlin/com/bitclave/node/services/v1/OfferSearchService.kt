@@ -118,16 +118,16 @@ class OfferSearchService(
                 offerSearches
             }
 
-            val subItems = filteredByUnique.subList(
-                Math.min(pageRequest.pageNumber * pageRequest.pageSize, filteredByUnique.size),
-                Math.min((pageRequest.pageNumber + 1) * pageRequest.pageSize, filteredByUnique.size)
-            )
+            val content = offerSearchListToResult(filteredByUnique, offerRepository.changeStrategy(strategy))
 
-            val content = offerSearchListToResult(subItems, offerRepository.changeStrategy(strategy))
+            val subItems = content.subList(
+                Math.min(pageRequest.pageNumber * pageRequest.pageSize, content.size),
+                Math.min((pageRequest.pageNumber + 1) * pageRequest.pageSize, content.size)
+            )
 
             val pageable = PageRequest(pageRequest.pageNumber, pageRequest.pageSize)
 
-            PageImpl(content, pageable, filteredByUnique.size.toLong())
+            PageImpl(subItems, pageable, content.size.toLong())
         }
     }
 
