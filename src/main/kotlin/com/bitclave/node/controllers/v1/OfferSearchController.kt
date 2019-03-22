@@ -2,6 +2,7 @@ package com.bitclave.node.controllers.v1
 
 import com.bitclave.node.controllers.AbstractController
 import com.bitclave.node.repository.models.Account
+import com.bitclave.node.repository.models.OfferResultAction
 import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.repository.models.OfferSearchResultItem
 import com.bitclave.node.repository.models.SearchRequest
@@ -181,13 +182,13 @@ class OfferSearchController(
         @RequestParam(value = "unique", required = false, defaultValue = "0")
         unique: Boolean,
 
-        @ApiParam("query by groups in tags")
-        @RequestParam(value = "group", required = false, defaultValue = "")
-        group: List<String>,
+        @ApiParam("query only in searchIds")
+        @RequestParam(value = "searchIds", required = false, defaultValue = "")
+        searchIds: List<Long>,
 
         @ApiParam("query by state")
         @RequestParam(value = "state", required = false, defaultValue = "")
-        state: List<String>,
+        state: List<OfferResultAction>,
 
         @ApiParam("Optional page number to retrieve a particular page. If not specified this API retrieves first page.")
         @RequestParam("page", defaultValue = "0", required = false)
@@ -206,7 +207,7 @@ class OfferSearchController(
             getStrategyType(strategy),
             owner,
             unique,
-            group,
+            searchIds,
             state,
             PageRequest(page, size)
         ).exceptionally { e ->

@@ -94,34 +94,28 @@ class OfferSearchService(
         strategy: RepositoryStrategyType,
         owner: String,
         unique: Boolean = false,
-        group: List<String> = emptyList(),
-        state: List<String> = emptyList(),
+        searchRequestIds: List<Long> = emptyList(),
+        state: List<OfferResultAction> = emptyList(),
         pageRequest: PageRequest = PageRequest(0, 20)
     ): CompletableFuture<Page<OfferSearchResultItem>> {
 
         return CompletableFuture.supplyAsync {
             val repository = offerSearchRepository.changeStrategy(strategy)
-            val stateSet = state.map { OfferResultAction.valueOf(it) }.toSet()
 
-            val offerSearches = repository.findByOwner(owner)
-            val searchRequests = if (group.isNotEmpty()) {
-                searchRequestRepository
-                    .changeStrategy(strategy)
-                    .findByOwnerAndTagsIn(owner, group)
-                    .groupBy { it.id }
-            } else {
-                emptyMap()
+            val offerSearches = when {
+                searchRequestIds.isNotEmpty() && state.isEmpty() ->
+                    repository.findAllByOwnerAndSearchRequestIdIn(owner, searchRequestIds)
+
+                searchRequestIds.isEmpty() && state.isNotEmpty() -> repository.findAllByOwnerAndStateIn(owner, state)
+
+                else -> repository.findByOwner(owner)
             }
 
-            val filteredByGroupAndState = offerSearches
-                .filter { searchRequests.isEmpty() || searchRequests.contains(it.searchRequestId) }
-                .filter { state.isEmpty() || stateSet.contains(it.state) }
-
             val filteredByUnique = if (unique) {
-                filteredByGroupAndState.groupBy { it.offerId }
+                offerSearches.groupBy { it.offerId }
                     .values.map { it[0] }
             } else {
-                filteredByGroupAndState
+                offerSearches
             }
 
             val subItems = filteredByUnique.subList(

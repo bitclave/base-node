@@ -129,6 +129,14 @@ class PostgresOfferSearchRepositoryImpl(
         return repository.findByOwner(owner)
     }
 
+    override fun findAllByOwnerAndStateIn(owner: String, state: List<OfferResultAction>): List<OfferSearch> {
+        return repository.findAllByOwnerAndStateIn(owner, state)
+    }
+
+    override fun findAllByOwnerAndSearchRequestIdIn(owner: String, searchRequestIds: List<Long>): List<OfferSearch> {
+        return repository.findAllByOwnerAndSearchRequestIdIn(owner, searchRequestIds)
+    }
+
     override fun findByOwnerAndOfferId(owner: String, offerId: Long): List<OfferSearch> {
         // val searchRequestList = searchRequestRepository.findByOwner(owner)
         // val searchRequestIDs = searchRequestList.map { it.id }.toSet()
