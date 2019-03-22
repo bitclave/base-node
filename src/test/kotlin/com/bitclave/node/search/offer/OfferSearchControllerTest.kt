@@ -139,35 +139,35 @@ class OfferSearchControllerTest {
     }
 
     @Test
-    fun `get offer search list by owner and group`() {
+    fun `get offer search list by owner and searchIds`() {
         this.mvc.perform(
             get("/$version/search/result/user")
                 .param("owner", publicKey)
-                .param("group", "test,test2")
+                .param("searchIds", "1,2")
                 .headers(httpHeaders)
         )
             .andExpect(status().isOk)
     }
 
     @Test
-    fun `get offer search list by owner, group and state`() {
+    fun `get offer search list by owner, searchIds and state`() {
         this.mvc.perform(
             get("/$version/search/result/user")
                 .param("owner", publicKey)
-                .param("group", "test,test2")
-                .param("state", "state1,state2")
+                .param("searchIds", "1,2")
+                .param("state", "EVALUATE,ACCEPT")
                 .headers(httpHeaders)
         )
             .andExpect(status().isOk)
     }
 
     @Test
-    fun `get offer search list by owner, group, state and unique`() {
+    fun `get offer search list by owner, searchIds, state and unique`() {
         this.mvc.perform(
             get("/$version/search/result/user")
                 .param("owner", publicKey)
-                .param("group", "test,test2")
-                .param("state", "state1,state2")
+                .param("searchIds", "1,2")
+                .param("state", "EVALUATE,ACCEPT")
                 .param("unique", "true")
                 .headers(httpHeaders)
         )
@@ -175,18 +175,29 @@ class OfferSearchControllerTest {
     }
 
     @Test
-    fun `get offer search list by owner, group, state, unique, page, size`() {
+    fun `get offer search list by owner, searchIds, state, unique, page, size`() {
         this.mvc.perform(
             get("/$version/search/result/user")
                 .param("owner", publicKey)
-                .param("group", "test,test2")
-                .param("state", "state1,state2")
+                .param("searchIds", "1,2")
+                .param("state", "EVALUATE,ACCEPT")
                 .param("unique", "true")
                 .param("page", "0")
                 .param("size", "20")
                 .headers(httpHeaders)
         )
             .andExpect(status().isOk)
+    }
+
+    @Test
+    fun `get error with wrong state value`() {
+        this.mvc.perform(
+            get("/$version/search/result/user")
+                .param("owner", publicKey)
+                .param("state", "SOME_VALUE")
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isBadRequest)
     }
 
     @Test

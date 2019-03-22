@@ -1,5 +1,6 @@
 package com.bitclave.node.repository.search.offer
 
+import com.bitclave.node.repository.models.OfferResultAction
 import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.repository.models.SearchRequest
 import org.springframework.data.domain.Page
@@ -30,6 +31,10 @@ interface OfferSearchRepository {
     fun findBySearchRequestIdAndOfferIds(searchRequestId: Long, offerIds: List<Long>): List<OfferSearch>
 
     fun findByOwner(owner: String): List<OfferSearch>
+
+    fun findAllByOwnerAndStateIn(owner: String, state: List<OfferResultAction>): List<OfferSearch>
+
+    fun findAllByOwnerAndSearchRequestIdIn(owner: String, searchRequestIds: List<Long>): List<OfferSearch>
 
     fun findByOwnerAndOfferId(owner: String, offerId: Long): List<OfferSearch>
 
