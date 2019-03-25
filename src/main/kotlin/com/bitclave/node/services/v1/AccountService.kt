@@ -43,7 +43,7 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
                 .thenApply { account: Account? ->
 
                     if (account == null) {
-                        throw NotFoundException()
+                        throw NotFoundException("Account not found")
                     }
 
                     if (request.data == null) {
