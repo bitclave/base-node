@@ -4,7 +4,6 @@ spring:
       ddlAuto: create-drop
 
   datasource:
-    #     data: classpath*:data-docker.sql
     #     driverClassName: org.postgresql.Driver
     #     platform: postgres
     #     url: jdbc:postgresql://localhost:5432/testdb

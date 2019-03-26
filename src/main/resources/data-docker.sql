@@ -1,1 +1,0 @@
-INSERT into SITE(id, origin, public_key, confidential) values('1', 'localhost', '0x0', 't');
