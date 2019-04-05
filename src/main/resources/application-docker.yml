@@ -5,6 +5,7 @@ spring:
       ddlAuto: validate
 
   datasource:
+//  data: classpath*:data-docker.sql
     driverClassName: org.postgresql.Driver
     platform: postgres
     url: ${JDBC_DATABASE_URL}
