@@ -1,6 +1,7 @@
 spring:
   jpa:
     hibernate:
+//    ddlAuto: create-drop
       ddlAuto: validate
 
   datasource:
