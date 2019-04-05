@@ -1,10 +1,11 @@
 spring:
   jpa:
     hibernate:
-      ddlAuto: create-drop
+#      ddlAuto: create-drop
+      ddlAuto: validate
 
   datasource:
-    data: classpath*:data-docker.sql
+#   data: classpath*:data-docker.sql
     driverClassName: org.postgresql.Driver
     platform: postgres
     url: ${JDBC_DATABASE_URL}
