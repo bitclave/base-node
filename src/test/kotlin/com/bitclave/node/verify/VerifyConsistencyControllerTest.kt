@@ -78,6 +78,15 @@ class VerifyConsistencyControllerTest {
     }
 
     @Test
+    fun `get all accounts`() {
+        this.mvc.perform(
+                get("/dev/verify/account/all")
+                        .headers(httpHeaders)
+        )
+                .andExpect(status().isOk)
+    }
+
+    @Test
     fun `get dangling offer search list by offer`() {
         this.mvc.perform(
             get("/dev/verify/offersearch/byOffer")

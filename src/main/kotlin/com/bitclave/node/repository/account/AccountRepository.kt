@@ -10,6 +10,8 @@ interface AccountRepository {
 
     fun findByPublicKey(publicKeys: List<String>): List<Account>
 
+    fun findAll(): List<Account>
+
     fun deleteAccount(publicKey: String)
 
     fun getTotalCount(): Long

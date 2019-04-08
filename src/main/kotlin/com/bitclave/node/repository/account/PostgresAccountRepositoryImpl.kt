@@ -27,6 +27,12 @@ class PostgresAccountRepositoryImpl(val repository: AccountCrudRepository) : Acc
             .toList()
     }
 
+    override fun findAll(): List<Account> {
+        return repository.findAll()
+                .asSequence()
+                .toList()
+    }
+
     override fun getTotalCount(): Long {
         return repository.count()
     }

@@ -172,6 +172,14 @@ class AccountServiceTest {
     }
 
     @Test
+    fun `get all accounts`() {
+        accountService.registrationClient(account, strategy).get()
+        accountService.registrationClient(account2, strategy).get()
+        val existAccounts = accountService.getAllAccounts(strategy).get()
+        Assertions.assertThat(existAccounts.size).isEqualTo(2)
+    }
+
+    @Test
     fun `get total count of accounts`() {
         strategy = RepositoryStrategyType.POSTGRES
         `register new client`()

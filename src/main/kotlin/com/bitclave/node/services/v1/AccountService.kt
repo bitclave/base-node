@@ -131,6 +131,16 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
         }
     }
 
+    fun getAllAccounts(
+        strategy: RepositoryStrategyType
+    ): CompletableFuture<List<Account>> {
+
+        return CompletableFuture.supplyAsync {
+            accountRepository.changeStrategy(strategy)
+                    .findAll()
+        }
+    }
+
     fun getAccountTotalCount(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Long> {

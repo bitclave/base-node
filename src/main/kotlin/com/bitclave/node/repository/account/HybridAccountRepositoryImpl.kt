@@ -74,6 +74,10 @@ class HybridAccountRepositoryImpl(
         return returnArray
     }
 
+    override fun findAll(): List<Account> {
+        throw BadArgumentException("This method is not implemented for hybrid")
+    }
+
     override fun getTotalCount(): Long {
         throw BadArgumentException("This method is not implemented for hybrid")
     }
