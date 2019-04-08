@@ -113,6 +113,39 @@ class VerifyConsistencyController(
     }
 
     /**
+     * Returns all the Accounts.
+     *
+     * @return {@link List<Account>}, Http status - 200.
+     *
+     */
+    @ApiOperation(
+            "Returns all the Accounts.",
+            response = Account::class, responseContainer = "List"
+    )
+    @ApiResponses(
+            value = [
+                ApiResponse(code = 200, message = "Success", response = List::class)
+            ]
+    )
+    @RequestMapping(method = [RequestMethod.GET], value = ["/account/all"])
+    fun getAllAccounts(
+        @ApiParam(
+                "change repository strategy",
+                allowableValues = "POSTGRES, HYBRID",
+                required = false
+        )
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
+    ): CompletableFuture<List<Account>> {
+        return accountService.getAllAccounts(
+                    getStrategyType(strategy)
+                ).exceptionally { e ->
+                    logger.error("Request: getAllAccounts raised $e")
+                    throw e
+                }
+    }
+
+    /**
      * Returns the dangling OfferSearches by Offers
      *
      * @return {@link List<OfferSearch>}, Http status - 200.

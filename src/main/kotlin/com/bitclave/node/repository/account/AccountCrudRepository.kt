@@ -11,5 +11,7 @@ interface AccountCrudRepository : CrudRepository<Account, String> {
 
     fun findByPublicKey(key: String): Account?
 
+    fun findAllByPublicKeyIn(key: List<String>): List<Account>
+
     fun deleteByPublicKey(key: String)
 }
