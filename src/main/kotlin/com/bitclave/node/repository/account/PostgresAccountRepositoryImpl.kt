@@ -22,7 +22,7 @@ class PostgresAccountRepositoryImpl(val repository: AccountCrudRepository) : Acc
     }
 
     override fun findByPublicKey(publicKeys: List<String>): List<Account> {
-        return repository.findAll(publicKeys)
+        return repository.findAllByPublicKeyIn(publicKeys)
             .asSequence()
             .toList()
     }
