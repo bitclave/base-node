@@ -173,6 +173,7 @@ class AccountServiceTest {
 
     @Test
     fun `get all accounts`() {
+        strategy = RepositoryStrategyType.POSTGRES
         accountService.registrationClient(account, strategy).get()
         accountService.registrationClient(account2, strategy).get()
         val existAccounts = accountService.getAllAccounts(strategy).get()
