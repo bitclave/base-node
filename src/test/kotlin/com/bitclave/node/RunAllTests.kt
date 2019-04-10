@@ -15,6 +15,8 @@ import com.bitclave.node.search.SearchRequestControllerTest
 import com.bitclave.node.search.SearchRequestServiceTest
 import com.bitclave.node.search.offer.OfferSearchControllerTest
 import com.bitclave.node.search.offer.OfferSearchServiceTest
+import com.bitclave.node.services.ExternalServicesControllerTest
+import com.bitclave.node.services.ExternalServicesServiceTest
 import com.bitclave.node.share.OfferShareControllerTest
 import com.bitclave.node.share.OfferShareServiceTest
 import com.bitclave.node.verify.VerifyConsistencyControllerTest
@@ -25,6 +27,8 @@ import org.junit.runners.Suite
 @RunWith(Suite::class)
 @Suite.SuiteClasses(
     value = [
+        ExternalServicesControllerTest::class,
+        ExternalServicesServiceTest::class,
         VerifyConsistencyControllerTest::class,
         VerifyConsistencyIntegrationTest::class,
         AuthControllerTest::class,

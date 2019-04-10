@@ -1,7 +1,7 @@
 spring:
   jpa:
     hibernate:
-      ddlAuto: validate
+      ddlAuto: update
 
   datasource:
     driverClassName: org.postgresql.Driver
@@ -14,6 +14,7 @@ rtsearch:
   url: ${RT_SEARCH_URL}
 
 flyway:
+  enabled: false
   baseline-on-migrate: true
   url: ${JDBC_DATABASE_URL}
   user: ${JDBC_DATABASE_USERNAME}
