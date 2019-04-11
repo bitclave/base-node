@@ -4,6 +4,7 @@ import com.bitclave.node.controllers.AbstractController
 import com.bitclave.node.repository.models.SignedRequest
 import com.bitclave.node.repository.models.services.ExternalService
 import com.bitclave.node.repository.models.services.ServiceCall
+import com.bitclave.node.repository.models.services.ServiceResponse
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.services.ExternalServicesService
 import io.swagger.annotations.ApiOperation
@@ -11,6 +12,7 @@ import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
@@ -39,9 +41,13 @@ class ExternalServicesController(
         @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
         @RequestHeader("Strategy", required = false)
         strategy: String?
-    ): CompletableFuture<ResponseEntity<Any>> {
+    ): CompletableFuture<ResponseEntity<ServiceResponse>> {
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
-            .thenCompose { externalServicesService.externalCall(request.data!!, getStrategyType(strategy)) }
+            .thenCompose {
+                externalServicesService.externalCall(request.data!!, getStrategyType(strategy))
+            }.thenCompose {
+                CompletableFuture.completedFuture(ResponseEntity(it, HttpStatus.OK))
+            }
     }
 
     @ApiOperation("Get information about available external services")

@@ -11,5 +11,5 @@ interface CallStrategy : CallStrategyExecutor<ServiceCall> {
 
 interface CallStrategyExecutor<out T : ServiceCall> {
 
-    fun execute(endPointUrl: String, request: @UnsafeVariance T): CompletableFuture<ResponseEntity<Any>>
+    fun execute(endPointUrl: String, request: @UnsafeVariance T): CompletableFuture<ResponseEntity<*>>
 }

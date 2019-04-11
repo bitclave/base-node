@@ -117,7 +117,7 @@ class ExternalServicesServiceTest {
 
         val serviceCall = HttpServiceCall(publicKey, ServiceCallType.HTTP, HttpMethod.GET, "/")
         val result = externalServicesService.externalCall(serviceCall, strategy).get()
-        assert(result.statusCode.is2xxSuccessful)
+        assert(result.status == HttpStatus.OK.value())
     }
 
     @Test
@@ -137,7 +137,7 @@ class ExternalServicesServiceTest {
 
         val serviceCall = HttpServiceCall(publicKey, ServiceCallType.HTTP, HttpMethod.GET, "/")
         val result = externalServicesService.externalCall(serviceCall, strategy).get()
-        assert(result.statusCode.is4xxClientError)
+        assert(result.status == HttpStatus.NOT_FOUND.value())
     }
 
     @Test
@@ -164,8 +164,8 @@ class ExternalServicesServiceTest {
         )
 
         val result = externalServicesService.externalCall(serviceCall, strategy).get()
-        assert(result.statusCode.is2xxSuccessful)
-        assert(result.hasBody())
+        assert(result.status == HttpStatus.OK.value())
+        assert(result.body != null)
         assert((result.body as Account).publicKey == "0x0")
         assert((result.body as Account).nonce == 10L)
     }
@@ -199,7 +199,7 @@ class ExternalServicesServiceTest {
         )
 
         val result = externalServicesService.externalCall(serviceCall, strategy).get()
-        assert(result.statusCode.is2xxSuccessful)
+        assert(result.status == HttpStatus.ACCEPTED.value())
         assertThat(result.headers).isEqualTo(headers)
     }
 
@@ -232,7 +232,7 @@ class ExternalServicesServiceTest {
         )
 
         val result = externalServicesService.externalCall(serviceCall, strategy).get()
-        assert(result.statusCode.is2xxSuccessful)
+        assert(result.status == HttpStatus.CREATED.value())
         assertThat(result.headers).isEqualTo(headers)
     }
 
@@ -266,7 +266,7 @@ class ExternalServicesServiceTest {
         )
 
         val result = externalServicesService.externalCall(serviceCall, strategy).get()
-        assert(result.statusCode.is2xxSuccessful)
+        assert(result.status == HttpStatus.CREATED.value())
         assertThat(result.headers).isEqualTo(headers)
     }
 
@@ -300,7 +300,7 @@ class ExternalServicesServiceTest {
         )
 
         val result = externalServicesService.externalCall(serviceCall, strategy).get()
-        assert(result.statusCode.is4xxClientError)
+        assert(result.status == HttpStatus.FORBIDDEN.value())
         assertThat(result.headers).isEqualTo(headers)
     }
 }

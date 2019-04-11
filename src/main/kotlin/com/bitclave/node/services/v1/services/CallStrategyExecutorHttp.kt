@@ -11,7 +11,7 @@ class CallStrategyExecutorHttp(
     private val restTemplate: RestTemplate
 ) : CallStrategyExecutor<HttpServiceCall> {
 
-    override fun execute(endPointUrl: String, request: HttpServiceCall): CompletableFuture<ResponseEntity<Any>> {
+    override fun execute(endPointUrl: String, request: HttpServiceCall): CompletableFuture<ResponseEntity<*>> {
 
         return CompletableFuture.supplyAsync {
             val entity = HttpEntity<Any>(request.body, request.headers)
@@ -30,8 +30,8 @@ class CallStrategyExecutorHttp(
                     request.queryParams
                 )
             } catch (e: HttpClientErrorException) {
-                return@supplyAsync ResponseEntity<Any>(
-                    e.responseBodyAsByteArray,
+                return@supplyAsync ResponseEntity<String>(
+                    e.responseBodyAsString,
                     e.responseHeaders,
                     e.statusCode
                 )
