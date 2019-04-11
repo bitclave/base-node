@@ -1,6 +1,7 @@
 package com.bitclave.node.configuration.gson
 
 import com.bitclave.node.repository.models.SignedRequest
+import com.bitclave.node.repository.models.services.ServiceCall
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import org.springframework.context.annotation.Bean
@@ -14,6 +15,7 @@ class GsonConfig {
 
     companion object {
         val GSON = GsonBuilder()
+            .registerTypeAdapter(ServiceCall::class.java, ServiceCallDeserializer())
             .registerTypeAdapter(Page::class.java, PageResponseDeserializer())
             .registerTypeAdapter(Page::class.java, PageSerializer())
             .registerTypeAdapter(SignedRequest::class.java, SignedRequestDeserializer())

@@ -1,7 +1,7 @@
 spring:
   jpa:
     hibernate:
-      ddlAuto: validate
+      ddlAuto: update
 
   datasource:
     driverClassName: org.postgresql.Driver
@@ -11,6 +11,7 @@ spring:
     password: bitclave
 
 flyway:
+  enabled: false
   baseline-on-migrate: true
   url: jdbc:postgresql://localhost:5432/postgres
   user: postgres
