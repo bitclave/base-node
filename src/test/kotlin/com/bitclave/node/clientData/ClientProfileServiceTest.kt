@@ -54,8 +54,27 @@ class ClientProfileServiceTest {
     @Test
     fun `get client raw data by public key`() {
         `update client data by public key`()
-        val resultData = clientProfileService.getData(publicKey, strategy).get()
+        val resultData = clientProfileService.getData(publicKey, emptySet(), strategy).get()
         Assertions.assertThat(resultData).isEqualTo(data)
+    }
+
+    @Test
+    fun `get client raw data by public key and includeOnly keys`() {
+        val data = mapOf("name" to "isFirstName", "second" to "isSecond", "email" to "isEmail")
+
+        clientProfileService.updateData(publicKey, data, strategy).get()
+
+        var resultData = clientProfileService.getData(publicKey, emptySet(), strategy).get()
+        Assertions.assertThat(resultData).isEqualTo(data)
+
+        resultData = clientProfileService.getData(publicKey, setOf("name", "email"), strategy).get()
+        Assertions.assertThat(resultData.size).isEqualTo(2)
+        Assertions.assertThat(resultData["name"]).isEqualTo(data["name"])
+        Assertions.assertThat(resultData["email"]).isEqualTo(data["email"])
+
+        resultData = clientProfileService.getData(publicKey, setOf("second"), strategy).get()
+        Assertions.assertThat(resultData.size).isEqualTo(1)
+        Assertions.assertThat(resultData["second"]).isEqualTo(data["second"])
     }
 
     @Test
@@ -71,7 +90,7 @@ class ClientProfileServiceTest {
 
         updatedData.putAll(data)
 
-        var result = clientProfileService.getData(publicKey, strategy).get()
+        var result = clientProfileService.getData(publicKey, emptySet(), strategy).get()
 
         Assertions.assertThat(result.containsKey("name"))
         Assertions.assertThat(result.containsValue(data.getValue("name")))
@@ -82,7 +101,7 @@ class ClientProfileServiceTest {
 
         clientProfileService.updateData(publicKey, changeNameMap, strategy).get()
 
-        result = clientProfileService.getData(publicKey, strategy).get()
+        result = clientProfileService.getData(publicKey, emptySet(), strategy).get()
 
         Assertions.assertThat(result.containsKey("name"))
         Assertions.assertThat(!result.containsValue(data.getValue("name")))
@@ -96,7 +115,7 @@ class ClientProfileServiceTest {
     fun `delete client raw data by public key`() {
         `update client data by public key`()
         clientProfileService.deleteData(publicKey, strategy).get()
-        val resultData = clientProfileService.getData(publicKey, strategy).get()
+        val resultData = clientProfileService.getData(publicKey, emptySet(), strategy).get()
         Assertions.assertThat(resultData).isEmpty()
     }
 }

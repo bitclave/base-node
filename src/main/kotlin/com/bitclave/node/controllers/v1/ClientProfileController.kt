@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.concurrent.CompletableFuture
 
@@ -44,16 +45,21 @@ class ClientProfileController(
             ApiResponse(code = 200, message = "Success", response = Map::class)
         ]
     )
-    @RequestMapping(method = [RequestMethod.GET], value = ["{pk}/"])
+    @RequestMapping(method = [RequestMethod.GET], value = ["{pk}"])
     fun getData(
         @ApiParam("ID (Public Key) of the user in BASE system", required = true)
         @PathVariable("pk")
         publicKey: String,
+
+        @ApiParam("get only keys in")
+        @RequestParam(value = "key", required = false, defaultValue = "")
+        keys: Set<String>,
+
         @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
         @RequestHeader("Strategy", required = false)
         strategy: String?
     ): CompletableFuture<Map<String, String>> {
-        return profileService.getData(publicKey, getStrategyType(strategy)).exceptionally { e ->
+        return profileService.getData(publicKey, keys, getStrategyType(strategy)).exceptionally { e ->
             logger.error("Request: getData/$publicKey raised $e")
             throw e
         }
