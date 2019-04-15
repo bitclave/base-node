@@ -44,16 +44,27 @@ class ClientProfileControllerTest {
     }
 
     @Test
-    fun getData() {
+    fun `get data`() {
         this.mvc.perform(
-            get("/$version/client/$publicKey/")
+            get("/$version/client/$publicKey")
                 .headers(httpHeaders)
         )
             .andExpect(status().isOk)
     }
 
     @Test
-    fun updateData() {
+    fun `get data with keys`() {
+        this.mvc.perform(
+            get("/$version/client/$publicKey")
+                .param("key", "first")
+                .param("key", "second")
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
+    }
+
+    @Test
+    fun `update data`() {
         this.mvc.perform(
             patch("/$version/client/")
                 .content(requestAccount.toJsonString())
