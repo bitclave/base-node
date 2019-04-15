@@ -85,33 +85,33 @@ repositories {
 }
 
 dependencies {
-    compile 'org.web3j:core:3.3.1'
+    implementation 'org.web3j:core:3.3.1'
 
     implementation 'org.flywaydb:flyway-core'
-    compile 'org.springframework.boot:spring-boot-starter-web'
-    compile 'org.springframework.boot:spring-boot-configuration-processor'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-configuration-processor'
 
-    compile 'io.github.microutils:kotlin-logging:1.6.24'
-    compile 'com.internetitem:logback-elasticsearch-appender:1.6'
+    implementation 'io.github.microutils:kotlin-logging:1.6.24'
+    implementation 'com.internetitem:logback-elasticsearch-appender:1.6'
 
-    compile "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}"
-    compile "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${kotlinVersion}"
+    implementation "org.jetbrains.kotlin:kotlin-reflect:${kotlinVersion}"
 
-    compile 'io.springfox:springfox-swagger2:2.8.0'
-    compile 'io.springfox:springfox-swagger-ui:2.8.0'
+    implementation 'io.springfox:springfox-swagger2:2.8.0'
+    implementation 'io.springfox:springfox-swagger-ui:2.8.0'
 
-    compile 'com.google.code.gson:gson:2.8.5'
+    implementation 'com.google.code.gson:gson:2.8.5'
 
-    compile 'org.bouncycastle:bcprov-jdk15on:1.59'
+    implementation 'org.bouncycastle:bcprov-jdk15on:1.59'
 
-    compile 'org.bitcoinj:bitcoinj-core:0.14.5'
+    implementation 'org.bitcoinj:bitcoinj-core:0.14.5'
 
-    compile 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
-    runtime 'org.postgresql:postgresql'
+    implementation 'org.postgresql:postgresql:42.2.5'
 
-    testCompile 'org.springframework.boot:spring-boot-starter-test'
-    testCompile 'com.h2database:h2'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+    testImplementation 'com.h2database:h2'
 }
 
 compileJava.dependsOn(processResources)

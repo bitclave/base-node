@@ -224,7 +224,7 @@ class FileController(
                             HttpHeaders.CONTENT_DISPOSITION,
                             "attachment; filename=\"" + it.name + "\""
                         )
-                        .body(it.data!!)
+                        .body(it.data)
                 )
             }.exceptionally { e ->
                 logger.error("Request: downloadFile $owner $id raised $e")

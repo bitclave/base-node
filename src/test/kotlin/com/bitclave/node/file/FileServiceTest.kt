@@ -11,6 +11,7 @@ import com.bitclave.node.repository.file.FileCrudRepository
 import com.bitclave.node.repository.file.FileRepositoryStrategy
 import com.bitclave.node.repository.file.PostgresFileRepositoryImpl
 import com.bitclave.node.repository.models.Account
+import com.bitclave.node.services.errors.NotFoundException
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.FileService
 import org.assertj.core.api.Assertions.assertThat
@@ -67,7 +68,6 @@ class FileServiceTest {
 
     @Test
     fun `should be create new file`() {
-
         val result = fileService.saveFile(testFile, account.publicKey, 0, strategy).get()
 
         assert(result.id >= 1L)
@@ -100,7 +100,20 @@ class FileServiceTest {
     fun `should delete existed file`() {
         `should be create new file`()
 
-        var savedResult = fileService.getFile(1, account.publicKey, strategy).get()
+        val savedResult = fileService.getFile(1, account.publicKey, strategy).get()
+
+        assertThat(savedResult).isNotNull()
+
+        val deletedId = fileService.deleteFile(1, account.publicKey, strategy).get()
+
+        assert(deletedId == 1L)
+    }
+
+    @Test(expected = NotFoundException::class)
+    fun `should delete existed file and should throw exception with id and public key`() {
+        `should be create new file`()
+
+        val savedResult = fileService.getFile(1, account.publicKey, strategy).get()
 
         assertThat(savedResult).isNotNull()
 
@@ -108,20 +121,28 @@ class FileServiceTest {
 
         assert(deletedId == 1L)
 
-        savedResult = fileService.getFile(1, account.publicKey, strategy).get()
-        assertThat(savedResult).isNull()
+        try {
+            fileService.getFile(1, account.publicKey, strategy).get()
+        } catch (e: Throwable) {
+            throw e.cause!!
+        }
     }
 
     @Test
     fun `should return file by id and owner`() {
         `should be create new file`()
-
-        var savedResult = fileService.getFile(1, account.publicKey, strategy).get()
+        val savedResult = fileService.getFile(1, account.publicKey, strategy).get()
 
         assertThat(savedResult).isNotNull()
+    }
 
-        savedResult = fileService.getFile(1, "", strategy).get()
-
-        assertThat(savedResult).isNull()
+    @Test(expected = NotFoundException::class)
+    fun `should throw exception`() {
+        try {
+            `should be create new file`()
+            fileService.getFile(1, "", strategy).get()
+        } catch (e: Throwable) {
+            throw e.cause!!
+        }
     }
 }
