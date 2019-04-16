@@ -2,7 +2,7 @@ spring:
   jpa:
     hibernate:
 #      ddlAuto: create-drop
-      ddlAuto: validate
+      ddlAuto: update
 
   datasource:
 #   data: classpath*:data-docker.sql
@@ -13,6 +13,7 @@ spring:
     password: ${JDBC_DATABASE_PASSWORD}
 
 flyway:
+  enabled: false
   baseline-on-migrate: true
   url: ${JDBC_DATABASE_URL}
   user: ${JDBC_DATABASE_USERNAME}
