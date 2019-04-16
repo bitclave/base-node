@@ -2,6 +2,8 @@ package com.bitclave.node.repository.models
 
 import com.bitclave.node.configuration.gson.Exclude
 import org.hibernate.annotations.ColumnDefault
+import org.springframework.format.annotation.DateTimeFormat
+import java.util.Date
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
@@ -17,17 +19,25 @@ data class UploadedFile(
     val publicKey: String = "",
 
     @Column(length = 256)
-    var name: String = "",
+    val name: String = "",
 
     @Column(length = 256)
-    var mimeType: String = "",
+    val mimeType: String = "",
 
     @Column(nullable = false) @ColumnDefault("0")
-    var size: Long = 0,
+    val size: Long = 0,
 
     @Exclude
     @Lob
-    var data: ByteArray? = null
+    val data: ByteArray? = null,
+
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    @Column(columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    val createdAt: Date = Date(),
+
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    @Column(columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    val updatedAt: Date = Date()
 ) {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

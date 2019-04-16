@@ -13,7 +13,12 @@ class ClientProfileService(
     private val clientDataRepository: RepositoryStrategy<ClientDataRepository>
 ) {
 
-    fun getData(publicKey: String, strategy: RepositoryStrategyType): CompletableFuture<Map<String, String>> {
+    fun getData(
+        publicKey: String,
+        includeOnly: Set<String>,
+        strategy: RepositoryStrategyType
+    ): CompletableFuture<Map<String, String>> {
+
         return CompletableFuture.supplyAsync {
             if ("first" == publicKey) {
                 return@supplyAsync hashMapOf("firstName" to "Adam", "lastName" to "Base")
@@ -21,6 +26,7 @@ class ClientProfileService(
 
             clientDataRepository.changeStrategy(strategy)
                 .getData(publicKey)
+                .filter { includeOnly.isEmpty() || includeOnly.contains(it.key) }
         }
     }
 

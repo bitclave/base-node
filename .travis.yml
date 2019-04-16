@@ -1,17 +1,17 @@
-sudo: required
 language: java
+sudo: false
 
 jdk:
   - oraclejdk8
 
-# before_cache:
-#   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
-#   - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
-  
-# cache:
-#   directories:
-#     - $HOME/.gradle/caches/
-#     - $HOME/.gradle/wrapper/
+before_cache:
+  - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock
+  - rm -fr $HOME/.gradle/caches/*/plugin-resolution/
+
+cache:
+  directories:
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
 
 install:
   - npm install -g ganache-cli
@@ -21,7 +21,7 @@ before_script:
   - sleep 5
 
 script:
-  - ./gradlew check --stacktrace
+  - travis_wait ./gradlew check --stacktrace
 
 after_success:
-  - ./gradlew jacocoTestReport coveralls
+  - travis_wait ./gradlew jacocoTestReport coveralls

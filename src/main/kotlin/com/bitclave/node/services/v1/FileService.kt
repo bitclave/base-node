@@ -9,6 +9,7 @@ import com.bitclave.node.services.errors.NotFoundException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
+import java.util.Date
 import java.util.concurrent.CompletableFuture
 
 @Service
@@ -16,19 +17,9 @@ import java.util.concurrent.CompletableFuture
 class FileService(private val fileRepository: RepositoryStrategy<FileRepository>) {
 
     fun getFile(id: Long, publicKey: String, strategy: RepositoryStrategyType): CompletableFuture<UploadedFile> {
-
         return CompletableFuture.supplyAsync {
             val repository = fileRepository.changeStrategy(strategy)
-
-            if (id > 0 && publicKey != "0x0") {
-                val file = repository.findByIdAndPublicKey(id, publicKey)
-
-                if (file != null) {
-                    return@supplyAsync file
-                }
-                return@supplyAsync null
-            }
-            return@supplyAsync null
+            repository.findByIdAndPublicKey(id, publicKey) ?: throw NotFoundException("file not found")
         }
     }
 
@@ -43,11 +34,25 @@ class FileService(private val fileRepository: RepositoryStrategy<FileRepository>
             if (data.name.isNullOrEmpty()) {
                 throw BadArgumentException()
             }
+            var existedFile: UploadedFile? = null
+
             if (id > 0) {
-                fileRepository.changeStrategy(strategy)
+                existedFile = fileRepository.changeStrategy(strategy)
                     .findByIdAndPublicKey(id, publicKey) ?: throw BadArgumentException()
             }
-            val file = UploadedFile(id, publicKey, data.originalFilename, data.contentType, data.size, data.bytes)
+
+            val createdAt = existedFile?.createdAt ?: Date()
+
+            val file = UploadedFile(
+                id,
+                publicKey,
+                data.originalFilename,
+                data.contentType,
+                data.size,
+                data.bytes,
+                createdAt,
+                Date()
+            )
 
             val processedFile = fileRepository.changeStrategy(strategy).saveFile(file)
             val updatedFile = fileRepository.changeStrategy(strategy).findById(processedFile.id)
