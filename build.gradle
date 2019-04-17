@@ -13,7 +13,7 @@ buildscript {
     }
     dependencies {
         classpath("org.kt3k.gradle.plugin:coveralls-gradle-plugin:2.8.2")
-        classpath("org.web3j:web3j-maven-plugin:4.2.0")
+        classpath("org.web3j:web3j-maven-plugin:0.3.0")
         classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${kotlinVersion}")
         classpath("org.jetbrains.kotlin:kotlin-allopen:${kotlinVersion}")
@@ -85,7 +85,7 @@ repositories {
 }
 
 dependencies {
-    compile 'org.web3j:core:4.2.0'
+    compile 'org.web3j:core:3.3.1'
 
     compile 'org.flywaydb:flyway-core'
     compile 'org.springframework.boot:spring-boot-starter-web'
