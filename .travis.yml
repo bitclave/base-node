@@ -16,8 +16,8 @@ cache:
 install:
   - npm install -g ganache-cli
   - ganache-cli --version
-#  - sudo add-apt-repository ppa:ethereum/ethereum
-#  - sudo apt-get update
+  - sudo add-apt-repository --yes ppa:ethereum/ethereum
+  - sudo apt-get update
   - sudo apt-get install solc
   - solc --version
 
