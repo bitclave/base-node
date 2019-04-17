@@ -1,4 +1,4 @@
-pragma solidity ^0.4.0;
+pragma solidity >=0.4.20;
 
 import './Pausable.sol';
 
@@ -16,7 +16,7 @@ contract ClientDataContract is Pausable {
     bytes32[] public keys;
     mapping(bytes32 => uint) public indexOfKey; // Starts from 1
 
-    function keysCount() public constant returns(uint) {
+    function keysCount() public view returns(uint) {
         return keys.length;
     }
 
@@ -26,7 +26,7 @@ contract ClientDataContract is Pausable {
         indexOfKey[key] = keys.length; // Incremented by 1
     }
 
-    function setInfo(uint256 publicKeyX, bytes32 key, string value) public onlyOwner whenNotPaused {
+    function setInfo(uint256 publicKeyX, bytes32 key, string memory value) public onlyOwner whenNotPaused {
         if (indexOfKey[key] == 0) {
             addKey(key);
         }
@@ -54,15 +54,15 @@ contract ClientDataContract is Pausable {
         }
     }
 
-    function info(uint256 publicKeyX, bytes32 key) public constant returns(string) {
+    function info(uint256 publicKeyX, bytes32 key) public view returns(string memory) {
         return dict[publicKeyX].valueForKey[key];
     }
 
-    function clientKeys(uint256 publicKeyX, uint index) public constant returns(bytes32) {
+    function clientKeys(uint256 publicKeyX, uint index) public view returns(bytes32) {
         return dict[publicKeyX].allKeys[index];
     }
 
-    function clientKeysCount(uint256 publicKeyX) public constant returns(uint) {
+    function clientKeysCount(uint256 publicKeyX) public view returns(uint) {
         return dict[publicKeyX].allKeys.length;
     }
 

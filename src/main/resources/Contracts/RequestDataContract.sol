@@ -1,4 +1,4 @@
-pragma solidity ^0.4.0;
+pragma solidity >=0.4.20;
 
 import './Pausable.sol';
 
@@ -32,44 +32,44 @@ contract RequestDataContract is Pausable {
 
     // Lengths
 
-    function requestsCount() public constant returns(uint) {
+    function requestsCount() public view returns(uint) {
         return requests.length;
     }
 
-    function getByToCount(uint256 toPkX) public constant returns(uint) {
+    function getByToCount(uint256 toPkX) public view returns(uint) {
         return idsByTo[toPkX].items.length;
     }
 
-    function getByFromCount(uint256 fromPkX) public constant returns(uint) {
+    function getByFromCount(uint256 fromPkX) public view returns(uint) {
         return idsByFrom[fromPkX].items.length;
     }
 
-    function getByFromAndToCount(uint256 fromPkX, uint256 toPkX) public constant returns(uint) {
+    function getByFromAndToCount(uint256 fromPkX, uint256 toPkX) public view returns(uint) {
         return idsByFromAndTo[fromPkX][toPkX].items.length;
     }
 
     // Public methods
 
-    function getByTo(uint256 toPkX, uint index) public constant returns(uint) {
+    function getByTo(uint256 toPkX, uint index) public view returns(uint) {
         return idsByTo[toPkX].items[index];
     }
 
-    function getByFrom(uint256 fromPkX, uint index) public constant returns(uint) {
+    function getByFrom(uint256 fromPkX, uint index) public view returns(uint) {
         return idsByFrom[fromPkX].items[index];
     }
 
-    function getByFromAndTo(uint256 fromPkX, uint256 toPkX, uint index) public constant returns(uint) {
+    function getByFromAndTo(uint256 fromPkX, uint256 toPkX, uint index) public view returns(uint) {
         return idsByFromAndTo[fromPkX][toPkX].items[index];
     }
 
-    function findById(uint id) public constant
+    function findById(uint id) public view
         returns(uint request_id,
                 uint256 fromPkX,
                 uint256 fromPkY,
                 uint256 toPkX,
                 uint256 toPkY,
-                bytes requestData,
-                bytes responseData)
+                bytes memory requestData,
+                bytes memory  responseData)
     {
         uint index = indexOfRequestId[id];
         require(index > 0);
@@ -100,8 +100,8 @@ contract RequestDataContract is Pausable {
         uint256 fromPkY,
         uint256 toPkX,
         uint256 toPkY,
-        bytes requestData,
-        bytes responseData) public onlyOwner whenNotPaused
+        bytes memory requestData,
+        bytes memory responseData) public onlyOwner whenNotPaused
     {
         require(isValidPublicKey(fromPkX, fromPkY));
         require(isValidPublicKey(toPkX, toPkY));
@@ -118,7 +118,7 @@ contract RequestDataContract is Pausable {
             idsByFrom[fromPkX].lookup[id] = idsByFrom[fromPkX].items.length;
             idsByFromAndTo[fromPkX][toPkX].items.push(id);
             idsByFromAndTo[fromPkX][toPkX].lookup[id] = idsByFromAndTo[fromPkX][toPkX].items.length;
-            RequestDataCreated(id);
+            emit RequestDataCreated(id);
             return;
         }
 
@@ -127,12 +127,12 @@ contract RequestDataContract is Pausable {
         index--;
 
         requests[index].responseData = responseData;
-        RequestDataAccepted(id);
+        emit RequestDataAccepted(id);
     }
 
     // Private methods
 
-    function isValidPublicKey(uint256 pkX, uint256 pkY) public constant returns(bool) {
+    function isValidPublicKey(uint256 pkX, uint256 pkY) public view returns(bool) {
         // (y^2 == x^3 + 7) mod m
         uint256 m = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F;
         return mulmod(pkY, pkY, m) == addmod(mulmod(pkX, mulmod(pkX, pkX, m), m), 7, m);
