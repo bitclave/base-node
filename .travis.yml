@@ -20,7 +20,7 @@ install:
   - sudo add-apt-repository --yes ppa:ethereum/ethereum
   - cat /etc/apt/sources.list
   - ls /etc/apt/sources.list.d
-  - cat /etc/apt/sources.list/ethereum-ethereum-trusty.list
+  - cat /etc/apt/sources.list.d/ethereum-ethereum-trusty.list
   - sudo apt-get update
   - sudo apt-get install dpkg
   - sudo apt-get install solc
