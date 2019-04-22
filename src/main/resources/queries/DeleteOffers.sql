@@ -51,3 +51,14 @@ delete from search_request_tags where search_request_id in
 	(select id from search_request where owner not in (select public_key from account));
 delete from search_request where owner not in (select public_key from account);
 -- ~delete accounts and data
+
+-- delete  offers by some rule
+delete from offer_price_rules where offer_price_rules.offer_price_id in
+(select id from offer_price where offer_id in (select id from offer where created_at > '2019-04-19'));
+
+delete from offer_price where offer_id in (select id from offer where created_at > '2019-04-19');
+delete from offer_tags where offer_id in (select id from offer where created_at > '2019-04-19');
+delete from offer_rules where offer_id in (select id from offer where created_at > '2019-04-19');
+delete from offer_compare where offer_id in (select id from offer where created_at > '2019-04-19');
+delete from offer where id in (select id from offer where created_at > '2019-04-19')
+-- ~delete  offers by some rule
