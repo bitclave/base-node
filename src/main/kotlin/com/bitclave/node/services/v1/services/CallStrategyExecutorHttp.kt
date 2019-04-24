@@ -1,5 +1,6 @@
 package com.bitclave.node.services.v1.services
 
+import com.bitclave.node.repository.models.services.CheckedExceptionResponse
 import com.bitclave.node.repository.models.services.HttpServiceCall
 import org.springframework.http.HttpEntity
 import org.springframework.http.ResponseEntity
@@ -11,7 +12,7 @@ class CallStrategyExecutorHttp(
     private val restTemplate: RestTemplate
 ) : CallStrategyExecutor<HttpServiceCall> {
 
-    override fun execute(endPointUrl: String, request: HttpServiceCall): CompletableFuture<ResponseEntity<*>> {
+    override fun execute(endPointUrl: String, request: HttpServiceCall): CompletableFuture<ResponseEntity<*>?> {
 
         return CompletableFuture.supplyAsync {
             val entity = HttpEntity<Any>(request.body, request.headers)
@@ -30,8 +31,8 @@ class CallStrategyExecutorHttp(
                     request.queryParams
                 )
             } catch (e: HttpClientErrorException) {
-                return@supplyAsync ResponseEntity<String>(
-                    e.responseBodyAsString,
+                return@supplyAsync ResponseEntity<CheckedExceptionResponse>(
+                    CheckedExceptionResponse(e.message ?: "", e.statusText ?: "", e.responseBodyAsString ?: ""),
                     e.responseHeaders,
                     e.statusCode
                 )

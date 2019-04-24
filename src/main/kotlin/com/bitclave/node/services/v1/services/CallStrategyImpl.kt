@@ -29,6 +29,6 @@ class CallStrategyImpl(
         return strategy
     }
 
-    override fun execute(endPointUrl: String, request: ServiceCall): CompletableFuture<ResponseEntity<*>> =
+    override fun execute(endPointUrl: String, request: ServiceCall): CompletableFuture<ResponseEntity<*>?> =
         strategy.execute(endPointUrl, request)
 }
