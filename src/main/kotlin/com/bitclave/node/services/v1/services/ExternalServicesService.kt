@@ -6,6 +6,7 @@ import com.bitclave.node.repository.models.services.ExternalService
 import com.bitclave.node.repository.models.services.ServiceCall
 import com.bitclave.node.repository.models.services.ServiceResponse
 import com.bitclave.node.repository.services.ExternalServicesRepository
+import com.bitclave.node.services.errors.BadArgumentException
 import javassist.NotFoundException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
@@ -25,6 +26,7 @@ class ExternalServicesService(
                 .findById(data.serviceId) ?: throw NotFoundException("Service not found")
 
             val response = callStrategy.changeStrategy(data.type).execute(service.endpoint, data).get()
+                ?: throw BadArgumentException("wrong request")
 
             ServiceResponse(response.body, response.statusCodeValue, response.headers)
         }
