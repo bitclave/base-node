@@ -17,11 +17,13 @@ import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
 import com.google.gson.Gson
+import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
+import org.springframework.web.client.HttpClientErrorException
 import java.util.Date
 import java.util.concurrent.CompletableFuture
 
@@ -52,6 +54,8 @@ class OfferSearchService(
     private val rtSearchRepository: RtSearchRepository,
     private val gson: Gson
 ) {
+
+    private val logger = KotlinLogging.logger {}
 
     fun getOffersResult(
         strategy: RepositoryStrategyType,
@@ -507,9 +511,22 @@ class OfferSearchService(
                 .changeStrategy(strategyType)
                 .findBySearchRequestId(searchRequestId)
 
-            val offerIds = rtSearchRepository
-                .getOffersIdByQuery(query, pageRequest)
-                .get()
+            val offerIds: Page<Long>
+
+            try {
+                offerIds = rtSearchRepository
+                    .getOffersIdByQuery(query, pageRequest)
+                    .get()
+            } catch (e: HttpClientErrorException) {
+                logger.error("rt-search error: $e")
+
+                if (e.rawStatusCode > 499) {
+                    val pageable = PageRequest(0, 0)
+                    return@supplyAsync PageImpl(emptyList<OfferSearchResultItem>(), pageable, 0)
+                } else {
+                    throw e
+                }
+            }
 
             val setOfExistedOfferSearch = existedOfferSearches
                 .map { it.offerId }
