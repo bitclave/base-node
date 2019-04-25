@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
+import java.net.URLDecoder
 import java.util.concurrent.CompletableFuture
 
 private val logger = KotlinLogging.logger {}
@@ -91,10 +92,11 @@ class OfferSearchController(
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
             .thenCompose { account: Account -> accountService.validateNonce(request, account) }
             .thenCompose {
+                val decodedQuery = URLDecoder.decode(query, "UTF-8")
                 val result = offerSearchService.createOfferSearchesByQuery(
                     request.data!!,
                     it.publicKey,
-                    query,
+                    decodedQuery,
                     PageRequest(page, size),
                     getStrategyType(strategy)
                 ).get()
