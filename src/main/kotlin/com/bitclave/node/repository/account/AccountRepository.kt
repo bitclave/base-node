@@ -1,7 +1,7 @@
 package com.bitclave.node.repository.account
 
 import com.bitclave.node.repository.models.Account
-import java.util.*
+import java.util.Date
 
 interface AccountRepository {
 

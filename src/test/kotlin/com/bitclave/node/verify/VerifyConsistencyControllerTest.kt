@@ -16,7 +16,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import java.util.*
+import java.util.Date
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
@@ -29,7 +29,7 @@ class VerifyConsistencyControllerTest {
 
     private val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
     private val publicKey2 = "03836649d2e353c332287e8280d1dbb1805cab0bae289ad08db9cc86f040ac6360"
-    private  val fromDate = Date()
+    private val fromDate = Date()
     protected lateinit var idsRequest: SignedRequest<List<Long>>
     protected lateinit var publicKeysRequest: SignedRequest<List<String>>
     protected lateinit var fromDateRequest: SignedRequest<Date>
@@ -88,7 +88,7 @@ class VerifyConsistencyControllerTest {
                 .content(fromDateRequest.toJsonString())
                 .headers(httpHeaders)
         )
-                .andExpect(status().isOk)
+            .andExpect(status().isOk)
     }
 
 /*    @Test

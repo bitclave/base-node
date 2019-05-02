@@ -4,7 +4,7 @@ import com.bitclave.node.repository.models.Account
 import com.bitclave.node.services.errors.DataNotSavedException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
-import java.util.*
+import java.util.Date
 
 @Component
 @Qualifier("postgres")
@@ -30,8 +30,8 @@ class PostgresAccountRepositoryImpl(val repository: AccountCrudRepository) : Acc
 
     override fun findByCreatedAtAfter(createdAt: Date): List<Account> {
         return repository.findByCreatedAtAfter(createdAt)
-                .asSequence()
-                .toList()
+            .asSequence()
+            .toList()
     }
 
     override fun getTotalCount(): Long {

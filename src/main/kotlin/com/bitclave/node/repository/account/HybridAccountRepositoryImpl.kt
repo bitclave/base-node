@@ -10,7 +10,7 @@ import com.bitclave.node.solidity.generated.NameServiceContract
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import java.math.BigInteger
-import java.util.*
+import java.util.Date
 
 @Component
 @Qualifier("hybrid")

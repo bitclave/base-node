@@ -13,7 +13,7 @@ import com.bitclave.node.services.errors.NotFoundException
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
-import java.util.*
+import java.util.Date
 import java.util.concurrent.CompletableFuture
 
 private val logger = KotlinLogging.logger {}
@@ -139,7 +139,7 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
 
         return CompletableFuture.supplyAsync {
             accountRepository.changeStrategy(strategy)
-                    .findByCreatedAtAfter(fromDate)
+                .findByCreatedAtAfter(fromDate)
         }
     }
 
