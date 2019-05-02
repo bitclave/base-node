@@ -4,6 +4,7 @@ import com.bitclave.node.repository.models.Account
 import com.bitclave.node.services.errors.DataNotSavedException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
+import java.util.*
 
 @Component
 @Qualifier("postgres")
@@ -27,8 +28,8 @@ class PostgresAccountRepositoryImpl(val repository: AccountCrudRepository) : Acc
             .toList()
     }
 
-    override fun findAll(): List<Account> {
-        return repository.findAll()
+    override fun findByCreatedAtAfter(createdAt: Date): List<Account> {
+        return repository.findByCreatedAtAfter(createdAt)
                 .asSequence()
                 .toList()
     }

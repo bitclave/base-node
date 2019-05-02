@@ -23,6 +23,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
+import java.util.*
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
@@ -171,14 +172,15 @@ class AccountServiceTest {
         Assertions.assertThat(existAccounts.size).isEqualTo(2)
     }
 
-/*    @Test
+    @Test
     fun `get all accounts`() {
         strategy = RepositoryStrategyType.POSTGRES
         accountService.registrationClient(account, strategy).get()
+        val now = Date()
         accountService.registrationClient(account2, strategy).get()
-        val existAccounts = accountService.getAllAccounts(strategy).get()
-        Assertions.assertThat(existAccounts.size).isEqualTo(2)
-    }*/
+        val existAccounts = accountService.getAllAccounts(strategy, now).get()
+        Assertions.assertThat(existAccounts.size).isEqualTo(1)
+    }
 
     @Test
     fun `get total count of accounts`() {

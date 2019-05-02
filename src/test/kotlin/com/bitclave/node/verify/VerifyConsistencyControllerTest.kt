@@ -16,6 +16,7 @@ import org.springframework.test.web.servlet.MockMvc
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import java.util.*
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
@@ -28,8 +29,10 @@ class VerifyConsistencyControllerTest {
 
     private val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
     private val publicKey2 = "03836649d2e353c332287e8280d1dbb1805cab0bae289ad08db9cc86f040ac6360"
+    private  val fromDate = Date()
     protected lateinit var idsRequest: SignedRequest<List<Long>>
     protected lateinit var publicKeysRequest: SignedRequest<List<String>>
+    protected lateinit var fromDateRequest: SignedRequest<Date>
     private var httpHeaders: HttpHeaders = HttpHeaders()
 
     private val ids = mutableListOf(1L, 2L, 3L, 4L)
@@ -41,6 +44,7 @@ class VerifyConsistencyControllerTest {
         idsRequest = SignedRequest(ids, publicKey)
         publicKeysRequest = SignedRequest(publicKeys, publicKey)
         publicKeysRequest = SignedRequest(publicKeys, publicKey)
+        fromDateRequest = SignedRequest(fromDate)
 
         httpHeaders.set("Accept", "application/json")
         httpHeaders.set("Content-Type", "application/json")
@@ -80,8 +84,9 @@ class VerifyConsistencyControllerTest {
     @Test
     fun `get all accounts`() {
         this.mvc.perform(
-                get("/dev/verify/account/all")
-                        .headers(httpHeaders)
+            post("/dev/verify/account/all")
+                .content(fromDateRequest.toJsonString())
+                .headers(httpHeaders)
         )
                 .andExpect(status().isOk)
     }

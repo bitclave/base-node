@@ -10,6 +10,7 @@ import com.bitclave.node.solidity.generated.NameServiceContract
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import java.math.BigInteger
+import java.util.*
 
 @Component
 @Qualifier("hybrid")
@@ -74,7 +75,7 @@ class HybridAccountRepositoryImpl(
         return returnArray
     }
 
-    override fun findAll(): List<Account> {
+    override fun findByCreatedAtAfter(createdAt: Date): List<Account> {
         throw BadArgumentException("This method is not implemented for hybrid")
     }
 
