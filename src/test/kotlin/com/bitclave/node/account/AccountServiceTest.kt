@@ -175,9 +175,10 @@ class AccountServiceTest {
     fun `get all accounts`() {
         strategy = RepositoryStrategyType.POSTGRES
         accountService.registrationClient(account, strategy).get()
+        val now = Date()
         accountService.registrationClient(account2, strategy).get()
-        val existAccounts = accountService.getAllAccounts(strategy).get()
-        Assertions.assertThat(existAccounts.size).isEqualTo(2)
+        val existAccounts = accountService.getAllAccounts(strategy, now).get()
+        Assertions.assertThat(existAccounts.size).isGreaterThanOrEqualTo(1)
     }*/
 
     @Test

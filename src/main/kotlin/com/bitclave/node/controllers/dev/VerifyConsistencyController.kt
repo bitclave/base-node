@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
+import java.util.Date
 import java.util.concurrent.CompletableFuture
 
 private val logger = KotlinLogging.logger {}
@@ -119,30 +120,39 @@ class VerifyConsistencyController(
      *
      */
     @ApiOperation(
-            "Returns all the Accounts.",
-            response = Account::class, responseContainer = "List"
+        "Returns all the Accounts.",
+        response = Account::class, responseContainer = "List"
     )
     @ApiResponses(
-            value = [
-                ApiResponse(code = 200, message = "Success", response = List::class)
-            ]
+        value = [
+            ApiResponse(code = 200, message = "Success", response = List::class)
+        ]
     )
-    @RequestMapping(method = [RequestMethod.GET], value = ["/account/all"])
+    @RequestMapping(method = [RequestMethod.POST], value = ["/account/all"])
     fun getAllAccounts(
+        @ApiParam("fromDate for filtering", required = true)
+        @RequestBody
+        request: SignedRequest<Date>,
+
         @ApiParam(
-                "change repository strategy",
-                allowableValues = "POSTGRES, HYBRID",
-                required = false
+            "change repository strategy",
+            allowableValues = "POSTGRES, HYBRID",
+            required = false
         )
         @RequestHeader("Strategy", required = false)
         strategy: String?
     ): CompletableFuture<List<Account>> {
-        return accountService.getAllAccounts(
-                    getStrategyType(strategy)
-                ).exceptionally { e ->
-                    logger.error("Request: getAllAccounts raised $e")
-                    throw e
-                }
+        return accountService
+            .accountBySigMessage(request, getStrategyType(strategy))
+            .thenCompose {
+                accountService.getAllAccounts(
+                    getStrategyType(strategy),
+                    request.data!!
+                )
+            }.exceptionally { e ->
+                logger.error("Request: getAllAccounts raised $e")
+                throw e
+            }
     }
 
     /**

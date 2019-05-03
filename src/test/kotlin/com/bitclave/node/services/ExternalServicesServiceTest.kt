@@ -279,7 +279,8 @@ class ExternalServicesServiceTest {
         headers.contentType = MediaType.APPLICATION_JSON
         headers.accept = arrayListOf(MediaType.APPLICATION_JSON)
 
-        val entity = HttpEntity<Any>(Account("0x0", 10), headers)
+        val account = Account("0x0", 10, Date(), Date())
+        val entity = HttpEntity<Any>(account, headers)
 
         Mockito.`when`(
             restTemplate.exchange(
@@ -298,7 +299,7 @@ class ExternalServicesServiceTest {
             "/",
             emptyMap(),
             headers,
-            Account("0x0", 10)
+            account
         )
 
         val result = externalServicesService.externalCall(serviceCall, strategy).get()
