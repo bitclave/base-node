@@ -132,7 +132,7 @@ class VerifyConsistencyController(
     fun getAllAccounts(
         @ApiParam("fromDate for filtering", required = true)
         @RequestBody
-        request: SignedRequest<Date>,
+        request: SignedRequest<Long>,
 
         @ApiParam(
             "change repository strategy",
@@ -147,7 +147,7 @@ class VerifyConsistencyController(
             .thenCompose {
                 accountService.getAllAccounts(
                     getStrategyType(strategy),
-                    request.data!!
+                    Date(request.data!!)
                 )
             }.exceptionally { e ->
                 logger.error("Request: getAllAccounts raised $e")
