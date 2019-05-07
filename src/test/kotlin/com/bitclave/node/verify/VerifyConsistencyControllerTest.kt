@@ -32,7 +32,7 @@ class VerifyConsistencyControllerTest {
     private val fromDate = Date()
     protected lateinit var idsRequest: SignedRequest<List<Long>>
     protected lateinit var publicKeysRequest: SignedRequest<List<String>>
-    protected lateinit var fromDateRequest: SignedRequest<Date>
+    protected lateinit var fromDateRequest: SignedRequest<Long>
     private var httpHeaders: HttpHeaders = HttpHeaders()
 
     private val ids = mutableListOf(1L, 2L, 3L, 4L)
@@ -44,7 +44,7 @@ class VerifyConsistencyControllerTest {
         idsRequest = SignedRequest(ids, publicKey)
         publicKeysRequest = SignedRequest(publicKeys, publicKey)
         publicKeysRequest = SignedRequest(publicKeys, publicKey)
-        fromDateRequest = SignedRequest(fromDate)
+        fromDateRequest = SignedRequest(fromDate.time)
 
         httpHeaders.set("Accept", "application/json")
         httpHeaders.set("Content-Type", "application/json")
