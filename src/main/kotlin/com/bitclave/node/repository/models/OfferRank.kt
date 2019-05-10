@@ -10,8 +10,8 @@ data class OfferRank(
     @GeneratedValue(strategy = GenerationType.TABLE) @Id val id: Long = 0,
     @ColumnDefault("0") val rank: Long = 0,
 
-    @Column val offer_id: Long,
-    @Column val ranker_id: Long,
+    @Column val offerId: Long,
+    @Column val rankerId: Long,
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     @Column(columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
