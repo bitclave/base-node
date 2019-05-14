@@ -12,10 +12,10 @@ class PostgresOfferRankRepositoryImpl(
         val repository: OfferRankCrudRepository
 ): OfferRankRepository {
     override fun saveRankOffer(rankOffer: OfferRank): OfferRank {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return repository.save(rankOffer)
     }
 
-    override fun deleteRankOffer(id: Long): Long {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+    override fun findById(id: Long): OfferRank? {
+        return repository.findById(id)
     }
 }

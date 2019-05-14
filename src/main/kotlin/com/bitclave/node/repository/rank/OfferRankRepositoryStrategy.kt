@@ -11,6 +11,9 @@ class OfferRankRepositoryStrategy(
     private val postgres: PostgresOfferRankRepositoryImpl
 ) : RepositoryStrategy<OfferRankRepository> {
     override fun changeStrategy(type: RepositoryStrategyType): OfferRankRepository {
-        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
+        return when (type) {
+            RepositoryStrategyType.POSTGRES -> postgres
+            RepositoryStrategyType.HYBRID -> postgres
+        }
     }
 }
