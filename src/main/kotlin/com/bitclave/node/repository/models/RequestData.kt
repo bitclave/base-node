@@ -11,6 +11,7 @@ data class RequestData(
     @GeneratedValue(strategy = GenerationType.TABLE) @Id val id: Long = 0,
     val fromPk: String = "",
     val toPk: String = "",
+    @Column(nullable = false) val rootPk: String = "",
     @Column(columnDefinition = "TEXT") val requestData: String = "",
     @Column(columnDefinition = "TEXT") val responseData: String = ""
 )
