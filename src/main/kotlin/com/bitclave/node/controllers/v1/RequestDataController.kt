@@ -187,7 +187,7 @@ class RequestDataController(
     }
 
     /**
-     * Grant access for get private client data.
+     * revoke access for private client data.
      * @param request info of request for privacy client data
      *
      * @exception {@link BadArgumentException} - 400
