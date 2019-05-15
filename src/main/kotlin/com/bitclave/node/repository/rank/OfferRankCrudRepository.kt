@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional
 @Repository
 @Transactional
 interface OfferRankCrudRepository: PagingAndSortingRepository<OfferRank, Long> {
-    fun findAllByOfferId(offerId: Long, pageable: Pageable): Page<OfferRank>
+    fun findByOfferId(offerId: Long): List<OfferRank>
+    fun findByOfferIdAndRankerId(offerId: Long, rankerId: Long): OfferRank?
     fun findById(id: Long): OfferRank?
 }
