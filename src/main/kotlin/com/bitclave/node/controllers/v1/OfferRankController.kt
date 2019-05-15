@@ -88,9 +88,6 @@ class OfferRankController(
                 .thenCompose {
                     val offerRank = request.data
                     offerRankService.updateOfferRank(getStrategyType(strategy), offerRank!!)
-                }.exceptionally { e ->
-                    logger.error("Request: saveSiteInformation/$request raised $e")
-                    throw e
                 }
     }
 
