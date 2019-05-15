@@ -12,14 +12,8 @@ import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.web.bind.annotation.*
 import java.util.concurrent.CompletableFuture
-import org.springframework.web.bind.annotation.RequestMethod
-
-
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestHeader
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
 
 
 private val logger = KotlinLogging.logger {}
@@ -99,4 +93,33 @@ class OfferRankController(
                     throw e
                 }
     }
+
+    @ApiOperation(
+            "get offerRanks by offerId", response = OfferRank::class, responseContainer = "List"
+    )
+    @ApiResponses(
+            value = [
+                ApiResponse(code = 200, message = "Success", response = List::class)
+            ]
+    )
+    @RequestMapping(method = [RequestMethod.GET], value = ["/", "{id}"])
+    fun getOfferRanksByOfferId(
+
+            @ApiParam("Optional offerId.")
+            @PathVariable(value = "id", required = false)
+            offerId: Long?,
+
+            @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+            @RequestHeader("Strategy", required = false)
+            strategy: String?
+    ): CompletableFuture<List<OfferRank>> {
+
+        return offerRankService
+                .getOfferRanksByOfferId(getStrategyType(strategy), offerId)
+                .exceptionally { e ->
+                    logger.error("Request: getOfferRanks by ooferId /$offerId raised $e")
+                    throw e
+                }
+    }
+
 }
