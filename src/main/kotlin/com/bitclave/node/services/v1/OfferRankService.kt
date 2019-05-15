@@ -57,4 +57,17 @@ class OfferRankService (
                     .saveRankOffer(readyToSave)
         }
     }
+    fun getOfferRanksByOfferId(
+            strategy: RepositoryStrategyType,
+            offerId: Long?
+    ): CompletableFuture<List<OfferRank>> {
+        if (offerId == 0L) {
+            throw Error("offerId is required")
+        }
+        return CompletableFuture.supplyAsync  {
+            offerRankRepository
+                    .changeStrategy(strategy)
+                    .findByOfferId(offerId!!)
+        }
+    }
 }
