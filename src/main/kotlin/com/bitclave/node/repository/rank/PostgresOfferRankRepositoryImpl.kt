@@ -13,8 +13,12 @@ import org.springframework.stereotype.Component
 class PostgresOfferRankRepositoryImpl(
         val repository: OfferRankCrudRepository
 ): OfferRankRepository {
+    override fun findByOfferIdAndRankerId(offerId: Long, rankerId: Long): OfferRank? {
+        return repository.findByOfferIdAndRankerId(offerId, rankerId)
+    }
+
     override fun findByOfferId(id: Long): List<OfferRank> {
-        return repository.findByOfferId(id) //To change body of created functions use File | Settings | File Templates.
+        return repository.findByOfferId(id)
     }
 
     override fun saveRankOffer(rankOffer: OfferRank): OfferRank {

@@ -6,4 +6,5 @@ interface OfferRankRepository {
     fun saveRankOffer(rankOffer: OfferRank): OfferRank
     fun findById(id: Long): OfferRank?
     fun findByOfferId(id: Long): List<OfferRank>
+    fun findByOfferIdAndRankerId(offerId: Long, rankerId: Long): OfferRank?
 }
