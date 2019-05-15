@@ -19,52 +19,69 @@ class OfferRankService (
             strategy: RepositoryStrategyType,
             offerRank: OfferRank
     ): CompletableFuture<OfferRank> {
-        val readyToCreateOfferRank = OfferRank(
-                0,
-                offerRank.rank,
-                offerRank.offerId,
-                offerRank.rankerId
-        )
-        return CompletableFuture.supplyAsync {
-            val saved = offerRankRepository
+        return CompletableFuture.supplyAsync  {
+
+            var existedOfferRank: OfferRank? = offerRankRepository
+                .changeStrategy(strategy)
+                .findByOfferIdAndRankerId(offerRank.offerId, offerRank.rankerId)
+
+            if (existedOfferRank != null) {
+                existedOfferRank.rank = offerRank.rank
+                return@supplyAsync updateOfferRank(strategy, existedOfferRank).get()
+            } else {
+                val readyToCreateOfferRank = OfferRank(
+                    0,
+                    offerRank.rank,
+                    offerRank.offerId,
+                    offerRank.rankerId
+                )
+                return@supplyAsync offerRankRepository
                     .changeStrategy(strategy)
                     .saveRankOffer(readyToCreateOfferRank)
-            return@supplyAsync saved
-
+            }
         }
     }
     fun updateOfferRank(
             strategy: RepositoryStrategyType,
             offerRank: OfferRank
     ): CompletableFuture<OfferRank> {
-        if (offerRank.id == 0L) {
-            return createOfferRank(strategy, offerRank)
-        }
-        val originalOffer = offerRankRepository
+
+        return CompletableFuture.supplyAsync {
+            if (offerRank.id == 0L) {
+                return@supplyAsync createOfferRank(strategy, offerRank).get()
+            }
+            val originalOffer = offerRankRepository
                 .changeStrategy(strategy)
                 .findById(offerRank.id) ?: throw BadArgumentException()
-        val readyToSave = OfferRank(
+
+            if (originalOffer.offerId != offerRank.offerId ||
+                originalOffer.rankerId != offerRank.rankerId) {
+                throw BadArgumentException("you can change only rank in existed OfferRank")
+            }
+
+            val readyToSave = OfferRank(
                 offerRank.id,
                 offerRank.rank,
                 offerRank.offerId,
                 offerRank.rankerId,
                 originalOffer.createdAt,
                 Date()
-        )
-        return CompletableFuture.supplyAsync {
+            )
             return@supplyAsync offerRankRepository
-                    .changeStrategy(strategy)
-                    .saveRankOffer(readyToSave)
+                .changeStrategy(strategy)
+                .saveRankOffer(readyToSave)
+
         }
     }
+
     fun getOfferRanksByOfferId(
             strategy: RepositoryStrategyType,
             offerId: Long?
     ): CompletableFuture<List<OfferRank>> {
-        if (offerId == 0L) {
-            throw Error("offerId is required")
-        }
         return CompletableFuture.supplyAsync  {
+            if (offerId == 0L) {
+                BadArgumentException()
+            }
             offerRankRepository
                     .changeStrategy(strategy)
                     .findByOfferId(offerId!!)
