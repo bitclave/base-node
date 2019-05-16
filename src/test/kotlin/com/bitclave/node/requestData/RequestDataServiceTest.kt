@@ -440,6 +440,12 @@ class RequestDataServiceTest {
 
         requestDataService.grantAccess(alisa, grantRequests, strategy).get()
 
+        // Alisa grant for manTwo
+        val grantRequestsAlisaManTwo =
+            arrayListOf(RequestData(0, manTwo, alisa, alisa, "last_name_key", "is last name Alisa"))
+
+        requestDataService.grantAccess(alisa, grantRequestsAlisaManTwo, strategy).get()
+
         // Bob reShare for Joe
         val grantForJoe = arrayListOf(
             RequestData(0, joe, bob, alisa, "name_key", "Alisa"),
@@ -455,13 +461,17 @@ class RequestDataServiceTest {
         requestDataService.grantAccess(joe, arrayListOf(grantForManTwo), strategy).get()
 
         var allItems = requestDataCrudRepository.findAll().toList()
-        assert(allItems.size == 6)
+        assert(allItems.size == 7)
 
         val revokeRequest = RequestData(0, bob, alisa, alisa, "name_key")
         requestDataService.revokeAccess(alisa, listOf(revokeRequest), strategy).get()
 
+        val grantedFromAlisaToManTwo = requestDataCrudRepository.findByFromPkAndToPk(manTwo, alisa)
+        assert(grantedFromAlisaToManTwo.size == 1)
+        assert(grantedFromAlisaToManTwo[0].requestData == "last_name_key")
+
         allItems = requestDataCrudRepository.findAll().toList()
-        assert(allItems.size == 2)
+        assert(allItems.size == 3)
 
         allItems.forEach { assert(it.requestData == "last_name_key") }
     }

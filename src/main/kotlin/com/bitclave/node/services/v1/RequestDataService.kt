@@ -142,6 +142,8 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
 
             data.forEach { request ->
                 val tree = findDependencies(request.toPk, request.rootPk, request.requestData, strategy)
+                    .filter { it.from == request.fromPk }
+
                 val list = treeToListOfRequests(tree)
 
                 idsForDelete.addAll(list.map { itemResult -> itemResult.id })
