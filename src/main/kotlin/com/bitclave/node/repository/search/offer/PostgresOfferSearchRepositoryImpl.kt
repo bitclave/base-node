@@ -56,7 +56,7 @@ class PostgresOfferSearchRepositoryImpl(
                 else -> mutableListOf()
             }
         }
-        logger.debug { "saveSearchResult: step 1 -> querySearchRequestCrudRepository.save(). ms: $step1, l1: $list.size, l2: $allOffersByOwner.size" }
+        logger.debug { "saveSearchResult: step 1: ms: $step1, l1: $list.size, l2: $allOffersByOwner.size" }
 
         val step2 = measureTimeMillis {
             list.forEach { offer ->
@@ -94,12 +94,12 @@ class PostgresOfferSearchRepositoryImpl(
                 }
             }
         }
-        logger.debug { "saveSearchResult: step 2 -> querySearchRequestCrudRepository.save(). ms: $step2, l1: $list.size, l2: $allOffersByOwner.size" }
+        logger.debug { "saveSearchResult: step 2: ms: $step2, l1: $list.size, l2: $allOffersByOwner.size" }
 
         val step3 = measureTimeMillis {
             repository.save(allOffersByOwner) ?: throw DataNotSavedException()
         }
-        logger.debug { "saveSearchResult: step 3 -> querySearchRequestCrudRepository.save(). ms: $step3, l1: $list.size, l2: $allOffersByOwner.size" }
+        logger.debug { "saveSearchResult: step 3: ms: $step3, l1: $list.size, l2: $allOffersByOwner.size" }
     }
 
     override fun saveSearchResult(item: OfferSearch) {
