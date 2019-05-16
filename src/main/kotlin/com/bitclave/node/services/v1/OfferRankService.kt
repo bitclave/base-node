@@ -72,7 +72,6 @@ class OfferRankService(
             return@supplyAsync offerRankRepository
                 .changeStrategy(strategy)
                 .saveRankOffer(readyToSave)
-
         }
     }
 
