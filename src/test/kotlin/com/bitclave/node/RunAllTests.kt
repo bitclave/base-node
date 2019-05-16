@@ -8,6 +8,7 @@ import com.bitclave.node.clientData.ClientProfileServiceHybridTest
 import com.bitclave.node.clientData.ClientProfileServiceTest
 import com.bitclave.node.offer.OfferControllerTest
 import com.bitclave.node.offer.OfferServiceTest
+import com.bitclave.node.offerRank.OfferRankControllerTest
 import com.bitclave.node.requestData.RequestDataControllerTest
 import com.bitclave.node.requestData.RequestDataServiceHybridTest
 import com.bitclave.node.requestData.RequestDataServiceTest
@@ -47,7 +48,8 @@ import org.junit.runners.Suite
         OfferSearchControllerTest::class,
         OfferSearchServiceTest::class,
         OfferShareControllerTest::class,
-        OfferShareServiceTest::class
+        OfferShareServiceTest::class,
+        OfferRankControllerTest::class
     ]
 )
 class RunAllTests
