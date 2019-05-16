@@ -29,6 +29,7 @@ class PostgresOfferSearchRepositoryImpl(
 
     override fun saveSearchResult(list: List<OfferSearch>) {
         var allOffersByOwner: MutableList<OfferSearch> = emptyList<OfferSearch>().toMutableList()
+        val offersToUpdate: MutableList<OfferSearch> = emptyList<OfferSearch>().toMutableList()
 
         val step1 = measureTimeMillis {
             val searchRequestsIds = list
@@ -87,19 +88,19 @@ class PostgresOfferSearchRepositoryImpl(
                                 events = events,
                                 info = firstItem.info
                         )
-                        allOffersByOwner.add(copiedOffer)
+                        offersToUpdate.add(copiedOffer)
                     }
 
-                    relatedOfferSearches.isEmpty() -> allOffersByOwner.add(offer.copy())
+                    relatedOfferSearches.isEmpty() -> offersToUpdate.add(offer.copy())
                 }
             }
         }
-        logger.debug { "saveSearchResult: step 2: ms: $step2, l1: ${list.size}, l2: ${allOffersByOwner.size}" }
+        logger.debug { "saveSearchResult: step 2: ms: $step2, l1: ${list.size}, l2: ${offersToUpdate.size}" }
 
         val step3 = measureTimeMillis {
-            repository.save(allOffersByOwner) ?: throw DataNotSavedException()
+            repository.save(offersToUpdate) ?: throw DataNotSavedException()
         }
-        logger.debug { "saveSearchResult: step 3: ms: $step3, l1: ${list.size}, l2: ${allOffersByOwner.size}" }
+        logger.debug { "saveSearchResult: step 3: ms: $step3, l1: ${list.size}, l2: ${offersToUpdate.size}" }
     }
 
     override fun saveSearchResult(item: OfferSearch) {
