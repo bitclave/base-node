@@ -30,7 +30,7 @@ class OfferRankControllerTest {
     private val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
     protected lateinit var requestOfferRank: SignedRequest<OfferRank>
     private var httpHeaders: HttpHeaders = HttpHeaders()
-    private val offerRank = OfferRank(0, 10, 1234567,1)
+    private val offerRank = OfferRank(0, 10, 1234567, 1)
 
     @Before
     fun setup() {
@@ -40,6 +40,7 @@ class OfferRankControllerTest {
         httpHeaders.set("Content-Type", "application/json")
         httpHeaders.set("Strategy", RepositoryStrategyType.POSTGRES.name)
     }
+
     @Test
     fun `create offer`() {
         this.mvc.perform(

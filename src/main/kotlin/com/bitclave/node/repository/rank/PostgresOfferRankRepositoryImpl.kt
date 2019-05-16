@@ -6,13 +6,11 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 
-
-
 @Component
 @Qualifier("postgres")
 class PostgresOfferRankRepositoryImpl(
-        val repository: OfferRankCrudRepository
-): OfferRankRepository {
+    val repository: OfferRankCrudRepository
+) : OfferRankRepository {
     override fun findByOfferIdAndRankerId(offerId: Long, rankerId: Long): OfferRank? {
         return repository.findByOfferIdAndRankerId(offerId, rankerId)
     }
