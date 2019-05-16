@@ -170,7 +170,8 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
         to: String,
         from: String,
         root: String,
-        requestData: String, strategy: RepositoryStrategyType
+        requestData: String,
+        strategy: RepositoryStrategyType
     ): Boolean {
         val tree = findDependencies(to, root, requestData, strategy)
 

@@ -7,7 +7,8 @@ import org.junit.Before
 import org.junit.Ignore
 import org.springframework.beans.factory.annotation.Autowired
 
-@Ignore  // todo return test when will fixed code for Ethereum
+// todo return test when will fixed code for Ethereum
+@Ignore
 class RequestDataServiceHybridTest : RequestDataServiceTest() {
 
     @Autowired
