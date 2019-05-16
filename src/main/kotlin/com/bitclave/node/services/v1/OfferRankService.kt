@@ -12,16 +12,16 @@ import java.util.Date
 
 @Service
 @Qualifier("v1")
-class OfferRankService (
-        private val offerRankRepository: RepositoryStrategy<OfferRankRepository>
+class OfferRankService(
+    private val offerRankRepository: RepositoryStrategy<OfferRankRepository>
 ) {
     fun createOfferRank(
-            strategy: RepositoryStrategyType,
-            offerRank: OfferRank
+        strategy: RepositoryStrategyType,
+        offerRank: OfferRank
     ): CompletableFuture<OfferRank> {
-        return CompletableFuture.supplyAsync  {
+        return CompletableFuture.supplyAsync {
 
-            var existedOfferRank: OfferRank? = offerRankRepository
+            val existedOfferRank: OfferRank? = offerRankRepository
                 .changeStrategy(strategy)
                 .findByOfferIdAndRankerId(offerRank.offerId, offerRank.rankerId)
 
@@ -41,9 +41,10 @@ class OfferRankService (
             }
         }
     }
+
     fun updateOfferRank(
-            strategy: RepositoryStrategyType,
-            offerRank: OfferRank
+        strategy: RepositoryStrategyType,
+        offerRank: OfferRank
     ): CompletableFuture<OfferRank> {
 
         return CompletableFuture.supplyAsync {
@@ -55,7 +56,8 @@ class OfferRankService (
                 .findById(offerRank.id) ?: throw BadArgumentException()
 
             if (originalOffer.offerId != offerRank.offerId ||
-                originalOffer.rankerId != offerRank.rankerId) {
+                originalOffer.rankerId != offerRank.rankerId
+            ) {
                 throw BadArgumentException("you can change only rank in existed OfferRank")
             }
 
@@ -75,16 +77,16 @@ class OfferRankService (
     }
 
     fun getOfferRanksByOfferId(
-            strategy: RepositoryStrategyType,
-            offerId: Long?
+        strategy: RepositoryStrategyType,
+        offerId: Long?
     ): CompletableFuture<List<OfferRank>> {
-        return CompletableFuture.supplyAsync  {
+        return CompletableFuture.supplyAsync {
             if (offerId == 0L) {
                 BadArgumentException()
             }
             offerRankRepository
-                    .changeStrategy(strategy)
-                    .findByOfferId(offerId!!)
+                .changeStrategy(strategy)
+                .findByOfferId(offerId!!)
         }
     }
 }
