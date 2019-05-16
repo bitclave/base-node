@@ -2,8 +2,12 @@ package com.bitclave.node.repository.models
 
 import org.hibernate.annotations.ColumnDefault
 import org.springframework.format.annotation.DateTimeFormat
-import java.util.*
-import javax.persistence.*
+import java.util.Date
+import javax.persistence.Column
+import javax.persistence.Entity
+import javax.persistence.GeneratedValue
+import javax.persistence.GenerationType
+import javax.persistence.Id
 
 @Entity
 data class OfferRank(

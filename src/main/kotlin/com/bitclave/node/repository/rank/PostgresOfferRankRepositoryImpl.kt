@@ -2,8 +2,6 @@ package com.bitclave.node.repository.rank
 
 import com.bitclave.node.repository.models.OfferRank
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 
 @Component
