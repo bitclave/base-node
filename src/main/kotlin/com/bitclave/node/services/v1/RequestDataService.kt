@@ -48,12 +48,6 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
             val existed = requestDataRepository.changeStrategy(strategy)
                 .getByFromAndTo(clientPk, toPk)
 
-            val deprecatedItems = existed.filter { it.rootPk.isEmpty() }
-
-            if (deprecatedItems.isNotEmpty()) {
-                requestDataRepository.changeStrategy(strategy).deleteByIds(deprecatedItems.map { it.id })
-            }
-
             val result: List<RequestData> = data
                 .filter { item -> existed.find { existedItem -> existedItem.requestData == item.requestData } == null }
                 .map { item ->
@@ -94,6 +88,12 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
 
             val existed = requestDataRepository.changeStrategy(strategy)
                 .getByFromAndTo(fromPk, clientId)
+
+            val deprecatedItems = existed.filter { it.rootPk.isEmpty() }
+
+            if (deprecatedItems.isNotEmpty()) {
+                requestDataRepository.changeStrategy(strategy).deleteByIds(deprecatedItems.map { it.id })
+            }
 
             val result = data.map { item ->
                 if (item.rootPk != item.toPk) {
