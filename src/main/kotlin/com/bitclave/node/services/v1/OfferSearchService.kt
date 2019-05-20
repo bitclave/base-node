@@ -110,9 +110,11 @@ class OfferSearchService(
                 searchRequestIds.isNotEmpty() && state.isEmpty() ->
                     repository.findAllByOwnerAndSearchRequestIdIn(owner, searchRequestIds)
 
-                searchRequestIds.isEmpty() && state.isNotEmpty() -> repository.findAllByOwnerAndStateIn(owner, state)
+                searchRequestIds.isEmpty() && state.isNotEmpty() ->
+                    repository.findAllByOwnerAndStateIn(owner, state)
 
-                else -> repository.findByOwner(owner)
+                else ->
+                    repository.findByOwner(owner)
             }
 
             val filteredByUnique = if (unique) {
