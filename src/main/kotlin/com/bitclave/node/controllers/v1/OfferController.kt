@@ -13,6 +13,8 @@ import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PathVariable
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
+import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.concurrent.CompletableFuture
 
@@ -200,6 +203,53 @@ class OfferController(
 
         return offerService.getOffers(id ?: 0, owner, getStrategyType(strategy)).exceptionally { e ->
             logger.error("Request: getOffer/$owner/$id raised $e")
+            throw e
+        }
+    }
+
+    @ApiOperation(
+        "Page through already created offers by owner", response = Offer::class, responseContainer = "Page"
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(code = 200, message = "Success", response = Page::class)
+        ]
+    )
+    @RequestMapping(value = ["/owner"], method = [RequestMethod.GET], params = ["page", "size"])
+    fun getPageableOffersByOwner(
+        @ApiParam("owner who create offer(s)", required = true)
+        @PathVariable("owner", required = true)
+        owner: String,
+
+        @ApiParam("Optional page number to retrieve a particular page. If not specified this API retrieves first page.")
+        @RequestParam("page")
+        page: Int?,
+
+        @ApiParam("Optional page size to include number of offers in a page. Defaults to 20.")
+        @RequestParam("size")
+        size: Int?,
+
+        @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
+    ): CompletableFuture<Page<Offer>> {
+
+        if (page == null || size == null) {
+            return offerService.getPageableOffersByOwner(
+                owner,
+                PageRequest(0, 20), getStrategyType(strategy)
+            ).exceptionally { e ->
+                logger.error("Request: getPageableOffers/$page/$size raised $e")
+                throw e
+            }
+        }
+
+        return offerService.getPageableOffersByOwner(
+            owner,
+            PageRequest(page, size),
+            getStrategyType(strategy)
+        ).exceptionally { e ->
+            logger.error("Request: getPageableOffers/$page/$size raised $e")
             throw e
         }
     }
