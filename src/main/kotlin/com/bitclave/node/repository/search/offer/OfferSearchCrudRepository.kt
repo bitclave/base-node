@@ -47,7 +47,7 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
             SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank
             FROM offer_search s LEFT JOIN offer_rank r ON s.offer_id = r.offer_id
             WHERE s.owner = :owner
-            order by united_rank desc, s.updated_at asc
+            order by united_rank desc, s.updated_at DESC
         """,
         nativeQuery = true
     )
