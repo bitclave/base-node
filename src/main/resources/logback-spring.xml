@@ -80,4 +80,16 @@
         <appender-ref ref="Elastic" />
     </root>
 
+    <logger name="org.hibernate" level="ERROR">
+        <appender-ref ref="RollingFile" />
+        <appender-ref ref="Console" />
+        <appender-ref ref="Elastic" />
+    </logger>
+
+    <logger name="org.hibernate" level="INFO">
+        <appender-ref ref="RollingFile" />
+        <appender-ref ref="Console" />
+        <appender-ref ref="Elastic" />
+    </logger>
+
 </configuration>
