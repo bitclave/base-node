@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.PagingAndSortingRepository
+import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 
@@ -39,6 +40,85 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     fun findAllByOwnerAndSearchRequestIdIn(owner: String, searchIds: List<Long>): List<OfferSearch>
 
     fun findByOwnerAndOfferId(owner: String, offerId: Long): List<OfferSearch>
+
+
+    @Query(
+        value = """
+            SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank
+            FROM offer_search s LEFT JOIN offer_rank r ON s.offer_id = r.offer_id
+            WHERE s.owner = :owner
+            order by united_rank desc, s.updated_at asc
+        """,
+        nativeQuery = true
+    )
+    fun getOfferSearchByIdsSortByRank(@Param("owner") owner: String): List<OfferSearch>
+
+    @Query(
+        value = """
+            SELECT *
+            FROM offer_search s, offer o WHERE s.offer_id = o.id AND s.owner = :owner
+            ORDER BY o.updated_at ASC
+        """,
+        nativeQuery = true
+    )
+    fun getOfferSearchByIdsSortByUpdatedAt(@Param("owner") owner: String): List<OfferSearch>
+
+    @Query(
+        value = """
+            SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank
+            FROM offer_search s LEFT JOIN offer_rank r ON s.offer_id = r.offer_id
+            WHERE s.owner = :owner AND s.state IN :state
+            order by united_rank desc, s.updated_at asc
+        """,
+        nativeQuery = true
+    )
+    fun getOfferSearchByOwnerAndStateSortByRank(
+        @Param("owner") owner: String,
+        @Param("state") state: List<Long>
+    ): List<OfferSearch>
+
+    @Query(
+        value = """
+            SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank
+            FROM offer_search s LEFT JOIN offer_rank r ON s.offer_id = r.offer_id
+            WHERE s.owner = :owner AND s.state IN :state
+            order by s.updated_at asc
+        """,
+        nativeQuery = true
+    )
+    fun getOfferSearchByOwnerAndStateSortByUpdatedAt(
+        @Param("owner") owner: String,
+        @Param("state") state: List<Long>
+    ): List<OfferSearch>
+
+    @Query(
+        value = """
+            SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank
+            FROM offer_search s LEFT JOIN offer_rank r ON s.offer_id = r.offer_id
+            where s.owner = :owner AND s.search_request_id IN :ids
+            order by united_rank desc, s.updated_at asc
+        """,
+        nativeQuery = true
+    )
+    fun getOfferSearchByOwnerAndSearchRequestIdInSortByRank(
+        @Param("owner") owner: String,
+        @Param("ids") searchRequestIds: List<Long>
+    ): List<OfferSearch>
+
+    @Query(
+        value = """
+            SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank
+            FROM offer_search s LEFT JOIN offer_rank r ON s.offer_id = r.offer_id
+            where s.owner = :owner AND s.search_request_id IN :ids
+            order by s.updated_at asc
+        """,
+        nativeQuery = true
+    )
+    fun getOfferSearchByOwnerAndSearchRequestIdInSortByUpdatedAt(
+        @Param("owner") owner: String,
+        @Param("ids") searchRequestIds: List<Long>
+    ): List<OfferSearch>
+
 
     @Query(
         value = "SELECT s.* from offer_search s, " +
