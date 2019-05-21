@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.web.client.HttpClientErrorException
 import java.util.Date
@@ -87,7 +88,10 @@ class OfferSearchService(
                 PageImpl(arrayOfferSearch, pageable, arrayOfferSearch.size.toLong())
             }
 
-            val content = offerSearchListToResult(result.content, offerRepository.changeStrategy(strategy))
+            val content = offerSearchListToResult(
+                result.content,
+                offerRepository.changeStrategy(strategy)
+            )
             val pageable = PageRequest(result.number, result.size, result.sort)
 
             PageImpl(content, pageable, result.totalElements)
@@ -100,7 +104,7 @@ class OfferSearchService(
         unique: Boolean = false,
         searchRequestIds: List<Long> = emptyList(),
         state: List<OfferResultAction> = emptyList(),
-        pageRequest: PageRequest = PageRequest(0, 20)
+        pageRequest: PageRequest = PageRequest(0, 20, Sort("rank"))
     ): CompletableFuture<Page<OfferSearchResultItem>> {
 
         return CompletableFuture.supplyAsync {
@@ -108,13 +112,13 @@ class OfferSearchService(
 
             val offerSearches = when {
                 searchRequestIds.isNotEmpty() && state.isEmpty() ->
-                    repository.findAllByOwnerAndSearchRequestIdIn(owner, searchRequestIds)
+                    repository.findAllByOwnerAndSearchRequestIdIn(owner, searchRequestIds, pageRequest.sort)
 
                 searchRequestIds.isEmpty() && state.isNotEmpty() ->
-                    repository.findAllByOwnerAndStateIn(owner, state)
+                    repository.findAllByOwnerAndStateIn(owner, state, pageRequest.sort)
 
                 else ->
-                    repository.findByOwner(owner)
+                    repository.findByOwner(owner, pageRequest.sort)
             }
 
             val filteredByUnique = if (unique) {
@@ -124,7 +128,10 @@ class OfferSearchService(
                 offerSearches
             }
 
-            val content = offerSearchListToResult(filteredByUnique, offerRepository.changeStrategy(strategy))
+            val content = offerSearchListToResult(
+                filteredByUnique,
+                offerRepository.changeStrategy(strategy)
+            )
 
             val subItems = content.subList(
                 Math.min(pageRequest.pageNumber * pageRequest.pageSize, content.size),
@@ -549,7 +556,8 @@ class OfferSearchService(
                 .findBySearchRequestIdAndOfferIds(searchRequestId, offerIds.content)
 
             val resultItems = offerSearchListToResult(
-                offerSearchResult, offerRepository.changeStrategy(strategyType)
+                offerSearchResult,
+                offerRepository.changeStrategy(strategyType)
             )
 
             val pageable = PageRequest(offerIds.number, offerIds.size, offerIds.sort)
@@ -562,11 +570,8 @@ class OfferSearchService(
         offerSearch: List<OfferSearch>,
         offersRepository: OfferRepository
     ): List<OfferSearchResultItem> {
-        val offerIds = offerSearch.map { it.offerId }
-            .distinct()
-        val offers = offersRepository
-            .findByIds(offerIds)
-            .groupBy { it.id }
+        val offerIds = offerSearch.map { it.offerId }.distinct()
+        val offers = offersRepository.findByIds(offerIds).groupBy { it.id }
 
         val withExistedOffers = offerSearch.filter { offers.containsKey(it.offerId) }
         return withExistedOffers.map { OfferSearchResultItem(it, offers.getValue(it.offerId)[0]) }
