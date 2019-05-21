@@ -17,6 +17,7 @@ import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
@@ -200,6 +201,10 @@ class OfferSearchController(
         @RequestParam("size", defaultValue = "20", required = false)
         size: Int,
 
+        @ApiParam("Optional type of sorting. Default is rank.")
+        @RequestParam("sort", defaultValue = "rank", required = false)
+        sort: String,
+
         @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
         @RequestHeader("Strategy", required = false)
         strategy: String?
@@ -211,7 +216,7 @@ class OfferSearchController(
             unique,
             searchIds,
             state,
-            PageRequest(page, size)
+            PageRequest(page, size, Sort(sort))
         ).exceptionally { e ->
             logger.error("Request: getResultByOwner/$owner raised $e")
             throw e
