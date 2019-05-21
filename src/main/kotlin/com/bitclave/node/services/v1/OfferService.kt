@@ -131,6 +131,17 @@ class OfferService(
         }
     }
 
+    fun getPageableOffersByOwner(
+        owner: String,
+        page: PageRequest,
+        strategy: RepositoryStrategyType
+    ): CompletableFuture<Page<Offer>> {
+        return CompletableFuture.supplyAsync {
+            val repository = offerRepository.changeStrategy(strategy)
+            return@supplyAsync repository.findByOwner(owner, page)
+        }
+    }
+
     fun getOfferTotalCount(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Long> {
