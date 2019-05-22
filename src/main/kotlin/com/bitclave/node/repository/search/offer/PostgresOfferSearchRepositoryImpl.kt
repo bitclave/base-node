@@ -12,6 +12,8 @@ import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Component
 import java.util.ArrayList
+import kotlin.system.measureTimeMillis
+import mu.KotlinLogging
 
 @Component
 @Qualifier("postgres")
@@ -20,72 +22,85 @@ class PostgresOfferSearchRepositoryImpl(
     val searchRequestRepository: SearchRequestRepository
 ) : OfferSearchRepository {
 
+    private val logger = KotlinLogging.logger {}
+
     override fun deleteAllBySearchRequestId(id: Long): Long {
         return repository.deleteAllBySearchRequestId(id)
     }
 
     override fun saveSearchResult(list: List<OfferSearch>) {
-        val searchRequestsIds = list
-            .map { it.searchRequestId }
-            .distinct()
+        var allOffersByOwner: MutableList<OfferSearch> = emptyList<OfferSearch>().toMutableList()
 
-        val existedRequests = searchRequestRepository.findById(searchRequestsIds)
-        if (searchRequestsIds.size != existedRequests.size) {
-            throw throw BadArgumentException("search request id not exist")
-        }
+        val step1 = measureTimeMillis {
+            val searchRequestsIds = list
+                    .map { it.searchRequestId }
+                    .distinct()
 
-        val owners = list
-            .map { it.owner }
-            .distinct()
+            val existedRequests = searchRequestRepository.findById(searchRequestsIds)
+            if (searchRequestsIds.size != existedRequests.size) {
+                throw throw BadArgumentException("search request id not exist")
+            }
 
-        val allOffersByOwner = when {
-            list.size == 1 -> repository
-                .findByOwnerAndOfferId(list[0].owner, list[0].offerId)
-                .toMutableList()
+            val owners = list
+                    .map { it.owner }
+                    .distinct()
 
-            list.size > 1 -> repository
-                .findByOwnerIn(owners)
-                .toMutableList()
-
-            else -> mutableListOf()
-        }
-
-        list.forEach { offer ->
-            val relatedOfferSearches = allOffersByOwner
-                .filter {
-                    it.id > 0 &&
-                        it.offerId == offer.offerId &&
-                        it.owner == offer.owner
-                }
-
-            relatedOfferSearches.forEach { it.updatedAt = offer.updatedAt }
-
-            when {
-                offer.id > 0 -> relatedOfferSearches.forEach { related ->
-                    related.state = offer.state
-                    related.events = offer.events
-                    related.info = offer.info
-                }
-
-                relatedOfferSearches.isNotEmpty() -> {
-                    val firstItem = relatedOfferSearches[0]
-                    val events = offer.events
+            allOffersByOwner = when {
+                list.size == 1 -> repository
+                        .findByOwnerAndOfferId(list[0].owner, list[0].offerId)
                         .toMutableList()
-                    events.addAll(firstItem.events)
 
-                    val copiedOffer = offer.copy(
-                        state = firstItem.state,
-                        events = events,
-                        info = firstItem.info
-                    )
-                    allOffersByOwner.add(copiedOffer)
-                }
+                list.size > 1 -> repository
+                        .findByOwnerIn(owners)
+                        .toMutableList()
 
-                relatedOfferSearches.isEmpty() -> allOffersByOwner.add(offer.copy())
+                else -> mutableListOf()
             }
         }
+        logger.debug { "saveSearchResult: step 1: ms: $step1, l1: ${list.size}, l2: ${allOffersByOwner.size}" }
 
-        repository.save(allOffersByOwner) ?: throw DataNotSavedException()
+        val step2 = measureTimeMillis {
+            list.forEach { offer ->
+                val relatedOfferSearches = allOffersByOwner
+                        .filter {
+                            it.id > 0 &&
+                                    it.offerId == offer.offerId &&
+                                    it.owner == offer.owner
+                        }
+
+                relatedOfferSearches.forEach { it.updatedAt = offer.updatedAt }
+
+                when {
+                    offer.id > 0 -> relatedOfferSearches.forEach { related ->
+                        related.state = offer.state
+                        related.events = offer.events
+                        related.info = offer.info
+                    }
+
+                    relatedOfferSearches.isNotEmpty() -> {
+                        val firstItem = relatedOfferSearches[0]
+                        val events = offer.events
+                                .toMutableList()
+                        events.addAll(firstItem.events)
+
+                        val copiedOffer = offer.copy(
+                                state = firstItem.state,
+                                events = events,
+                                info = firstItem.info
+                        )
+                        allOffersByOwner.add(copiedOffer)
+                    }
+
+                    relatedOfferSearches.isEmpty() -> allOffersByOwner.add(offer.copy())
+                }
+            }
+        }
+        logger.debug { "saveSearchResult: step 2: ms: $step2, l1: ${list.size}, l2: ${allOffersByOwner.size}" }
+
+        val step3 = measureTimeMillis {
+            repository.save(allOffersByOwner) ?: throw DataNotSavedException()
+        }
+        logger.debug { "saveSearchResult: step 3: ms: $step3, l1: ${list.size}, l2: ${allOffersByOwner.size}" }
     }
 
     override fun saveSearchResult(item: OfferSearch) {

@@ -51,6 +51,10 @@ class PostgresOfferRepositoryImpl(
         return repository.findByOwner(owner)
     }
 
+    override fun findByOwner(owner: String, pageable: Pageable): Page<Offer> {
+        return repository.findByOwner(owner, pageable)
+    }
+
     override fun findById(id: Long): Offer? {
         return repository.findById(id)
     }

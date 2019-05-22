@@ -14,6 +14,8 @@ interface OfferRepository {
 
     fun findByOwner(owner: String): List<Offer>
 
+    fun findByOwner(owner: String, pageable: Pageable): Page<Offer>
+
     fun findByIds(ids: List<Long>, pageable: Pageable): Page<Offer>
 
     fun findByIds(ids: List<Long>): List<Offer>

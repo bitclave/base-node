@@ -22,11 +22,11 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 import org.springframework.web.client.HttpClientErrorException
 import java.util.Date
 import java.util.concurrent.CompletableFuture
+import kotlin.system.measureTimeMillis
 
 open class OfferSearchEvent(
     _updater: String,
@@ -88,10 +88,7 @@ class OfferSearchService(
                 PageImpl(arrayOfferSearch, pageable, arrayOfferSearch.size.toLong())
             }
 
-            val content = offerSearchListToResult(
-                result.content,
-                offerRepository.changeStrategy(strategy)
-            )
+            val content = offerSearchListToResult(result.content, offerRepository.changeStrategy(strategy))
             val pageable = PageRequest(result.number, result.size, result.sort)
 
             PageImpl(content, pageable, result.totalElements)
@@ -508,61 +505,93 @@ class OfferSearchService(
                 throw BadArgumentException("SearchRequest not has rtSearch tag")
             }
 
-            searchRequestRepository
-                .changeStrategy(strategyType)
-                .saveSearchRequest(searchRequest.copy(updatedAt = Date()))
+            val step1 = measureTimeMillis {
+                searchRequestRepository
+                    .changeStrategy(strategyType)
+                    .saveSearchRequest(searchRequest.copy(updatedAt = Date()))
+            }
+            logger.debug { "step 1 -> saveSearchRequest(). ms: $step1" }
 
             val querySearchRequest = QuerySearchRequest(0, owner, query)
 
-            querySearchRequestCrudRepository.save(querySearchRequest)
+            val step2 = measureTimeMillis {
+                querySearchRequestCrudRepository.save(querySearchRequest)
+            }
+            logger.debug { "step 2 -> querySearchRequestCrudRepository.save(). ms: $step2" }
 
-            val existedOfferSearches = offerSearchRepository
-                .changeStrategy(strategyType)
-                .findBySearchRequestId(searchRequestId)
+            var existedOfferSearches: List<OfferSearch> = emptyList()
 
-            val offerIds: Page<Long>
+            val step3 = measureTimeMillis {
+                existedOfferSearches = offerSearchRepository
+                    .changeStrategy(strategyType)
+                    .findBySearchRequestId(searchRequestId)
+            }
+            logger.debug { "step 3 -> findBySearchRequestId(). ms: $step3" }
 
-            try {
-                offerIds = rtSearchRepository
-                    .getOffersIdByQuery(query, pageRequest)
-                    .get()
-            } catch (e: HttpClientErrorException) {
-                logger.error("rt-search error: $e")
+            var offerIds: Page<Long> = PageImpl(emptyList<Long>(), PageRequest(0, 1), 0)
 
-                if (e.rawStatusCode > 499) {
-                    val pageable = PageRequest(0, 0)
-                    return@supplyAsync PageImpl(emptyList<OfferSearchResultItem>(), pageable, 0)
-                } else {
-                    throw e
+            val step4 = measureTimeMillis {
+                try {
+                    offerIds = rtSearchRepository
+                        .getOffersIdByQuery(query, pageRequest)
+                        .get()
+                } catch (e: HttpClientErrorException) {
+                    logger.error("rt-search error: $e")
+
+                    if (e.rawStatusCode > 499) {
+                        val pageable = PageRequest(0, 1)
+                        return@supplyAsync PageImpl(emptyList<OfferSearchResultItem>(), pageable, 0)
+                    } else {
+                        throw e
+                    }
                 }
             }
+            logger.debug { "step 4 -> getOffersIdByQuery(). ms: $step4" }
 
-            val setOfExistedOfferSearch = existedOfferSearches
-                .map { it.offerId }
-                .toSet()
+            var offerSearches: List<OfferSearch> = emptyList()
+            val step5 = measureTimeMillis {
+                val setOfExistedOfferSearch = existedOfferSearches
+                    .map { it.offerId }
+                    .toSet()
 
-            val offerIdsWithoutExisted = offerIds
-                .filter { !setOfExistedOfferSearch.contains(it) }
+                val offerIdsWithoutExisted = offerIds
+                    .filter { !setOfExistedOfferSearch.contains(it) }
 
-            val offerSearches = offerIdsWithoutExisted.map {
-                OfferSearch(0, owner, searchRequest.id, it)
+                offerSearches = offerIdsWithoutExisted.map {
+                    OfferSearch(0, owner, searchRequest.id, it)
+                }
             }
+            logger.debug { "step 5 -> merge offerSearches. ms: $step5" }
 
-            offerSearchRepository
-                .changeStrategy(strategyType)
-                .saveSearchResult(offerSearches)
+            val step6 = measureTimeMillis {
+                offerSearchRepository
+                    .changeStrategy(strategyType)
+                    .saveSearchResult(offerSearches)
+            }
+            logger.debug { "step 6 -> saveSearchResult(). ms: $step6" }
 
-            val offerSearchResult = offerSearchRepository.changeStrategy(strategyType)
-                .findBySearchRequestIdAndOfferIds(searchRequestId, offerIds.content)
+            var offerSearchResult: List<OfferSearch> = emptyList()
 
-            val resultItems = offerSearchListToResult(
-                offerSearchResult,
-                offerRepository.changeStrategy(strategyType)
-            )
+            val step7 = measureTimeMillis {
+                offerSearchResult = offerSearchRepository.changeStrategy(strategyType)
+                    .findBySearchRequestIdAndOfferIds(searchRequestId, offerIds.content)
+            }
+            logger.debug { "step 7 -> findBySearchRequestIdAndOfferIds(). ms: $step7" }
 
-            val pageable = PageRequest(offerIds.number, offerIds.size, offerIds.sort)
+            var result: Page<OfferSearchResultItem> = PageImpl(emptyList<OfferSearchResultItem>(), PageRequest(0, 1), 0)
 
-            PageImpl(resultItems, pageable, offerIds.totalElements) as Page<OfferSearchResultItem>
+            val step8 = measureTimeMillis {
+                val resultItems = offerSearchListToResult(
+                    offerSearchResult, offerRepository.changeStrategy(strategyType)
+                )
+
+                val pageable = PageRequest(offerIds.number, offerIds.size, offerIds.sort)
+
+                result = PageImpl(resultItems, pageable, offerIds.totalElements)
+            }
+            logger.debug { "step 8 -> findBySearchRequestIdAndOfferIds(). ms: $step8" }
+
+            result
         }
     }
 
@@ -570,8 +599,11 @@ class OfferSearchService(
         offerSearch: List<OfferSearch>,
         offersRepository: OfferRepository
     ): List<OfferSearchResultItem> {
-        val offerIds = offerSearch.map { it.offerId }.distinct()
-        val offers = offersRepository.findByIds(offerIds).groupBy { it.id }
+        val offerIds = offerSearch.map { it.offerId }
+            .distinct()
+        val offers = offersRepository
+            .findByIds(offerIds)
+            .groupBy { it.id }
 
         val withExistedOffers = offerSearch.filter { offers.containsKey(it.offerId) }
         return withExistedOffers.map { OfferSearchResultItem(it, offers.getValue(it.offerId)[0]) }
