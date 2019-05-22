@@ -104,7 +104,7 @@ class OfferSearchService(
         unique: Boolean = false,
         searchRequestIds: List<Long> = emptyList(),
         state: List<OfferResultAction> = emptyList(),
-        pageRequest: PageRequest = PageRequest(0, 20, Sort("rank"))
+        pageRequest: PageRequest = PageRequest(0, 20)
     ): CompletableFuture<Page<OfferSearchResultItem>> {
 
         return CompletableFuture.supplyAsync {
