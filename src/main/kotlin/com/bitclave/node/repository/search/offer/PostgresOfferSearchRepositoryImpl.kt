@@ -128,8 +128,8 @@ class PostgresOfferSearchRepositoryImpl(
 
     override fun findByOwner(owner: String, sort: Sort?): List<OfferSearch> {
         return when(sort){
-            Sort(Sort.Direction.ASC, "rank") -> repository.getOfferSearchByIdsSortByRank(owner)
-            Sort( Sort.Direction.ASC, "updatedAt") -> repository.getOfferSearchByIdsSortByUpdatedAt(owner)
+            Sort(Sort.Direction.ASC, "rank") -> repository.getOfferSearchByOwnerAndSortByRank(owner)
+            Sort( Sort.Direction.ASC, "updatedAt") -> repository.getOfferSearchByOwnerAndSortByUpdatedAt(owner)
             else -> repository.findByOwner(owner)
         }
     }
@@ -216,14 +216,4 @@ class PostgresOfferSearchRepositoryImpl(
 
     override fun countBySearchRequestId(id: Long): Long = repository.countBySearchRequestId(id)
 
-    private fun sortForPosgres(sort: Sort?): List<String> {
-//        val conditions =  when (sort) {
-//            null -> listOf()
-//            Sort("updated: ASC") -> listOf("s.updated_at asc")
-//            Sort("created: ASC") -> listOf("s.created_at asc")
-//            else -> listOf("united_rank desc")
-//        }
-//        return conditions
-        return listOf<String>("united_rank desc", "s.updated_at asc")
-    }
 }
