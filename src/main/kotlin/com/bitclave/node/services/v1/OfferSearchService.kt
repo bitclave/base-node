@@ -109,11 +109,13 @@ class OfferSearchService(
 
             val offerSearches = when {
                 searchRequestIds.isNotEmpty() && state.isEmpty() ->
-                    repository.findAllByOwnerAndSearchRequestIdIn(owner, searchRequestIds)
+                    repository.findAllByOwnerAndSearchRequestIdIn(owner, searchRequestIds, pageRequest.sort)
 
-                searchRequestIds.isEmpty() && state.isNotEmpty() -> repository.findAllByOwnerAndStateIn(owner, state)
+                searchRequestIds.isEmpty() && state.isNotEmpty() ->
+                    repository.findAllByOwnerAndStateIn(owner, state, pageRequest.sort)
 
-                else -> repository.findByOwner(owner)
+                else ->
+                    repository.findByOwner(owner, pageRequest.sort)
             }
 
             val filteredByUnique = if (unique) {
@@ -123,7 +125,10 @@ class OfferSearchService(
                 offerSearches
             }
 
-            val content = offerSearchListToResult(filteredByUnique, offerRepository.changeStrategy(strategy))
+            val content = offerSearchListToResult(
+                filteredByUnique,
+                offerRepository.changeStrategy(strategy)
+            )
 
             val subItems = content.subList(
                 Math.min(pageRequest.pageNumber * pageRequest.pageSize, content.size),

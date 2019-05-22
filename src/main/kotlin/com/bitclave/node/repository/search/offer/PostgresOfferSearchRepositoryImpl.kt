@@ -9,6 +9,7 @@ import com.bitclave.node.services.errors.DataNotSavedException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Component
 import java.util.ArrayList
 import kotlin.system.measureTimeMillis
@@ -140,16 +141,46 @@ class PostgresOfferSearchRepositoryImpl(
         return repository.findBySearchRequestIdAndOfferIdIn(searchRequestId, offerIds)
     }
 
-    override fun findByOwner(owner: String): List<OfferSearch> {
-        return repository.findByOwner(owner)
+    override fun findByOwner(owner: String, sort: Sort?): List<OfferSearch> {
+        return when (sort) {
+            Sort(Sort.Direction.ASC, "rank") ->
+                repository.getOfferSearchByOwnerAndSortByRank(owner)
+            Sort(Sort.Direction.ASC, "updatedAt") ->
+                repository.getOfferSearchByOwnerAndSortByUpdatedAt(owner)
+            else ->
+                repository.findByOwner(owner)
+        }
     }
 
-    override fun findAllByOwnerAndStateIn(owner: String, state: List<OfferResultAction>): List<OfferSearch> {
-        return repository.findAllByOwnerAndStateIn(owner, state)
+    override fun findAllByOwnerAndStateIn(
+        owner: String,
+        state: List<OfferResultAction>,
+        sort: Sort?
+    ): List<OfferSearch> {
+        val condition = state.map { it.ordinal.toLong() }
+        return when (sort) {
+            Sort(Sort.Direction.ASC, "rank") ->
+                repository.getOfferSearchByOwnerAndStateSortByRank(owner, condition)
+            Sort(Sort.Direction.ASC, "updatedAt") ->
+                repository.getOfferSearchByOwnerAndStateSortByUpdatedAt(owner, condition)
+            else ->
+                repository.findAllByOwnerAndStateIn(owner, state)
+        }
     }
 
-    override fun findAllByOwnerAndSearchRequestIdIn(owner: String, searchRequestIds: List<Long>): List<OfferSearch> {
-        return repository.findAllByOwnerAndSearchRequestIdIn(owner, searchRequestIds)
+    override fun findAllByOwnerAndSearchRequestIdIn(
+        owner: String,
+        searchRequestIds: List<Long>,
+        sort: Sort?
+    ): List<OfferSearch> {
+        return when (sort) {
+            Sort(Sort.Direction.ASC, "rank") ->
+                repository.getOfferSearchByOwnerAndSearchRequestIdInSortByRank(owner, searchRequestIds)
+            Sort(Sort.Direction.ASC, "updatedAt") ->
+                repository.getOfferSearchByOwnerAndSearchRequestIdInSortByUpdatedAt(owner, searchRequestIds)
+            else ->
+                repository.findAllByOwnerAndSearchRequestIdIn(owner, searchRequestIds)
+        }
     }
 
     override fun findByOwnerAndOfferId(owner: String, offerId: Long): List<OfferSearch> {
