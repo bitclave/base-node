@@ -143,9 +143,12 @@ class PostgresOfferSearchRepositoryImpl(
 
     override fun findByOwner(owner: String, sort: Sort?): List<OfferSearch> {
         return when (sort) {
-            Sort(Sort.Direction.ASC, "rank") -> repository.getOfferSearchByOwnerAndSortByRank(owner)
-            Sort(Sort.Direction.ASC, "updatedAt") -> repository.getOfferSearchByOwnerAndSortByUpdatedAt(owner)
-            else -> repository.findByOwner(owner)
+            Sort(Sort.Direction.ASC, "rank") ->
+                repository.getOfferSearchByOwnerAndSortByRank(owner)
+            Sort(Sort.Direction.ASC, "updatedAt") ->
+                repository.getOfferSearchByOwnerAndSortByUpdatedAt(owner)
+            else ->
+                repository.findByOwner(owner)
         }
     }
 
