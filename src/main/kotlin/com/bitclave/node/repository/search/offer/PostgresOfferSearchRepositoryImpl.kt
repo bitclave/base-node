@@ -154,7 +154,8 @@ class PostgresOfferSearchRepositoryImpl(
 
     override fun findAllByOwnerAndStateIn(
         owner: String,
-        state: List<OfferResultAction>, sort: Sort?
+        state: List<OfferResultAction>,
+        sort: Sort?
     ): List<OfferSearch> {
         val condition = state.map { it.ordinal.toLong() }
         return when (sort) {
@@ -170,9 +171,9 @@ class PostgresOfferSearchRepositoryImpl(
     override fun findAllByOwnerAndSearchRequestIdIn(
         owner: String,
         searchRequestIds: List<Long>,
-        sort:Sort?
+        sort: Sort?
     ): List<OfferSearch> {
-        return when (sort){
+        return when (sort) {
             Sort(Sort.Direction.ASC, "rank") ->
                 repository.getOfferSearchByOwnerAndSearchRequestIdInSortByRank(owner, searchRequestIds)
             Sort(Sort.Direction.ASC, "updatedAt") ->

@@ -984,7 +984,7 @@ class OfferSearchServiceTest {
     fun `should return offers & offerSearches by owner and state with default sorting`() {
         val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
-        val repository =  offerRepositoryStrategy.changeStrategy(strategy)
+        val repository = offerRepositoryStrategy.changeStrategy(strategy)
 
         val offer1 = Offer(0, businessPublicKey, listOf(), "desc", "title", "url")
         val offer2 = Offer(0, businessPublicKey, listOf(), "desc", "title", "url")
@@ -1038,7 +1038,7 @@ class OfferSearchServiceTest {
     fun `should return offers & offerSearches by owner and state with rank sorting`() {
         val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
-        val repository =  offerRepositoryStrategy.changeStrategy(strategy)
+        val repository = offerRepositoryStrategy.changeStrategy(strategy)
 
         val offerRankRepository = PostgresOfferRankRepositoryImpl(offerRankCrudRepository)
         val offerRankRepositoryStrategy = OfferRankRepositoryStrategy(offerRankRepository)
@@ -1052,9 +1052,9 @@ class OfferSearchServiceTest {
         val savedOffer2 = repository.saveOffer(offer2)
         val savedOffer3 = repository.saveOffer(offer3)
 
-        rankRepository.saveRankOffer( OfferRank(0,1, savedOffer2.id, 1))
-        rankRepository.saveRankOffer( OfferRank(0,2, savedOffer3.id, 1))
-        rankRepository.saveRankOffer( OfferRank(0,3, savedOffer1.id, 1))
+        rankRepository.saveRankOffer(OfferRank(0, 1, savedOffer2.id, 1))
+        rankRepository.saveRankOffer(OfferRank(0, 2, savedOffer3.id, 1))
+        rankRepository.saveRankOffer(OfferRank(0, 3, savedOffer1.id, 1))
 
         createOfferSearch(createdSearchRequest1, savedOffer1, ArrayList())
         createOfferSearch(createdSearchRequest1, savedOffer2, ArrayList())
@@ -1101,7 +1101,7 @@ class OfferSearchServiceTest {
     fun `should return offers & offerSearches by owner and state with updated time sorting`() {
         val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
-        val repository =  offerRepositoryStrategy.changeStrategy(strategy)
+        val repository = offerRepositoryStrategy.changeStrategy(strategy)
 
         val offer1 = Offer(0, businessPublicKey, listOf(), "desc", "title", "url")
         Thread.sleep(1000)
@@ -1158,7 +1158,7 @@ class OfferSearchServiceTest {
     fun `should return offers & offerSearches by owner and searchRequestIds with default sorting`() {
         val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
-        val repository =  offerRepositoryStrategy.changeStrategy(strategy)
+        val repository = offerRepositoryStrategy.changeStrategy(strategy)
 
         val offer1 = Offer(0, businessPublicKey, listOf(), "desc", "title", "url")
         val offer2 = Offer(0, businessPublicKey, listOf(), "desc", "title", "url")
@@ -1197,7 +1197,7 @@ class OfferSearchServiceTest {
     fun `should return offers & offerSearches by owner and searchRequestIds with rank sorting`() {
         val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
-        val repository =  offerRepositoryStrategy.changeStrategy(strategy)
+        val repository = offerRepositoryStrategy.changeStrategy(strategy)
 
         val offerRankRepository = PostgresOfferRankRepositoryImpl(offerRankCrudRepository)
         val offerRankRepositoryStrategy = OfferRankRepositoryStrategy(offerRankRepository)
@@ -1211,9 +1211,9 @@ class OfferSearchServiceTest {
         val savedOffer2 = repository.saveOffer(offer2)
         val savedOffer3 = repository.saveOffer(offer3)
 
-        rankRepository.saveRankOffer( OfferRank(0,1, savedOffer2.id, 1))
-        rankRepository.saveRankOffer( OfferRank(0,2, savedOffer3.id, 1))
-        rankRepository.saveRankOffer( OfferRank(0,3, savedOffer1.id, 1))
+        rankRepository.saveRankOffer(OfferRank(0, 1, savedOffer2.id, 1))
+        rankRepository.saveRankOffer(OfferRank(0, 2, savedOffer3.id, 1))
+        rankRepository.saveRankOffer(OfferRank(0, 3, savedOffer1.id, 1))
 
         createOfferSearch(createdSearchRequest1, savedOffer1, ArrayList())
         createOfferSearch(createdSearchRequest1, savedOffer2, ArrayList())
@@ -1244,7 +1244,7 @@ class OfferSearchServiceTest {
     fun `should return offers & offerSearches by owner and searchRequestIds with updatedAt sorting`() {
         val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
-        val repository =  offerRepositoryStrategy.changeStrategy(strategy)
+        val repository = offerRepositoryStrategy.changeStrategy(strategy)
 
         val offer1 = Offer(0, businessPublicKey, listOf(), "desc", "title", "url")
         Thread.sleep(1000)
