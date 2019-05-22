@@ -142,31 +142,38 @@ class PostgresOfferSearchRepositoryImpl(
     }
 
     override fun findByOwner(owner: String, sort: Sort?): List<OfferSearch> {
-        return when(sort){
+        return when (sort) {
             Sort(Sort.Direction.ASC, "rank") -> repository.getOfferSearchByOwnerAndSortByRank(owner)
-            Sort( Sort.Direction.ASC, "updatedAt") -> repository.getOfferSearchByOwnerAndSortByUpdatedAt(owner)
+            Sort(Sort.Direction.ASC, "updatedAt") -> repository.getOfferSearchByOwnerAndSortByUpdatedAt(owner)
             else -> repository.findByOwner(owner)
         }
     }
 
-    override fun findAllByOwnerAndStateIn(owner: String, state: List<OfferResultAction>, sort: Sort?): List<OfferSearch> {
+    override fun findAllByOwnerAndStateIn(
+        owner: String,
+        state: List<OfferResultAction>, sort: Sort?
+    ): List<OfferSearch> {
         val condition = state.map { it.ordinal.toLong() }
-        return when(sort){
+        return when (sort) {
             Sort(Sort.Direction.ASC, "rank") ->
                 repository.getOfferSearchByOwnerAndStateSortByRank(owner, condition)
-            Sort( Sort.Direction.ASC, "updatedAt") ->
-                repository.getOfferSearchByOwnerAndStateSortByUpdatedAt(owner,condition)
+            Sort(Sort.Direction.ASC, "updatedAt") ->
+                repository.getOfferSearchByOwnerAndStateSortByUpdatedAt(owner, condition)
             else ->
                 repository.findAllByOwnerAndStateIn(owner, state)
         }
     }
 
-    override fun findAllByOwnerAndSearchRequestIdIn(owner: String, searchRequestIds: List<Long>, sort:Sort?): List<OfferSearch> {
-        return when(sort){
+    override fun findAllByOwnerAndSearchRequestIdIn(
+        owner: String,
+        searchRequestIds: List<Long>,
+        sort:Sort?
+    ): List<OfferSearch> {
+        return when (sort){
             Sort(Sort.Direction.ASC, "rank") ->
                 repository.getOfferSearchByOwnerAndSearchRequestIdInSortByRank(owner, searchRequestIds)
-            Sort( Sort.Direction.ASC, "updatedAt") ->
-                repository.getOfferSearchByOwnerAndSearchRequestIdInSortByUpdatedAt(owner,searchRequestIds)
+            Sort(Sort.Direction.ASC, "updatedAt") ->
+                repository.getOfferSearchByOwnerAndSearchRequestIdInSortByUpdatedAt(owner, searchRequestIds)
             else ->
                 repository.findAllByOwnerAndSearchRequestIdIn(owner, searchRequestIds)
         }
@@ -230,5 +237,4 @@ class PostgresOfferSearchRepositoryImpl(
     }
 
     override fun countBySearchRequestId(id: Long): Long = repository.countBySearchRequestId(id)
-
 }
