@@ -145,7 +145,6 @@ class OfferSearchServiceTest {
         "url"
     )
 
-
     protected val offerPrice = OfferPrice(
         0,
         "first price description",
@@ -1114,7 +1113,6 @@ class OfferSearchServiceTest {
         val savedOffer2 = repository.saveOffer(offer2)
         val savedOffer3 = repository.saveOffer(offer3)
 
-
         createOfferSearch(createdSearchRequest1, savedOffer1, ArrayList())
         createOfferSearch(createdSearchRequest1, savedOffer2, ArrayList())
         createOfferSearch(createdSearchRequest2, savedOffer3, ArrayList())
@@ -1257,7 +1255,6 @@ class OfferSearchServiceTest {
         val savedOffer1 = repository.saveOffer(offer1)
         val savedOffer2 = repository.saveOffer(offer2)
         val savedOffer3 = repository.saveOffer(offer3)
-
 
         createOfferSearch(createdSearchRequest1, savedOffer1, ArrayList())
         createOfferSearch(createdSearchRequest1, savedOffer2, ArrayList())
