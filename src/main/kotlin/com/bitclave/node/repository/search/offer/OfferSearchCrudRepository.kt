@@ -51,24 +51,24 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         """,
         nativeQuery = true
     )
-    fun getOfferSearchByIdsSortByRank(@Param("owner") owner: String): List<OfferSearch>
+    fun getOfferSearchByOwnerAndSortByRank(@Param("owner") owner: String): List<OfferSearch>
 
     @Query(
         value = """
             SELECT *
             FROM offer_search s, offer o WHERE s.offer_id = o.id AND s.owner = :owner
-            ORDER BY o.updated_at ASC
+            ORDER BY o.updated_at DESC
         """,
         nativeQuery = true
     )
-    fun getOfferSearchByIdsSortByUpdatedAt(@Param("owner") owner: String): List<OfferSearch>
+    fun getOfferSearchByOwnerAndSortByUpdatedAt(@Param("owner") owner: String): List<OfferSearch>
 
     @Query(
         value = """
             SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank
             FROM offer_search s LEFT JOIN offer_rank r ON s.offer_id = r.offer_id
             WHERE s.owner = :owner AND s.state IN :state
-            order by united_rank desc, s.updated_at asc
+            order by united_rank desc, s.updated_at DESC
         """,
         nativeQuery = true
     )
@@ -79,10 +79,9 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     @Query(
         value = """
-            SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank
-            FROM offer_search s LEFT JOIN offer_rank r ON s.offer_id = r.offer_id
-            WHERE s.owner = :owner AND s.state IN :state
-            order by s.updated_at asc
+            SELECT *
+            FROM offer_search s, offer o WHERE s.offer_id = o.id AND s.owner = :owner AND s.state IN :state
+            order by o.updated_at DESC
         """,
         nativeQuery = true
     )
@@ -96,7 +95,7 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
             SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank
             FROM offer_search s LEFT JOIN offer_rank r ON s.offer_id = r.offer_id
             where s.owner = :owner AND s.search_request_id IN :ids
-            order by united_rank desc, s.updated_at asc
+            order by united_rank desc, s.updated_at DESC
         """,
         nativeQuery = true
     )
@@ -107,10 +106,9 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     @Query(
         value = """
-            SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank
-            FROM offer_search s LEFT JOIN offer_rank r ON s.offer_id = r.offer_id
-            where s.owner = :owner AND s.search_request_id IN :ids
-            order by s.updated_at asc
+            SELECT *
+            FROM offer_search s, offer o WHERE s.offer_id = o.id AND s.owner = :owner AND s.search_request_id IN :ids
+            ORDER BY o.updated_at DESC
         """,
         nativeQuery = true
     )
