@@ -908,9 +908,9 @@ class OfferSearchServiceTest {
         assert(result[2].offerSearch.offerId == result[2].offer.id)
         assert(result[3].offerSearch.offerId == result[3].offer.id)
 
-        assert(result[0].offer.id == createdOffer1.id) // rank 11
+        assert(result[0].offer.id == createdOffer1.id)
         assert(result[1].offer.id == createdOffer2.id)
-        assert(result[2].offer.id == createdOffer1.id) // rank 1
+        assert(result[2].offer.id == createdOffer1.id)
         assert(result[3].offer.id == createdOffer2.id)
     }
 
