@@ -233,13 +233,13 @@ class OfferController(
         @RequestHeader("Strategy", required = false)
         strategy: String?
     ): CompletableFuture<Page<Offer>> {
-
+        logger.info { "Request: getPageableOffersByOwner/$owner/$page/$size" }
         if (page == null || size == null) {
             return offerService.getPageableOffersByOwner(
                 owner,
                 PageRequest(0, 20), getStrategyType(strategy)
             ).exceptionally { e ->
-                logger.error("Request: getPageableOffers/$page/$size raised $e")
+                logger.error("Request: getPageableOffersByOwner/$owner/$page/$size raised $e")
                 throw e
             }
         }
@@ -249,7 +249,7 @@ class OfferController(
             PageRequest(page, size),
             getStrategyType(strategy)
         ).exceptionally { e ->
-            logger.error("Request: getPageableOffers/$page/$size raised $e")
+            logger.error("Request: getPageableOffersByOwner/$owner/$page/$size raised $e")
             throw e
         }
     }
