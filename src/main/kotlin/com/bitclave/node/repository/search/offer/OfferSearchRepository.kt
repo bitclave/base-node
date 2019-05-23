@@ -39,6 +39,8 @@ interface OfferSearchRepository {
 
     fun findByOwnerAndOfferId(owner: String, offerId: Long): List<OfferSearch>
 
+    fun findByOwnerAndOfferIdIn(owner: String, offerIds: List<Long>): List<OfferSearch>
+
     fun cloneOfferSearchOfSearchRequest(
         sourceSearchRequestId: Long,
         targetSearchRequest: SearchRequest

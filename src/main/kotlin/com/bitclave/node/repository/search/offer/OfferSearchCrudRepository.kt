@@ -41,6 +41,8 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     fun findByOwnerAndOfferId(owner: String, offerId: Long): List<OfferSearch>
 
+    fun findByOwnerAndOfferIdIn(owner: String, offerIds: List<Long>): List<OfferSearch>
+
     @Query(
         value = """
             SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank
