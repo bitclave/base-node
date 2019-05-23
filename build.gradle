@@ -111,7 +111,7 @@ dependencies {
     compile 'org.postgresql:postgresql:42.2.5'
 
     compile 'javax.xml.bind:jaxb-api:2.3.0'
-   
+    
     testCompile 'org.springframework.boot:spring-boot-starter-test'
     testCompile 'com.h2database:h2'
 }
