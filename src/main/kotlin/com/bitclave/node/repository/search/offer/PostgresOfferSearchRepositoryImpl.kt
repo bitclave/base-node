@@ -45,10 +45,18 @@ class PostgresOfferSearchRepositoryImpl(
                     .map { it.owner }
                     .distinct()
 
+            val offers = list
+                .map { it.offerId }
+                .distinct()
+
             allOffersByOwner = when {
                 list.size == 1 -> repository
                         .findByOwnerAndOfferId(list[0].owner, list[0].offerId)
                         .toMutableList()
+
+                owners.size == 1 -> repository
+                    .findByOwnerAndOfferIdIn(owners[0], offers)
+                    .toMutableList()
 
                 list.size > 1 -> repository
                         .findByOwnerIn(owners)
@@ -191,6 +199,10 @@ class PostgresOfferSearchRepositoryImpl(
 
         // return offerSearchList.filter { searchRequestIDs.contains(it.searchRequestId) }
         return repository.findByOwnerAndOfferId(owner, offerId)
+    }
+
+    override fun findByOwnerAndOfferIdIn(owner: String, offerIds: List<Long>): List<OfferSearch> {
+        return repository.findByOwnerAndOfferIdIn(owner, offerIds)
     }
 
     override fun findAll(pageable: Pageable): Page<OfferSearch> {
