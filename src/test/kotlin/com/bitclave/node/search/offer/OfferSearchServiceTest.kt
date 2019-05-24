@@ -226,11 +226,11 @@ class OfferSearchServiceTest {
 
         rankForOffer1 = offerRankRepositoryStrategy
             .changeStrategy(strategy)
-            .saveRankOffer(OfferRank(0, 11, createdOffer1.id, 1))
+            .saveRankOffer(OfferRank(0, 11, createdOffer1.id, publicKey))
 
         rankForOffer2 = offerRankRepositoryStrategy
             .changeStrategy(strategy)
-            .saveRankOffer(OfferRank(0, 1, createdOffer2.id, 1))
+            .saveRankOffer(OfferRank(0, 1, createdOffer2.id, publicKey))
 
         for (i in 0 until 5) {
             offerRepositoryStrategy
@@ -1052,9 +1052,9 @@ class OfferSearchServiceTest {
         val savedOffer2 = repository.saveOffer(offer2)
         val savedOffer3 = repository.saveOffer(offer3)
 
-        rankRepository.saveRankOffer(OfferRank(0, 1, savedOffer2.id, 1))
-        rankRepository.saveRankOffer(OfferRank(0, 2, savedOffer3.id, 1))
-        rankRepository.saveRankOffer(OfferRank(0, 3, savedOffer1.id, 1))
+        rankRepository.saveRankOffer(OfferRank(0, 1, savedOffer2.id, publicKey))
+        rankRepository.saveRankOffer(OfferRank(0, 2, savedOffer3.id, publicKey))
+        rankRepository.saveRankOffer(OfferRank(0, 3, savedOffer1.id, publicKey))
 
         createOfferSearch(createdSearchRequest1, savedOffer1, ArrayList())
         createOfferSearch(createdSearchRequest1, savedOffer2, ArrayList())
@@ -1211,9 +1211,9 @@ class OfferSearchServiceTest {
         val savedOffer2 = repository.saveOffer(offer2)
         val savedOffer3 = repository.saveOffer(offer3)
 
-        rankRepository.saveRankOffer(OfferRank(0, 1, savedOffer2.id, 1))
-        rankRepository.saveRankOffer(OfferRank(0, 2, savedOffer3.id, 1))
-        rankRepository.saveRankOffer(OfferRank(0, 3, savedOffer1.id, 1))
+        rankRepository.saveRankOffer(OfferRank(0, 1, savedOffer2.id, publicKey))
+        rankRepository.saveRankOffer(OfferRank(0, 2, savedOffer3.id, publicKey))
+        rankRepository.saveRankOffer(OfferRank(0, 3, savedOffer1.id, publicKey))
 
         createOfferSearch(createdSearchRequest1, savedOffer1, ArrayList())
         createOfferSearch(createdSearchRequest1, savedOffer2, ArrayList())
