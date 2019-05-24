@@ -15,7 +15,7 @@ data class OfferRank(
     @ColumnDefault("0") var rank: Long = 0,
 
     @Column val offerId: Long = 0,
-    @Column val rankerId: Long = 0,
+    @Column val rankerId: String = "",
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     @Column(columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
