@@ -155,6 +155,8 @@ class PostgresOfferSearchRepositoryImpl(
                 repository.getOfferSearchByOwnerAndSortByRank(owner)
             Sort(Sort.Direction.ASC, "updatedAt") ->
                 repository.getOfferSearchByOwnerAndSortByUpdatedAt(owner)
+            Sort(Sort.Direction.ASC, "price") ->
+                repository.getOfferSearchByOwnerAndSortByOfferPriceWorth(owner)
             else ->
                 repository.findByOwner(owner)
         }
@@ -171,6 +173,8 @@ class PostgresOfferSearchRepositoryImpl(
                 repository.getOfferSearchByOwnerAndStateSortByRank(owner, condition)
             Sort(Sort.Direction.ASC, "updatedAt") ->
                 repository.getOfferSearchByOwnerAndStateSortByUpdatedAt(owner, condition)
+            Sort(Sort.Direction.ASC, "price") ->
+                repository.getOfferSearchByOwnerAndStateAndSortByOfferPriceWorth(owner, condition)
             else ->
                 repository.findAllByOwnerAndStateIn(owner, state)
         }
@@ -186,6 +190,8 @@ class PostgresOfferSearchRepositoryImpl(
                 repository.getOfferSearchByOwnerAndSearchRequestIdInSortByRank(owner, searchRequestIds)
             Sort(Sort.Direction.ASC, "updatedAt") ->
                 repository.getOfferSearchByOwnerAndSearchRequestIdInSortByUpdatedAt(owner, searchRequestIds)
+            Sort(Sort.Direction.ASC, "price") ->
+                repository.getOfferSearchByOwnerAndSearchRequestIdInAndSortByOfferPriceWorth(owner, searchRequestIds)
             else ->
                 repository.findAllByOwnerAndSearchRequestIdIn(owner, searchRequestIds)
         }
