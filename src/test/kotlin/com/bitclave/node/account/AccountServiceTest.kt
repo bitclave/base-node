@@ -23,6 +23,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
+import java.util.concurrent.CompletableFuture
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
@@ -71,6 +72,23 @@ class AccountServiceTest {
 
         val account = accountService.accountBySigMessage(request, strategy).get()
         accountService.validateNonce(request, account).get()
+    }
+
+    @Test
+    fun `check nonce under many threads`() {
+        accountService.registrationClient(account, strategy).get()
+
+        val result = mutableListOf<CompletableFuture<Void>>()
+        for (i in 0..100) {
+            result.add(accountService.incrementNonce(account, strategy))
+        }
+
+        while (true) {
+            result.find { !it.isDone } ?: break
+        }
+
+        val nonce = accountService.getNonce(account.publicKey, strategy).get()
+        assert(nonce == 102L)
     }
 
     @Test(expected = BadArgumentException::class)

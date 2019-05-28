@@ -15,12 +15,15 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import java.util.Date
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.locks.ReentrantLock
 
 private val logger = KotlinLogging.logger {}
 
 @Service
 @Qualifier("v1")
 class AccountService(private val accountRepository: RepositoryStrategy<AccountRepository>) {
+
+    private val nonceIncrementLock = ReentrantLock(true)
 
     fun checkSigMessage(request: SignedRequest<*>): CompletableFuture<String> {
         return request.validateSig()
@@ -71,9 +74,21 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
         account: Account,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
+        // todo for optimization we can separate lock for each client by unique public key.
         return CompletableFuture.runAsync {
-            account.nonce++
-            accountRepository.changeStrategy(strategy).saveAccount(account)
+            nonceIncrementLock.lock()
+
+            try {
+                val repo = accountRepository.changeStrategy(strategy)
+                val actualAccount = repo.findByPublicKey(account.publicKey)
+                    ?: throw NotFoundException("Account not found")
+
+                actualAccount.nonce++
+
+                repo.saveAccount(actualAccount)
+            } finally {
+                nonceIncrementLock.unlock()
+            }
         }
     }
 
