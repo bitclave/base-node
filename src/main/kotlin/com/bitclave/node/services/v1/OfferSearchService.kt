@@ -614,13 +614,35 @@ class OfferSearchService(
         offerSearch: List<OfferSearch>,
         offersRepository: OfferRepository
     ): List<OfferSearchResultItem> {
-        val offerIds = offerSearch.map { it.offerId }
-            .distinct()
-        val offers = offersRepository
-            .findByIds(offerIds)
-            .groupBy { it.id }
 
-        val withExistedOffers = offerSearch.filter { offers.containsKey(it.offerId) }
-        return withExistedOffers.map { OfferSearchResultItem(it, offers.getValue(it.offerId)[0]) }
+        var offerIds = listOf<Long>()
+        val step31 = measureTimeMillis {
+            offerIds = offerSearch
+                .map { it.offerId }
+                .distinct()
+        }
+        logger.debug { "3.1 step) offer Ids ms: $step31" }
+
+        var offers = mapOf<Long, List<Offer>>()
+        val step32 = measureTimeMillis {
+            offers = offersRepository
+                .findByIds(offerIds)
+                .groupBy { it.id }
+        }
+        logger.debug { "3.2 step) offer MAP<Long, List<Offer>> ms: $step32" }
+
+        var withExistedOffers = listOf<OfferSearch>()
+        val step33 = measureTimeMillis {
+            withExistedOffers = offerSearch.filter { offers.containsKey(it.offerId) }
+        }
+        logger.debug { "3.3 step) offerSarch with existed offers ms: $step33" }
+
+        var result = listOf<OfferSearchResultItem>()
+        val step34 = measureTimeMillis {
+            result = withExistedOffers.map { OfferSearchResultItem(it, offers.getValue(it.offerId)[0]) }
+        }
+        logger.debug { "3.4 step) final result ms: $step34" }
+
+        return result
     }
 }
