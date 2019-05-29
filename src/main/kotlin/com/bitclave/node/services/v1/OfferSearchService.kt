@@ -636,7 +636,6 @@ class OfferSearchService(
                 offers = ones.groupBy { it.id }
             }
             logger.debug { "3.2.2 step)  groupBy ms: $step322" }
-
         }
         logger.debug { "3.2 step) ids is ${offerIds.size} offer MAP<Long, List<Offer>> ms: $step32" }
 
