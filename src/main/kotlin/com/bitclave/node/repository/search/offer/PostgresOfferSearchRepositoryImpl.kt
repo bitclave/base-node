@@ -33,8 +33,8 @@ class PostgresOfferSearchRepositoryImpl(
 
         val step1 = measureTimeMillis {
             val searchRequestsIds = list
-                    .map { it.searchRequestId }
-                    .distinct()
+                .map { it.searchRequestId }
+                .distinct()
 
             val existedRequests = searchRequestRepository.findById(searchRequestsIds)
             if (searchRequestsIds.size != existedRequests.size) {
@@ -42,8 +42,8 @@ class PostgresOfferSearchRepositoryImpl(
             }
 
             val owners = list
-                    .map { it.owner }
-                    .distinct()
+                .map { it.owner }
+                .distinct()
 
             val offers = list
                 .map { it.offerId }
@@ -51,16 +51,16 @@ class PostgresOfferSearchRepositoryImpl(
 
             allOffersByOwner = when {
                 list.size == 1 -> repository
-                        .findByOwnerAndOfferId(list[0].owner, list[0].offerId)
-                        .toMutableList()
+                    .findByOwnerAndOfferId(list[0].owner, list[0].offerId)
+                    .toMutableList()
 
                 owners.size == 1 -> repository
                     .findByOwnerAndOfferIdIn(owners[0], offers)
                     .toMutableList()
 
                 list.size > 1 -> repository
-                        .findByOwnerIn(owners)
-                        .toMutableList()
+                    .findByOwnerIn(owners)
+                    .toMutableList()
 
                 else -> mutableListOf()
             }
@@ -70,11 +70,11 @@ class PostgresOfferSearchRepositoryImpl(
         val step2 = measureTimeMillis {
             list.forEach { offer ->
                 val relatedOfferSearches = allOffersByOwner
-                        .filter {
-                            it.id > 0 &&
-                                    it.offerId == offer.offerId &&
-                                    it.owner == offer.owner
-                        }
+                    .filter {
+                        it.id > 0 &&
+                            it.offerId == offer.offerId &&
+                            it.owner == offer.owner
+                    }
 
                 relatedOfferSearches.forEach { it.updatedAt = offer.updatedAt }
 
@@ -88,13 +88,13 @@ class PostgresOfferSearchRepositoryImpl(
                     relatedOfferSearches.isNotEmpty() -> {
                         val firstItem = relatedOfferSearches[0]
                         val events = offer.events
-                                .toMutableList()
+                            .toMutableList()
                         events.addAll(firstItem.events)
 
                         val copiedOffer = offer.copy(
-                                state = firstItem.state,
-                                events = events,
-                                info = firstItem.info
+                            state = firstItem.state,
+                            events = events,
+                            info = firstItem.info
                         )
                         allOffersByOwner.add(copiedOffer)
                     }
@@ -193,10 +193,10 @@ class PostgresOfferSearchRepositoryImpl(
 
             Sort(Sort.Direction.ASC, "updatedAt") -> {
                 val timeMs = measureTimeMillis {
-                    result = repository.getOfferSearchByOwnerAndSearchRequestIdInSortByUpdatedAt(owner, searchRequestIds)
+                    result =
+                        repository.getOfferSearchByOwnerAndSearchRequestIdInSortByUpdatedAt(owner, searchRequestIds)
                 }
                 logger.debug { " find all OfferSearches by Owner and SearchRequest Id, sort by UpdateAt ms: $timeMs" }
-
             }
 
             else -> {
