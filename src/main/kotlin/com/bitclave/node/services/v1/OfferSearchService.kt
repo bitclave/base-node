@@ -625,11 +625,19 @@ class OfferSearchService(
 
         var offers = mapOf<Long, List<Offer>>()
         val step32 = measureTimeMillis {
-            offers = offersRepository
-                .findByIds(offerIds)
-                .groupBy { it.id }
+
+            var ones = listOf<Offer>()
+            val step321 = measureTimeMillis {
+                ones = offersRepository.findByIds(offerIds)
+            }
+            logger.debug { "3.2.1 step) findByIds ms: $step321" }
+
+            val step322 = measureTimeMillis {
+                offers = ones.groupBy { it.id }
+            }
+            logger.debug { "3.2.2 step)  groupBy ms: $step322" }
         }
-        logger.debug { "3.2 step) offer MAP<Long, List<Offer>> ms: $step32" }
+        logger.debug { "3.2 step) ids is ${offerIds.size} offer MAP<Long, List<Offer>> ms: $step32" }
 
         var withExistedOffers = listOf<OfferSearch>()
         val step33 = measureTimeMillis {
