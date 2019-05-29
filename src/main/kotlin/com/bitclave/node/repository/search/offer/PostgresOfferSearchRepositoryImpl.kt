@@ -181,14 +181,32 @@ class PostgresOfferSearchRepositoryImpl(
         searchRequestIds: List<Long>,
         sort: Sort?
     ): List<OfferSearch> {
-        return when (sort) {
-            Sort(Sort.Direction.ASC, "rank") ->
-                repository.getOfferSearchByOwnerAndSearchRequestIdInSortByRank(owner, searchRequestIds)
-            Sort(Sort.Direction.ASC, "updatedAt") ->
-                repository.getOfferSearchByOwnerAndSearchRequestIdInSortByUpdatedAt(owner, searchRequestIds)
-            else ->
-                repository.findAllByOwnerAndSearchRequestIdIn(owner, searchRequestIds)
+        var result = listOf<OfferSearch>()
+
+        when (sort) {
+            Sort(Sort.Direction.ASC, "rank") -> {
+                val timeMs = measureTimeMillis {
+                    result = repository.getOfferSearchByOwnerAndSearchRequestIdInSortByRank(owner, searchRequestIds)
+                }
+                logger.debug { " find all OfferSearches by Owner and SearchRequest Id, sort ByRank ms: $timeMs" }
+            }
+
+            Sort(Sort.Direction.ASC, "updatedAt") -> {
+                val timeMs = measureTimeMillis {
+                    result = repository.getOfferSearchByOwnerAndSearchRequestIdInSortByUpdatedAt(owner, searchRequestIds)
+                }
+                logger.debug { " find all OfferSearches by Owner and SearchRequest Id, sort by UpdateAt ms: $timeMs" }
+
+            }
+
+            else -> {
+                val timeMs = measureTimeMillis {
+                    result = repository.findAllByOwnerAndSearchRequestIdIn(owner, searchRequestIds)
+                }
+                logger.debug { " find all OfferSearches by Owner and SearchRequest Id, default sorting ms: $timeMs" }
+            }
         }
+        return result
     }
 
     override fun findByOwnerAndOfferId(owner: String, offerId: Long): List<OfferSearch> {
