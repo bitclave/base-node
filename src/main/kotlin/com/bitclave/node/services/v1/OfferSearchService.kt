@@ -154,7 +154,7 @@ class OfferSearchService(
             logger.debug { "4 step) content ms: $step4" }
 
             val pageable = PageRequest(pageRequest.pageNumber, pageRequest.pageSize)
-            PageImpl(content, pageable, content.size.toLong())
+            PageImpl(content, pageable, filteredByUnique.size.toLong())
         }
     }
 
