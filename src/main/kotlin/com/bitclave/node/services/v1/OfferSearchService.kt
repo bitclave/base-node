@@ -125,34 +125,36 @@ class OfferSearchService(
             var filteredByUnique = listOf<OfferSearch>()
             val step2 = measureTimeMillis {
                 filteredByUnique = if (unique) {
-                    offerSearches.groupBy { it.offerId }
-                        .values.map { it[0] }
+                    offerSearches
+                        .groupBy { it.offerId }
+                        .values
+                        .map { it[0] }
                 } else {
                     offerSearches
                 }
             }
             logger.debug { "2 step) filtering by unique ms: $step2" }
 
-            var content = listOf<OfferSearchResultItem>()
+            var subItems = listOf<OfferSearch>()
             val step3 = measureTimeMillis {
+                subItems = filteredByUnique.subList(
+                    Math.min(pageRequest.pageNumber * pageRequest.pageSize, filteredByUnique.size),
+                    Math.min((pageRequest.pageNumber + 1) * pageRequest.pageSize, filteredByUnique.size)
+                )
+            }
+            logger.debug { "3 step) subItems ms: $step3" }
+
+            var content = listOf<OfferSearchResultItem>()
+            val step4 = measureTimeMillis {
                 content = offerSearchListToResult(
-                    filteredByUnique,
+                    subItems,
                     offerRepository.changeStrategy(strategy)
                 )
             }
-            logger.debug { "3 step) content ms: $step3" }
-
-            var subItems = listOf<OfferSearchResultItem>()
-            val step4 = measureTimeMillis {
-                subItems = content.subList(
-                    Math.min(pageRequest.pageNumber * pageRequest.pageSize, content.size),
-                    Math.min((pageRequest.pageNumber + 1) * pageRequest.pageSize, content.size)
-                )
-            }
-            logger.debug { "4 step) subItems ms: $step4" }
+            logger.debug { "4 step) content ms: $step4" }
 
             val pageable = PageRequest(pageRequest.pageNumber, pageRequest.pageSize)
-            PageImpl(subItems, pageable, content.size.toLong())
+            PageImpl(content, pageable, content.size.toLong())
         }
     }
 
