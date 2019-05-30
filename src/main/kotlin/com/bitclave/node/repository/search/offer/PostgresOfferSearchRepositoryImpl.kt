@@ -209,6 +209,31 @@ class PostgresOfferSearchRepositoryImpl(
         return result
     }
 
+    override fun findAllByOwnerAndStateAndSearchRequestIdIn(
+        owner: String,
+        searchRequestIds: List<Long>,
+        state: List<OfferResultAction>,
+        sort: Sort?
+    ): List<OfferSearch> {
+        val conditions = state.map { it.ordinal.toLong() }
+        return when (sort) {
+            Sort(Sort.Direction.ASC, "rank") ->
+                repository.getOfferSearchByOwnerAndSearchRequestIdInAndStateSortByRank(
+                    owner,
+                    searchRequestIds,
+                    conditions
+                )
+            Sort(Sort.Direction.ASC, "updatedAt") ->
+                repository.getOfferSearchByOwnerAndSearchRequestIdInAndStateSortByUpdatedAt(
+                    owner,
+                    searchRequestIds,
+                    conditions
+                )
+            else ->
+                repository.findByOwnerAndSearchRequestIdInAndStateIn(owner, searchRequestIds, state)
+        }
+    }
+
     override fun findByOwnerAndOfferId(owner: String, offerId: Long): List<OfferSearch> {
         // val searchRequestList = searchRequestRepository.findByOwner(owner)
         // val searchRequestIDs = searchRequestList.map { it.id }.toSet()
