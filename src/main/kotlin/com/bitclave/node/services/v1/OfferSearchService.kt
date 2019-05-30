@@ -110,6 +110,11 @@ class OfferSearchService(
 
             val step1 = measureTimeMillis {
                 offerSearches = when {
+                    searchRequestIds.isNotEmpty() && state.isNotEmpty() ->
+                        repository.findAllByOwnerAndStateAndSearchRequestIdIn(
+                            owner, searchRequestIds, state, pageRequest.sort
+                        )
+
                     searchRequestIds.isNotEmpty() && state.isEmpty() ->
                         repository.findAllByOwnerAndSearchRequestIdIn(owner, searchRequestIds, pageRequest.sort)
 
