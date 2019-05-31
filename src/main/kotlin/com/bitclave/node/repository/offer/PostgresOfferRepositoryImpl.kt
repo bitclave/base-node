@@ -2,12 +2,15 @@ package com.bitclave.node.repository.offer
 
 import com.bitclave.node.repository.models.Offer
 import com.bitclave.node.repository.models.OfferResultAction
+import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.services.errors.DataNotSavedException
+import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
+import kotlin.system.measureTimeMillis
 
 @Component
 @Qualifier("postgres")
@@ -16,15 +19,27 @@ class PostgresOfferRepositoryImpl(
     val offerSearchRepository: OfferSearchCrudRepository
 ) : OfferRepository {
 
+    private val logger = KotlinLogging.logger {}
+
     override fun saveOffer(offer: Offer): Offer {
         val id = offer.id
         repository.save(offer) ?: throw DataNotSavedException()
         if (id > 0) {
-            var relatedOfferSearches = offerSearchRepository.findByOfferId(offer.id)
-            relatedOfferSearches = relatedOfferSearches.filterIndexed { _, element ->
-                element.state == OfferResultAction.NONE || element.state == OfferResultAction.REJECT
+            var relatedOfferSearches: List<OfferSearch> = emptyList()
+            val step1 = measureTimeMillis {
+                relatedOfferSearches = offerSearchRepository.findByOfferId(offer.id)
             }
-            offerSearchRepository.delete(relatedOfferSearches)
+            logger.debug { "saveOffer: step 1: ms: $step1, l1: ${relatedOfferSearches.size}" }
+            val step2 = measureTimeMillis {
+                relatedOfferSearches = relatedOfferSearches.filter { element ->
+                    element.state == OfferResultAction.NONE || element.state == OfferResultAction.REJECT
+                }
+            }
+            logger.debug { "saveOffer: step 2: ms: $step2, l1: ${relatedOfferSearches.size}" }
+            val step3 = measureTimeMillis {
+                offerSearchRepository.delete(relatedOfferSearches)
+            }
+            logger.debug { "saveOffer: step 3: ms: $step3" }
         }
         return offer
     }
