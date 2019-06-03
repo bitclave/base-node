@@ -71,6 +71,7 @@ class OfferSearchController(
         @ApiParam("sends full text search query string")
         @RequestParam(value = "q")
         query: String,
+
         @ApiParam("Optional page number to retrieve a particular page. If not specified this API retrieves first page.")
         @RequestParam("page", defaultValue = "0", required = false)
         page: Int,
@@ -78,6 +79,15 @@ class OfferSearchController(
         @ApiParam("Optional page size to include number of offerSearch items in a page. Defaults to 20.")
         @RequestParam("size", defaultValue = "20", required = false)
         size: Int,
+
+        @ApiParam("sends the list of the interests e.g. 'interest_bitclave_general'")
+        @RequestParam(value = "interests", required = false)
+        interests: List<String>,
+
+        @ApiParam("mode of interests list must or prefer")
+        @RequestParam(value = "mode", required = false)
+        mode: String,
+
         @ApiParam(
             "where client already existed search request id (who has rtSearch tag)" +
                 " and signature of the message.", required = true
@@ -99,7 +109,9 @@ class OfferSearchController(
                     it.publicKey,
                     decodedQuery,
                     PageRequest(page, size),
-                    getStrategyType(strategy)
+                    getStrategyType(strategy),
+                    interests,
+                    mode
                 ).get()
 
                 accountService.incrementNonce(it, getStrategyType(strategy)).get()
