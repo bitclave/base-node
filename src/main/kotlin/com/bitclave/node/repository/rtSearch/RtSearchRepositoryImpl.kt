@@ -21,17 +21,26 @@ class RtSearchRepositoryImpl(
         .messageConverters(converter)
         .rootUri(rtSearchProperties.url).build()
 
-    override fun getOffersIdByQuery(query: String, pageRequest: PageRequest): CompletableFuture<Page<Long>> {
+    override fun getOffersIdByQuery(
+        query: String,
+        pageRequest: PageRequest,
+        interests: List<String>,
+        mode: String
+    ): CompletableFuture<Page<Long>> {
         return CompletableFuture.supplyAsync {
+
+            val parameters = mapOf(
+                "query" to query,
+                "page" to pageRequest.pageNumber,
+                "size" to pageRequest.pageSize,
+                "interests" to interests.joinToString(),
+                "mode" to mode
+            )
             val offerIdsResponse = restTemplate.exchange(
-                "/v1/search/?q={query}&page={page}&size={size}",
+                "/v1/search/?q={query}&page={page}&size={size}&interests={interests}&mode={mode}",
                 HttpMethod.GET, null,
                 object : ParameterizedTypeReference<Page<Long>>() {},
-                mapOf(
-                    "query" to query,
-                    "page" to pageRequest.pageNumber,
-                    "size" to pageRequest.pageSize
-                )
+                parameters
             )
 
             return@supplyAsync offerIdsResponse.body
