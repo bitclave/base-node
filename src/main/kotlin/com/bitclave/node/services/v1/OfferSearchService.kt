@@ -106,38 +106,60 @@ class OfferSearchService(
 
         return CompletableFuture.supplyAsync {
             val repository = offerSearchRepository.changeStrategy(strategy)
+            var offerSearches = listOf<OfferSearch>()
 
-            val offerSearches = when {
-                searchRequestIds.isNotEmpty() && state.isEmpty() ->
-                    repository.findAllByOwnerAndSearchRequestIdIn(owner, searchRequestIds, pageRequest.sort)
+            val step1 = measureTimeMillis {
+                offerSearches = when {
+                    searchRequestIds.isNotEmpty() && state.isNotEmpty() ->
+                        repository.findAllByOwnerAndStateAndSearchRequestIdIn(
+                            owner, searchRequestIds, state, pageRequest.sort
+                        )
 
-                searchRequestIds.isEmpty() && state.isNotEmpty() ->
-                    repository.findAllByOwnerAndStateIn(owner, state, pageRequest.sort)
+                    searchRequestIds.isNotEmpty() && state.isEmpty() ->
+                        repository.findAllByOwnerAndSearchRequestIdIn(owner, searchRequestIds, pageRequest.sort)
 
-                else ->
-                    repository.findByOwner(owner, pageRequest.sort)
+                    searchRequestIds.isEmpty() && state.isNotEmpty() ->
+                        repository.findAllByOwnerAndStateIn(owner, state, pageRequest.sort)
+
+                    else ->
+                        repository.findByOwner(owner, pageRequest.sort)
+                }
             }
+            logger.debug { "1 step) get data from DB ms: $step1" }
 
-            val filteredByUnique = if (unique) {
-                offerSearches.groupBy { it.offerId }
-                    .values.map { it[0] }
-            } else {
-                offerSearches
+            var filteredByUnique = listOf<OfferSearch>()
+            val step2 = measureTimeMillis {
+                filteredByUnique = if (unique) {
+                    offerSearches
+                        .groupBy { it.offerId }
+                        .values
+                        .map { it[0] }
+                } else {
+                    offerSearches
+                }
             }
+            logger.debug { "2 step) filtering by unique ms: $step2" }
 
-            val content = offerSearchListToResult(
-                filteredByUnique,
-                offerRepository.changeStrategy(strategy)
-            )
+            var subItems = listOf<OfferSearch>()
+            val step3 = measureTimeMillis {
+                subItems = filteredByUnique.subList(
+                    Math.min(pageRequest.pageNumber * pageRequest.pageSize, filteredByUnique.size),
+                    Math.min((pageRequest.pageNumber + 1) * pageRequest.pageSize, filteredByUnique.size)
+                )
+            }
+            logger.debug { "3 step) subItems ms: $step3" }
 
-            val subItems = content.subList(
-                Math.min(pageRequest.pageNumber * pageRequest.pageSize, content.size),
-                Math.min((pageRequest.pageNumber + 1) * pageRequest.pageSize, content.size)
-            )
+            var content = listOf<OfferSearchResultItem>()
+            val step4 = measureTimeMillis {
+                content = offerSearchListToResult(
+                    subItems,
+                    offerRepository.changeStrategy(strategy)
+                )
+            }
+            logger.debug { "4 step) content ms: $step4" }
 
             val pageable = PageRequest(pageRequest.pageNumber, pageRequest.pageSize)
-
-            PageImpl(subItems, pageable, content.size.toLong())
+            PageImpl(content, pageable, filteredByUnique.size.toLong())
         }
     }
 
@@ -599,13 +621,43 @@ class OfferSearchService(
         offerSearch: List<OfferSearch>,
         offersRepository: OfferRepository
     ): List<OfferSearchResultItem> {
-        val offerIds = offerSearch.map { it.offerId }
-            .distinct()
-        val offers = offersRepository
-            .findByIds(offerIds)
-            .groupBy { it.id }
 
-        val withExistedOffers = offerSearch.filter { offers.containsKey(it.offerId) }
-        return withExistedOffers.map { OfferSearchResultItem(it, offers.getValue(it.offerId)[0]) }
+        var offerIds = listOf<Long>()
+        val step31 = measureTimeMillis {
+            offerIds = offerSearch
+                .map { it.offerId }
+                .distinct()
+        }
+        logger.debug { "3.1 step) offer Ids ms: $step31" }
+
+        var offers = mapOf<Long, List<Offer>>()
+        val step32 = measureTimeMillis {
+
+            var ones = listOf<Offer>()
+            val step321 = measureTimeMillis {
+                ones = offersRepository.findByIds(offerIds)
+            }
+            logger.debug { "3.2.1 step) findByIds ms: $step321" }
+
+            val step322 = measureTimeMillis {
+                offers = ones.groupBy { it.id }
+            }
+            logger.debug { "3.2.2 step)  groupBy ms: $step322" }
+        }
+        logger.debug { "3.2 step) ids is ${offerIds.size} offer MAP<Long, List<Offer>> ms: $step32" }
+
+        var withExistedOffers = listOf<OfferSearch>()
+        val step33 = measureTimeMillis {
+            withExistedOffers = offerSearch.filter { offers.containsKey(it.offerId) }
+        }
+        logger.debug { "3.3 step) offerSarch with existed offers ms: $step33" }
+
+        var result = listOf<OfferSearchResultItem>()
+        val step34 = measureTimeMillis {
+            result = withExistedOffers.map { OfferSearchResultItem(it, offers.getValue(it.offerId)[0]) }
+        }
+        logger.debug { "3.4 step) final result ms: $step34" }
+
+        return result
     }
 }

@@ -43,6 +43,12 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     fun findByOwnerAndOfferIdIn(owner: String, offerIds: List<Long>): List<OfferSearch>
 
+    fun findByOwnerAndSearchRequestIdInAndStateIn(
+        owner: String,
+        searchIds: List<Long>,
+        state: List<OfferResultAction>
+    ): List<OfferSearch>
+
     @Query(
         value = """
             SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank
@@ -147,6 +153,44 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         @Param("ids") searchRequestIds: List<Long>
     ): List<OfferSearch>
 
+    // the cluster of third requests
+    // by (Owner AND SearchRequests AND States)
+    // the differences are only sorting
+
+    @Query(
+        value = """
+            SELECT *
+            FROM offer_search s, offer o
+            WHERE
+                s.offer_id = o.id
+                AND s.owner = :owner
+                AND s.search_request_id IN :ids
+                AND s.state IN :state
+            ORDER BY o.updated_at DESC
+        """,
+        nativeQuery = true
+    )
+    fun getOfferSearchByOwnerAndSearchRequestIdInAndStateSortByUpdatedAt(
+        @Param("owner") owner: String,
+        @Param("ids") searchRequestIds: List<Long>,
+        @Param("state") state: List<Long>
+    ): List<OfferSearch>
+
+    @Query(
+        value = """
+            SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank
+            FROM offer_search s LEFT JOIN offer_rank r ON s.offer_id = r.offer_id
+            WHERE s.owner = :owner AND s.search_request_id IN :ids AND s.state IN :state
+            ORDER BY united_rank desc, s.updated_at DESC
+        """,
+        nativeQuery = true
+    )
+    fun getOfferSearchByOwnerAndSearchRequestIdInAndStateSortByRank(
+        @Param("owner") owner: String,
+        @Param("ids") searchRequestIds: List<Long>,
+        @Param("state") state: List<Long>
+    ): List<OfferSearch>
+
     @Query(
         value = """
             SELECT DISTINCT
@@ -161,6 +205,23 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     fun getOfferSearchByOwnerAndSearchRequestIdInAndSortByOfferPriceWorth(
         @Param("owner") owner: String,
         @Param("ids") searchRequestIds: List<Long>
+    ): List<OfferSearch>
+
+    @Query(
+        value = """
+            SELECT DISTINCT
+                first_value( CAST( p.worth AS INT ) ) over (partition by s.id order by p.id),
+                s.*
+            FROM offer_search s JOIN offer_price p ON p.offer_id = s.offer_id
+            WHERE s.owner = :owner AND s.search_request_id IN :ids AND s.state
+            ORDER BY first_value DESC
+        """,
+        nativeQuery = true
+    )
+    fun getOfferSearchByOwnerAndSearchRequestIdInAndStateSortByOfferPriceWorth(
+        @Param("owner") owner: String,
+        @Param("ids") searchRequestIds: List<Long>,
+        @Param("state") state: List<Long>
     ): List<OfferSearch>
 
     @Query(

@@ -37,6 +37,13 @@ interface OfferSearchRepository {
 
     fun findAllByOwnerAndSearchRequestIdIn(owner: String, searchRequestIds: List<Long>, sort: Sort?): List<OfferSearch>
 
+    fun findAllByOwnerAndStateAndSearchRequestIdIn(
+        owner: String,
+        searchRequestIds: List<Long>,
+        state: List<OfferResultAction>,
+        sort: Sort?
+    ): List<OfferSearch>
+
     fun findByOwnerAndOfferId(owner: String, offerId: Long): List<OfferSearch>
 
     fun findByOwnerAndOfferIdIn(owner: String, offerIds: List<Long>): List<OfferSearch>

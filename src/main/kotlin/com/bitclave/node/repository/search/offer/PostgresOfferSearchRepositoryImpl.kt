@@ -33,8 +33,8 @@ class PostgresOfferSearchRepositoryImpl(
 
         val step1 = measureTimeMillis {
             val searchRequestsIds = list
-                    .map { it.searchRequestId }
-                    .distinct()
+                .map { it.searchRequestId }
+                .distinct()
 
             val existedRequests = searchRequestRepository.findById(searchRequestsIds)
             if (searchRequestsIds.size != existedRequests.size) {
@@ -42,8 +42,8 @@ class PostgresOfferSearchRepositoryImpl(
             }
 
             val owners = list
-                    .map { it.owner }
-                    .distinct()
+                .map { it.owner }
+                .distinct()
 
             val offers = list
                 .map { it.offerId }
@@ -51,16 +51,16 @@ class PostgresOfferSearchRepositoryImpl(
 
             allOffersByOwner = when {
                 list.size == 1 -> repository
-                        .findByOwnerAndOfferId(list[0].owner, list[0].offerId)
-                        .toMutableList()
+                    .findByOwnerAndOfferId(list[0].owner, list[0].offerId)
+                    .toMutableList()
 
                 owners.size == 1 -> repository
                     .findByOwnerAndOfferIdIn(owners[0], offers)
                     .toMutableList()
 
                 list.size > 1 -> repository
-                        .findByOwnerIn(owners)
-                        .toMutableList()
+                    .findByOwnerIn(owners)
+                    .toMutableList()
 
                 else -> mutableListOf()
             }
@@ -70,11 +70,11 @@ class PostgresOfferSearchRepositoryImpl(
         val step2 = measureTimeMillis {
             list.forEach { offer ->
                 val relatedOfferSearches = allOffersByOwner
-                        .filter {
-                            it.id > 0 &&
-                                    it.offerId == offer.offerId &&
-                                    it.owner == offer.owner
-                        }
+                    .filter {
+                        it.id > 0 &&
+                            it.offerId == offer.offerId &&
+                            it.owner == offer.owner
+                    }
 
                 relatedOfferSearches.forEach { it.updatedAt = offer.updatedAt }
 
@@ -88,13 +88,13 @@ class PostgresOfferSearchRepositoryImpl(
                     relatedOfferSearches.isNotEmpty() -> {
                         val firstItem = relatedOfferSearches[0]
                         val events = offer.events
-                                .toMutableList()
+                            .toMutableList()
                         events.addAll(firstItem.events)
 
                         val copiedOffer = offer.copy(
-                                state = firstItem.state,
-                                events = events,
-                                info = firstItem.info
+                            state = firstItem.state,
+                            events = events,
+                            info = firstItem.info
                         )
                         allOffersByOwner.add(copiedOffer)
                     }
@@ -185,15 +185,69 @@ class PostgresOfferSearchRepositoryImpl(
         searchRequestIds: List<Long>,
         sort: Sort?
     ): List<OfferSearch> {
+        var result = listOf<OfferSearch>()
+
+        when (sort) {
+            Sort(Sort.Direction.ASC, "rank") -> {
+                val timeMs = measureTimeMillis {
+                    result = repository.getOfferSearchByOwnerAndSearchRequestIdInSortByRank(owner, searchRequestIds)
+                }
+                logger.debug { " find all OfferSearches by Owner and SearchRequest Id, sort ByRank ms: $timeMs" }
+            }
+
+            Sort(Sort.Direction.ASC, "updatedAt") -> {
+                val timeMs = measureTimeMillis {
+                    result = repository
+                        .getOfferSearchByOwnerAndSearchRequestIdInSortByUpdatedAt(owner, searchRequestIds)
+                }
+                logger.debug { " find all OfferSearches by Owner and SearchRequest Id, sort by UpdateAt ms: $timeMs" }
+            }
+            Sort(Sort.Direction.ASC, "price") -> {
+                val timeMs = measureTimeMillis {
+                    result = repository
+                        .getOfferSearchByOwnerAndSearchRequestIdInAndSortByOfferPriceWorth(owner, searchRequestIds)
+                }
+                logger.debug { " find all OfferSearches by Owner and SearchRequest Id, sort by cashback ms: $timeMs" }
+            }
+
+            else -> {
+                val timeMs = measureTimeMillis {
+                    result = repository.findAllByOwnerAndSearchRequestIdIn(owner, searchRequestIds)
+                }
+                logger.debug { " find all OfferSearches by Owner and SearchRequest Id, default sorting ms: $timeMs" }
+            }
+        }
+        return result
+    }
+
+    override fun findAllByOwnerAndStateAndSearchRequestIdIn(
+        owner: String,
+        searchRequestIds: List<Long>,
+        state: List<OfferResultAction>,
+        sort: Sort?
+    ): List<OfferSearch> {
+        val conditions = state.map { it.ordinal.toLong() }
         return when (sort) {
             Sort(Sort.Direction.ASC, "rank") ->
-                repository.getOfferSearchByOwnerAndSearchRequestIdInSortByRank(owner, searchRequestIds)
+                repository.getOfferSearchByOwnerAndSearchRequestIdInAndStateSortByRank(
+                    owner,
+                    searchRequestIds,
+                    conditions
+                )
             Sort(Sort.Direction.ASC, "updatedAt") ->
-                repository.getOfferSearchByOwnerAndSearchRequestIdInSortByUpdatedAt(owner, searchRequestIds)
+                repository.getOfferSearchByOwnerAndSearchRequestIdInAndStateSortByUpdatedAt(
+                    owner,
+                    searchRequestIds,
+                    conditions
+                )
             Sort(Sort.Direction.ASC, "price") ->
-                repository.getOfferSearchByOwnerAndSearchRequestIdInAndSortByOfferPriceWorth(owner, searchRequestIds)
+                repository.getOfferSearchByOwnerAndSearchRequestIdInAndStateSortByOfferPriceWorth(
+                    owner,
+                    searchRequestIds,
+                    conditions
+                )
             else ->
-                repository.findAllByOwnerAndSearchRequestIdIn(owner, searchRequestIds)
+                repository.findByOwnerAndSearchRequestIdInAndStateIn(owner, searchRequestIds, state)
         }
     }
 
