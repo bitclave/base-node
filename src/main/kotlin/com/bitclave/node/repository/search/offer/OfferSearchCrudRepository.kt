@@ -213,7 +213,7 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
                 first_value( CAST( p.worth AS INT ) ) over (partition by s.id order by p.id),
                 s.*
             FROM offer_search s JOIN offer_price p ON p.offer_id = s.offer_id
-            WHERE s.owner = :owner AND s.search_request_id IN :ids AND s.state
+            WHERE s.owner = :owner AND s.search_request_id IN :ids AND s.state IN :state
             ORDER BY first_value DESC
         """,
         nativeQuery = true
