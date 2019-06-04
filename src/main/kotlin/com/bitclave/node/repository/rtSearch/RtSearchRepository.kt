@@ -12,5 +12,4 @@ interface RtSearchRepository {
         interests: List<String>,
         mode: String
     ): CompletableFuture<Page<Long>>
-
 }
