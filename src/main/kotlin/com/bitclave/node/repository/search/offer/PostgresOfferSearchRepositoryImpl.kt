@@ -155,6 +155,8 @@ class PostgresOfferSearchRepositoryImpl(
                 repository.getOfferSearchByOwnerAndSortByRank(owner)
             Sort(Sort.Direction.ASC, "updatedAt") ->
                 repository.getOfferSearchByOwnerAndSortByUpdatedAt(owner)
+            Sort(Sort.Direction.ASC, "price") ->
+                repository.getOfferSearchByOwnerAndSortByOfferPriceWorth(owner)
             else ->
                 repository.findByOwner(owner)
         }
@@ -171,6 +173,8 @@ class PostgresOfferSearchRepositoryImpl(
                 repository.getOfferSearchByOwnerAndStateSortByRank(owner, condition)
             Sort(Sort.Direction.ASC, "updatedAt") ->
                 repository.getOfferSearchByOwnerAndStateSortByUpdatedAt(owner, condition)
+            Sort(Sort.Direction.ASC, "price") ->
+                repository.getOfferSearchByOwnerAndStateAndSortByOfferPriceWorth(owner, condition)
             else ->
                 repository.findAllByOwnerAndStateIn(owner, state)
         }
@@ -193,10 +197,17 @@ class PostgresOfferSearchRepositoryImpl(
 
             Sort(Sort.Direction.ASC, "updatedAt") -> {
                 val timeMs = measureTimeMillis {
-                    result =
-                        repository.getOfferSearchByOwnerAndSearchRequestIdInSortByUpdatedAt(owner, searchRequestIds)
+                    result = repository
+                        .getOfferSearchByOwnerAndSearchRequestIdInSortByUpdatedAt(owner, searchRequestIds)
                 }
                 logger.debug { " find all OfferSearches by Owner and SearchRequest Id, sort by UpdateAt ms: $timeMs" }
+            }
+            Sort(Sort.Direction.ASC, "price") -> {
+                val timeMs = measureTimeMillis {
+                    result = repository
+                        .getOfferSearchByOwnerAndSearchRequestIdInAndSortByOfferPriceWorth(owner, searchRequestIds)
+                }
+                logger.debug { " find all OfferSearches by Owner and SearchRequest Id, sort by cashback ms: $timeMs" }
             }
 
             else -> {
@@ -225,6 +236,12 @@ class PostgresOfferSearchRepositoryImpl(
                 )
             Sort(Sort.Direction.ASC, "updatedAt") ->
                 repository.getOfferSearchByOwnerAndSearchRequestIdInAndStateSortByUpdatedAt(
+                    owner,
+                    searchRequestIds,
+                    conditions
+                )
+            Sort(Sort.Direction.ASC, "price") ->
+                repository.getOfferSearchByOwnerAndSearchRequestIdInAndStateSortByOfferPriceWorth(
                     owner,
                     searchRequestIds,
                     conditions
