@@ -9,7 +9,7 @@ interface RtSearchRepository {
     fun getOffersIdByQuery(
         query: String,
         pageRequest: PageRequest,
-        interests: List<String>,
-        mode: String
+        interests: List<String>? = listOf(),
+        mode: String? = ""
     ): CompletableFuture<Page<Long>>
 }

@@ -81,11 +81,11 @@ class OfferSearchController(
         size: Int,
 
         @ApiParam("sends the list of the interests e.g. 'interest_bitclave_general'")
-        @RequestParam(value = "interests", required = false)
+        @RequestParam(value = "interests", defaultValue = "", required = false)
         interests: List<String>,
 
         @ApiParam("mode of interests list must or prefer")
-        @RequestParam(value = "mode", required = false)
+        @RequestParam(value = "mode", defaultValue = "", required = false)
         mode: String,
 
         @ApiParam(

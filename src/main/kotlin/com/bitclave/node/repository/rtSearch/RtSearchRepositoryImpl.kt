@@ -24,8 +24,8 @@ class RtSearchRepositoryImpl(
     override fun getOffersIdByQuery(
         query: String,
         pageRequest: PageRequest,
-        interests: List<String>,
-        mode: String
+        interests: List<String>?,
+        mode: String?
     ): CompletableFuture<Page<Long>> {
         return CompletableFuture.supplyAsync {
 
@@ -33,7 +33,7 @@ class RtSearchRepositoryImpl(
                 "query" to query,
                 "page" to pageRequest.pageNumber,
                 "size" to pageRequest.pageSize,
-                "interests" to interests.joinToString(),
+                "interests" to interests?.joinToString(),
                 "mode" to mode
             )
             val offerIdsResponse = restTemplate.exchange(
@@ -42,7 +42,6 @@ class RtSearchRepositoryImpl(
                 object : ParameterizedTypeReference<Page<Long>>() {},
                 parameters
             )
-
             return@supplyAsync offerIdsResponse.body
         }
     }

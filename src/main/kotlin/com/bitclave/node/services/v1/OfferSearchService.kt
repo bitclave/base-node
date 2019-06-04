@@ -516,8 +516,8 @@ class OfferSearchService(
         query: String,
         pageRequest: PageRequest,
         strategyType: RepositoryStrategyType,
-        interests: List<String>,
-        mode: String
+        interests: List<String>? = listOf(),
+        mode: String? = ""
     ): CompletableFuture<Page<OfferSearchResultItem>> {
         return CompletableFuture.supplyAsync {
             val searchRequest = searchRequestRepository
