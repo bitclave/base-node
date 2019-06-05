@@ -7,6 +7,7 @@ import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.repository.models.OfferSearchResultItem
 import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.models.SignedRequest
+import com.bitclave.node.repository.models.controllers.OfferSearchByQueryParameters
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferSearchService
 import io.swagger.annotations.ApiOperation
@@ -80,10 +81,6 @@ class OfferSearchController(
         @RequestParam("size", defaultValue = "20", required = false)
         size: Int,
 
-        @ApiParam("sends the list of the interests e.g. 'interest_bitclave_general'")
-        @RequestParam(value = "interests", defaultValue = "", required = false)
-        interests: List<String>,
-
         @ApiParam("mode of interests list must or prefer")
         @RequestParam(value = "mode", defaultValue = "", required = false)
         mode: String,
@@ -93,7 +90,7 @@ class OfferSearchController(
                 " and signature of the message.", required = true
         )
         @RequestBody
-        request: SignedRequest<Long>,
+        request: SignedRequest<OfferSearchByQueryParameters>,
 
         @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
         @RequestHeader("Strategy", required = false)
@@ -105,12 +102,12 @@ class OfferSearchController(
             .thenCompose {
                 val decodedQuery = URLDecoder.decode(query, "UTF-8")
                 val result = offerSearchService.createOfferSearchesByQuery(
-                    request.data!!,
+                    request.data!!.searchRequestId,
                     it.publicKey,
                     decodedQuery,
                     PageRequest(page, size),
                     getStrategyType(strategy),
-                    interests,
+                    request.data.interests,
                     mode
                 ).get()
 
