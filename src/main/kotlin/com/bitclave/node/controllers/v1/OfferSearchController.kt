@@ -7,6 +7,7 @@ import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.repository.models.OfferSearchResultItem
 import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.models.SignedRequest
+import com.bitclave.node.repository.models.controllers.OfferSearchByQueryParameters
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferSearchService
 import io.swagger.annotations.ApiOperation
@@ -71,6 +72,7 @@ class OfferSearchController(
         @ApiParam("sends full text search query string")
         @RequestParam(value = "q")
         query: String,
+
         @ApiParam("Optional page number to retrieve a particular page. If not specified this API retrieves first page.")
         @RequestParam("page", defaultValue = "0", required = false)
         page: Int,
@@ -78,12 +80,17 @@ class OfferSearchController(
         @ApiParam("Optional page size to include number of offerSearch items in a page. Defaults to 20.")
         @RequestParam("size", defaultValue = "20", required = false)
         size: Int,
+
+        @ApiParam("mode of interests list must or prefer")
+        @RequestParam(value = "mode", defaultValue = "", required = false)
+        mode: String,
+
         @ApiParam(
             "where client already existed search request id (who has rtSearch tag)" +
                 " and signature of the message.", required = true
         )
         @RequestBody
-        request: SignedRequest<Long>,
+        request: SignedRequest<OfferSearchByQueryParameters>,
 
         @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
         @RequestHeader("Strategy", required = false)
@@ -95,11 +102,13 @@ class OfferSearchController(
             .thenCompose {
                 val decodedQuery = URLDecoder.decode(query, "UTF-8")
                 val result = offerSearchService.createOfferSearchesByQuery(
-                    request.data!!,
+                    request.data!!.searchRequestId,
                     it.publicKey,
                     decodedQuery,
                     PageRequest(page, size),
-                    getStrategyType(strategy)
+                    getStrategyType(strategy),
+                    request.data.interests,
+                    mode
                 ).get()
 
                 accountService.incrementNonce(it, getStrategyType(strategy)).get()

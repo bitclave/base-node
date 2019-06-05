@@ -515,7 +515,9 @@ class OfferSearchService(
         owner: String,
         query: String,
         pageRequest: PageRequest,
-        strategyType: RepositoryStrategyType
+        strategyType: RepositoryStrategyType,
+        interests: List<String>? = listOf(),
+        mode: String? = ""
     ): CompletableFuture<Page<OfferSearchResultItem>> {
         return CompletableFuture.supplyAsync {
             val searchRequest = searchRequestRepository
@@ -555,7 +557,7 @@ class OfferSearchService(
             val step4 = measureTimeMillis {
                 try {
                     offerIds = rtSearchRepository
-                        .getOffersIdByQuery(query, pageRequest)
+                        .getOffersIdByQuery(query, pageRequest, interests, mode)
                         .get()
                 } catch (e: HttpClientErrorException) {
                     logger.error("rt-search error: $e")
