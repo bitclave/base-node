@@ -5,6 +5,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
 import org.springframework.http.converter.json.GsonHttpMessageConverter
 import org.springframework.stereotype.Repository
@@ -33,12 +34,12 @@ class RtSearchRepositoryImpl(
                 "query" to query,
                 "page" to pageRequest.pageNumber,
                 "size" to pageRequest.pageSize,
-                "interests" to interests?.joinToString(),
                 "mode" to mode
             )
+            val httpEntity = HttpEntity<List<String>>(interests)
             val offerIdsResponse = restTemplate.exchange(
-                "/v1/search/?q={query}&page={page}&size={size}&interests={interests}&mode={mode}",
-                HttpMethod.GET, null,
+                "/v1/search/?q={query}&page={page}&size={size}&mode={mode}",
+                HttpMethod.POST, httpEntity,
                 object : ParameterizedTypeReference<Page<Long>>() {},
                 parameters
             )
