@@ -599,6 +599,9 @@ class OfferSearchService(
             val step7 = measureTimeMillis {
                 offerSearchResult = offerSearchRepository.changeStrategy(strategyType)
                     .findBySearchRequestIdAndOfferIds(searchRequestId, offerIds.content)
+                    .sortedWith(Comparator { a, b ->
+                        offerIds.indexOf(a.offerId) - offerIds.indexOf(b.offerId)
+                    })
             }
             logger.debug { "step 7 -> findBySearchRequestIdAndOfferIds(). ms: $step7" }
 
