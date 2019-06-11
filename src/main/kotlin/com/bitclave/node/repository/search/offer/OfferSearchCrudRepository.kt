@@ -85,6 +85,17 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     @Query(
         value = """
+            SELECT CAST( t.tags AS FLOAT ), *
+            FROM offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
+            where t.tags_key = 'cashback' AND s.owner = :owner
+            order by t.tags DESC
+        """,
+        nativeQuery = true
+    )
+    fun getOfferSearchByOwnersAndSortByCashBack(@Param("owner") owner: String): List<OfferSearch>
+
+    @Query(
+        value = """
             SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank
             FROM offer_search s LEFT JOIN offer_rank r ON s.offer_id = r.offer_id
             WHERE s.owner = :owner AND s.state IN :state
@@ -128,6 +139,20 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     @Query(
         value = """
+            SELECT CAST( t.tags AS FLOAT ), *
+            FROM offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
+            where t.tags_key = 'cashback' AND s.owner = :owner AND s.state IN :state
+            order by t.tags DESC
+        """,
+        nativeQuery = true
+    )
+    fun getOfferSearchByOwnerAndStateAndSortByCashBack(
+        @Param("owner") owner: String,
+        @Param("state") state: List<Long>
+    ): List<OfferSearch>
+
+    @Query(
+        value = """
             SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank
             FROM offer_search s LEFT JOIN offer_rank r ON s.offer_id = r.offer_id
             where s.owner = :owner AND s.search_request_id IN :ids
@@ -149,6 +174,20 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         nativeQuery = true
     )
     fun getOfferSearchByOwnerAndSearchRequestIdInSortByUpdatedAt(
+        @Param("owner") owner: String,
+        @Param("ids") searchRequestIds: List<Long>
+    ): List<OfferSearch>
+
+    @Query(
+        value = """
+            SELECT CAST( t.tags AS FLOAT ), *
+            FROM offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
+            where t.tags_key = 'cashback' AND s.owner = :owner AND s.search_request_id IN :ids
+            order by t.tags DESC
+        """,
+        nativeQuery = true
+    )
+    fun getOfferSearchByOwnerAndSearchRequestIdInAndSortByCashback(
         @Param("owner") owner: String,
         @Param("ids") searchRequestIds: List<Long>
     ): List<OfferSearch>
@@ -219,6 +258,21 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         nativeQuery = true
     )
     fun getOfferSearchByOwnerAndSearchRequestIdInAndStateSortByOfferPriceWorth(
+        @Param("owner") owner: String,
+        @Param("ids") searchRequestIds: List<Long>,
+        @Param("state") state: List<Long>
+    ): List<OfferSearch>
+
+    @Query(
+        value = """
+            SELECT CAST( t.tags AS FLOAT ), *
+            FROM offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
+            where t.tags_key = 'cashback' AND s.owner = :owner AND s.search_request_id IN :ids AND s.state IN :state
+            order by t.tags DESC
+        """,
+        nativeQuery = true
+    )
+    fun getOfferSearchByOwnerAndSearchRequestIdAndStateSortByCashback(
         @Param("owner") owner: String,
         @Param("ids") searchRequestIds: List<Long>,
         @Param("state") state: List<Long>
