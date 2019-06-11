@@ -157,6 +157,8 @@ class PostgresOfferSearchRepositoryImpl(
                 repository.getOfferSearchByOwnerAndSortByUpdatedAt(owner)
             Sort(Sort.Direction.ASC, "price") ->
                 repository.getOfferSearchByOwnerAndSortByOfferPriceWorth(owner)
+            Sort(Sort.Direction.ASC, "cashback") ->
+                repository.getOfferSearchByOwnersAndSortByCashBack(owner)
             else ->
                 repository.findByOwner(owner)
         }
@@ -175,6 +177,8 @@ class PostgresOfferSearchRepositoryImpl(
                 repository.getOfferSearchByOwnerAndStateSortByUpdatedAt(owner, condition)
             Sort(Sort.Direction.ASC, "price") ->
                 repository.getOfferSearchByOwnerAndStateAndSortByOfferPriceWorth(owner, condition)
+            Sort(Sort.Direction.ASC, "cashback") ->
+                repository.getOfferSearchByOwnerAndStateAndSortByCashBack(owner, condition)
             else ->
                 repository.findAllByOwnerAndStateIn(owner, state)
         }
@@ -209,6 +213,9 @@ class PostgresOfferSearchRepositoryImpl(
                 }
                 logger.debug { " find all OfferSearches by Owner and SearchRequest Id, sort by cashback ms: $timeMs" }
             }
+            Sort(Sort.Direction.ASC, "cashback") -> {
+                result = repository.getOfferSearchByOwnerAndSearchRequestIdInAndSortByCashback(owner, searchRequestIds)
+            }
 
             else -> {
                 val timeMs = measureTimeMillis {
@@ -242,6 +249,12 @@ class PostgresOfferSearchRepositoryImpl(
                 )
             Sort(Sort.Direction.ASC, "price") ->
                 repository.getOfferSearchByOwnerAndSearchRequestIdInAndStateSortByOfferPriceWorth(
+                    owner,
+                    searchRequestIds,
+                    conditions
+                )
+            Sort(Sort.Direction.ASC, "cashback") ->
+                repository.getOfferSearchByOwnerAndSearchRequestIdAndStateSortByCashback(
                     owner,
                     searchRequestIds,
                     conditions
