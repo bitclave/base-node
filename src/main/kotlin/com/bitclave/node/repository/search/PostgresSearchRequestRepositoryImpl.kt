@@ -6,11 +6,13 @@ import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.DataNotSavedException
+import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
 import java.util.ArrayList
+import kotlin.system.measureTimeMillis
 
 @Component
 @Qualifier("postgres")
@@ -19,18 +21,30 @@ class PostgresSearchRequestRepositoryImpl(
     val offerSearchRepository: OfferSearchCrudRepository
 ) : SearchRequestRepository {
 
+    private val logger = KotlinLogging.logger {}
+
     override fun saveSearchRequest(request: SearchRequest): SearchRequest {
         val id = request.id
-        repository.save(request) ?: throw DataNotSavedException()
+        val step1 = measureTimeMillis {
+            repository.save(request) ?: throw DataNotSavedException()
+        }
+        logger.info { "saveSearchRequest step1: $step1" }
 
         if (id > 0) {
-            var relatedOfferSearches = offerSearchRepository.findBySearchRequestId(id)
+            var relatedOfferSearches = emptyList<OfferSearch>()
 
-            relatedOfferSearches = relatedOfferSearches.filter {
-                it.state == OfferResultAction.NONE || it.state == OfferResultAction.REJECT
+            val step2 = measureTimeMillis {
+                relatedOfferSearches = offerSearchRepository.findBySearchRequestId(id)
+                    .filter {
+                        it.state == OfferResultAction.NONE || it.state == OfferResultAction.REJECT
+                    }
             }
+            logger.info { "saveSearchRequest step2: $step2" }
 
-            offerSearchRepository.delete(relatedOfferSearches)
+            val step3 = measureTimeMillis {
+                offerSearchRepository.delete(relatedOfferSearches)
+            }
+            logger.info { "saveSearchRequest step3: $step3" }
         }
 
         return request
@@ -79,10 +93,20 @@ class PostgresSearchRequestRepositoryImpl(
     }
 
     override fun cloneSearchRequestWithOfferSearches(request: SearchRequest): SearchRequest {
-        val existingRequest = repository.findOne(request.id)
-            ?: throw BadArgumentException("SearchRequest does not exist: ${request.id}")
+        var existingRequest = SearchRequest()
 
-        val relatedOfferSearches = offerSearchRepository.findBySearchRequestId(existingRequest.id)
+        val step1 = measureTimeMillis {
+            existingRequest = repository.findOne(request.id)
+                ?: throw BadArgumentException("SearchRequest does not exist: ${request.id}")
+        }
+        logger.info { "clone search request step1 $step1" }
+
+        var relatedOfferSearches = listOf<OfferSearch>()
+
+        val step2 = measureTimeMillis {
+            relatedOfferSearches = offerSearchRepository.findBySearchRequestId(existingRequest.id)
+        }
+        logger.info { "clone search request step2 $step2" }
 
         val createSearchRequest = SearchRequest(
             0,
@@ -90,23 +114,32 @@ class PostgresSearchRequestRepositoryImpl(
             request.tags
         )
 
-        repository.save(createSearchRequest)
+        val step3 = measureTimeMillis {
+            repository.save(createSearchRequest)
+        }
+        logger.info { "clone search request step3 $step3" }
 
         val toBeSavedOfferSearched: MutableList<OfferSearch> = mutableListOf()
-        for (offerSearch: OfferSearch in relatedOfferSearches) {
-            val newOfferSearch = OfferSearch(
-                0,
-                createSearchRequest.owner,
-                createSearchRequest.id,
-                offerSearch.offerId,
-                OfferResultAction.NONE,
-                offerSearch.info,
-                ArrayList()
-            )
-            toBeSavedOfferSearched.add(newOfferSearch)
+        val step4 = measureTimeMillis {
+            for (offerSearch: OfferSearch in relatedOfferSearches) {
+                val newOfferSearch = OfferSearch(
+                    0,
+                    createSearchRequest.owner,
+                    createSearchRequest.id,
+                    offerSearch.offerId,
+                    OfferResultAction.NONE,
+                    offerSearch.info,
+                    ArrayList()
+                )
+                toBeSavedOfferSearched.add(newOfferSearch)
+            }
         }
+        logger.info { "clone search request step4 $step4" }
 
-        offerSearchRepository.save(toBeSavedOfferSearched)
+        val step5 = measureTimeMillis {
+            offerSearchRepository.save(toBeSavedOfferSearched)
+        }
+        logger.info { "clone search request step5 $step5. count of offerSearches: ${toBeSavedOfferSearched.size}" }
 
         return createSearchRequest
     }

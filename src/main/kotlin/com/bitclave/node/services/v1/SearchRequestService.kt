@@ -28,6 +28,7 @@ class SearchRequestService(
 
         return CompletableFuture.supplyAsync {
             var existedSearchRequest: SearchRequest? = null
+
             if (id > 0) {
                 existedSearchRequest = repository.changeStrategy(strategy)
                     .findByIdAndOwner(id, owner) ?: throw BadArgumentException()
