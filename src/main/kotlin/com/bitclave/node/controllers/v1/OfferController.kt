@@ -109,6 +109,78 @@ class OfferController(
     }
 
     /**
+     * Update offer in the system without deleting all matched offerSearch since offer categories are not changed.
+     * The API will verify that the request is cryptographically signed by the owner of the public key.
+     * @param request is {@link SignedRequest} where client sends {@link Offer} and
+     * signature of the message.
+     *
+     * @return {@link Offer}, Http status - 200.
+     *
+     * @exception {@link BadArgumentException} - 400
+     *              {@link AccessDeniedException} - 403
+     *              {@link DataNotSaved} - 500
+     */
+
+    @ApiOperation(
+        "Update offer in the system without deleting all matched offerSearch since offer categories are not" +
+            " changed.\n The API will verify that the request is cryptographically signed by the owner of the public" +
+            "key.",
+        response = Offer::class
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(code = 200, message = "Updated", response = Offer::class),
+            ApiResponse(code = 400, message = "BadArgumentException"),
+            ApiResponse(code = 403, message = "AccessDeniedException"),
+            ApiResponse(code = 500, message = "DataNotSaved")
+        ]
+    )
+    @RequestMapping(method = [RequestMethod.PUT], value = ["/shallow/{id}"])
+    fun shallowUpdateOffer(
+        @ApiParam("public key owner of offer")
+        @PathVariable(value = "owner")
+        owner: String,
+
+        @ApiParam("Optional id of already created a offer. Use for update offer")
+        @PathVariable(value = "id")
+        id: Long,
+
+        @ApiParam("where client sends Offer and signature of the message.", required = true)
+        @RequestBody
+        request: SignedRequest<Offer>,
+
+        @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
+    ): CompletableFuture<ResponseEntity<Offer>> {
+
+        return accountService
+            .accountBySigMessage(request, getStrategyType(strategy))
+            .thenCompose { account: Account ->
+                accountService.validateNonce(request, account)
+            }
+            .thenCompose {
+                if (request.pk != owner) {
+                    throw BadArgumentException()
+                }
+                val result = offerService.shallowUpdateOffer(
+                    id,
+                    owner,
+                    request.data!!,
+                    getStrategyType(strategy)
+                ).get()
+                accountService.incrementNonce(it, getStrategyType(strategy)).get()
+                CompletableFuture.completedFuture(result)
+            }
+            .thenCompose {
+                CompletableFuture.completedFuture(ResponseEntity<Offer>(it, HttpStatus.OK))
+            }.exceptionally { e ->
+                logger.error("Request: shallowUpdateOffer/$request raised $e")
+                throw e
+            }
+    }
+
+    /**
      * Delete a offer from the system.
      * The API will verify that the request is cryptographically signed by the owner of the public key.
      * @param request is {@link SignedRequest} where client sends {@link Long} and

@@ -72,6 +72,53 @@ class OfferService(
         }
     }
 
+    fun shallowUpdateOffer(
+        id: Long,
+        owner: String,
+        offer: Offer,
+        strategy: RepositoryStrategyType
+    ): CompletableFuture<Offer> {
+
+        return CompletableFuture.supplyAsync {
+            var originalOffer = offerRepository.changeStrategy(strategy)
+                    .findByIdAndOwner(id, owner) ?: throw BadArgumentException()
+
+            if (offer.compare.isEmpty() ||
+                offer.compare.size != offer.rules.size ||
+                offer.description.isEmpty() ||
+                offer.title.isEmpty() ||
+                offer.tags.isEmpty()
+            ) {
+                throw BadArgumentException()
+            }
+
+            for (item: String in offer.compare.keys) {
+                if (!offer.rules.containsKey(item)) {
+                    throw BadArgumentException()
+                }
+            }
+
+            val createdAt = originalOffer.createdAt
+            val putOffer = Offer(
+                id,
+                owner,
+                offer.offerPrices,
+                offer.description,
+                offer.title,
+                offer.imageUrl,
+                offer.worth,
+                offer.tags,
+                offer.compare,
+                offer.rules,
+                createdAt
+            )
+            val processedOffer = offerRepository.changeStrategy(strategy).shallowSaveOffer(putOffer)
+            offerPriceRepository.changeStrategy(strategy).savePrices(processedOffer, offer.offerPrices)
+            val updatedOffer = offerRepository.changeStrategy(strategy).findById(processedOffer.id)
+            updatedOffer
+        }
+    }
+
     fun deleteOffer(
         id: Long,
         owner: String,
