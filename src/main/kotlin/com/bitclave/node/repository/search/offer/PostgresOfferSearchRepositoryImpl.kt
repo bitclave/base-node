@@ -200,7 +200,7 @@ class PostgresOfferSearchRepositoryImpl(
                 val timeMs = measureTimeMillis {
                     result = repository.getOfferSearchByOwnerAndSearchRequestIdInSortByRank(owner, searchRequestIds)
                 }
-                logger.debug { " find all OfferSearches by Owner and SearchRequest Id, sort ByRank ms: $timeMs" }
+                logger.debug { " find all OfferSearches by Owner and SearchRequest Id, sort ByRank ms: $timeMs, size: ${result.size}" }
             }
 
             Sort(Sort.Direction.ASC, "updatedAt") -> {
