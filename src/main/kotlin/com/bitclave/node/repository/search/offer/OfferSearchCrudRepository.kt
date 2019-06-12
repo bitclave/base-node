@@ -85,10 +85,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     @Query(
         value = """
-            SELECT CAST( t.tags AS FLOAT ), *
+            SELECT *, CAST( t.tags AS FLOAT ) AS cashback
             FROM offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
             where t.tags_key = 'cashback' AND s.owner = :owner
-            order by t.tags DESC
+            order by cashback DESC
         """,
         nativeQuery = true
     )
@@ -139,10 +139,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     @Query(
         value = """
-            SELECT CAST( t.tags AS FLOAT ), *
+            SELECT *, CAST( t.tags AS FLOAT ) AS cashback
             FROM offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
             where t.tags_key = 'cashback' AND s.owner = :owner AND s.state IN :state
-            order by t.tags DESC
+            order by cashback DESC
         """,
         nativeQuery = true
     )
@@ -180,10 +180,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     @Query(
         value = """
-            SELECT CAST( t.tags AS FLOAT ), *
+            SELECT *, CAST( t.tags AS FLOAT ) AS cashback
             FROM offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
             where t.tags_key = 'cashback' AND s.owner = :owner AND s.search_request_id IN :ids
-            order by t.tags DESC
+            order by cashback DESC
         """,
         nativeQuery = true
     )
@@ -265,10 +265,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     @Query(
         value = """
-            SELECT CAST( t.tags AS FLOAT ), *
+            SELECT *, CAST( t.tags AS FLOAT ) AS cashback
             FROM offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
             where t.tags_key = 'cashback' AND s.owner = :owner AND s.search_request_id IN :ids AND s.state IN :state
-            order by t.tags DESC
+            order by cashback DESC
         """,
         nativeQuery = true
     )
