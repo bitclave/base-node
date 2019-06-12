@@ -6,6 +6,7 @@ import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.search.SearchRequestRepository
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.DataNotSavedException
+import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -13,7 +14,6 @@ import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Component
 import java.util.ArrayList
 import kotlin.system.measureTimeMillis
-import mu.KotlinLogging
 
 @Component
 @Qualifier("postgres")
@@ -26,6 +26,10 @@ class PostgresOfferSearchRepositoryImpl(
 
     override fun deleteAllBySearchRequestId(id: Long): Long {
         return repository.deleteAllBySearchRequestId(id)
+    }
+
+    override fun deleteAllByOwner(owner: String): List<Long> {
+        return repository.deleteAllByOwner(owner)
     }
 
     override fun saveSearchResult(list: List<OfferSearch>) {

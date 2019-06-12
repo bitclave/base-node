@@ -665,4 +665,13 @@ class OfferSearchService(
 
         return result
     }
+
+    fun deleteByOwner(
+        owner: String,
+        strategyType: RepositoryStrategyType
+    ): CompletableFuture<Void> {
+        return CompletableFuture.runAsync {
+            offerSearchRepository.changeStrategy(strategyType).deleteAllByOwner(owner)
+        }
+    }
 }

@@ -34,11 +34,14 @@ import org.junit.runner.RunWith
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import java.util.ArrayList
+import java.util.concurrent.CompletableFuture
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
@@ -137,7 +140,8 @@ class SearchRequestServiceTest {
         val offerSearchRepositoryStrategy = OfferSearchRepositoryStrategy(offerSearchRepository)
 
         searchRequestService = SearchRequestService(
-            requestRepositoryStrategy
+            requestRepositoryStrategy,
+            querySearchRequestCrudRepository
         )
 
         offerSearchService = OfferSearchService(
@@ -175,6 +179,43 @@ class SearchRequestServiceTest {
         assertThat(result.tags).isEqualTo(searchRequest.tags)
         assertThat(result.createdAt.time > searchRequest.createdAt.time)
         assertThat(result.updatedAt.time > searchRequest.updatedAt.time)
+    }
+
+    @Test
+    fun `should delete existed search request by owner`() {
+        val searchPageRequest = PageRequest(0, 20)
+
+        val list: Page<Long> = PageImpl(arrayListOf<Long>(1, 2, 3), searchPageRequest, 1)
+
+        val searchRequestWithRtSearch = searchRequestService.putSearchRequest(
+            0,
+            publicKey,
+            SearchRequest(0, publicKey, mapOf("rtSearch" to "true")),
+            strategy
+        ).get()
+
+        val searchQueryText = "some data"
+        Mockito.`when`(rtSearchRepository.getOffersIdByQuery(searchQueryText, searchPageRequest))
+            .thenReturn(CompletableFuture.completedFuture(list))
+
+        val offersResult = offerSearchService.createOfferSearchesByQuery(
+            searchRequestWithRtSearch.id, publicKey, searchQueryText, searchPageRequest, strategy
+        ).get()
+
+        var queryRequestsByOwner = querySearchRequestCrudRepository
+            .findAllByOwner(publicKey)
+        val existedSearchRequest = searchRequestCrudRepository.findOne(searchRequestWithRtSearch.id)
+
+        assertThat(existedSearchRequest)
+        assertThat(queryRequestsByOwner.size == 1)
+        assertThat(queryRequestsByOwner[0].query).isEqualTo(searchQueryText)
+        assertThat(offersResult.size == list.size)
+
+        searchRequestService.deleteQuerySearchRequest(publicKey).get()
+
+        queryRequestsByOwner = querySearchRequestCrudRepository
+            .findAllByOwner(publicKey)
+        assertThat(queryRequestsByOwner.isEmpty())
     }
 
     @Test
