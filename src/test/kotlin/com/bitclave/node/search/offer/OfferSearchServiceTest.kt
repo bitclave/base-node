@@ -294,6 +294,18 @@ class OfferSearchServiceTest {
     }
 
     @Test
+    fun `should be delete QuerySearchRequest by owner`() {
+        createOfferSearch(createdSearchRequest1, createdOffer1, ArrayList())
+        var existedSearchRequest = offerSearchService.getOfferSearches(strategy,createdOffer1.id).get()
+        assertThat(existedSearchRequest.size == 1)
+
+        offerSearchService.deleteByOwner(publicKey, strategy).get()
+
+        existedSearchRequest = offerSearchService.getOfferSearches(strategy,createdOffer1.id).get()
+        assertThat(existedSearchRequest.isEmpty())
+    }
+
+    @Test
     fun `should be create offersSearch items`() {
         val list: Page<Long> = PageImpl(arrayListOf<Long>(1, 2, 3), searchPageRequest, 1)
 

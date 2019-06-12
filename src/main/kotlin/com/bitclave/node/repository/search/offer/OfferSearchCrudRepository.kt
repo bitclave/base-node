@@ -16,6 +16,8 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     fun deleteAllBySearchRequestId(id: Long): Long
 
+    fun deleteAllByOwner(owner: String): List<Long>
+
     fun findBySearchRequestId(id: Long): List<OfferSearch>
 
     fun findBySearchRequestId(id: Long, pageable: Pageable): Page<OfferSearch>
