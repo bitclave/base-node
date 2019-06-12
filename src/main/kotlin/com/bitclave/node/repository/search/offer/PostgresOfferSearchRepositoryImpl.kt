@@ -200,7 +200,7 @@ class PostgresOfferSearchRepositoryImpl(
                 val timeMs = measureTimeMillis {
                     result = repository.getOfferSearchByOwnerAndSearchRequestIdInSortByRank(owner, searchRequestIds)
                 }
-                logger.debug { " find all OfferSearches by Owner and SearchRequest Id, sort ByRank ms: $timeMs, size: ${result.size}" }
+                logger.debug { " findAllByOwnerAndSearchRequestIdIn, sort ByRank ms: $timeMs, size: ${result.size}" }
             }
 
             Sort(Sort.Direction.ASC, "updatedAt") -> {
@@ -208,14 +208,14 @@ class PostgresOfferSearchRepositoryImpl(
                     result = repository
                         .getOfferSearchByOwnerAndSearchRequestIdInSortByUpdatedAt(owner, searchRequestIds)
                 }
-                logger.debug { " find all OfferSearches by Owner and SearchRequest Id, sort by UpdateAt ms: $timeMs" }
+                logger.debug { " findAllByOwnerAndSearchRequestIdIn, sort by UpdateAt ms: $timeMs" }
             }
             Sort(Sort.Direction.ASC, "price") -> {
                 val timeMs = measureTimeMillis {
                     result = repository
                         .getOfferSearchByOwnerAndSearchRequestIdInAndSortByOfferPriceWorth(owner, searchRequestIds)
                 }
-                logger.debug { " find all OfferSearches by Owner and SearchRequest Id, sort by cashback ms: $timeMs" }
+                logger.debug { " findAllByOwnerAndSearchRequestIdIn, sort by cashback ms: $timeMs" }
             }
             Sort(Sort.Direction.ASC, "cashback") -> {
                 result = repository.getOfferSearchByOwnerAndSearchRequestIdInAndSortByCashback(owner, searchRequestIds)
@@ -225,7 +225,7 @@ class PostgresOfferSearchRepositoryImpl(
                 val timeMs = measureTimeMillis {
                     result = repository.findAllByOwnerAndSearchRequestIdIn(owner, searchRequestIds)
                 }
-                logger.debug { " find all OfferSearches by Owner and SearchRequest Id, default sorting ms: $timeMs" }
+                logger.debug { " findAllByOwnerAndSearchRequestIdIn, default sorting ms: $timeMs" }
             }
         }
         return result
