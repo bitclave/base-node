@@ -297,12 +297,12 @@ class OfferSearchServiceTest {
     @Test
     fun `should be delete QuerySearchRequest by owner`() {
         createOfferSearch(createdSearchRequest1, createdOffer1, ArrayList())
-        var existedSearchRequest = offerSearchService.getOfferSearches(strategy,createdOffer1.id).get()
+        var existedSearchRequest = offerSearchService.getOfferSearches(strategy, createdOffer1.id).get()
         assertThat(existedSearchRequest.size == 1)
 
         offerSearchService.deleteByOwner(publicKey, strategy).get()
 
-        existedSearchRequest = offerSearchService.getOfferSearches(strategy,createdOffer1.id).get()
+        existedSearchRequest = offerSearchService.getOfferSearches(strategy, createdOffer1.id).get()
         assertThat(existedSearchRequest.isEmpty())
     }
 
