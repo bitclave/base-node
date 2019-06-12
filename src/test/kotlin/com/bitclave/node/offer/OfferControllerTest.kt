@@ -146,6 +146,16 @@ class OfferControllerTest {
     }
 
     @Test
+    fun `shallow update offer`() {
+        this.mvc.perform(
+            put("/$version/client/$publicKey/offer/shallow/1/")
+                .content(requestOffer.toJsonString())
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
+    }
+
+    @Test
     fun `delete offer`() {
         this.mvc.perform(
             delete("/$version/client/$publicKey/offer/1/")
