@@ -210,7 +210,8 @@ class OfferSearchServiceTest {
         )
 
         searchRequestService = SearchRequestService(
-            searchRequestRepositoryStrategy
+            searchRequestRepositoryStrategy,
+            querySearchRequestCrudRepository
         )
 
         strategy = RepositoryStrategyType.POSTGRES
