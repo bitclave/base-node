@@ -4,6 +4,7 @@ import com.bitclave.node.repository.models.OfferResultAction
 import com.bitclave.node.repository.models.OfferSearch
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.data.repository.query.Param
@@ -315,4 +316,16 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     fun findAllDiff(): List<OfferSearch>
 
     fun countBySearchRequestId(id: Long): Long
+
+    @Modifying
+    @Query(
+        value = """
+            DELETE FROM offer_search s
+            WHERE s.offer_id = :offerId AND s.state IN (0,2)
+        """,
+        nativeQuery = true
+    )
+    fun deleteAllByOfferIdAndStateIn(
+        @Param("offerId") offerId: Long
+    ): Int
 }
