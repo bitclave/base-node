@@ -10,4 +10,6 @@ import javax.transaction.Transactional
 interface QuerySearchRequestCrudRepository : CrudRepository<QuerySearchRequest, Long> {
 
     fun findAllByOwner(owner: String): List<QuerySearchRequest>
+
+    fun deleteAllByOwner(owner: String): List<Long>
 }

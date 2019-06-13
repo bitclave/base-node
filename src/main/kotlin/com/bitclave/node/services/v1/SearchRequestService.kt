@@ -4,6 +4,7 @@ import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.search.SearchRequestRepository
+import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepository
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
 import org.springframework.beans.factory.annotation.Qualifier
@@ -16,7 +17,8 @@ import java.util.concurrent.CompletableFuture
 @Service
 @Qualifier("v1")
 class SearchRequestService(
-    private val repository: RepositoryStrategy<SearchRequestRepository>
+    private val repository: RepositoryStrategy<SearchRequestRepository>,
+    private val querySearchRequestCrudRepository: QuerySearchRequestCrudRepository
 ) {
 
     fun putSearchRequest(
@@ -28,6 +30,7 @@ class SearchRequestService(
 
         return CompletableFuture.supplyAsync {
             var existedSearchRequest: SearchRequest? = null
+
             if (id > 0) {
                 existedSearchRequest = repository.changeStrategy(strategy)
                     .findByIdAndOwner(id, owner) ?: throw BadArgumentException()
@@ -68,6 +71,12 @@ class SearchRequestService(
 
         return CompletableFuture.runAsync {
             repository.changeStrategy(strategy).deleteSearchRequests(owner)
+        }
+    }
+
+    fun deleteQuerySearchRequest(owner: String): CompletableFuture<Void> {
+        return CompletableFuture.runAsync {
+            querySearchRequestCrudRepository.deleteAllByOwner(owner)
         }
     }
 

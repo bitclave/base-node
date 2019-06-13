@@ -6,6 +6,7 @@ import com.bitclave.node.repository.models.OfferResultAction
 import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.models.SignedRequest
+import com.bitclave.node.repository.models.controllers.OfferSearchByQueryParameters
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -76,9 +77,10 @@ class OfferSearchControllerTest {
 
     @Test
     fun `create offerSearches request by query string`() {
+        val content = SignedRequest(OfferSearchByQueryParameters(1L, listOf()))
         this.mvc.perform(
             post("/$version/search/query/")
-                .content(offerSearchIdRequest.toJsonString())
+                .content(content.toJsonString())
                 .param("q", "some query string")
                 .headers(httpHeaders)
         )

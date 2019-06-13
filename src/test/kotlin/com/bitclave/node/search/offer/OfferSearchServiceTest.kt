@@ -210,7 +210,8 @@ class OfferSearchServiceTest {
         )
 
         searchRequestService = SearchRequestService(
-            searchRequestRepositoryStrategy
+            searchRequestRepositoryStrategy,
+            querySearchRequestCrudRepository
         )
 
         strategy = RepositoryStrategyType.POSTGRES
@@ -291,6 +292,18 @@ class OfferSearchServiceTest {
         assertThat(queryRequestsByOwner.size == 1)
         assertThat(queryRequestsByOwner[0].query).isEqualTo(searchQueryText)
         assertThat(offersResult.size == list.size)
+    }
+
+    @Test
+    fun `should be delete QuerySearchRequest by owner`() {
+        createOfferSearch(createdSearchRequest1, createdOffer1, ArrayList())
+        var existedSearchRequest = offerSearchService.getOfferSearches(strategy, createdOffer1.id).get()
+        assertThat(existedSearchRequest.size == 1)
+
+        offerSearchService.deleteByOwner(publicKey, strategy).get()
+
+        existedSearchRequest = offerSearchService.getOfferSearches(strategy, createdOffer1.id).get()
+        assertThat(existedSearchRequest.isEmpty())
     }
 
     @Test

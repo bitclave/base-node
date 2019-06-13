@@ -515,7 +515,9 @@ class OfferSearchService(
         owner: String,
         query: String,
         pageRequest: PageRequest,
-        strategyType: RepositoryStrategyType
+        strategyType: RepositoryStrategyType,
+        interests: List<String>? = listOf(),
+        mode: String? = ""
     ): CompletableFuture<Page<OfferSearchResultItem>> {
         return CompletableFuture.supplyAsync {
             val searchRequest = searchRequestRepository
@@ -555,7 +557,7 @@ class OfferSearchService(
             val step4 = measureTimeMillis {
                 try {
                     offerIds = rtSearchRepository
-                        .getOffersIdByQuery(query, pageRequest)
+                        .getOffersIdByQuery(query, pageRequest, interests, mode)
                         .get()
                 } catch (e: HttpClientErrorException) {
                     logger.error("rt-search error: $e")
@@ -597,6 +599,9 @@ class OfferSearchService(
             val step7 = measureTimeMillis {
                 offerSearchResult = offerSearchRepository.changeStrategy(strategyType)
                     .findBySearchRequestIdAndOfferIds(searchRequestId, offerIds.content)
+                    .sortedWith(Comparator { a, b ->
+                        offerIds.indexOf(a.offerId) - offerIds.indexOf(b.offerId)
+                    })
             }
             logger.debug { "step 7 -> findBySearchRequestIdAndOfferIds(). ms: $step7" }
 
@@ -659,5 +664,14 @@ class OfferSearchService(
         logger.debug { "3.4 step) final result ms: $step34" }
 
         return result
+    }
+
+    fun deleteByOwner(
+        owner: String,
+        strategyType: RepositoryStrategyType
+    ): CompletableFuture<Void> {
+        return CompletableFuture.runAsync {
+            offerSearchRepository.changeStrategy(strategyType).deleteAllByOwner(owner)
+        }
     }
 }

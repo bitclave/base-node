@@ -17,6 +17,8 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     fun deleteAllBySearchRequestId(id: Long): Long
 
+    fun deleteAllByOwner(owner: String): List<Long>
+
     fun findBySearchRequestId(id: Long): List<OfferSearch>
 
     fun findBySearchRequestId(id: Long, pageable: Pageable): Page<OfferSearch>
@@ -73,6 +75,30 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     @Query(
         value = """
+            SELECT DISTINCT
+                first_value( CAST( p.worth AS INT ) ) over (partition by s.id order by p.id),
+                s.*
+            FROM offer_search s JOIN offer_price p ON p.offer_id = s.offer_id
+            WHERE s.owner = :owner
+            ORDER BY first_value DESC
+        """,
+        nativeQuery = true
+    )
+    fun getOfferSearchByOwnerAndSortByOfferPriceWorth(@Param("owner") owner: String): List<OfferSearch>
+
+    @Query(
+        value = """
+            SELECT *, CAST( t.tags AS FLOAT ) AS cashback
+            FROM offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
+            where t.tags_key = 'cashback' AND s.owner = :owner
+            order by cashback DESC
+        """,
+        nativeQuery = true
+    )
+    fun getOfferSearchByOwnersAndSortByCashBack(@Param("owner") owner: String): List<OfferSearch>
+
+    @Query(
+        value = """
             SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank
             FROM offer_search s LEFT JOIN offer_rank r ON s.offer_id = r.offer_id
             WHERE s.owner = :owner AND s.state IN :state
@@ -100,6 +126,36 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     @Query(
         value = """
+            SELECT DISTINCT
+                first_value( CAST( p.worth AS INT ) ) over (partition by s.id order by p.id),
+                s.*
+            FROM offer_search s JOIN offer_price p ON p.offer_id = s.offer_id
+            WHERE s.owner = :owner AND s.state IN :state
+            ORDER BY first_value DESC
+        """,
+        nativeQuery = true
+    )
+    fun getOfferSearchByOwnerAndStateAndSortByOfferPriceWorth(
+        @Param("owner") owner: String,
+        @Param("state") state: List<Long>
+    ): List<OfferSearch>
+
+    @Query(
+        value = """
+            SELECT *, CAST( t.tags AS FLOAT ) AS cashback
+            FROM offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
+            where t.tags_key = 'cashback' AND s.owner = :owner AND s.state IN :state
+            order by cashback DESC
+        """,
+        nativeQuery = true
+    )
+    fun getOfferSearchByOwnerAndStateAndSortByCashBack(
+        @Param("owner") owner: String,
+        @Param("state") state: List<Long>
+    ): List<OfferSearch>
+
+    @Query(
+        value = """
             SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank
             FROM offer_search s LEFT JOIN offer_rank r ON s.offer_id = r.offer_id
             where s.owner = :owner AND s.search_request_id IN :ids
@@ -121,6 +177,20 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         nativeQuery = true
     )
     fun getOfferSearchByOwnerAndSearchRequestIdInSortByUpdatedAt(
+        @Param("owner") owner: String,
+        @Param("ids") searchRequestIds: List<Long>
+    ): List<OfferSearch>
+
+    @Query(
+        value = """
+            SELECT *, CAST( t.tags AS FLOAT ) AS cashback
+            FROM offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
+            where t.tags_key = 'cashback' AND s.owner = :owner AND s.search_request_id IN :ids
+            order by cashback DESC
+        """,
+        nativeQuery = true
+    )
+    fun getOfferSearchByOwnerAndSearchRequestIdInAndSortByCashback(
         @Param("owner") owner: String,
         @Param("ids") searchRequestIds: List<Long>
     ): List<OfferSearch>
@@ -158,6 +228,54 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         nativeQuery = true
     )
     fun getOfferSearchByOwnerAndSearchRequestIdInAndStateSortByRank(
+        @Param("owner") owner: String,
+        @Param("ids") searchRequestIds: List<Long>,
+        @Param("state") state: List<Long>
+    ): List<OfferSearch>
+
+    @Query(
+        value = """
+            SELECT DISTINCT
+                first_value( CAST( p.worth AS INT ) ) over (partition by s.id order by p.id),
+                s.*
+            FROM offer_search s JOIN offer_price p ON p.offer_id = s.offer_id
+            WHERE s.owner = :owner AND s.search_request_id IN :ids
+            ORDER BY first_value DESC
+        """,
+        nativeQuery = true
+    )
+    fun getOfferSearchByOwnerAndSearchRequestIdInAndSortByOfferPriceWorth(
+        @Param("owner") owner: String,
+        @Param("ids") searchRequestIds: List<Long>
+    ): List<OfferSearch>
+
+    @Query(
+        value = """
+            SELECT DISTINCT
+                first_value( CAST( p.worth AS INT ) ) over (partition by s.id order by p.id),
+                s.*
+            FROM offer_search s JOIN offer_price p ON p.offer_id = s.offer_id
+            WHERE s.owner = :owner AND s.search_request_id IN :ids AND s.state IN :state
+            ORDER BY first_value DESC
+        """,
+        nativeQuery = true
+    )
+    fun getOfferSearchByOwnerAndSearchRequestIdInAndStateSortByOfferPriceWorth(
+        @Param("owner") owner: String,
+        @Param("ids") searchRequestIds: List<Long>,
+        @Param("state") state: List<Long>
+    ): List<OfferSearch>
+
+    @Query(
+        value = """
+            SELECT *, CAST( t.tags AS FLOAT ) AS cashback
+            FROM offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
+            where t.tags_key = 'cashback' AND s.owner = :owner AND s.search_request_id IN :ids AND s.state IN :state
+            order by cashback DESC
+        """,
+        nativeQuery = true
+    )
+    fun getOfferSearchByOwnerAndSearchRequestIdAndStateSortByCashback(
         @Param("owner") owner: String,
         @Param("ids") searchRequestIds: List<Long>,
         @Param("state") state: List<Long>

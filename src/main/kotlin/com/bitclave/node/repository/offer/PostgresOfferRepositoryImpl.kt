@@ -32,6 +32,11 @@ class PostgresOfferRepositoryImpl(
         return offer
     }
 
+    override fun shallowSaveOffer(offer: Offer): Offer {
+        repository.save(offer) ?: throw DataNotSavedException()
+        return offer
+    }
+
     override fun deleteOffer(id: Long, owner: String): Long {
         val count = repository.deleteByIdAndOwner(id, owner)
         if (count > 0) {
