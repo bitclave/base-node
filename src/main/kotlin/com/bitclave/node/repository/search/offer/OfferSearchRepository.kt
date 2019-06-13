@@ -65,4 +65,6 @@ interface OfferSearchRepository {
     fun findAllDiff(): List<OfferSearch>
 
     fun countBySearchRequestId(id: Long): Long
+
+    fun deleteAllByOfferIdAndStateIn(offerId: Long): Int
 }

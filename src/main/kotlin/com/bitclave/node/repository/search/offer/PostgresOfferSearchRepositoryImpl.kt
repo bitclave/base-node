@@ -330,4 +330,8 @@ class PostgresOfferSearchRepositoryImpl(
     }
 
     override fun countBySearchRequestId(id: Long): Long = repository.countBySearchRequestId(id)
+
+    override fun deleteAllByOfferIdAndStateIn(offerId: Long): Int {
+        return repository.deleteAllByOfferIdAndStateIn(offerId)
+    }
 }
