@@ -1,5 +1,7 @@
 package com.bitclave.node.configuration
 
+import net.ttddyy.dsproxy.ExecutionInfo
+import net.ttddyy.dsproxy.QueryInfo
 import net.ttddyy.dsproxy.listener.logging.SLF4JLogLevel
 import net.ttddyy.dsproxy.support.ProxyDataSourceBuilder
 import org.aopalliance.intercept.MethodInterceptor
@@ -31,11 +33,27 @@ class DatasourceProxyBeanPostProcessor : BeanPostProcessor {
     }
 
     private class ProxyDataSourceInterceptor(dataSource: DataSource) : MethodInterceptor {
+
         private val dataSource: DataSource
+        private val execMap: MutableMap<Int, Long> = HashMap()
 
         init {
-            this.dataSource =
-                ProxyDataSourceBuilder.create(dataSource).countQuery().logQueryBySlf4j(SLF4JLogLevel.INFO).build()
+            this.dataSource = ProxyDataSourceBuilder.create(dataSource)
+                .countQuery()
+                .afterQuery { executionInfo: ExecutionInfo, _: MutableList<QueryInfo> ->
+                    val startTime = execMap.remove(executionInfo.hashCode()) ?: 0
+                    System.out.println(
+                        "exec info elapsedTime " +
+                            "${executionInfo.elapsedTime}." +
+                            " dt: ${(System.nanoTime() - startTime) / 1000}ms"
+                    )
+                }
+                .beforeQuery { executionInfo: ExecutionInfo, _: MutableList<QueryInfo> ->
+                    execMap[executionInfo.hashCode()] = System.nanoTime()
+                }
+                .logQueryBySlf4j(SLF4JLogLevel.INFO)
+                .multiline()
+                .build()
         }
 
         @Throws(Throwable::class)
