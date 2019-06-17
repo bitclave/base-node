@@ -45,11 +45,11 @@ class DatasourceProxyBeanPostProcessor : BeanPostProcessor {
                     System.out.println(
                         "exec info elapsedTime " +
                             "${executionInfo.elapsedTime}." +
-                            " dt: ${(System.nanoTime() - startTime) / 1000}ms"
+                            " dt: ${(System.currentTimeMillis() - startTime)}ms"
                     )
                 }
                 .beforeQuery { executionInfo: ExecutionInfo, _: MutableList<QueryInfo> ->
-                    execMap[executionInfo.hashCode()] = System.nanoTime()
+                    execMap[executionInfo.hashCode()] = System.currentTimeMillis()
                 }
                 .logQueryBySlf4j(SLF4JLogLevel.INFO)
                 .multiline()
