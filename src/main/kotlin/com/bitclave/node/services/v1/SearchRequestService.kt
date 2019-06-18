@@ -112,7 +112,7 @@ class SearchRequestService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<SearchRequest> {
 
-        return CompletableFuture.supplyAsync {
+        return CompletableFuture.supplyAsync(Supplier {
             val clonedSearchRequest = SearchRequest(
                 searchRequest.id,
                 owner,
@@ -120,7 +120,7 @@ class SearchRequestService(
             )
 
             repository.changeStrategy(strategy).cloneSearchRequestWithOfferSearches(clonedSearchRequest)
-        }
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun getPageableRequests(
