@@ -1,5 +1,6 @@
 package com.bitclave.node.services.v1
 
+import com.bitclave.node.BaseNodeApplication
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.Offer
@@ -13,6 +14,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import java.util.Date
 import java.util.concurrent.CompletableFuture
+import java.util.function.Supplier
 
 @Service
 @Qualifier("v1")
@@ -81,7 +83,7 @@ class OfferService(
 
         return CompletableFuture.supplyAsync {
             var originalOffer = offerRepository.changeStrategy(strategy)
-                    .findByIdAndOwner(id, owner) ?: throw BadArgumentException()
+                .findByIdAndOwner(id, owner) ?: throw BadArgumentException()
 
             if (offer.compare.isEmpty() ||
                 offer.compare.size != offer.rules.size ||
@@ -150,32 +152,32 @@ class OfferService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<List<Offer>> {
 
-        return CompletableFuture.supplyAsync {
+        return CompletableFuture.supplyAsync(Supplier {
             val repository = offerRepository.changeStrategy(strategy)
 
             if (id > 0 && owner != "0x0") {
                 val offer = repository.findByIdAndOwner(id, owner)
 
                 if (offer != null) {
-                    return@supplyAsync arrayListOf(offer)
+                    return@Supplier arrayListOf(offer)
                 }
-                return@supplyAsync emptyList<Offer>()
+                return@Supplier emptyList<Offer>()
             } else if (owner != "0x0") {
-                return@supplyAsync repository.findByOwner(owner)
+                return@Supplier repository.findByOwner(owner)
             } else {
-                return@supplyAsync repository.findAll()
+                return@Supplier repository.findAll()
             }
-        }
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun getPageableOffers(
         page: PageRequest,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Page<Offer>> {
-        return CompletableFuture.supplyAsync {
+        return CompletableFuture.supplyAsync(Supplier {
             val repository = offerRepository.changeStrategy(strategy)
-            return@supplyAsync repository.findAll(page)
-        }
+            return@Supplier repository.findAll(page)
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun getPageableOffersByOwner(
@@ -183,22 +185,22 @@ class OfferService(
         page: PageRequest,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Page<Offer>> {
-        return CompletableFuture.supplyAsync {
+        return CompletableFuture.supplyAsync(Supplier {
             val repository = offerRepository.changeStrategy(strategy)
-            return@supplyAsync repository.findByOwner(owner, page)
-        }
+            return@Supplier repository.findByOwner(owner, page)
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun getOfferTotalCount(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Long> {
 
-        return CompletableFuture.supplyAsync {
+        return CompletableFuture.supplyAsync(Supplier {
 
             val repository = offerRepository.changeStrategy(strategy)
 
-            return@supplyAsync repository.getTotalCount()
-        }
+            return@Supplier repository.getTotalCount()
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun getOfferByOwnerAndTag(
@@ -207,9 +209,9 @@ class OfferService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<List<Offer>> {
 
-        return CompletableFuture.supplyAsync {
+        return CompletableFuture.supplyAsync(Supplier {
             val repository = offerRepository.changeStrategy(strategy)
-            return@supplyAsync repository.getOfferByOwnerAndTag(owner, tagKey)
-        }
+            return@Supplier repository.getOfferByOwnerAndTag(owner, tagKey)
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 }

@@ -1,5 +1,6 @@
 package com.bitclave.node.services.v1
 
+import com.bitclave.node.BaseNodeApplication
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.Offer
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Service
 import org.springframework.web.client.HttpClientErrorException
 import java.util.Date
 import java.util.concurrent.CompletableFuture
+import java.util.function.Supplier
 import kotlin.system.measureTimeMillis
 
 open class OfferSearchEvent(
@@ -65,7 +67,7 @@ class OfferSearchService(
         pageRequest: PageRequest = PageRequest(0, 20)
     ): CompletableFuture<Page<OfferSearchResultItem>> {
 
-        return CompletableFuture.supplyAsync {
+        return CompletableFuture.supplyAsync(Supplier {
             if (searchRequestId <= 0 && offerSearchId <= 0) {
                 throw BadArgumentException("specify parameter searchRequestId or offerSearchId")
             }
@@ -91,8 +93,8 @@ class OfferSearchService(
             val content = offerSearchListToResult(result.content, offerRepository.changeStrategy(strategy))
             val pageable = PageRequest(result.number, result.size, result.sort)
 
-            PageImpl(content, pageable, result.totalElements)
-        }
+            return@Supplier PageImpl(content, pageable, result.totalElements) as Page<OfferSearchResultItem>
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun getOffersAndOfferSearchesByParams(
@@ -104,7 +106,7 @@ class OfferSearchService(
         pageRequest: PageRequest = PageRequest(0, 20)
     ): CompletableFuture<Page<OfferSearchResultItem>> {
 
-        return CompletableFuture.supplyAsync {
+        return CompletableFuture.supplyAsync(Supplier {
             val repository = offerSearchRepository.changeStrategy(strategy)
             var offerSearches = listOf<OfferSearch>()
 
@@ -159,15 +161,15 @@ class OfferSearchService(
             logger.debug { "4 step) content ms: $step4" }
 
             val pageable = PageRequest(pageRequest.pageNumber, pageRequest.pageSize)
-            PageImpl(content, pageable, filteredByUnique.size.toLong())
-        }
+            PageImpl(content, pageable, filteredByUnique.size.toLong()) as Page<OfferSearchResultItem>
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun saveNewOfferSearch(
         offerSearch: OfferSearch,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
-        return CompletableFuture.runAsync {
+        return CompletableFuture.runAsync(Runnable {
             val searchRequest = searchRequestRepository.changeStrategy(strategy)
                 .findById(offerSearch.searchRequestId)
                 ?: throw BadArgumentException("search request id not exist")
@@ -194,7 +196,7 @@ class OfferSearchService(
                         offerSearch.events
                     )
                 )
-        }
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun addEventTo(
@@ -401,10 +403,10 @@ class OfferSearchService(
         page: PageRequest,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Page<OfferSearch>> {
-        return CompletableFuture.supplyAsync {
+        return CompletableFuture.supplyAsync(Supplier {
             val repository = offerSearchRepository.changeStrategy(strategy)
-            return@supplyAsync repository.findAll(page)
-        }
+            return@Supplier repository.findAll(page)
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun getDanglingOfferSearches(

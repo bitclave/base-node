@@ -1,5 +1,6 @@
 package com.bitclave.node.services.v1
 
+import com.bitclave.node.BaseNodeApplication
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.SearchRequest
@@ -13,6 +14,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import java.util.Date
 import java.util.concurrent.CompletableFuture
+import java.util.function.Supplier
 
 @Service
 @Qualifier("v1")
@@ -86,7 +88,7 @@ class SearchRequestService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<List<SearchRequest>> {
 
-        return CompletableFuture.supplyAsync {
+        return CompletableFuture.supplyAsync(Supplier {
             val repository = repository.changeStrategy(strategy)
 
             when {
@@ -94,14 +96,14 @@ class SearchRequestService(
                     val searchRequest = repository.findByIdAndOwner(id, owner)
 
                     if (searchRequest != null) {
-                        return@supplyAsync arrayListOf(searchRequest)
+                        return@Supplier arrayListOf(searchRequest)
                     }
-                    return@supplyAsync emptyList<SearchRequest>()
+                    return@Supplier emptyList<SearchRequest>()
                 }
-                owner != "0x0" -> return@supplyAsync repository.findByOwner(owner)
-                else -> return@supplyAsync repository.findAll()
+                owner != "0x0" -> return@Supplier repository.findByOwner(owner)
+                else -> return@Supplier repository.findAll()
             }
-        }
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun cloneSearchRequestWithOfferSearches(
@@ -126,10 +128,10 @@ class SearchRequestService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Page<SearchRequest>> {
 
-        return CompletableFuture.supplyAsync {
+        return CompletableFuture.supplyAsync(Supplier {
             val repository = repository.changeStrategy(strategy)
-            return@supplyAsync repository.findAll(page)
-        }
+            return@Supplier repository.findAll(page)
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun getSearchRequestTotalCount(
@@ -150,9 +152,9 @@ class SearchRequestService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<List<SearchRequest>> {
 
-        return CompletableFuture.supplyAsync {
+        return CompletableFuture.supplyAsync(Supplier {
             val repository = repository.changeStrategy(strategy)
-            return@supplyAsync repository.getRequestByOwnerAndTag(owner, tagKey)
-        }
+            return@Supplier repository.getRequestByOwnerAndTag(owner, tagKey)
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 }
