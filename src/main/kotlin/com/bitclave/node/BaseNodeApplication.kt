@@ -7,7 +7,7 @@ import java.util.concurrent.Executors
 @SpringBootApplication
 class BaseNodeApplication {
     companion object {
-        val FIXED_THREAD_POOL = Executors.newFixedThreadPool(10)
+        val FIXED_THREAD_POOL = Executors.newFixedThreadPool(15)
     }
 }
 
