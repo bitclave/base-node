@@ -199,8 +199,7 @@ class SearchRequestController(
     ): CompletableFuture<List<SearchRequest>> {
 
         return searchRequestService.getSearchRequests(
-            id
-                ?: 0, owner, getStrategyType(strategy)
+            id ?: 0, owner, getStrategyType(strategy)
         ).exceptionally { e ->
             logger.error("Request: getSearchRequests/$owner/$id raised $e")
             throw e
