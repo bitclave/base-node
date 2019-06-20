@@ -339,6 +339,24 @@ class OfferSearchServiceTest {
 
     @Test
     fun `should be delete all old offersSearch items by query`() {
+
+        val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
+        val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
+        val repository = offerRepositoryStrategy.changeStrategy(strategy)
+
+        val offers = listOf("1", "2", "3", "4", "5")
+            .map {
+                Offer(
+                    0, businessPublicKey, listOf(), "desc", it, "url",
+                    BigDecimal.TEN.toString(),
+                    mapOf("endDate" to "Mon Jul 22 3019 19:00:20 GMT+0000 (Coordinated Universal Time)")
+                )
+            }
+            .map { repository.saveOffer(it) }
+            .map { it.id }
+
+        val partOfOffers = offers.filterIndexed { index, _ -> index > 2 }
+
         val searchRequestWithRtSearch = searchRequestService.putSearchRequest(
             0,
             publicKey,
@@ -346,7 +364,7 @@ class OfferSearchServiceTest {
             strategy
         ).get()
 
-        val firstList: Page<Long> = PageImpl(arrayListOf<Long>(1, 2, 3, 4, 5), searchPageRequest, 1)
+        val firstList: Page<Long> = PageImpl(offers, searchPageRequest, 1)
         Mockito.`when`(rtSearchRepository.getOffersIdByQuery("some data", searchPageRequest))
             .thenReturn(CompletableFuture.completedFuture(firstList))
 
@@ -354,9 +372,10 @@ class OfferSearchServiceTest {
             searchRequestWithRtSearch.id, publicKey, "some data", searchPageRequest, strategy
         ).get()
 
-        val secondList: Page<Long> = PageImpl(arrayListOf<Long>(4, 5), searchPageRequest, 1)
+        val secondList: Page<Long> = PageImpl(partOfOffers, searchPageRequest, 1)
         Mockito.`when`(rtSearchRepository.getOffersIdByQuery("some data", searchPageRequest))
             .thenReturn(CompletableFuture.completedFuture(secondList))
+
         offerSearchService.createOfferSearchesByQuery(
             searchRequestWithRtSearch.id, publicKey, "some data", searchPageRequest, strategy
         ).get()
@@ -967,11 +986,37 @@ class OfferSearchServiceTest {
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
         val repository = offerRepositoryStrategy.changeStrategy(strategy)
 
-        val offer1 = Offer(0, businessPublicKey, listOf(), "desc", "title", "url")
+        val offer1 = Offer(
+            0,
+            businessPublicKey,
+            listOf(),
+            "desc",
+            "title",
+            "url",
+            BigDecimal.TEN.toString(),
+            mapOf("endDate" to "Mon Jul 22 3019 19:00:20 GMT+0000 (Coordinated Universal Time)")
+        )
         Thread.sleep(1000)
-        val offer2 = Offer(0, businessPublicKey, listOf(), "desc", "title", "url")
+        val offer2 = Offer(
+            0, businessPublicKey,
+            listOf(),
+            "desc",
+            "title",
+            "url",
+            BigDecimal.TEN.toString(),
+            mapOf("endDate" to "Mon Jul 22 3019 19:00:20 GMT+0000 (Coordinated Universal Time)")
+        )
         Thread.sleep(1000)
-        val offer3 = Offer(0, businessPublicKey, listOf(), "desc", "title", "url")
+        val offer3 = Offer(
+            0,
+            businessPublicKey,
+            listOf(),
+            "desc",
+            "title",
+            "url",
+            BigDecimal.TEN.toString(),
+            mapOf("endDate" to "Mon Jul 22 3019 19:00:20 GMT+0000 (Coordinated Universal Time)")
+        )
 
         val savedOffer1 = repository.saveOffer(offer1)
         val savedOffer2 = repository.saveOffer(offer2)
@@ -1004,9 +1049,21 @@ class OfferSearchServiceTest {
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
         val repository = offerRepositoryStrategy.changeStrategy(strategy)
 
-        val offer1 = Offer(0, businessPublicKey, listOf(), "desc", "title", "url")
-        val offer2 = Offer(0, businessPublicKey, listOf(), "desc", "title", "url")
-        val offer3 = Offer(0, businessPublicKey, listOf(), "desc", "title", "url")
+        val offer1 = Offer(
+            0, businessPublicKey, listOf(), "desc", "title", "url",
+            BigDecimal.TEN.toString(),
+            mapOf("endDate" to "Mon Jul 22 3019 19:00:20 GMT+0000 (Coordinated Universal Time)")
+        )
+        val offer2 = Offer(
+            0, businessPublicKey, listOf(), "desc", "title", "url",
+            BigDecimal.TEN.toString(),
+            mapOf("endDate" to "Mon Jul 22 3019 19:00:20 GMT+0000 (Coordinated Universal Time)")
+        )
+        val offer3 = Offer(
+            0, businessPublicKey, listOf(), "desc", "title", "url",
+            BigDecimal.TEN.toString(),
+            mapOf("endDate" to "Mon Jul 22 3019 19:00:20 GMT+0000 (Coordinated Universal Time)")
+        )
 
         val savedOffer1 = repository.saveOffer(offer1)
         val savedOffer2 = repository.saveOffer(offer2)
@@ -1062,9 +1119,21 @@ class OfferSearchServiceTest {
         val offerRankRepositoryStrategy = OfferRankRepositoryStrategy(offerRankRepository)
         val rankRepository = offerRankRepositoryStrategy.changeStrategy(strategy)
 
-        val offer1 = Offer(0, businessPublicKey, listOf(), "desc", "title", "url")
-        val offer2 = Offer(0, businessPublicKey, listOf(), "desc", "title", "url")
-        val offer3 = Offer(0, businessPublicKey, listOf(), "desc", "title", "url")
+        val offer1 = Offer(
+            0, businessPublicKey, listOf(), "desc", "title", "url",
+            BigDecimal.TEN.toString(),
+            mapOf("endDate" to "Mon Jul 22 3019 19:00:20 GMT+0000 (Coordinated Universal Time)")
+        )
+        val offer2 = Offer(
+            0, businessPublicKey, listOf(), "desc", "title", "url",
+            BigDecimal.TEN.toString(),
+            mapOf("endDate" to "Mon Jul 22 3019 19:00:20 GMT+0000 (Coordinated Universal Time)")
+        )
+        val offer3 = Offer(
+            0, businessPublicKey, listOf(), "desc", "title", "url",
+            BigDecimal.TEN.toString(),
+            mapOf("endDate" to "Mon Jul 22 3019 19:00:20 GMT+0000 (Coordinated Universal Time)")
+        )
 
         val savedOffer1 = repository.saveOffer(offer1)
         val savedOffer2 = repository.saveOffer(offer2)
@@ -1121,11 +1190,23 @@ class OfferSearchServiceTest {
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
         val repository = offerRepositoryStrategy.changeStrategy(strategy)
 
-        val offer1 = Offer(0, businessPublicKey, listOf(), "desc", "title", "url")
+        val offer1 = Offer(
+            0, businessPublicKey, listOf(), "desc", "title", "url",
+            BigDecimal.TEN.toString(),
+            mapOf("endDate" to "Mon Jul 22 3019 19:00:20 GMT+0000 (Coordinated Universal Time)")
+        )
         Thread.sleep(1000)
-        val offer2 = Offer(0, businessPublicKey, listOf(), "desc", "title", "url")
+        val offer2 = Offer(
+            0, businessPublicKey, listOf(), "desc", "title", "url",
+            BigDecimal.TEN.toString(),
+            mapOf("endDate" to "Mon Jul 22 3019 19:00:20 GMT+0000 (Coordinated Universal Time)")
+        )
         Thread.sleep(1000)
-        val offer3 = Offer(0, businessPublicKey, listOf(), "desc", "title", "url")
+        val offer3 = Offer(
+            0, businessPublicKey, listOf(), "desc", "title", "url",
+            BigDecimal.TEN.toString(),
+            mapOf("endDate" to "Mon Jul 22 3019 19:00:20 GMT+0000 (Coordinated Universal Time)")
+        )
 
         val savedOffer1 = repository.saveOffer(offer1)
         val savedOffer2 = repository.saveOffer(offer2)
@@ -1178,9 +1259,21 @@ class OfferSearchServiceTest {
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
         val repository = offerRepositoryStrategy.changeStrategy(strategy)
 
-        val offer1 = Offer(0, businessPublicKey, listOf(), "desc", "title", "url")
-        val offer2 = Offer(0, businessPublicKey, listOf(), "desc", "title", "url")
-        val offer3 = Offer(0, businessPublicKey, listOf(), "desc", "title", "url")
+        val offer1 = Offer(
+            0, businessPublicKey, listOf(), "desc", "title", "url",
+            BigDecimal.TEN.toString(),
+            mapOf("endDate" to "Mon Jul 22 3019 19:00:20 GMT+0000 (Coordinated Universal Time)")
+        )
+        val offer2 = Offer(
+            0, businessPublicKey, listOf(), "desc", "title", "url",
+            BigDecimal.TEN.toString(),
+            mapOf("endDate" to "Mon Jul 22 3019 19:00:20 GMT+0000 (Coordinated Universal Time)")
+        )
+        val offer3 = Offer(
+            0, businessPublicKey, listOf(), "desc", "title", "url",
+            BigDecimal.TEN.toString(),
+            mapOf("endDate" to "Mon Jul 22 3019 19:00:20 GMT+0000 (Coordinated Universal Time)")
+        )
 
         val savedOffer1 = repository.saveOffer(offer1)
         val savedOffer2 = repository.saveOffer(offer2)
@@ -1221,9 +1314,21 @@ class OfferSearchServiceTest {
         val offerRankRepositoryStrategy = OfferRankRepositoryStrategy(offerRankRepository)
         val rankRepository = offerRankRepositoryStrategy.changeStrategy(strategy)
 
-        val offer1 = Offer(0, businessPublicKey, listOf(), "desc", "title", "url")
-        val offer2 = Offer(0, businessPublicKey, listOf(), "desc", "title", "url")
-        val offer3 = Offer(0, businessPublicKey, listOf(), "desc", "title", "url")
+        val offer1 = Offer(
+            0, businessPublicKey, listOf(), "desc", "title", "url",
+            BigDecimal.TEN.toString(),
+            mapOf("endDate" to "Mon Jul 22 3019 19:00:20 GMT+0000 (Coordinated Universal Time)")
+        )
+        val offer2 = Offer(
+            0, businessPublicKey, listOf(), "desc", "title", "url",
+            BigDecimal.TEN.toString(),
+            mapOf("endDate" to "Mon Jul 22 3019 19:00:20 GMT+0000 (Coordinated Universal Time)")
+        )
+        val offer3 = Offer(
+            0, businessPublicKey, listOf(), "desc", "title", "url",
+            BigDecimal.TEN.toString(),
+            mapOf("endDate" to "Mon Jul 22 3019 19:00:20 GMT+0000 (Coordinated Universal Time)")
+        )
 
         val savedOffer1 = repository.saveOffer(offer1)
         val savedOffer2 = repository.saveOffer(offer2)
@@ -1264,11 +1369,23 @@ class OfferSearchServiceTest {
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
         val repository = offerRepositoryStrategy.changeStrategy(strategy)
 
-        val offer1 = Offer(0, businessPublicKey, listOf(), "desc", "title", "url")
+        val offer1 = Offer(
+            0, businessPublicKey, listOf(), "desc", "title", "url",
+            BigDecimal.TEN.toString(),
+            mapOf("endDate" to "Mon Jul 22 3019 19:00:20 GMT+0000 (Coordinated Universal Time)")
+        )
         Thread.sleep(1000)
-        val offer2 = Offer(0, businessPublicKey, listOf(), "desc", "title", "url")
+        val offer2 = Offer(
+            0, businessPublicKey, listOf(), "desc", "title", "url",
+            BigDecimal.TEN.toString(),
+            mapOf("endDate" to "Mon Jul 22 3019 19:00:20 GMT+0000 (Coordinated Universal Time)")
+        )
         Thread.sleep(1000)
-        val offer3 = Offer(0, businessPublicKey, listOf(), "desc", "title", "url")
+        val offer3 = Offer(
+            0, businessPublicKey, listOf(), "desc", "title", "url",
+            BigDecimal.TEN.toString(),
+            mapOf("endDate" to "Mon Jul 22 3019 19:00:20 GMT+0000 (Coordinated Universal Time)")
+        )
 
         val savedOffer1 = repository.saveOffer(offer1)
         val savedOffer2 = repository.saveOffer(offer2)
