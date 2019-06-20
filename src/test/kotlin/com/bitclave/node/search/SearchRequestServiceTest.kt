@@ -136,7 +136,7 @@ class SearchRequestServiceTest {
         val repositoryStrategy = AccountRepositoryStrategy(postgres, hybrid)
         val accountService = AccountService(repositoryStrategy)
         val searchRequestRepository =
-            PostgresSearchRequestRepositoryImpl(searchRequestCrudRepository, offerSearchCrudRepository)
+            PostgresSearchRequestRepositoryImpl(searchRequestCrudRepository, offerSearchCrudRepository, offerSearchStateCrudRepository)
         val requestRepositoryStrategy = SearchRequestRepositoryStrategy(searchRequestRepository)
         val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)

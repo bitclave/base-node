@@ -177,7 +177,7 @@ class OfferSearchServiceTest {
         val shareRepositoryStrategy = OfferShareRepositoryStrategy(offerShareRepository)
 
         val searchRequestRepository =
-            PostgresSearchRequestRepositoryImpl(searchRequestCrudRepository, offerSearchCrudRepository)
+            PostgresSearchRequestRepositoryImpl(searchRequestCrudRepository, offerSearchCrudRepository, offerSearchStateCrudRepository)
         searchRequestRepositoryStrategy = SearchRequestRepositoryStrategy(searchRequestRepository)
 
         val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)

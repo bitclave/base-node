@@ -55,10 +55,12 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     @Query(
         value = """
-            SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank
+            SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank,
+            CASE WHEN ss.updated_at IS NULL THEN s.created_at ELSE ss.updated_at END AS updated_at
             FROM offer_search s LEFT JOIN offer_rank r ON s.offer_id = r.offer_id
+            LEFT JOIN offer_search_state ss on s.offer_id = ss.offer_id AND s.owner = ss.owner
             WHERE s.owner = :owner
-            order by united_rank desc, s.updated_at DESC
+            order by united_rank desc, updated_at DESC
         """,
         nativeQuery = true
     )
@@ -101,9 +103,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     @Query(
         value = """
             SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank
-            FROM offer_search s LEFT JOIN offer_rank r ON s.offer_id = r.offer_id
-            WHERE s.owner = :owner AND s.state IN :state
-            order by united_rank desc, s.updated_at DESC
+            FROM offer_search s JOIN offer_search_state ss on s.offer_id = ss.offer_id AND s.owner = ss.owner
+            LEFT JOIN offer_rank r ON s.offer_id = r.offer_id
+            WHERE s.owner = :owner AND ss.state IN :state
+            order by united_rank desc, ss.updated_at DESC
         """,
         nativeQuery = true
     )
@@ -115,7 +118,8 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     @Query(
         value = """
             SELECT *
-            FROM offer_search s, offer o WHERE s.offer_id = o.id AND s.owner = :owner AND s.state IN :state
+            FROM offer o, offer_search s JOIN offer_search_state ss on s.offer_id = ss.offer_id AND s.owner = ss.owner
+            WHERE s.offer_id = o.id AND s.owner = :owner AND ss.state IN :state
             order by o.updated_at DESC
         """,
         nativeQuery = true
@@ -131,7 +135,8 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
                 first_value( CAST( p.worth AS INT ) ) over (partition by s.id order by p.id),
                 s.*
             FROM offer_search s JOIN offer_price p ON p.offer_id = s.offer_id
-            WHERE s.owner = :owner AND s.state IN :state
+            JOIN offer_search_state ss on s.offer_id = ss.offer_id AND s.owner = ss.owner
+            WHERE s.owner = :owner AND ss.state IN :state
             ORDER BY first_value DESC
         """,
         nativeQuery = true
@@ -145,7 +150,8 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         value = """
             SELECT *, CAST( t.tags AS FLOAT ) AS cashback
             FROM offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
-            where t.tags_key = 'cashback' AND s.owner = :owner AND s.state IN :state
+            JOIN offer_search_state ss on s.offer_id = ss.offer_id AND s.owner = ss.owner
+            where t.tags_key = 'cashback' AND s.owner = :owner AND ss.state IN :state
             order by cashback DESC
         """,
         nativeQuery = true
@@ -157,10 +163,12 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     @Query(
         value = """
-            SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank
+            SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank,
+            CASE WHEN ss.updated_at IS NULL THEN s.created_at ELSE ss.updated_at END AS updated_at
             FROM offer_search s LEFT JOIN offer_rank r ON s.offer_id = r.offer_id
+            LEFT JOIN offer_search_state ss on s.offer_id = ss.offer_id AND s.owner = ss.owner
             where s.owner = :owner AND s.search_request_id IN :ids
-            order by united_rank desc, s.updated_at DESC
+            order by united_rank desc, updated_at DESC
         """,
         nativeQuery = true
     )
@@ -203,12 +211,13 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     @Query(
         value = """
             SELECT *
-            FROM offer_search s, offer o
+            FROM offer o, offer_search s
+            JOIN offer_search_state ss on s.offer_id = ss.offer_id AND s.owner = ss.owner
             WHERE
                 s.offer_id = o.id
                 AND s.owner = :owner
                 AND s.search_request_id IN :ids
-                AND s.state IN :state
+                AND ss.state IN :state
             ORDER BY o.updated_at DESC
         """,
         nativeQuery = true
@@ -222,9 +231,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     @Query(
         value = """
             SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank
-            FROM offer_search s LEFT JOIN offer_rank r ON s.offer_id = r.offer_id
-            WHERE s.owner = :owner AND s.search_request_id IN :ids AND s.state IN :state
-            ORDER BY united_rank desc, s.updated_at DESC
+            FROM offer_search s JOIN offer_search_state ss on s.offer_id = ss.offer_id AND s.owner = ss.owner
+            LEFT JOIN offer_rank r ON s.offer_id = r.offer_id
+            WHERE s.owner = :owner AND s.search_request_id IN :ids AND ss.state IN :state
+            ORDER BY united_rank desc, ss.updated_at DESC
         """,
         nativeQuery = true
     )
@@ -256,7 +266,8 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
                 first_value( CAST( p.worth AS INT ) ) over (partition by s.id order by p.id),
                 s.*
             FROM offer_search s JOIN offer_price p ON p.offer_id = s.offer_id
-            WHERE s.owner = :owner AND s.search_request_id IN :ids AND s.state IN :state
+            JOIN offer_search_state ss on s.offer_id = ss.offer_id AND s.owner = ss.owner
+            WHERE s.owner = :owner AND s.search_request_id IN :ids AND ss.state IN :state
             ORDER BY first_value DESC
         """,
         nativeQuery = true
@@ -271,7 +282,8 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         value = """
             SELECT *, CAST( t.tags AS FLOAT ) AS cashback
             FROM offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
-            where t.tags_key = 'cashback' AND s.owner = :owner AND s.search_request_id IN :ids AND s.state IN :state
+            JOIN offer_search_state ss on s.offer_id = ss.offer_id AND s.owner = ss.owner
+            where t.tags_key = 'cashback' AND s.owner = :owner AND s.search_request_id IN :ids AND ss.state IN :state
             order by cashback DESC
         """,
         nativeQuery = true
@@ -321,8 +333,8 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     @Modifying
     @Query(
         value = """
-            DELETE FROM offer_search s
-            WHERE s.offer_id = :offerId AND s.state IN (0,2)
+            DELETE FROM offer_search_state ss
+            WHERE ss.offer_id = :offerId AND ss.state IN (0,2)
         """,
         nativeQuery = true
     )
