@@ -1,6 +1,5 @@
 package com.bitclave.node.repository.search.offer
 
-import com.bitclave.node.repository.models.OfferResultAction
 import com.bitclave.node.repository.models.OfferSearch
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
