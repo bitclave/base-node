@@ -3,10 +3,12 @@ package com.bitclave.node.services.v1
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.OfferResultAction
+import com.bitclave.node.repository.models.OfferSearchState
 import com.bitclave.node.repository.models.OfferShareData
 import com.bitclave.node.repository.offer.OfferRepository
 import com.bitclave.node.repository.search.SearchRequestRepository
 import com.bitclave.node.repository.search.offer.OfferSearchRepository
+import com.bitclave.node.repository.search.state.OfferSearchStateRepository
 import com.bitclave.node.repository.share.OfferShareRepository
 import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.errors.BadArgumentException
@@ -23,7 +25,8 @@ class OfferShareService(
     private val offerShareRepository: RepositoryStrategy<OfferShareRepository>,
     private val offerRepository: RepositoryStrategy<OfferRepository>,
     private val offerSearchRepository: RepositoryStrategy<OfferSearchRepository>,
-    private val searchRequestRepository: RepositoryStrategy<SearchRequestRepository>
+    private val searchRequestRepository: RepositoryStrategy<SearchRequestRepository>,
+    private val offerSearchStateRepository: RepositoryStrategy<OfferSearchStateRepository>
 ) {
     fun getShareData(
         offerOwner: String,
@@ -72,6 +75,11 @@ class OfferShareService(
                 .findById(offerSearch.offerId)
                 ?: throw BadArgumentException("offer id not exist")
 
+            val state = offerSearchStateRepository
+                .changeStrategy(strategy)
+                .findByOfferIdAndOwner(offerSearch.offerId, offerSearch.owner)
+                ?: OfferSearchState(-1, offerSearch.owner, offerSearch.offerId)
+
             val price = offer.offerPrices.find { it.id == data.priceId }
                 ?: throw BadArgumentException("priceId should be in offer")
 
@@ -89,12 +97,9 @@ class OfferShareService(
                 .changeStrategy(strategy)
                 .saveShareData(shareData)
 
-            offerSearch.state = OfferResultAction.ACCEPT
-            offerSearch.updatedAt = Date()
-
-            offerSearchRepository
+            offerSearchStateRepository
                 .changeStrategy(strategy)
-                .saveSearchResult(offerSearch)
+                .save(state.copy(state = OfferResultAction.ACCEPT, updatedAt = Date()))
         }
     }
 

@@ -6,6 +6,7 @@ import com.bitclave.node.repository.models.Offer
 import com.bitclave.node.repository.models.OfferResultAction
 import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.repository.models.OfferSearchResultItem
+import com.bitclave.node.repository.models.OfferSearchState
 import com.bitclave.node.repository.models.QuerySearchRequest
 import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.offer.OfferRepository
@@ -13,6 +14,7 @@ import com.bitclave.node.repository.rtSearch.RtSearchRepository
 import com.bitclave.node.repository.search.SearchRequestRepository
 import com.bitclave.node.repository.search.offer.OfferSearchRepository
 import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepository
+import com.bitclave.node.repository.search.state.OfferSearchStateRepository
 import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
@@ -53,6 +55,7 @@ class OfferSearchService(
     private val offerSearchRepository: RepositoryStrategy<OfferSearchRepository>,
     private val querySearchRequestCrudRepository: QuerySearchRequestCrudRepository,
     private val rtSearchRepository: RtSearchRepository,
+    private val offerSearchStateRepository: RepositoryStrategy<OfferSearchStateRepository>,
     private val gson: Gson
 ) {
 
@@ -85,10 +88,14 @@ class OfferSearchService(
                 }
 
                 val pageable = PageRequest(pageRequest.pageNumber, pageRequest.pageSize)
-                PageImpl(arrayOfferSearch, pageable, arrayOfferSearch.size.toLong())
+                PageImpl(arrayOfferSearch, pageable, arrayOfferSearch.size.toLong()) as Page<OfferSearch>
             }
 
-            val content = offerSearchListToResult(result.content, offerRepository.changeStrategy(strategy))
+            val content = offerSearchListToResult(
+                result.content,
+                offerRepository.changeStrategy(strategy),
+                offerSearchStateRepository.changeStrategy(strategy)
+            )
             val pageable = PageRequest(result.number, result.size, result.sort)
 
             PageImpl(content, pageable, result.totalElements)
@@ -153,7 +160,8 @@ class OfferSearchService(
             val step4 = measureTimeMillis {
                 content = offerSearchListToResult(
                     subItems,
-                    offerRepository.changeStrategy(strategy)
+                    offerRepository.changeStrategy(strategy),
+                    offerSearchStateRepository.changeStrategy(strategy)
                 )
             }
             logger.debug { "4 step) content ms: $step4" }
@@ -188,12 +196,24 @@ class OfferSearchService(
                         0,
                         searchRequest.owner,
                         offerSearch.searchRequestId,
-                        offerSearch.offerId,
-                        OfferResultAction.NONE,
-                        info,
-                        offerSearch.events
+                        offerSearch.offerId
                     )
                 )
+
+            offerSearchStateRepository
+                .changeStrategy(strategy)
+                .findByOfferIdAndOwner(offerSearch.offerId, searchRequest.owner)
+                ?: offerSearchStateRepository
+                    .changeStrategy(strategy).save(
+                        OfferSearchState(
+                            0,
+                            searchRequest.owner,
+                            offerSearch.offerId,
+                            OfferResultAction.NONE,
+                            info,
+                            offerSearch.events
+                        )
+                    )
         }
     }
 
@@ -203,43 +223,21 @@ class OfferSearchService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
         return CompletableFuture.runAsync {
-            val repository = offerSearchRepository.changeStrategy(strategy)
-            val item = repository.findById(offerSearchId)
+            val item = offerSearchRepository
+                .changeStrategy(strategy)
+                .findById(offerSearchId)
                 ?: throw BadArgumentException("offer search item id not exist")
 
-            item.events.add(event)
-            item.updatedAt = Date()
+            val state = offerSearchStateRepository
+                .changeStrategy(strategy)
+                .findByOfferIdAndOwner(item.offerId, item.owner)
+                ?: OfferSearchState(0, item.owner, item.offerId)
 
-//            val infoAsArrayTmp: MutableList<String> = mutableListOf<String>();
-//            infoAsArrayTmp.add("test1");
-//            item.info = GSON.toJson(infoAsArrayTmp);
+            state.events.add(event)
 
-//            try {
-//                val type = object : TypeToken<MutableList<String>>() {}.type;
-//                val infoAsArray = GSON.fromJson<MutableList<String>>(item.info, type);
-//                infoAsArray.add(event);
-//                item.info = GSON.toJson(infoAsArray);
-//            }
-//            catch (e: Exception)
-//            {
-//                System.out.println(e.localizedMessage);
-//            }
-            repository.saveSearchResult(item)
-        }
-    }
-
-    fun addEventTo(
-        event: String,
-        offerSearch: OfferSearch,
-        strategy: RepositoryStrategyType
-    ): CompletableFuture<Void> {
-        return CompletableFuture.runAsync {
-            val repository = offerSearchRepository.changeStrategy(strategy)
-
-            offerSearch.events.add(event)
-            offerSearch.updatedAt = Date()
-
-            repository.saveSearchResult(offerSearch)
+            offerSearchStateRepository
+                .changeStrategy(strategy)
+                .save(state.copy(updatedAt = Date()))
         }
     }
 
@@ -257,13 +255,17 @@ class OfferSearchService(
                 .findById(item.searchRequestId)
                 ?: throw BadArgumentException("searchRequestId id not exist")
 
-            item.state = OfferResultAction.COMPLAIN
-            item.updatedAt = Date()
-
-            repository.saveSearchResult(item)
+            val state = offerSearchStateRepository
+                .changeStrategy(strategy)
+                .findByOfferIdAndOwner(item.offerId, item.owner)
+                ?: OfferSearchState(0, item.owner, item.offerId)
 
             val event = OfferSearchEvent(callerPublicKey, item.state)
-            addEventTo(gson.toJson(event), offerSearchId, strategy).get()
+            state.events.add(gson.toJson(event))
+
+            offerSearchStateRepository
+                .changeStrategy(strategy)
+                .save(state.copy(state = OfferResultAction.COMPLAIN, updatedAt = Date()))
         }
     }
 
@@ -281,13 +283,17 @@ class OfferSearchService(
                 .findById(item.searchRequestId)
                 ?: throw AccessDeniedException()
 
-            item.state = OfferResultAction.EVALUATE
-            item.updatedAt = Date()
-
-            repository.saveSearchResult(item)
+            val state = offerSearchStateRepository
+                .changeStrategy(strategy)
+                .findByOfferIdAndOwner(item.offerId, item.owner)
+                ?: OfferSearchState(0, item.owner, item.offerId)
 
             val event = OfferSearchEvent(callerPublicKey, item.state)
-            addEventTo(gson.toJson(event), offerSearchId, strategy).get()
+            state.events.add(gson.toJson(event))
+
+            offerSearchStateRepository
+                .changeStrategy(strategy)
+                .save(state.copy(state = OfferResultAction.EVALUATE, updatedAt = Date()))
         }
     }
 
@@ -305,13 +311,17 @@ class OfferSearchService(
                 .findById(item.searchRequestId)
                 ?: throw BadArgumentException("searchRequestId item id not exist")
 
-            item.state = OfferResultAction.REJECT
-            item.updatedAt = Date()
-
-            repository.saveSearchResult(item)
+            val state = offerSearchStateRepository
+                .changeStrategy(strategy)
+                .findByOfferIdAndOwner(item.offerId, item.owner)
+                ?: OfferSearchState(0, item.owner, item.offerId)
 
             val event = OfferSearchEvent(callerPublicKey, item.state)
-            addEventTo(gson.toJson(event), offerSearchId, strategy).get()
+            state.events.add(gson.toJson(event))
+
+            offerSearchStateRepository
+                .changeStrategy(strategy)
+                .save(state.copy(state = OfferResultAction.REJECT, updatedAt = Date()))
         }
     }
 
@@ -329,20 +339,23 @@ class OfferSearchService(
                 .findById(item.searchRequestId)
                 ?: throw BadArgumentException("searchRequestId id not exist")
 
-            item.state = OfferResultAction.CLAIMPURCHASE
-            item.updatedAt = Date()
-
-            repository.saveSearchResult(item)
+            val state = offerSearchStateRepository
+                .changeStrategy(strategy)
+                .findByOfferIdAndOwner(item.offerId, item.owner)
+                ?: OfferSearchState(0, item.owner, item.offerId)
 
             val event = OfferSearchEvent(callerPublicKey, item.state)
-            addEventTo(gson.toJson(event), offerSearchId, strategy).get()
+            state.events.add(gson.toJson(event))
+
+            offerSearchStateRepository
+                .changeStrategy(strategy)
+                .save(state.copy(state = OfferResultAction.CLAIMPURCHASE, updatedAt = Date()))
         }
     }
 
     fun confirm(
         offerSearchId: Long,
         callerPublicKey: String,
-//            userBaseId: String,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
         return CompletableFuture.runAsync {
@@ -366,17 +379,18 @@ class OfferSearchService(
             if (offer.owner != callerPublicKey)
                 throw BadArgumentException("the caller must be the owner of the offer")
 
-//            if (request.owner != userBaseId)
-//                throw AccessDeniedException()
-
-            item.state = OfferResultAction.CONFIRMED
-            item.updatedAt = Date()
-
-            repository.saveSearchResult(item)
+            val state = offerSearchStateRepository
+                .changeStrategy(strategy)
+                .findByOfferIdAndOwner(item.offerId, item.owner)
+                ?: OfferSearchState(0, item.owner, item.offerId)
 
             val event =
                 OfferSearchEventConfirmed(callerPublicKey, item.state, "22") // fixme anti-pattern 'magic numbers'
-            addEventTo(gson.toJson(event), offerSearchId, strategy).get()
+            state.events.add(gson.toJson(event))
+
+            offerSearchStateRepository
+                .changeStrategy(strategy)
+                .save(state.copy(state = OfferResultAction.CONFIRMED, updatedAt = Date()))
         }
     }
 
@@ -390,10 +404,15 @@ class OfferSearchService(
 
             val repository = offerSearchRepository.changeStrategy(strategy)
 
-            if (searchRequestId != null)
-                return@supplyAsync repository.findBySearchRequestIdAndOfferId(searchRequestId, offerId)
+            val result = if (searchRequestId != null)
+                repository.findBySearchRequestIdAndOfferId(searchRequestId, offerId)
             else
-                return@supplyAsync repository.findByOfferId(offerId)
+                repository.findByOfferId(offerId)
+
+            this.mergeWithOfferSearchState(
+                result,
+                offerSearchStateRepository.changeStrategy(strategy)
+            )
         }
     }
 
@@ -403,7 +422,17 @@ class OfferSearchService(
     ): CompletableFuture<Page<OfferSearch>> {
         return CompletableFuture.supplyAsync {
             val repository = offerSearchRepository.changeStrategy(strategy)
-            return@supplyAsync repository.findAll(page)
+            val result = repository.findAll(page)
+
+            val merged = this.mergeWithOfferSearchState(
+                result.content,
+                offerSearchStateRepository.changeStrategy(strategy)
+            )
+
+            result.content.clear()
+            result.content.addAll(merged)
+
+            result
         }
     }
 
@@ -420,23 +449,28 @@ class OfferSearchService(
             // get all offerSearches
             val allOfferSearches = repository.findAll()
 
-            when {
+            val result = when {
                 byOffer!! -> {
                     // get all relevant offers of offerSearches
                     val offerIds: List<Long> = allOfferSearches.map { it.offerId }
                     val offers = offerRepository.changeStrategy(strategy).findByIds(offerIds.distinct())
                     val existedOfferIds: List<Long> = offers.map { it.id }
-                    return@supplyAsync allOfferSearches.filter { it.offerId !in existedOfferIds }
+                    allOfferSearches.filter { it.offerId !in existedOfferIds }
                 }
                 bySearchRequest!! -> {
                     // get all relevant searchRequests of offerSearches
                     val searchRequestIds: List<Long> = allOfferSearches.map { it.searchRequestId }
                     val searchRequests = searchRequestRepository.changeStrategy(strategy).findById(searchRequestIds)
                     val existedSearchRequestIds: List<Long> = searchRequests.map { it.id }
-                    return@supplyAsync allOfferSearches.filter { it.searchRequestId !in existedSearchRequestIds }
+                    allOfferSearches.filter { it.searchRequestId !in existedSearchRequestIds }
                 }
                 else -> throw BadArgumentException("specify either byOffer or bySearchRequest")
             }
+
+            this.mergeWithOfferSearchState(
+                result,
+                offerSearchStateRepository.changeStrategy(strategy)
+            )
         }
     }
 
@@ -448,7 +482,12 @@ class OfferSearchService(
 
             val repository = offerSearchRepository.changeStrategy(strategy)
 
-            return@supplyAsync repository.findAllDiff()
+            val result = repository.findAllDiff()
+
+            this.mergeWithOfferSearchState(
+                result,
+                offerSearchStateRepository.changeStrategy(strategy)
+            )
         }
     }
 
@@ -461,7 +500,12 @@ class OfferSearchService(
 
             val repository = offerSearchRepository.changeStrategy(strategy)
 
-            return@supplyAsync repository.findById(ids)
+            val result = repository.findById(ids)
+
+            this.mergeWithOfferSearchState(
+                result,
+                offerSearchStateRepository.changeStrategy(strategy)
+            )
         }
     }
 
@@ -505,8 +549,14 @@ class OfferSearchService(
         return CompletableFuture.supplyAsync {
             searchRequestRepository.changeStrategy(strategy).findById(id)
                 ?: throw BadArgumentException()
-            return@supplyAsync offerSearchRepository.changeStrategy(strategy)
+
+            val result = offerSearchRepository.changeStrategy(strategy)
                 .cloneOfferSearchOfSearchRequest(id, searchRequest)
+
+            this.mergeWithOfferSearchState(
+                result,
+                offerSearchStateRepository.changeStrategy(strategy)
+            )
         }
     }
 
@@ -609,7 +659,9 @@ class OfferSearchService(
 
             val step8 = measureTimeMillis {
                 val resultItems = offerSearchListToResult(
-                    offerSearchResult, offerRepository.changeStrategy(strategyType)
+                    offerSearchResult,
+                    offerRepository.changeStrategy(strategyType),
+                    offerSearchStateRepository.changeStrategy(strategyType)
                 )
 
                 val pageable = PageRequest(offerIds.number, offerIds.size, offerIds.sort)
@@ -624,7 +676,8 @@ class OfferSearchService(
 
     private fun offerSearchListToResult(
         offerSearch: List<OfferSearch>,
-        offersRepository: OfferRepository
+        offersRepository: OfferRepository,
+        offesSearchStateRepository: OfferSearchStateRepository
     ): List<OfferSearchResultItem> {
 
         var offerIds = listOf<Long>()
@@ -653,9 +706,12 @@ class OfferSearchService(
 
         var withExistedOffers = listOf<OfferSearch>()
         val step33 = measureTimeMillis {
-            withExistedOffers = offerSearch.filter { offers.containsKey(it.offerId) }
+            withExistedOffers = this.mergeWithOfferSearchState(
+                offerSearch.filter { offers.containsKey(it.offerId) },
+                offesSearchStateRepository
+            )
         }
-        logger.debug { "3.3 step) offerSarch with existed offers ms: $step33" }
+        logger.debug { "3.3 step) offerSearch with existed offers ms: $step33" }
 
         var result = listOf<OfferSearchResultItem>()
         val step34 = measureTimeMillis {
@@ -666,12 +722,52 @@ class OfferSearchService(
         return result
     }
 
+    fun mergeWithOfferSearchState(
+        offerSearches: List<OfferSearch>,
+        offerSearchStateRepository: OfferSearchStateRepository
+    ): List<OfferSearch> {
+        // todo think how to do it more simple
+        var result = offerSearches
+
+        val step = measureTimeMillis {
+            val uniqueByOfferIdAndOwner = offerSearches
+                .distinctBy { "${it.offerId}${it.owner}" }
+
+            val owners = uniqueByOfferIdAndOwner.map { it.owner }
+            val offerIds = uniqueByOfferIdAndOwner.map { it.offerId }
+
+            val states = offerSearchStateRepository
+                .findByOfferIdInAndOwnerIn(offerIds, owners)
+                .groupBy { "${it.offerId}${it.owner}" }
+
+            result = result.map {
+                val offerSearchState = states["${it.offerId}${it.owner}"]?.get(0) ?: OfferSearchState(
+                    0,
+                    it.owner,
+                    it.offerId,
+                    OfferResultAction.NONE
+                )
+
+                it.copy(
+                    state = offerSearchState.state,
+                    info = offerSearchState.info,
+                    events = offerSearchState.events,
+                    updatedAt = offerSearchState.updatedAt
+                )
+            }
+        }
+        logger.debug { "mergeWithOfferSearchState final result ms: $step" }
+
+        return result
+    }
+
     fun deleteByOwner(
         owner: String,
         strategyType: RepositoryStrategyType
     ): CompletableFuture<Void> {
         return CompletableFuture.runAsync {
             offerSearchRepository.changeStrategy(strategyType).deleteAllByOwner(owner)
+            offerSearchStateRepository.changeStrategy(strategyType).deleteAllByOwner(owner)
         }
     }
 }

@@ -1,9 +1,10 @@
 package com.bitclave.node.repository.search
 
-import com.bitclave.node.repository.models.OfferResultAction
 import com.bitclave.node.repository.models.OfferSearch
+import com.bitclave.node.repository.models.OfferSearchState
 import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
+import com.bitclave.node.repository.search.state.OfferSearchStateCrudRepository
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.DataNotSavedException
 import mu.KotlinLogging
@@ -11,60 +12,26 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
-import java.util.ArrayList
 import kotlin.system.measureTimeMillis
 
 @Component
 @Qualifier("postgres")
 class PostgresSearchRequestRepositoryImpl(
     val repository: SearchRequestCrudRepository,
-    val offerSearchRepository: OfferSearchCrudRepository
+    val offerSearchRepository: OfferSearchCrudRepository,
+    val offerSearchStateCrudRepository: OfferSearchStateCrudRepository
 ) : SearchRequestRepository {
 
     private val logger = KotlinLogging.logger {}
 
-    override fun saveSearchRequest(request: SearchRequest): SearchRequest {
-        val id = request.id
-        val step1 = measureTimeMillis {
-            repository.save(request) ?: throw DataNotSavedException()
-        }
-        logger.info { "saveSearchRequest step1: $step1" }
-
-        if (id > 0) {
-            var relatedOfferSearches = emptyList<OfferSearch>()
-
-            val step2 = measureTimeMillis {
-                relatedOfferSearches = offerSearchRepository.findBySearchRequestId(id)
-                    .filter {
-                        it.state == OfferResultAction.NONE || it.state == OfferResultAction.REJECT
-                    }
-            }
-            logger.info { "saveSearchRequest step2: $step2" }
-
-            val step3 = measureTimeMillis {
-                offerSearchRepository.delete(relatedOfferSearches)
-            }
-            logger.info { "saveSearchRequest step3: $step3" }
-        }
-
-        return request
-    }
+    override fun saveSearchRequest(request: SearchRequest): SearchRequest =
+        repository.save(request) ?: throw DataNotSavedException()
 
     override fun deleteSearchRequest(id: Long, owner: String): Long {
-        val count = repository.deleteByIdAndOwner(id, owner)
-        if (count > 0) {
-            var relatedOfferSearches = offerSearchRepository.findBySearchRequestId(id)
+        repository.deleteByIdAndOwner(id, owner)
+        offerSearchRepository.deleteAllBySearchRequestId(id)
 
-            relatedOfferSearches = relatedOfferSearches.filter {
-                it.state == OfferResultAction.NONE || it.state == OfferResultAction.REJECT
-            }
-
-            offerSearchRepository.delete(relatedOfferSearches)
-
-            return id
-        }
-
-        return 0
+        return id
     }
 
     override fun deleteSearchRequests(owner: String): Long {
@@ -126,12 +93,21 @@ class PostgresSearchRequestRepositoryImpl(
                     0,
                     createSearchRequest.owner,
                     createSearchRequest.id,
-                    offerSearch.offerId,
-                    OfferResultAction.NONE,
-                    offerSearch.info,
-                    ArrayList()
+                    offerSearch.offerId
                 )
                 toBeSavedOfferSearched.add(newOfferSearch)
+                val offerSearchState = offerSearchStateCrudRepository
+                    .findByOfferIdAndOwner(offerSearch.offerId, createSearchRequest.owner)
+
+                if (offerSearchState == null) {
+                    offerSearchStateCrudRepository.save(
+                        OfferSearchState(
+                            0,
+                            createSearchRequest.owner,
+                            offerSearch.offerId
+                        )
+                    )
+                }
             }
         }
         logger.info { "clone search request step4 $step4" }

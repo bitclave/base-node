@@ -23,6 +23,9 @@ import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.repository.search.offer.OfferSearchRepositoryStrategy
 import com.bitclave.node.repository.search.offer.PostgresOfferSearchRepositoryImpl
 import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepository
+import com.bitclave.node.repository.search.state.OfferSearchStateCrudRepository
+import com.bitclave.node.repository.search.state.OfferSearchStateRepositoryStrategy
+import com.bitclave.node.repository.search.state.PostgresOfferSearchStateRepositoryImpl
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferSearchService
 import com.bitclave.node.services.v1.SearchRequestService
@@ -68,6 +71,9 @@ class SearchRequestServiceTest {
     @Autowired
     protected lateinit var offerSearchCrudRepository: OfferSearchCrudRepository
     protected lateinit var offerSearchService: OfferSearchService
+
+    @Autowired
+    protected lateinit var offerSearchStateCrudRepository: OfferSearchStateCrudRepository
 
     @Autowired
     protected lateinit var offerCrudRepository: OfferCrudRepository
@@ -136,8 +142,11 @@ class SearchRequestServiceTest {
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
 
         val offerSearchRepository =
-            PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository, searchRequestRepository)
+            PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository)
         val offerSearchRepositoryStrategy = OfferSearchRepositoryStrategy(offerSearchRepository)
+
+        val offerSearchStateRepository = PostgresOfferSearchStateRepositoryImpl(offerSearchStateCrudRepository)
+        val offerSearchStateRepositoryStrategy = OfferSearchStateRepositoryStrategy(offerSearchStateRepository)
 
         searchRequestService = SearchRequestService(
             requestRepositoryStrategy,
@@ -150,6 +159,7 @@ class SearchRequestServiceTest {
             offerSearchRepositoryStrategy,
             querySearchRequestCrudRepository,
             rtSearchRepository,
+            offerSearchStateRepositoryStrategy,
             gson
         )
 

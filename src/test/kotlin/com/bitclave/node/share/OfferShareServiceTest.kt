@@ -28,6 +28,9 @@ import com.bitclave.node.repository.search.SearchRequestRepositoryStrategy
 import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.repository.search.offer.OfferSearchRepositoryStrategy
 import com.bitclave.node.repository.search.offer.PostgresOfferSearchRepositoryImpl
+import com.bitclave.node.repository.search.state.OfferSearchStateCrudRepository
+import com.bitclave.node.repository.search.state.OfferSearchStateRepositoryStrategy
+import com.bitclave.node.repository.search.state.PostgresOfferSearchStateRepositoryImpl
 import com.bitclave.node.repository.share.OfferShareCrudRepository
 import com.bitclave.node.repository.share.OfferShareRepositoryStrategy
 import com.bitclave.node.repository.share.PostgresOfferShareRepositoryImpl
@@ -82,6 +85,9 @@ class OfferShareServiceTest {
     @Autowired
     protected lateinit var offerSearchCrudRepository: OfferSearchCrudRepository
 
+    @Autowired
+    protected lateinit var offerSearchStateCrudRepository: OfferSearchStateCrudRepository
+
     private val accountClient: Account =
         Account("02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea")
     private val accountBusiness: Account =
@@ -129,9 +135,11 @@ class OfferShareServiceTest {
             PostgresSearchRequestRepositoryImpl(searchRequestCrudRepository, offerSearchCrudRepository)
         val searchRequestRepositoryStrategy = SearchRequestRepositoryStrategy(searchRequestRepository)
 
-        val offerSearchRepository =
-            PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository, searchRequestRepository)
+        val offerSearchRepository = PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository)
         val offerSearchRepositoryStrategy = OfferSearchRepositoryStrategy(offerSearchRepository)
+
+        val offerSearchStateRepository = PostgresOfferSearchStateRepositoryImpl(offerSearchStateCrudRepository)
+        val offerSearchStateRepositoryStrategy = OfferSearchStateRepositoryStrategy(offerSearchStateRepository)
 
         val offerPriceRepository =
             PostgresOfferPriceRepositoryImpl(offerPriceCrudRepository, offerPriceRuleCrudRepository)
@@ -141,7 +149,8 @@ class OfferShareServiceTest {
             shareRepositoryStrategy,
             offerRepositoryStrategy,
             offerSearchRepositoryStrategy,
-            searchRequestRepositoryStrategy
+            searchRequestRepositoryStrategy,
+            offerSearchStateRepositoryStrategy
         )
 
         strategy = RepositoryStrategyType.POSTGRES
