@@ -61,6 +61,7 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import java.math.BigDecimal
+import java.time.format.DateTimeFormatter
 import java.util.ArrayList
 import java.util.concurrent.CompletableFuture
 import java.util.stream.LongStream
@@ -133,7 +134,9 @@ class OfferSearchServiceTest {
         listOf(),
         "desc",
         "title",
-        "url"
+        "url",
+        BigDecimal.TEN.toString(),
+        mapOf("endDate" to "Mon Jul 22 3019 19:00:20 GMT+0000 (Coordinated Universal Time)")
     )
 
     protected val offer2 = Offer(
@@ -142,7 +145,9 @@ class OfferSearchServiceTest {
         listOf(),
         "desc",
         "title",
-        "url"
+        "url",
+        BigDecimal.TEN.toString(),
+        mapOf("endDate" to "Mon Jul 22 3019 19:00:20 GMT+0000 (Coordinated Universal Time)")
     )
 
     protected val offerPrice = OfferPrice(
