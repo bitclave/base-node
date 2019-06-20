@@ -38,7 +38,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         value = """
             SELECT *
             FROM (
-                select *, TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime
+                select
+                    s.id, s.offer_id, s.search_request_id, s.state, s.info, s.owner,
+                    s.created_at, s.updated_at, t.tags, t.tags_key,
+                    TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime
                 from offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
                 where t.tags LIKE '%(Coordinated Universal Time)' AND t.tags_key = 'endDate'
             ) s1
@@ -54,7 +57,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         value = """
             SELECT *
             FROM (
-                select *, TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime
+                select
+                    s.id, s.offer_id, s.search_request_id, s.state, s.info, s.owner,
+                    s.created_at, s.updated_at, t.tags, t.tags_key,
+                    TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime
                 from offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
                 where t.tags LIKE '%(Coordinated Universal Time)' AND t.tags_key = 'endDate'
             ) s1
@@ -64,14 +70,17 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     )
     fun findAllByOwnerAndStateIn(
         @Param("owner") owner: String,
-        @Param("state") state: List<OfferResultAction>
+        @Param("state") state: List<Long>
     ): List<OfferSearch>
 
     @Query(
         value = """
             SELECT *
             FROM (
-                select *, TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime
+                select
+                    s.id, s.offer_id, s.search_request_id, s.state, s.info, s.owner,
+                    s.created_at, s.updated_at, t.tags, t.tags_key,
+                    TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime
                 from offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
                 where t.tags LIKE '%(Coordinated Universal Time)' AND t.tags_key = 'endDate'
             ) s1
@@ -92,7 +101,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         value = """
             SELECT *
             FROM (
-                select *, TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime
+                select
+                    s.id, s.offer_id, s.search_request_id, s.state, s.info, s.owner,
+                    s.created_at, s.updated_at, t.tags, t.tags_key,
+                    TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime
                 from offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
                 where t.tags LIKE '%(Coordinated Universal Time)' AND t.tags_key = 'endDate'
             ) s1
@@ -107,7 +119,7 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     fun findByOwnerAndSearchRequestIdInAndStateIn(
         @Param("owner") owner: String,
         @Param("ids") searchRequestIds: List<Long>,
-        @Param("state") state: List<OfferResultAction>
+        @Param("state") state: List<Long>
     ): List<OfferSearch>
 
     @Query(
@@ -115,7 +127,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
             SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank
             FROM
                 (
-                    select *, TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
+                    select
+                        s.id, s.offer_id, s.search_request_id, s.state, s.info, s.owner,
+                        s.created_at, s.updated_at, t.tags, t.tags_key,
+                        TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
                     from offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
                     where t.tags LIKE '%(Coordinated Universal Time)' AND t.tags_key = 'endDate'
                 ) s1 LEFT JOIN offer_rank r ON s1.offerID = r.offer_id
@@ -132,7 +147,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         value = """
             SELECT *
             FROM (
-                select *, TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
+                select
+                    s.id, s.offer_id, s.search_request_id, s.state, s.info, s.owner,
+                    s.created_at, s.updated_at, t.tags, t.tags_key,
+                    TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
                 from offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
                 where t.tags LIKE '%(Coordinated Universal Time)' AND t.tags_key = 'endDate'
             ) s1 JOIN offer o ON s1.offerID = o.id
@@ -150,7 +168,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
                 first_value( CAST( p.worth AS INT ) ) over (partition by s1.id order by p.id),
                 s1.*
             FROM(
-                select *, TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
+                select
+                    s.id, s.offer_id, s.search_request_id, s.state, s.info, s.owner,
+                    s.created_at, s.updated_at, t.tags, t.tags_key,
+                    TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
                 from offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
                 where t.tags LIKE '%(Coordinated Universal Time)' AND t.tags_key = 'endDate'
             ) s1 JOIN offer_price p ON p.offer_id = s1.offerID
@@ -166,7 +187,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         value = """
             SELECT *, CAST( t.tags AS FLOAT ) AS cashback
             FROM(
-                select *, TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
+                select
+                    s.id, s.offer_id, s.search_request_id, s.state, s.info, s.owner,
+                    s.created_at, s.updated_at, t.tags, t.tags_key,
+                    TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
                 from offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
                 where t.tags LIKE '%(Coordinated Universal Time)' AND t.tags_key = 'endDate'
             ) s1 JOIN offer_tags t ON t.offer_id = s1.offerID
@@ -182,7 +206,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
             SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank
             FROM
                 (
-                    select *, TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
+                    select
+                        s.id, s.offer_id, s.search_request_id, s.state, s.info, s.owner,
+                        s.created_at, s.updated_at, t.tags, t.tags_key,
+                        TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
                     from offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
                     where t.tags LIKE '%(Coordinated Universal Time)' AND t.tags_key = 'endDate'
                 ) s1 LEFT JOIN offer_rank r ON s1.offerID = r.offer_id
@@ -201,7 +228,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         value = """
             SELECT *
             FROM (
-                select *, TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
+                select
+                    s.id, s.offer_id, s.search_request_id, s.state, s.info, s.owner,
+                    s.created_at, s.updated_at, t.tags, t.tags_key,
+                    TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
                 from offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
                 where t.tags LIKE '%(Coordinated Universal Time)' AND t.tags_key = 'endDate'
             ) s1 JOIN offer o ON s1.offerID = o.id
@@ -222,7 +252,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
                 first_value( CAST( p.worth AS INT ) ) over (partition by s1.id order by p.id),
                 s1.*
             FROM(
-                select *, TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
+                select
+                    s.id, s.offer_id, s.search_request_id, s.state, s.info, s.owner,
+                    s.created_at, s.updated_at, t.tags, t.tags_key,
+                    TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
                 from offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
                 where t.tags LIKE '%(Coordinated Universal Time)' AND t.tags_key = 'endDate'
             ) s1 JOIN offer_price p ON p.offer_id = s1.offerID
@@ -241,7 +274,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         value = """
             SELECT *, CAST( t.tags AS FLOAT ) AS cashback
             FROM(
-                select *, TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
+                select
+                    s.id, s.offer_id, s.search_request_id, s.state, s.info, s.owner,
+                    s.created_at, s.updated_at, t.tags, t.tags_key,
+                    TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
                 from offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
                 where t.tags LIKE '%(Coordinated Universal Time)' AND t.tags_key = 'endDate'
             ) s1 JOIN offer_tags t ON t.offer_id = s1.offerID
@@ -260,7 +296,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
             SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank
             FROM
                 (
-                    select *, TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
+                    select
+                        s.id, s.offer_id, s.search_request_id, s.state, s.info, s.owner,
+                        s.created_at, s.updated_at, t.tags, t.tags_key,
+                        TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
                     from offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
                     where t.tags LIKE '%(Coordinated Universal Time)' AND t.tags_key = 'endDate'
                 ) s1 LEFT JOIN offer_rank r ON s1.offerID = r.offer_id
@@ -281,7 +320,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         value = """
             SELECT *
             FROM (
-                select *, TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
+                select
+                    s.id, s.offer_id, s.search_request_id, s.state, s.info, s.owner,
+                    s.created_at, s.updated_at, t.tags, t.tags_key,
+                    TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
                 from offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
                 where t.tags LIKE '%(Coordinated Universal Time)' AND t.tags_key = 'endDate'
             ) s1 JOIN offer o ON s1.offerID = o.id
@@ -301,7 +343,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         value = """
             SELECT *, CAST( t.tags AS FLOAT ) AS cashback
             FROM(
-                select *, TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
+                select
+                    s.id, s.offer_id, s.search_request_id, s.state, s.info, s.owner,
+                    s.created_at, s.updated_at, t.tags, t.tags_key,
+                    TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
                 from offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
                 where t.tags LIKE '%(Coordinated Universal Time)' AND t.tags_key = 'endDate'
             ) s1 JOIN offer_tags t ON t.offer_id = s1.offerID
@@ -322,7 +367,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         value = """
             SELECT *
             FROM (
-                select *, TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
+                select
+                    s.id, s.offer_id, s.search_request_id, s.state, s.info, s.owner,
+                    s.created_at, s.updated_at, t.tags, t.tags_key,
+                    TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
                 from offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
                 where t.tags LIKE '%(Coordinated Universal Time)' AND t.tags_key = 'endDate'
             ) s1 JOIN offer o ON s1.offerID = o.id
@@ -345,7 +393,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
             SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank
             FROM
                 (
-                    select *, TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
+                    select
+                        s.id, s.offer_id, s.search_request_id, s.state, s.info, s.owner,
+                        s.created_at, s.updated_at, t.tags, t.tags_key,
+                        TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
                     from offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
                     where t.tags LIKE '%(Coordinated Universal Time)' AND t.tags_key = 'endDate'
                 ) s1 LEFT JOIN offer_rank r ON s1.offerID = r.offer_id
@@ -370,7 +421,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
                 first_value( CAST( p.worth AS INT ) ) over (partition by s1.id order by p.id),
                 s1.*
             FROM(
-                select *, TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
+                select
+                    s.id, s.offer_id, s.search_request_id, s.state, s.info, s.owner,
+                    s.created_at, s.updated_at, t.tags, t.tags_key,
+                    TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
                 from offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
                 where t.tags LIKE '%(Coordinated Universal Time)' AND t.tags_key = 'endDate'
             ) s1 JOIN offer_price p ON p.offer_id = s1.offerID
@@ -391,7 +445,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
                 first_value( CAST( p.worth AS INT ) ) over (partition by s1.id order by p.id),
                 s1.*
             FROM(
-                select *, TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
+                select
+                    s.id, s.offer_id, s.search_request_id, s.state, s.info, s.owner,
+                    s.created_at, s.updated_at, t.tags, t.tags_key,
+                    TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
                 from offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
                 where t.tags LIKE '%(Coordinated Universal Time)' AND t.tags_key = 'endDate'
             ) s1 JOIN offer_price p ON p.offer_id = s1.offerID
@@ -414,7 +471,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         value = """
             SELECT *, CAST( t.tags AS FLOAT ) AS cashback
             FROM(
-                select *, TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
+                select
+                    s.id, s.offer_id, s.search_request_id, s.state, s.info, s.owner,
+                    s.created_at, s.updated_at, t.tags, t.tags_key,
+                    TO_TIMESTAMP(t.tags,'Dy Mon DD YYYY HH24:MI:SS') as endTime, s.offer_id as offerID
                 from offer_search s JOIN offer_tags t ON t.offer_id = s.offer_id
                 where t.tags LIKE '%(Coordinated Universal Time)' AND t.tags_key = 'endDate'
             ) s1 JOIN offer_tags t ON t.offer_id = s1.offerID

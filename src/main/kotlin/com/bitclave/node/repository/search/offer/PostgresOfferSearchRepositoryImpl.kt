@@ -184,7 +184,7 @@ class PostgresOfferSearchRepositoryImpl(
             Sort(Sort.Direction.ASC, "cashback") ->
                 repository.getOfferSearchByOwnerAndStateAndSortByCashBack(owner, condition)
             else ->
-                repository.findAllByOwnerAndStateIn(owner, state)
+                repository.findAllByOwnerAndStateIn(owner, condition)
         }
     }
 
@@ -264,7 +264,7 @@ class PostgresOfferSearchRepositoryImpl(
                     conditions
                 )
             else ->
-                repository.findByOwnerAndSearchRequestIdInAndStateIn(owner, searchRequestIds, state)
+                repository.findByOwnerAndSearchRequestIdInAndStateIn(owner, searchRequestIds, conditions)
         }
     }
 
