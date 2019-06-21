@@ -24,8 +24,8 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
             SELECT * FROM offer_search a 
             INNER JOIN offer_search_state b 
             ON a.search_request_id = :id and a.owner = b.owner and a.offer_id = b.offer_id
-        """
-        , nativeQuery = true
+        """,
+        nativeQuery = true
     )
     fun findBySearchRequestId(@Param("id") id: Long): List<OfferSearch>
 
@@ -46,7 +46,16 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     fun findByOwnerIn(owners: List<String>): List<OfferSearch>
 
-    fun findAllByOwnerAndStateIn(owner: String, state: List<OfferResultAction>): List<OfferSearch>
+    @Query(
+        value = """
+            SELECT * FROM offer_search s
+            JOIN offer_search_state ss on s.offer_id = ss.offer_id AND s.owner = ss.owner
+            WHERE s.owner = :owner and ss.state in (:state)
+            order by ss.updated_at DESC
+        """,
+        nativeQuery = true
+    )
+    fun findAllByOwnerAndStateIn(@Param("owner") owner: String, @Param("state") state: List<OfferResultAction>): List<OfferSearch>
 
     fun findAllByOwnerAndSearchRequestIdIn(owner: String, searchIds: List<Long>): List<OfferSearch>
 
@@ -54,10 +63,19 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     fun findByOwnerAndOfferIdIn(owner: String, offerIds: List<Long>): List<OfferSearch>
 
+    @Query(
+        value = """
+            SELECT * FROM offer_search s
+            JOIN offer_search_state ss on s.offer_id = ss.offer_id AND s.owner = ss.owner
+            WHERE s.owner = :owner and ss.state in (:state) and s.search_request_id in (:searchIds)
+            order by ss.updated_at DESC
+        """,
+        nativeQuery = true
+    )
     fun findByOwnerAndSearchRequestIdInAndStateIn(
-        owner: String,
-        searchIds: List<Long>,
-        state: List<OfferResultAction>
+        @Param("owner") owner: String,
+        @Param("searchIds") searchIds: List<Long>,
+        @Param("state") state: List<OfferResultAction>
     ): List<OfferSearch>
 
     @Query(
@@ -302,35 +320,30 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     ): List<OfferSearch>
 
     @Query(
-        value = "SELECT s.* from offer_search s, " +
-            "( " +
-            "SELECT b.offer_id, b.owner from " +
-            "(" +
-            "SELECT os_inner.offer_id, os_inner.owner,  os_inner.state, e.events from " +
-            "( " +
-            "select s.* from offer_search s, " +
-            "( " +
-            "select offer_id, owner, count(*) offer_owner_count " +
-            "from offer_search " +
-            "group by offer_id, owner " +
-            "having count(*) > 1 " +
-            ") c " +
-            "where s.offer_id = c.offer_id " +
-            "and s.owner = c.owner " +
-            ") os_inner " +
-            "left outer join " +
-            "( " +
-            "select e_in.offer_search_id, string_agg(e_in.events, ',') events " +
-            "from offer_search_events e_in " +
-            "group by e_in.offer_search_id " +
-            ") e on e.offer_search_id = os_inner.id " +
-            "GROUP BY os_inner.offer_id, os_inner.owner,  os_inner.state, e.events " +
-            "HAVING COUNT(*) < 2 " +
-            ") b " +
-            "GROUP BY b.offer_id, b.owner " +
-            ") a " +
-            "where s.offer_id = a.offer_id " +
-            "and s.owner = a.owner",
+        value = "SELECT s.* from offer_search s, "+
+            "( SELECT b.offer_id, b.owner from "+
+            " ( SELECT os_inner.offer_id, os_inner.owner,  os_inner.state, e.events from "+
+            "( select s.* from offer_search_state s, "+
+            "( select offer_id, owner, count(*) offer_owner_count "+
+            "from offer_search_state "+
+            "group by offer_id, owner "+
+            "having count(*) > 1 "+
+            " ) c "+
+            "where s.offer_id = c.offer_id "+
+            " and s.owner = c.owner "+
+            ") os_inner "+
+            "left outer join "+
+            "( select e_in.offer_search_state_id, string_agg(e_in.events, ',') events "+
+            "from offer_search_state_events e_in "+
+            "group by e_in.offer_search_state_id "+
+            " ) e on e.offer_search_state_id = os_inner.id "+
+            " GROUP BY os_inner.offer_id, os_inner.owner,  os_inner.state, e.events "+
+            " HAVING COUNT(*) < 2 "+
+            " ) b "+
+            " GROUP BY b.offer_id, b.owner "+
+            " ) a " +
+            "where s.offer_id = a.offer_id "+
+            "and s.owner = a.owner ",
         nativeQuery = true
     )
     fun findAllDiff(): List<OfferSearch>
