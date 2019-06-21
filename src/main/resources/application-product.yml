@@ -1,17 +1,24 @@
 spring:
   jpa:
     hibernate:
+      dialect: org.hibernate.dialect.PostgreSQLDialect
       ddlAuto: update
 
+      hikari:
+        minimumIdle: 5
+        maximumPoolSize: 10
+        idleTimeout: 30000
+
+      connection:
+        providerClass: org.hibernate.hikaricp.internal.HikariCPConnectionProvider
+
   datasource:
+    type: com.zaxxer.hikari.HikariDataSource
     driverClassName: org.postgresql.Driver
     platform: postgres
     url: ${JDBC_DATABASE_URL}
     username: ${JDBC_DATABASE_USERNAME}
     password: ${JDBC_DATABASE_PASSWORD}
-
-  connection:
-    providerClass: org.hibernate.hikaricp.internal.HikariCPConnectionProvider
 
 rtsearch:
   url: ${RT_SEARCH_URL}
