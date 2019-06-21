@@ -189,6 +189,16 @@ class OfferService(
         }
     }
 
+    fun getPageableOffersForMatcher(
+        page: PageRequest,
+        strategy: RepositoryStrategyType
+    ): CompletableFuture<Page<Offer>> {
+        return CompletableFuture.supplyAsync {
+            val repository = offerRepository.changeStrategy(strategy)
+            return@supplyAsync repository.getAllOffersExceptProducts(page)
+        }
+    }
+
     fun getOfferTotalCount(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Long> {

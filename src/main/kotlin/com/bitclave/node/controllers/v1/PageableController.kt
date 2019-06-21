@@ -71,6 +71,47 @@ class PageableController(
     }
 
     @ApiOperation(
+        "Page through already created offers by excluding products", response = Offer::class, responseContainer = "Page"
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(code = 200, message = "Success", response = Page::class)
+        ]
+    )
+    @RequestMapping(value = ["offers/matcher"], method = [RequestMethod.GET], params = ["page", "size"])
+    fun getPageableOffersForMatcher(
+        @ApiParam("Optional page number to retrieve a particular page. If not specified this API retrieves first page.")
+        @RequestParam("page")
+        page: Int?,
+
+        @ApiParam("Optional page size to include number of offers in a page. Defaults to 20.")
+        @RequestParam("size")
+        size: Int?,
+
+        @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
+    ): CompletableFuture<Page<Offer>> {
+
+        if (page == null || size == null) {
+            return offerService.getPageableOffersForMatcher(
+                PageRequest(0, 20), getStrategyType(strategy)
+            ).exceptionally { e ->
+                logger.error("Request: getPageableOffersForMatcher/$page/$size raised $e")
+                throw e
+            }
+        }
+
+        return offerService.getPageableOffersForMatcher(
+            PageRequest(page, size),
+            getStrategyType(strategy)
+        ).exceptionally { e ->
+            logger.error("Request: getPageableOffersForMatcher/$page/$size raised $e")
+            throw e
+        }
+    }
+
+    @ApiOperation(
         "Page through already created search requests",
         response = SearchRequest::class, responseContainer = "Page"
     )
