@@ -1,5 +1,6 @@
 package com.bitclave.node.repository.search.offer
 
+import com.bitclave.node.repository.models.OfferResultAction
 import com.bitclave.node.repository.models.OfferSearch
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -18,7 +19,15 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     fun deleteAllByOwner(owner: String): List<Long>
 
-    fun findBySearchRequestId(id: Long): List<OfferSearch>
+    @Query(
+        """
+            SELECT * FROM offer_search a 
+            INNER JOIN offer_search_state b 
+            ON a.search_request_id = :id and a.owner = b.owner and a.offer_id = b.offer_id
+        """
+        , nativeQuery = true
+    )
+    fun findBySearchRequestId(@Param("id") id: Long): List<OfferSearch>
 
     fun findBySearchRequestId(id: Long, pageable: Pageable): Page<OfferSearch>
 
@@ -37,8 +46,7 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     fun findByOwnerIn(owners: List<String>): List<OfferSearch>
 
-    // todo write native query
-//    fun findAllByOwnerAndStateIn(owner: String, state: List<OfferResultAction>): List<OfferSearch>
+    fun findAllByOwnerAndStateIn(owner: String, state: List<OfferResultAction>): List<OfferSearch>
 
     fun findAllByOwnerAndSearchRequestIdIn(owner: String, searchIds: List<Long>): List<OfferSearch>
 
@@ -46,12 +54,11 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     fun findByOwnerAndOfferIdIn(owner: String, offerIds: List<Long>): List<OfferSearch>
 
-    // todo write native query
-//    fun findByOwnerAndSearchRequestIdInAndStateIn(
-//        owner: String,
-//        searchIds: List<Long>,
-//        state: List<OfferResultAction>
-//    ): List<OfferSearch>
+    fun findByOwnerAndSearchRequestIdInAndStateIn(
+        owner: String,
+        searchIds: List<Long>,
+        state: List<OfferResultAction>
+    ): List<OfferSearch>
 
     @Query(
         value = """

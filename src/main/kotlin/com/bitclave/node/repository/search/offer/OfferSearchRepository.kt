@@ -13,9 +13,9 @@ interface OfferSearchRepository {
 
     fun deleteAllByOwner(owner: String): List<Long>
 
-    fun saveSearchResult(list: List<OfferSearch>)
+    fun save(list: List<OfferSearch>)
 
-    fun saveSearchResult(item: OfferSearch)
+    fun save(item: OfferSearch)
 
     fun findById(id: Long): OfferSearch?
 

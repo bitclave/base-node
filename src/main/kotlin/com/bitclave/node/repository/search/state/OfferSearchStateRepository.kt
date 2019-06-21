@@ -6,6 +6,8 @@ interface OfferSearchStateRepository {
 
     fun save(state: OfferSearchState): OfferSearchState
 
+    fun save(states: List<OfferSearchState>): List<OfferSearchState>
+
     fun findByOfferIdAndOwner(offerId: Long, owner: String): OfferSearchState?
 
     fun findByOfferIdInAndOwnerIn(offerIds: List<Long>, owners: List<String>): List<OfferSearchState>

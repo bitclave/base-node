@@ -364,7 +364,7 @@ class OfferSearchController(
         @PathVariable(value = "id")
         searchResultId: Long,
 
-        @ApiParam("where client sends searchResult id and signature of the message.", required = true)
+        @ApiParam("where client sends save id and signature of the message.", required = true)
         @RequestBody
         request: SignedRequest<Long>,
 
@@ -394,7 +394,7 @@ class OfferSearchController(
         @PathVariable(value = "id")
         searchResultId: Long,
 
-        @ApiParam("where client sends searchResult id and signature of the message.", required = true)
+        @ApiParam("where client sends save id and signature of the message.", required = true)
         @RequestBody
         request: SignedRequest<Long>,
 
@@ -424,7 +424,7 @@ class OfferSearchController(
         @PathVariable(value = "id")
         searchResultId: Long,
 
-        @ApiParam("where client sends searchResult id and signature of the message.", required = true)
+        @ApiParam("where client sends save id and signature of the message.", required = true)
         @RequestBody
         request: SignedRequest<Long>,
 
@@ -454,7 +454,7 @@ class OfferSearchController(
         @PathVariable(value = "id")
         searchResultId: Long,
 
-        @ApiParam("where client sends searchResult id and signature of the message.", required = true)
+        @ApiParam("where client sends save id and signature of the message.", required = true)
         @RequestBody
         request: SignedRequest<Long>,
 
@@ -481,7 +481,7 @@ class OfferSearchController(
         @PathVariable(value = "id")
         searchResultId: Long,
 
-        @ApiParam("where client sends searchResult id and signature of the message.", required = true)
+        @ApiParam("where client sends save id and signature of the message.", required = true)
         @RequestBody
         request: SignedRequest<Long>,
 

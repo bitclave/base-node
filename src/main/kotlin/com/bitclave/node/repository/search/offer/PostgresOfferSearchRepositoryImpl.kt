@@ -29,15 +29,15 @@ class PostgresOfferSearchRepositoryImpl(
         return repository.deleteAllByOwner(owner)
     }
 
-    override fun saveSearchResult(list: List<OfferSearch>) {
+    override fun save(list: List<OfferSearch>) {
         val step3 = measureTimeMillis {
             repository.save(list) ?: throw DataNotSavedException()
         }
         logger.debug { "saveSearchResult: step 3: ms: $step3, l1: ${list.size}, l2: ${list.size}" }
     }
 
-    override fun saveSearchResult(item: OfferSearch) {
-        saveSearchResult(listOf(item))
+    override fun save(item: OfferSearch) {
+        save(listOf(item))
     }
 
     override fun findById(id: Long): OfferSearch? {
@@ -105,9 +105,7 @@ class PostgresOfferSearchRepositoryImpl(
             Sort(Sort.Direction.ASC, "cashback") ->
                 repository.getOfferSearchByOwnerAndStateAndSortByCashBack(owner, condition)
             else ->
-                emptyList()
-            //todo todo write native query
-//                repository.findAllByOwnerAndStateIn(owner, state)
+                repository.findAllByOwnerAndStateIn(owner, state)
         }
     }
 
@@ -187,9 +185,7 @@ class PostgresOfferSearchRepositoryImpl(
                     conditions
                 )
             else ->
-                emptyList()
-            //todo write native query
-//                repository.findByOwnerAndSearchRequestIdInAndStateIn(owner, searchRequestIds, state)
+                repository.findByOwnerAndSearchRequestIdInAndStateIn(owner, searchRequestIds, state)
         }
     }
 

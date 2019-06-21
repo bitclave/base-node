@@ -7,6 +7,7 @@ import com.bitclave.node.repository.models.OfferResultAction
 import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.repository.models.OfferSearchResultItem
 import com.bitclave.node.repository.models.OfferSearchState
+import com.bitclave.node.repository.models.OfferSearchStateId
 import com.bitclave.node.repository.models.QuerySearchRequest
 import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.offer.OfferRepository
@@ -88,7 +89,7 @@ class OfferSearchService(
                 }
 
                 val pageable = PageRequest(pageRequest.pageNumber, pageRequest.pageSize)
-                PageImpl(arrayOfferSearch, pageable, arrayOfferSearch.size.toLong()) as Page<OfferSearch>
+                PageImpl(arrayOfferSearch, pageable, arrayOfferSearch.size.toLong())
             }
 
             val content = offerSearchListToResult(
@@ -191,7 +192,7 @@ class OfferSearchService(
             }
 
             offerSearchRepository.changeStrategy(strategy)
-                .saveSearchResult(
+                .save(
                     OfferSearch(
                         0,
                         searchRequest.owner,
@@ -429,10 +430,7 @@ class OfferSearchService(
                 offerSearchStateRepository.changeStrategy(strategy)
             )
 
-            result.content.clear()
-            result.content.addAll(merged)
-
-            result
+            PageImpl(merged, PageRequest(result.number, result.size, result.sort), result.totalElements)
         }
     }
 
@@ -582,9 +580,9 @@ class OfferSearchService(
             val step1 = measureTimeMillis {
                 searchRequestRepository
                     .changeStrategy(strategyType)
-                    .saveSearchRequest(searchRequest.copy(updatedAt = Date()))
+                    .save(searchRequest.copy(updatedAt = Date()))
             }
-            logger.debug { "step 1 -> saveSearchRequest(). ms: $step1" }
+            logger.debug { "step 1 -> save(). ms: $step1" }
 
             val querySearchRequest = QuerySearchRequest(0, owner, query)
 
@@ -640,9 +638,24 @@ class OfferSearchService(
             val step6 = measureTimeMillis {
                 offerSearchRepository
                     .changeStrategy(strategyType)
-                    .saveSearchResult(offerSearches)
+                    .save(offerSearches)
+
+                val uniqueOwners = offerSearches.map { it.owner }
+                val uniqueOfferIds = offerSearches.map { it.offerId }
+
+                val states = offerSearchStateRepository
+                    .changeStrategy(strategyType)
+                    .findByOfferIdInAndOwnerIn(uniqueOfferIds, uniqueOwners)
+                    .groupBy { OfferSearchStateId(it.offerId, it.owner) }
+
+                val stateForSave = offerSearches.filter { states[OfferSearchStateId(it.offerId, it.owner)] == null }
+                    .map { OfferSearchState(0, it.owner, it.offerId) }
+
+                offerSearchStateRepository
+                    .changeStrategy(strategyType)
+                    .save(stateForSave)
             }
-            logger.debug { "step 6 -> saveSearchResult(). ms: $step6" }
+            logger.debug { "step 6 -> save(). ms: $step6" }
 
             var offerSearchResult: List<OfferSearch> = emptyList()
 
@@ -738,10 +751,10 @@ class OfferSearchService(
 
             val states = offerSearchStateRepository
                 .findByOfferIdInAndOwnerIn(offerIds, owners)
-                .groupBy { "${it.offerId}${it.owner}" }
+                .groupBy { OfferSearchStateId(it.offerId, it.owner) }
 
             result = result.map {
-                val offerSearchState = states["${it.offerId}${it.owner}"]?.get(0) ?: OfferSearchState(
+                val offerSearchState = states[OfferSearchStateId(it.offerId, it.owner)]?.get(0) ?: OfferSearchState(
                     0,
                     it.owner,
                     it.offerId,

@@ -12,6 +12,8 @@ class PostgresOfferSearchStateRepositoryImpl(
 
     override fun save(state: OfferSearchState): OfferSearchState = repository.save(state)
 
+    override fun save(states: List<OfferSearchState>): List<OfferSearchState> = repository.save(states).toList()
+
     override fun findByOfferIdAndOwner(offerId: Long, owner: String): OfferSearchState? =
         repository.findByOfferIdAndOwner(offerId, owner)
 

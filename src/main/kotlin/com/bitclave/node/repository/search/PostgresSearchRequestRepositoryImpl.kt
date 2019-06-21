@@ -1,7 +1,9 @@
 package com.bitclave.node.repository.search
 
+import com.bitclave.node.repository.models.OfferResultAction
 import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.repository.models.OfferSearchState
+import com.bitclave.node.repository.models.OfferSearchStateId
 import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.repository.search.state.OfferSearchStateCrudRepository
@@ -24,18 +26,29 @@ class PostgresSearchRequestRepositoryImpl(
 
     private val logger = KotlinLogging.logger {}
 
-    override fun saveSearchRequest(request: SearchRequest): SearchRequest =
-        repository.save(request) ?: throw DataNotSavedException()
+    override fun save(request: SearchRequest): SearchRequest {
+        val hasId = request.id > 0
+        val savedRequest = repository.save(request) ?: throw DataNotSavedException()
 
-    override fun deleteSearchRequest(id: Long, owner: String): Long {
-        repository.deleteByIdAndOwner(id, owner)
-        offerSearchRepository.deleteAllBySearchRequestId(id)
+        if (hasId) {
+            this.deleteRelevantOfferSearches(savedRequest.id)
+        }
 
-        return id
+        return request
     }
 
-    override fun deleteSearchRequests(owner: String): Long {
-        // TODO delete OfferSearch based on BULK deleted searchRequest
+    override fun deleteByIdAndOwner(id: Long, owner: String): Long {
+        val count = repository.deleteByIdAndOwner(id, owner)
+        if (count > 0) {
+            this.deleteRelevantOfferSearches(id)
+            return id
+        }
+
+        return 0
+    }
+
+    override fun deleteByOwner(owner: String): Long {
+        // TODO deleteByIdAndOwner OfferSearch based on BULK deleted searchRequest
         return repository.deleteByOwner(owner)
     }
 
@@ -86,31 +99,21 @@ class PostgresSearchRequestRepositoryImpl(
         }
         logger.info { "clone search request step3 $step3" }
 
-        val toBeSavedOfferSearched: MutableList<OfferSearch> = mutableListOf()
-        val step4 = measureTimeMillis {
-            for (offerSearch: OfferSearch in relatedOfferSearches) {
-                val newOfferSearch = OfferSearch(
-                    0,
-                    createSearchRequest.owner,
-                    createSearchRequest.id,
-                    offerSearch.offerId
-                )
-                toBeSavedOfferSearched.add(newOfferSearch)
-                val offerSearchState = offerSearchStateCrudRepository
-                    .findByOfferIdAndOwner(offerSearch.offerId, createSearchRequest.owner)
-
-                if (offerSearchState == null) {
-                    offerSearchStateCrudRepository.save(
-                        OfferSearchState(
-                            0,
-                            createSearchRequest.owner,
-                            offerSearch.offerId
-                        )
-                    )
-                }
-            }
+        val toBeSavedOfferSearched = relatedOfferSearches.map {
+            it.copy(id = 0, owner = createSearchRequest.owner, searchRequestId = createSearchRequest.id)
         }
-        logger.info { "clone search request step4 $step4" }
+
+        val uniqueOwners = toBeSavedOfferSearched.map { it.owner }
+        val uniqueOfferIds = toBeSavedOfferSearched.map { it.offerId }
+
+        val states = offerSearchStateCrudRepository
+            .findByOfferIdInAndOwnerIn(uniqueOfferIds, uniqueOwners)
+            .groupBy { OfferSearchStateId(it.offerId, it.owner) }
+
+        val stateForSave = toBeSavedOfferSearched.filter { states[OfferSearchStateId(it.offerId, it.owner)] != null }
+            .map { OfferSearchState(0, it.owner, it.offerId) }
+
+        offerSearchStateCrudRepository.save(stateForSave)
 
         val step5 = measureTimeMillis {
             offerSearchRepository.save(toBeSavedOfferSearched)
@@ -130,5 +133,11 @@ class PostgresSearchRequestRepositoryImpl(
 
     override fun getRequestByOwnerAndTag(owner: String, tagKey: String): List<SearchRequest> {
         return repository.getRequestByOwnerAndTag(owner, tagKey)
+    }
+
+    private fun deleteRelevantOfferSearches(searchRequestId: Long) {
+        val relatedOfferSearches = offerSearchRepository.findBySearchRequestId(searchRequestId)
+            .filter { it.state == OfferResultAction.NONE || it.state == OfferResultAction.REJECT }
+        offerSearchRepository.delete(relatedOfferSearches)
     }
 }

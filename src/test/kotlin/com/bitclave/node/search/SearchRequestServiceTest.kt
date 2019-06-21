@@ -136,7 +136,11 @@ class SearchRequestServiceTest {
         val repositoryStrategy = AccountRepositoryStrategy(postgres, hybrid)
         val accountService = AccountService(repositoryStrategy)
         val searchRequestRepository =
-            PostgresSearchRequestRepositoryImpl(searchRequestCrudRepository, offerSearchCrudRepository, offerSearchStateCrudRepository)
+            PostgresSearchRequestRepositoryImpl(
+                searchRequestCrudRepository,
+                offerSearchCrudRepository,
+                offerSearchStateCrudRepository
+            )
         val requestRepositoryStrategy = SearchRequestRepositoryStrategy(searchRequestRepository)
         val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
@@ -376,8 +380,9 @@ class SearchRequestServiceTest {
             strategy
         ).get()
 
-        val clonedRequest =
-            searchRequestService.cloneSearchRequestWithOfferSearches(account.publicKey, result1, strategy).get()
+        val clonedRequest = searchRequestService
+            .cloneSearchRequestWithOfferSearches(account.publicKey, result1, strategy)
+            .get()
 
         assertThat(clonedRequest).isEqualToIgnoringGivenFields(searchRequest, *ignoredFields)
 

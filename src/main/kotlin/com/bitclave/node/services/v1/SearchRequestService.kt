@@ -44,7 +44,7 @@ class SearchRequestService(
                 createAt
             )
 
-            repository.changeStrategy(strategy).saveSearchRequest(updateSearchRequest)
+            repository.changeStrategy(strategy).save(updateSearchRequest)
         }
     }
 
@@ -55,7 +55,7 @@ class SearchRequestService(
     ): CompletableFuture<Long> {
 
         return CompletableFuture.supplyAsync {
-            val deletedId = repository.changeStrategy(strategy).deleteSearchRequest(id, owner)
+            val deletedId = repository.changeStrategy(strategy).deleteByIdAndOwner(id, owner)
             if (deletedId == 0L) {
                 throw NotFoundException()
             }
@@ -70,7 +70,7 @@ class SearchRequestService(
     ): CompletableFuture<Void> {
 
         return CompletableFuture.runAsync {
-            repository.changeStrategy(strategy).deleteSearchRequests(owner)
+            repository.changeStrategy(strategy).deleteByOwner(owner)
         }
     }
 

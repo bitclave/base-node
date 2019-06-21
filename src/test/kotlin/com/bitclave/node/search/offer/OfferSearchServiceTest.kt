@@ -177,7 +177,11 @@ class OfferSearchServiceTest {
         val shareRepositoryStrategy = OfferShareRepositoryStrategy(offerShareRepository)
 
         val searchRequestRepository =
-            PostgresSearchRequestRepositoryImpl(searchRequestCrudRepository, offerSearchCrudRepository, offerSearchStateCrudRepository)
+            PostgresSearchRequestRepositoryImpl(
+                searchRequestCrudRepository,
+                offerSearchCrudRepository,
+                offerSearchStateCrudRepository
+            )
         searchRequestRepositoryStrategy = SearchRequestRepositoryStrategy(searchRequestRepository)
 
         val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
@@ -254,10 +258,10 @@ class OfferSearchServiceTest {
             .savePrices(offer, listOf(offerPrice))
 
         createdSearchRequest1 = searchRequestRepositoryStrategy.changeStrategy(strategy)
-            .saveSearchRequest(SearchRequest(0, publicKey, emptyMap()))
+            .save(SearchRequest(0, publicKey, emptyMap()))
 
         createdSearchRequest2 = searchRequestRepositoryStrategy.changeStrategy(strategy)
-            .saveSearchRequest(SearchRequest(0, publicKey, emptyMap()))
+            .save(SearchRequest(0, publicKey, emptyMap()))
     }
 
     fun createOfferSearch(searchRequest: SearchRequest, offer: Offer, events: MutableList<String>) {
@@ -483,10 +487,10 @@ class OfferSearchServiceTest {
     @Test
     fun `should be return zero by group and owner`() {
         val searchRequest1 = searchRequestRepositoryStrategy.changeStrategy(strategy)
-            .saveSearchRequest(SearchRequest(0, publicKey, mapOf("interest_clothing,_accessories" to "true")))
+            .save(SearchRequest(0, publicKey, mapOf("interest_clothing,_accessories" to "true")))
 
         val searchRequest2 = searchRequestRepositoryStrategy.changeStrategy(strategy)
-            .saveSearchRequest(SearchRequest(0, publicKey, mapOf("interest_bitclave_general" to "true")))
+            .save(SearchRequest(0, publicKey, mapOf("interest_bitclave_general" to "true")))
 
         createOfferSearch(searchRequest1, createdOffer2, ArrayList())
         createOfferSearch(searchRequest1, createdOffer1, ArrayList())
@@ -507,10 +511,10 @@ class OfferSearchServiceTest {
     @Test
     fun `should be return by group and owner`() {
         val searchRequest1 = searchRequestRepositoryStrategy.changeStrategy(strategy)
-            .saveSearchRequest(SearchRequest(0, publicKey, mapOf("interest_clothing,_accessories" to "true")))
+            .save(SearchRequest(0, publicKey, mapOf("interest_clothing,_accessories" to "true")))
 
         val searchRequest2 = searchRequestRepositoryStrategy.changeStrategy(strategy)
-            .saveSearchRequest(SearchRequest(0, publicKey, mapOf("interest_bitclave_general" to "true")))
+            .save(SearchRequest(0, publicKey, mapOf("interest_bitclave_general" to "true")))
 
         createOfferSearch(searchRequest1, createdOffer2, ArrayList())
         createOfferSearch(searchRequest1, createdOffer1, ArrayList())
@@ -533,10 +537,10 @@ class OfferSearchServiceTest {
     @Test
     fun `should be return by state and owner`() {
         val searchRequest1 = searchRequestRepositoryStrategy.changeStrategy(strategy)
-            .saveSearchRequest(SearchRequest(0, publicKey, mapOf("interest_clothing,_accessories" to "true")))
+            .save(SearchRequest(0, publicKey, mapOf("interest_clothing,_accessories" to "true")))
 
         val searchRequest2 = searchRequestRepositoryStrategy.changeStrategy(strategy)
-            .saveSearchRequest(SearchRequest(0, businessPublicKey, mapOf("interest_bitclave_general" to "true")))
+            .save(SearchRequest(0, businessPublicKey, mapOf("interest_bitclave_general" to "true")))
 
         createOfferSearch(searchRequest1, createdOffer2, ArrayList())
         createOfferSearch(searchRequest1, createdOffer1, ArrayList())
@@ -583,10 +587,10 @@ class OfferSearchServiceTest {
     @Test
     fun `should be return by unique (by offerId) and owner`() {
         val searchRequest1 = searchRequestRepositoryStrategy.changeStrategy(strategy)
-            .saveSearchRequest(SearchRequest(0, publicKey, mapOf("interest_clothing,_accessories" to "true")))
+            .save(SearchRequest(0, publicKey, mapOf("interest_clothing,_accessories" to "true")))
 
         val searchRequest2 = searchRequestRepositoryStrategy.changeStrategy(strategy)
-            .saveSearchRequest(SearchRequest(0, publicKey, mapOf("interest_bitclave_general" to "true")))
+            .save(SearchRequest(0, publicKey, mapOf("interest_bitclave_general" to "true")))
 
         createOfferSearch(searchRequest1, createdOffer2, ArrayList())
         createOfferSearch(searchRequest1, createdOffer1, ArrayList())

@@ -6,11 +6,11 @@ import org.springframework.data.domain.Pageable
 
 interface SearchRequestRepository {
 
-    fun saveSearchRequest(request: SearchRequest): SearchRequest
+    fun save(request: SearchRequest): SearchRequest
 
-    fun deleteSearchRequest(id: Long, owner: String): Long
+    fun deleteByIdAndOwner(id: Long, owner: String): Long
 
-    fun deleteSearchRequests(owner: String): Long
+    fun deleteByOwner(owner: String): Long
 
     fun findById(id: Long): SearchRequest?
 
