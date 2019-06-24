@@ -12,4 +12,6 @@ interface RtSearchRepository {
         interests: List<String>? = listOf(),
         mode: String? = ""
     ): CompletableFuture<Page<Long>>
+
+    fun getSuggestionByQuery(decodedQuery: String, size: Int): CompletableFuture<List<String>>
 }
