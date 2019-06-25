@@ -61,7 +61,6 @@ class FileService(private val fileRepository: RepositoryStrategy<FileRepository>
 
             fileRepository.changeStrategy(strategy)
                 .findById(processedFile.id) ?: throw DataNotSavedException()
-
         }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
