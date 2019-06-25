@@ -27,7 +27,7 @@ data class OfferSearch(
     var state: OfferResultAction = OfferResultAction.NONE,
     @Column(length = 4096) var info: String = "[]",
 
-    @ElementCollection(fetch = FetchType.EAGER) var events: MutableList<String> = ArrayList(),
+    @ElementCollection(fetch = FetchType.LAZY) var events: MutableList<String> = ArrayList(),
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     var createdAt: Date = Date(),
