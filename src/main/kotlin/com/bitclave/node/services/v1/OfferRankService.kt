@@ -1,11 +1,11 @@
 package com.bitclave.node.services.v1
 
-import com.bitclave.node.BaseNodeApplication
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.OfferRank
 import com.bitclave.node.repository.rank.OfferRankRepository
 import com.bitclave.node.services.errors.BadArgumentException
+import com.bitclave.node.utils.supplyAsyncEx
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import java.util.Date
@@ -21,7 +21,7 @@ class OfferRankService(
         strategy: RepositoryStrategyType,
         offerRank: OfferRank
     ): CompletableFuture<OfferRank> {
-        return CompletableFuture.supplyAsync(Supplier {
+        return supplyAsyncEx(Supplier {
 
             val existedOfferRank: OfferRank? = offerRankRepository
                 .changeStrategy(strategy)
@@ -41,7 +41,7 @@ class OfferRankService(
                     .changeStrategy(strategy)
                     .saveRankOffer(readyToCreateOfferRank)
             }
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun updateOfferRank(
@@ -49,7 +49,7 @@ class OfferRankService(
         offerRank: OfferRank
     ): CompletableFuture<OfferRank> {
 
-        return CompletableFuture.supplyAsync(Supplier {
+        return supplyAsyncEx(Supplier {
             if (offerRank.id == 0L) {
                 return@Supplier createOfferRank(strategy, offerRank).get()
             }
@@ -74,20 +74,20 @@ class OfferRankService(
             return@Supplier offerRankRepository
                 .changeStrategy(strategy)
                 .saveRankOffer(readyToSave)
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun getOfferRanksByOfferId(
         strategy: RepositoryStrategyType,
         offerId: Long?
     ): CompletableFuture<List<OfferRank>> {
-        return CompletableFuture.supplyAsync(Supplier {
+        return supplyAsyncEx(Supplier {
             if (offerId == 0L) {
                 throw BadArgumentException()
             }
             offerRankRepository
                 .changeStrategy(strategy)
                 .findByOfferId(offerId!!)
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 }

@@ -1,7 +1,7 @@
 package com.bitclave.node.repository.rtSearch
 
-import com.bitclave.node.BaseNodeApplication
 import com.bitclave.node.configuration.properties.RtSearchProperties
+import com.bitclave.node.utils.supplyAsyncEx
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.data.domain.Page
@@ -30,7 +30,7 @@ class RtSearchRepositoryImpl(
         interests: List<String>?,
         mode: String?
     ): CompletableFuture<Page<Long>> {
-        return CompletableFuture.supplyAsync(Supplier {
+        return supplyAsyncEx(Supplier {
 
             val parameters = mapOf(
                 "query" to query,
@@ -47,6 +47,6 @@ class RtSearchRepositoryImpl(
             )
 
             offerIdsResponse.body
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 }

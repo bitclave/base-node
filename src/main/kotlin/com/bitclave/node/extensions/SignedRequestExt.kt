@@ -1,7 +1,7 @@
 package com.bitclave.node.extensions
 
-import com.bitclave.node.BaseNodeApplication
 import com.bitclave.node.repository.models.SignedRequest
+import com.bitclave.node.utils.supplyAsyncEx
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import org.bitcoinj.core.ECKey
@@ -21,14 +21,14 @@ fun <T> SignedRequest<T>.signMessage(privateKey: String): SignedRequest<T> {
 }
 
 fun SignedRequest<*>.validateSig(): CompletableFuture<Boolean> {
-    return CompletableFuture.supplyAsync(Supplier {
+    return supplyAsyncEx(Supplier {
         if (this.sig.isBlank()) {
             return@Supplier false
         }
 
         val c = ECKey.signedMessageToKey(this.rawData, this.sig)
         c.publicKeyAsHex == this.pk
-    }, BaseNodeApplication.FIXED_THREAD_POOL)
+    })
 }
 
 fun SignedRequest<*>.toJsonString(): String = GSON.toJson(this)

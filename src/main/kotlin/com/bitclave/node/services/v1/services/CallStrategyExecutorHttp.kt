@@ -1,8 +1,8 @@
 package com.bitclave.node.services.v1.services
 
-import com.bitclave.node.BaseNodeApplication
 import com.bitclave.node.repository.models.services.CheckedExceptionResponse
 import com.bitclave.node.repository.models.services.HttpServiceCall
+import com.bitclave.node.utils.supplyAsyncEx
 import org.springframework.http.HttpEntity
 import org.springframework.http.ResponseEntity
 import org.springframework.web.client.HttpClientErrorException
@@ -16,7 +16,7 @@ class CallStrategyExecutorHttp(
 
     override fun execute(endPointUrl: String, request: HttpServiceCall): CompletableFuture<ResponseEntity<*>?> {
 
-        return CompletableFuture.supplyAsync(Supplier {
+        return supplyAsyncEx(Supplier {
             val entity = HttpEntity<Any>(request.body, request.headers)
             val url = StringBuilder(endPointUrl).append(request.path)
 
@@ -39,6 +39,6 @@ class CallStrategyExecutorHttp(
                     e.statusCode
                 )
             }
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 }

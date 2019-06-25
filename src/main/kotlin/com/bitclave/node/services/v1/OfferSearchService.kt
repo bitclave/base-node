@@ -1,6 +1,5 @@
 package com.bitclave.node.services.v1
 
-import com.bitclave.node.BaseNodeApplication
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.Offer
@@ -17,6 +16,8 @@ import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepositor
 import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
+import com.bitclave.node.utils.runAsyncEx
+import com.bitclave.node.utils.supplyAsyncEx
 import com.google.gson.Gson
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
@@ -67,7 +68,7 @@ class OfferSearchService(
         pageRequest: PageRequest = PageRequest(0, 20)
     ): CompletableFuture<Page<OfferSearchResultItem>> {
 
-        return CompletableFuture.supplyAsync(Supplier {
+        return supplyAsyncEx(Supplier {
             if (searchRequestId <= 0 && offerSearchId <= 0) {
                 throw BadArgumentException("specify parameter searchRequestId or offerSearchId")
             }
@@ -94,7 +95,7 @@ class OfferSearchService(
             val pageable = PageRequest(result.number, result.size, result.sort)
 
             return@Supplier PageImpl(content, pageable, result.totalElements) as Page<OfferSearchResultItem>
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun getOffersAndOfferSearchesByParams(
@@ -106,7 +107,7 @@ class OfferSearchService(
         pageRequest: PageRequest = PageRequest(0, 20)
     ): CompletableFuture<Page<OfferSearchResultItem>> {
 
-        return CompletableFuture.supplyAsync(Supplier {
+        return supplyAsyncEx(Supplier {
             val repository = offerSearchRepository.changeStrategy(strategy)
             var offerSearches = listOf<OfferSearch>()
 
@@ -162,14 +163,14 @@ class OfferSearchService(
 
             val pageable = PageRequest(pageRequest.pageNumber, pageRequest.pageSize)
             PageImpl(content, pageable, filteredByUnique.size.toLong()) as Page<OfferSearchResultItem>
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun saveNewOfferSearch(
         offerSearch: OfferSearch,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
-        return CompletableFuture.runAsync(Runnable {
+        return runAsyncEx(Runnable {
             val searchRequest = searchRequestRepository.changeStrategy(strategy)
                 .findById(offerSearch.searchRequestId)
                 ?: throw BadArgumentException("search request id not exist")
@@ -196,7 +197,7 @@ class OfferSearchService(
                         offerSearch.events
                     )
                 )
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun addEventTo(
@@ -204,7 +205,7 @@ class OfferSearchService(
         offerSearchId: Long,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
-        return CompletableFuture.runAsync(Runnable {
+        return runAsyncEx(Runnable {
             val repository = offerSearchRepository.changeStrategy(strategy)
             val item = repository.findById(offerSearchId)
                 ?: throw BadArgumentException("offer search item id not exist")
@@ -227,7 +228,7 @@ class OfferSearchService(
 //                System.out.println(e.localizedMessage);
 //            }
             repository.saveSearchResult(item)
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun addEventTo(
@@ -235,14 +236,14 @@ class OfferSearchService(
         offerSearch: OfferSearch,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
-        return CompletableFuture.runAsync(Runnable {
+        return runAsyncEx(Runnable {
             val repository = offerSearchRepository.changeStrategy(strategy)
 
             offerSearch.events.add(event)
             offerSearch.updatedAt = Date()
 
             repository.saveSearchResult(offerSearch)
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun complain(
@@ -250,7 +251,7 @@ class OfferSearchService(
         callerPublicKey: String,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
-        return CompletableFuture.runAsync(Runnable {
+        return runAsyncEx(Runnable {
             val repository = offerSearchRepository.changeStrategy(strategy)
             val item = repository.findById(offerSearchId)
                 ?: throw BadArgumentException("offer search item id not exist")
@@ -266,7 +267,7 @@ class OfferSearchService(
 
             val event = OfferSearchEvent(callerPublicKey, item.state)
             addEventTo(gson.toJson(event), offerSearchId, strategy).get()
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun evaluate(
@@ -274,7 +275,7 @@ class OfferSearchService(
         callerPublicKey: String,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
-        return CompletableFuture.runAsync(Runnable {
+        return runAsyncEx(Runnable {
             val repository = offerSearchRepository.changeStrategy(strategy)
             val item = repository.findById(offerSearchId)
                 ?: throw BadArgumentException("offer search item id not exist")
@@ -290,7 +291,7 @@ class OfferSearchService(
 
             val event = OfferSearchEvent(callerPublicKey, item.state)
             addEventTo(gson.toJson(event), offerSearchId, strategy).get()
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun reject(
@@ -298,7 +299,7 @@ class OfferSearchService(
         callerPublicKey: String,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
-        return CompletableFuture.runAsync(Runnable {
+        return runAsyncEx(Runnable {
             val repository = offerSearchRepository.changeStrategy(strategy)
             val item = repository.findById(offerSearchId)
                 ?: throw BadArgumentException("offer search item id not exist")
@@ -314,7 +315,7 @@ class OfferSearchService(
 
             val event = OfferSearchEvent(callerPublicKey, item.state)
             addEventTo(gson.toJson(event), offerSearchId, strategy).get()
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun claimPurchase(
@@ -322,7 +323,7 @@ class OfferSearchService(
         callerPublicKey: String,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
-        return CompletableFuture.runAsync(Runnable {
+        return runAsyncEx(Runnable {
             val repository = offerSearchRepository.changeStrategy(strategy)
             val item = repository.findById(offerSearchId)
                 ?: throw BadArgumentException("offer search item id not exist")
@@ -338,7 +339,7 @@ class OfferSearchService(
 
             val event = OfferSearchEvent(callerPublicKey, item.state)
             addEventTo(gson.toJson(event), offerSearchId, strategy).get()
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun confirm(
@@ -347,7 +348,7 @@ class OfferSearchService(
 //            userBaseId: String,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
-        return CompletableFuture.runAsync(Runnable {
+        return runAsyncEx(Runnable {
             val repository = offerSearchRepository.changeStrategy(strategy)
 
             // offerSearchId exist
@@ -379,7 +380,7 @@ class OfferSearchService(
             val event =
                 OfferSearchEventConfirmed(callerPublicKey, item.state, "22") // fixme anti-pattern 'magic numbers'
             addEventTo(gson.toJson(event), offerSearchId, strategy).get()
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun getOfferSearches(
@@ -388,7 +389,7 @@ class OfferSearchService(
         searchRequestId: Long? = null
     ): CompletableFuture<List<OfferSearch>> {
 
-        return CompletableFuture.supplyAsync(Supplier {
+        return supplyAsyncEx(Supplier {
 
             val repository = offerSearchRepository.changeStrategy(strategy)
 
@@ -396,17 +397,17 @@ class OfferSearchService(
                 return@Supplier repository.findBySearchRequestIdAndOfferId(searchRequestId, offerId)
             else
                 return@Supplier repository.findByOfferId(offerId)
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun getPageableOfferSearches(
         page: PageRequest,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Page<OfferSearch>> {
-        return CompletableFuture.supplyAsync(Supplier {
+        return supplyAsyncEx(Supplier {
             val repository = offerSearchRepository.changeStrategy(strategy)
             return@Supplier repository.findAll(page)
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun getDanglingOfferSearches(
@@ -415,7 +416,7 @@ class OfferSearchService(
         bySearchRequest: Boolean? = false
     ): CompletableFuture<List<OfferSearch>> {
 
-        return CompletableFuture.supplyAsync(Supplier {
+        return supplyAsyncEx(Supplier {
             val repository = offerSearchRepository.changeStrategy(strategy)
 
             // get all offerSearches
@@ -438,19 +439,19 @@ class OfferSearchService(
                 }
                 else -> throw BadArgumentException("specify either byOffer or bySearchRequest")
             }
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun getDiffOfferSearches(
         strategy: RepositoryStrategyType
     ): CompletableFuture<List<OfferSearch>> {
 
-        return CompletableFuture.supplyAsync(Supplier {
+        return supplyAsyncEx(Supplier {
 
             val repository = offerSearchRepository.changeStrategy(strategy)
 
             repository.findAllDiff()
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun getOfferSearchesByIds(
@@ -458,22 +459,22 @@ class OfferSearchService(
         ids: List<Long>
     ): CompletableFuture<List<OfferSearch>> {
 
-        return CompletableFuture.supplyAsync(Supplier {
+        return supplyAsyncEx(Supplier {
             offerSearchRepository
                 .changeStrategy(strategy)
                 .findById(ids)
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun getOfferSearchTotalCount(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Long> {
 
-        return CompletableFuture.supplyAsync(Supplier {
+        return supplyAsyncEx(Supplier {
             offerSearchRepository
                 .changeStrategy(strategy)
                 .getTotalCount()
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun getOfferSearchCountBySearchRequestIds(
@@ -481,7 +482,7 @@ class OfferSearchService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Map<Long, Long>> {
 
-        return CompletableFuture.supplyAsync(Supplier {
+        return supplyAsyncEx(Supplier {
             val uniqueRequestIds = searchRequestIds.distinct()
 
             val result = HashMap<Long, Long>()
@@ -492,7 +493,7 @@ class OfferSearchService(
             }
 
             result as Map<Long, Long>
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun cloneOfferSearchOfSearchRequest(
@@ -501,12 +502,12 @@ class OfferSearchService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<List<OfferSearch>> {
 
-        return CompletableFuture.supplyAsync(Supplier {
+        return supplyAsyncEx(Supplier {
             searchRequestRepository.changeStrategy(strategy).findById(id)
                 ?: throw BadArgumentException()
             return@Supplier offerSearchRepository.changeStrategy(strategy)
                 .cloneOfferSearchOfSearchRequest(id, searchRequest)
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun createOfferSearchesByQuery(
@@ -518,7 +519,7 @@ class OfferSearchService(
         interests: List<String>? = listOf(),
         mode: String? = ""
     ): CompletableFuture<Page<OfferSearchResultItem>> {
-        return CompletableFuture.supplyAsync(Supplier {
+        return supplyAsyncEx(Supplier {
             val searchRequest = searchRequestRepository
                 .changeStrategy(strategyType)
                 .findById(searchRequestId)
@@ -618,7 +619,7 @@ class OfferSearchService(
             logger.debug { "step 8 -> findBySearchRequestIdAndOfferIds(). ms: $step8" }
 
             result
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     private fun offerSearchListToResult(
@@ -669,7 +670,7 @@ class OfferSearchService(
         owner: String,
         strategyType: RepositoryStrategyType
     ): CompletableFuture<Void> {
-        return CompletableFuture.runAsync(Runnable {
+        return runAsyncEx(Runnable {
             offerSearchRepository.changeStrategy(strategyType).deleteAllByOwner(owner)
         })
     }

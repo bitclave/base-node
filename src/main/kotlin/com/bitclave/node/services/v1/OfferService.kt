@@ -1,6 +1,5 @@
 package com.bitclave.node.services.v1
 
-import com.bitclave.node.BaseNodeApplication
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.Offer
@@ -8,6 +7,8 @@ import com.bitclave.node.repository.offer.OfferRepository
 import com.bitclave.node.repository.price.OfferPriceRepository
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
+import com.bitclave.node.utils.runAsyncEx
+import com.bitclave.node.utils.supplyAsyncEx
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -30,7 +31,7 @@ class OfferService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Offer> {
 
-        return CompletableFuture.supplyAsync(Supplier {
+        return supplyAsyncEx(Supplier {
             var originalOffer: Offer? = null
 
             if (id > 0) {
@@ -72,7 +73,7 @@ class OfferService(
             val updatedOffer = offerRepository.changeStrategy(strategy).findById(processedOffer.id)
 
             updatedOffer!!
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun shallowUpdateOffer(
@@ -82,7 +83,7 @@ class OfferService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Offer> {
 
-        return CompletableFuture.supplyAsync(Supplier {
+        return supplyAsyncEx(Supplier {
             val originalOffer = offerRepository.changeStrategy(strategy)
                 .findByIdAndOwner(id, owner) ?: throw BadArgumentException()
 
@@ -120,7 +121,7 @@ class OfferService(
             val updatedOffer = offerRepository.changeStrategy(strategy).findById(processedOffer.id)
 
             updatedOffer!!
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun deleteOffer(
@@ -129,13 +130,13 @@ class OfferService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Long> {
 
-        return CompletableFuture.supplyAsync(Supplier {
+        return supplyAsyncEx(Supplier {
             val deletedId = offerRepository.changeStrategy(strategy).deleteOffer(id, owner)
             if (deletedId == 0L) {
                 throw NotFoundException()
             }
             deletedId
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun deleteOffers(
@@ -143,9 +144,9 @@ class OfferService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
 
-        return CompletableFuture.runAsync(Runnable {
+        return runAsyncEx(Runnable {
             offerRepository.changeStrategy(strategy).deleteOffers(owner)
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun getOffers(
@@ -154,7 +155,7 @@ class OfferService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<List<Offer>> {
 
-        return CompletableFuture.supplyAsync(Supplier {
+        return supplyAsyncEx(Supplier {
             val repository = offerRepository.changeStrategy(strategy)
 
             if (id > 0 && owner != "0x0") {
@@ -169,17 +170,17 @@ class OfferService(
             } else {
                 return@Supplier repository.findAll()
             }
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun getPageableOffers(
         page: PageRequest,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Page<Offer>> {
-        return CompletableFuture.supplyAsync(Supplier {
+        return supplyAsyncEx(Supplier {
             val repository = offerRepository.changeStrategy(strategy)
             return@Supplier repository.findAll(page)
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun getPageableOffersByOwner(
@@ -187,22 +188,22 @@ class OfferService(
         page: PageRequest,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Page<Offer>> {
-        return CompletableFuture.supplyAsync(Supplier {
+        return supplyAsyncEx(Supplier {
             val repository = offerRepository.changeStrategy(strategy)
             return@Supplier repository.findByOwner(owner, page)
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun getOfferTotalCount(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Long> {
 
-        return CompletableFuture.supplyAsync(Supplier {
+        return supplyAsyncEx(Supplier {
 
             val repository = offerRepository.changeStrategy(strategy)
 
             return@Supplier repository.getTotalCount()
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun getOfferByOwnerAndTag(
@@ -211,9 +212,9 @@ class OfferService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<List<Offer>> {
 
-        return CompletableFuture.supplyAsync(Supplier {
+        return supplyAsyncEx(Supplier {
             val repository = offerRepository.changeStrategy(strategy)
             return@Supplier repository.getOfferByOwnerAndTag(owner, tagKey)
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 }

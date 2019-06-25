@@ -1,12 +1,13 @@
 package com.bitclave.node.services.v1
 
-import com.bitclave.node.BaseNodeApplication
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.RequestData
 import com.bitclave.node.repository.request.RequestDataRepository
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.utils.KeyPairUtils
+import com.bitclave.node.utils.runAsyncEx
+import com.bitclave.node.utils.supplyAsyncEx
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import java.util.Collections
@@ -23,7 +24,7 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
         strategy: RepositoryStrategyType
     ): CompletableFuture<List<RequestData>> {
 
-        return CompletableFuture.supplyAsync(Supplier {
+        return supplyAsyncEx(Supplier {
             val result: List<RequestData> =
                 if (fromPk == null && toPk != null) {
                     requestDataRepository.changeStrategy(strategy)
@@ -43,11 +44,11 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
                 }
 
             result
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun request(clientPk: String, data: RequestData, strategy: RepositoryStrategyType): CompletableFuture<Long> {
-        return CompletableFuture.supplyAsync(Supplier {
+        return supplyAsyncEx(Supplier {
             val record = requestDataRepository.changeStrategy(strategy)
                 .getByFromAndTo(clientPk, data.toPk.toLowerCase())
 
@@ -60,7 +61,7 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
             )
             requestDataRepository.changeStrategy(strategy)
                 .updateData(request).id
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun grantAccess(
@@ -69,7 +70,7 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
         strategy: RepositoryStrategyType
     ): CompletableFuture<Long> {
 
-        return CompletableFuture.supplyAsync(Supplier {
+        return supplyAsyncEx(Supplier {
             if (data.responseData.isEmpty() ||
                 data.toPk != clientId ||
                 !KeyPairUtils.isValidPublicKey(data.fromPk)
@@ -90,7 +91,7 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
 
             requestDataRepository.changeStrategy(strategy)
                 .updateData(request).id
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun deleteRequestsAndResponses(
@@ -98,9 +99,9 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
         strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
 
-        return CompletableFuture.runAsync(Runnable {
+        return runAsyncEx(Runnable {
             requestDataRepository.changeStrategy(strategy)
                 .deleteByFromAndTo(publicKey)
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 }

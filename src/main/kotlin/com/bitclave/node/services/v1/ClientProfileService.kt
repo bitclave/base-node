@@ -1,9 +1,10 @@
 package com.bitclave.node.services.v1
 
-import com.bitclave.node.BaseNodeApplication
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.data.ClientDataRepository
+import com.bitclave.node.utils.runAsyncEx
+import com.bitclave.node.utils.supplyAsyncEx
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
@@ -21,7 +22,7 @@ class ClientProfileService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Map<String, String>> {
 
-        return CompletableFuture.supplyAsync(Supplier {
+        return supplyAsyncEx(Supplier {
             if ("first" == publicKey) {
                 return@Supplier hashMapOf("firstName" to "Adam", "lastName" to "Base")
             }
@@ -29,7 +30,7 @@ class ClientProfileService(
             clientDataRepository.changeStrategy(strategy)
                 .getData(publicKey)
                 .filter { includeOnly.isEmpty() || includeOnly.contains(it.key) }
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun updateData(
@@ -38,7 +39,7 @@ class ClientProfileService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Map<String, String>> {
 
-        return CompletableFuture.supplyAsync(Supplier {
+        return supplyAsyncEx(Supplier {
             val oldData = clientDataRepository.changeStrategy(strategy)
                 .getData(publicKey)
                 .toMutableMap()
@@ -49,7 +50,7 @@ class ClientProfileService(
                 .updateData(publicKey, oldData)
 
             data
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 
     fun deleteData(
@@ -57,9 +58,9 @@ class ClientProfileService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
 
-        return CompletableFuture.runAsync(Runnable {
+        return runAsyncEx(Runnable {
             clientDataRepository.changeStrategy(strategy)
                 .deleteData(publicKey)
-        }, BaseNodeApplication.FIXED_THREAD_POOL)
+        })
     }
 }
