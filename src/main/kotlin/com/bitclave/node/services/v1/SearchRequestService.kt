@@ -30,7 +30,7 @@ class SearchRequestService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<SearchRequest> {
 
-        return CompletableFuture.supplyAsync {
+        return CompletableFuture.supplyAsync(Supplier {
             var existedSearchRequest: SearchRequest? = null
 
             if (id > 0) {
@@ -47,7 +47,7 @@ class SearchRequestService(
             )
 
             repository.changeStrategy(strategy).saveSearchRequest(updateSearchRequest)
-        }
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun deleteSearchRequest(
@@ -56,14 +56,14 @@ class SearchRequestService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Long> {
 
-        return CompletableFuture.supplyAsync {
+        return CompletableFuture.supplyAsync(Supplier {
             val deletedId = repository.changeStrategy(strategy).deleteSearchRequest(id, owner)
             if (deletedId == 0L) {
                 throw NotFoundException()
             }
 
-            return@supplyAsync deletedId
-        }
+            deletedId
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun deleteSearchRequests(
@@ -71,15 +71,15 @@ class SearchRequestService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
 
-        return CompletableFuture.runAsync {
+        return CompletableFuture.runAsync(Runnable {
             repository.changeStrategy(strategy).deleteSearchRequests(owner)
-        }
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun deleteQuerySearchRequest(owner: String): CompletableFuture<Void> {
-        return CompletableFuture.runAsync {
+        return CompletableFuture.runAsync(Runnable {
             querySearchRequestCrudRepository.deleteAllByOwner(owner)
-        }
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun getSearchRequests(
@@ -138,12 +138,9 @@ class SearchRequestService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Long> {
 
-        return CompletableFuture.supplyAsync {
-
-            val repository = repository.changeStrategy(strategy)
-
-            return@supplyAsync repository.getTotalCount()
-        }
+        return CompletableFuture.supplyAsync(Supplier {
+            repository.changeStrategy(strategy).getTotalCount()
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun getRequestByOwnerAndTag(

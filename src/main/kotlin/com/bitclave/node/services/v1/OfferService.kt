@@ -30,7 +30,7 @@ class OfferService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Offer> {
 
-        return CompletableFuture.supplyAsync {
+        return CompletableFuture.supplyAsync(Supplier {
             var originalOffer: Offer? = null
 
             if (id > 0) {
@@ -70,8 +70,9 @@ class OfferService(
             val processedOffer = offerRepository.changeStrategy(strategy).saveOffer(putOffer)
             offerPriceRepository.changeStrategy(strategy).savePrices(processedOffer, offer.offerPrices)
             val updatedOffer = offerRepository.changeStrategy(strategy).findById(processedOffer.id)
-            updatedOffer
-        }
+
+            updatedOffer!!
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun shallowUpdateOffer(
@@ -81,8 +82,8 @@ class OfferService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Offer> {
 
-        return CompletableFuture.supplyAsync {
-            var originalOffer = offerRepository.changeStrategy(strategy)
+        return CompletableFuture.supplyAsync(Supplier {
+            val originalOffer = offerRepository.changeStrategy(strategy)
                 .findByIdAndOwner(id, owner) ?: throw BadArgumentException()
 
             if (offer.compare.isEmpty() ||
@@ -117,8 +118,9 @@ class OfferService(
             val processedOffer = offerRepository.changeStrategy(strategy).shallowSaveOffer(putOffer)
             offerPriceRepository.changeStrategy(strategy).savePrices(processedOffer, offer.offerPrices)
             val updatedOffer = offerRepository.changeStrategy(strategy).findById(processedOffer.id)
-            updatedOffer
-        }
+
+            updatedOffer!!
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun deleteOffer(
@@ -127,13 +129,13 @@ class OfferService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Long> {
 
-        return CompletableFuture.supplyAsync {
+        return CompletableFuture.supplyAsync(Supplier {
             val deletedId = offerRepository.changeStrategy(strategy).deleteOffer(id, owner)
             if (deletedId == 0L) {
                 throw NotFoundException()
             }
             deletedId
-        }
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun deleteOffers(
@@ -141,9 +143,9 @@ class OfferService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
 
-        return CompletableFuture.runAsync {
+        return CompletableFuture.runAsync(Runnable {
             offerRepository.changeStrategy(strategy).deleteOffers(owner)
-        }
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun getOffers(

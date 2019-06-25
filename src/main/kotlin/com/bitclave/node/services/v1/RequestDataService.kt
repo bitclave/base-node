@@ -1,5 +1,6 @@
 package com.bitclave.node.services.v1
 
+import com.bitclave.node.BaseNodeApplication
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.RequestData
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import java.util.Collections
 import java.util.concurrent.CompletableFuture
+import java.util.function.Supplier
 
 @Service
 @Qualifier("v1")
@@ -21,7 +23,7 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
         strategy: RepositoryStrategyType
     ): CompletableFuture<List<RequestData>> {
 
-        return CompletableFuture.supplyAsync {
+        return CompletableFuture.supplyAsync(Supplier {
             val result: List<RequestData> =
                 if (fromPk == null && toPk != null) {
                     requestDataRepository.changeStrategy(strategy)
@@ -41,11 +43,11 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
                 }
 
             result
-        }
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun request(clientPk: String, data: RequestData, strategy: RepositoryStrategyType): CompletableFuture<Long> {
-        return CompletableFuture.supplyAsync {
+        return CompletableFuture.supplyAsync(Supplier {
             val record = requestDataRepository.changeStrategy(strategy)
                 .getByFromAndTo(clientPk, data.toPk.toLowerCase())
 
@@ -58,7 +60,7 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
             )
             requestDataRepository.changeStrategy(strategy)
                 .updateData(request).id
-        }
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun grantAccess(
@@ -67,7 +69,7 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
         strategy: RepositoryStrategyType
     ): CompletableFuture<Long> {
 
-        return CompletableFuture.supplyAsync {
+        return CompletableFuture.supplyAsync(Supplier {
             if (data.responseData.isEmpty() ||
                 data.toPk != clientId ||
                 !KeyPairUtils.isValidPublicKey(data.fromPk)
@@ -88,7 +90,7 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
 
             requestDataRepository.changeStrategy(strategy)
                 .updateData(request).id
-        }
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun deleteRequestsAndResponses(
@@ -96,9 +98,9 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
         strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
 
-        return CompletableFuture.runAsync {
+        return CompletableFuture.runAsync(Runnable {
             requestDataRepository.changeStrategy(strategy)
                 .deleteByFromAndTo(publicKey)
-        }
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 }

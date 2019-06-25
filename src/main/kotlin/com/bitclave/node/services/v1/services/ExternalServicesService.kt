@@ -1,5 +1,6 @@
 package com.bitclave.node.services.v1.services
 
+import com.bitclave.node.BaseNodeApplication
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.services.ExternalService
@@ -11,6 +12,7 @@ import javassist.NotFoundException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
+import java.util.function.Supplier
 
 @Service
 @Qualifier("v1")
@@ -20,7 +22,7 @@ class ExternalServicesService(
 ) {
 
     fun externalCall(data: ServiceCall, strategy: RepositoryStrategyType): CompletableFuture<ServiceResponse> {
-        return CompletableFuture.supplyAsync {
+        return CompletableFuture.supplyAsync(Supplier {
             val service = servicesRepository
                 .changeStrategy(strategy)
                 .findById(data.serviceId) ?: throw NotFoundException("Service not found")
@@ -29,9 +31,11 @@ class ExternalServicesService(
                 ?: throw BadArgumentException("wrong request")
 
             ServiceResponse(response.body, response.statusCodeValue, response.headers)
-        }
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun findAll(strategy: RepositoryStrategyType): CompletableFuture<List<ExternalService>> =
-        CompletableFuture.supplyAsync { servicesRepository.changeStrategy(strategy).findAll() }
+        CompletableFuture.supplyAsync(Supplier {
+            servicesRepository.changeStrategy(strategy).findAll()
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
 }

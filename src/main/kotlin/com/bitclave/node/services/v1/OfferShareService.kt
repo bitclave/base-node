@@ -1,5 +1,6 @@
 package com.bitclave.node.services.v1
 
+import com.bitclave.node.BaseNodeApplication
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.OfferResultAction
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.util.Date
 import java.util.concurrent.CompletableFuture
+import java.util.function.Supplier
 
 @Service
 @Qualifier("v1")
@@ -31,14 +33,14 @@ class OfferShareService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<List<OfferShareData>> {
 
-        return CompletableFuture.supplyAsync {
+        return CompletableFuture.supplyAsync(Supplier {
             val repository = offerShareRepository.changeStrategy(strategy)
             if (accepted != null) {
-                return@supplyAsync repository.findByOfferOwnerAndAccepted(offerOwner, accepted)
+                return@Supplier repository.findByOfferOwnerAndAccepted(offerOwner, accepted)
             } else {
-                return@supplyAsync repository.findByOfferOwner(offerOwner)
+                return@Supplier repository.findByOfferOwner(offerOwner)
             }
-        }
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun grantAccess(
@@ -47,7 +49,7 @@ class OfferShareService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
 
-        return CompletableFuture.runAsync {
+        return CompletableFuture.runAsync(Runnable {
             val offerSearch = offerSearchRepository.changeStrategy(strategy)
                 .findById(data.offerSearchId)
                 ?: throw BadArgumentException("offer search id not exist")
@@ -95,7 +97,7 @@ class OfferShareService(
             offerSearchRepository
                 .changeStrategy(strategy)
                 .saveSearchResult(offerSearch)
-        }
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun acceptShareData(
@@ -104,7 +106,7 @@ class OfferShareService(
         worth: BigDecimal,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
-        return CompletableFuture.runAsync {
+        return CompletableFuture.runAsync(Runnable {
             offerSearchRepository
                 .changeStrategy(strategy)
                 .findById(offerSearchId)
@@ -135,6 +137,6 @@ class OfferShareService(
 
             offerShareRepository.changeStrategy(strategy)
                 .saveShareData(shareData)
-        }
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 }

@@ -1,5 +1,6 @@
 package com.bitclave.node.services.v1
 
+import com.bitclave.node.BaseNodeApplication
 import com.bitclave.node.extensions.validateSig
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import java.util.Date
 import java.util.concurrent.CompletableFuture
+import java.util.function.Supplier
 
 private val logger = KotlinLogging.logger {}
 
@@ -59,34 +61,36 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
     }
 
     fun validateNonce(request: SignedRequest<*>, account: Account): CompletableFuture<Account> {
-        return CompletableFuture.supplyAsync {
-            if (request.nonce != account.nonce + 1) {
-                throw BadArgumentException()
-            }
-            account
-        }
+        return CompletableFuture.supplyAsync(
+            Supplier {
+                if (request.nonce != account.nonce + 1) {
+                    throw BadArgumentException()
+                }
+                account
+            }, BaseNodeApplication.FIXED_THREAD_POOL
+        )
     }
 
     fun incrementNonce(
         account: Account,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
-        return CompletableFuture.runAsync {
+        return CompletableFuture.runAsync(Runnable {
             account.nonce++
             accountRepository.changeStrategy(strategy).saveAccount(account)
-        }
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun getNonce(publicKey: String, strategy: RepositoryStrategyType): CompletableFuture<Long> {
-        return CompletableFuture.supplyAsync {
+        return CompletableFuture.supplyAsync(Supplier {
             val account = accountRepository.changeStrategy(strategy).findByPublicKey(publicKey)
 
             account?.nonce ?: 0
-        }
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun registrationClient(account: Account, strategy: RepositoryStrategyType): CompletableFuture<Account> {
-        return CompletableFuture.supplyAsync {
+        return CompletableFuture.supplyAsync(Supplier {
             if (!account.isValid()) {
                 throw BadArgumentException()
             }
@@ -102,23 +106,23 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
                 .saveAccount(createdAccount)
 
             createdAccount
-        }
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun existAccount(account: Account, strategy: RepositoryStrategyType): CompletableFuture<Account> {
-        return CompletableFuture.supplyAsync {
+        return CompletableFuture.supplyAsync(Supplier {
             accountRepository.changeStrategy(strategy)
                 .findByPublicKey(account.publicKey) ?: throw NotFoundException(
                 "User with baseID ${account.publicKey} does not exist"
             )
-        }
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun deleteAccount(clientId: String, strategy: RepositoryStrategyType): CompletableFuture<Void> {
-        return CompletableFuture.runAsync {
+        return CompletableFuture.runAsync(Runnable {
             accountRepository.changeStrategy(strategy)
                 .deleteAccount(clientId)
-        }
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun getAccounts(
@@ -126,10 +130,10 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
         publicKeys: List<String>
     ): CompletableFuture<List<Account>> {
 
-        return CompletableFuture.supplyAsync {
+        return CompletableFuture.supplyAsync(Supplier {
             accountRepository.changeStrategy(strategy)
                 .findByPublicKey(publicKeys)
-        }
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun getAllAccounts(
@@ -137,21 +141,21 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
         fromDate: Date
     ): CompletableFuture<List<Account>> {
 
-        return CompletableFuture.supplyAsync {
+        return CompletableFuture.supplyAsync(Supplier {
             accountRepository.changeStrategy(strategy)
                 .findByCreatedAtAfter(fromDate)
-        }
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 
     fun getAccountTotalCount(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Long> {
 
-        return CompletableFuture.supplyAsync {
+        return CompletableFuture.supplyAsync(Supplier {
 
             val repository = accountRepository.changeStrategy(strategy)
 
-            return@supplyAsync repository.getTotalCount()
-        }
+            repository.getTotalCount()
+        }, BaseNodeApplication.FIXED_THREAD_POOL)
     }
 }
