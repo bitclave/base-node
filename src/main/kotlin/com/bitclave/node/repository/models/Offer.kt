@@ -29,9 +29,9 @@ data class Offer(
 
     @ColumnDefault("0") val worth: String = BigDecimal.ZERO.toString(),
 
-    @ElementCollection(fetch = FetchType.EAGER) val tags: Map<String, String> = HashMap(),
-    @ElementCollection(fetch = FetchType.EAGER) val compare: Map<String, String> = HashMap(),
-    @ElementCollection(fetch = FetchType.EAGER) val rules: Map<String, CompareAction> = HashMap(),
+    @ElementCollection(fetch = FetchType.LAZY) val tags: Map<String, String> = HashMap(),
+    @ElementCollection(fetch = FetchType.LAZY) val compare: Map<String, String> = HashMap(),
+    @ElementCollection(fetch = FetchType.LAZY) val rules: Map<String, CompareAction> = HashMap(),
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     val createdAt: Date = Date(),
