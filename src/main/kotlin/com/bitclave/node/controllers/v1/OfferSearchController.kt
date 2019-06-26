@@ -41,6 +41,46 @@ class OfferSearchController(
 ) : AbstractController() {
 
     /**
+     * Return suggestion by title of Offer.
+     *
+     * @return {@link List<String>}, Http status - 200.
+     *
+     */
+    @ApiOperation(
+        "get suggestion by title of Offer",
+        response = List::class
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(code = 200, message = "Success", response = List::class)
+        ]
+    )
+    @RequestMapping(method = [RequestMethod.GET], value = ["/query/suggest"])
+    @ResponseStatus(HttpStatus.OK)
+    fun suggestionByQuery(
+        @ApiParam("sends full text search query string")
+        @RequestParam(value = "q")
+        query: String,
+
+        @ApiParam("Optional size to include number of suggestion items. Defaults to 10.")
+        @RequestParam("s", defaultValue = "10", required = false)
+        size: Int,
+
+        @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
+    ): CompletableFuture<List<String>> {
+
+        val decodedQuery = URLDecoder.decode(query, "UTF-8")
+
+        return this.offerSearchService.getSuggestion(decodedQuery, size)
+            .exceptionally { e ->
+                logger.error("Request: suggestionByQuery -> request: $query; error:$e")
+                throw e
+            }
+    }
+
+    /**
      * Creates new offerSearches, based on the query full text search.
      * The API will verify that the request is cryptographically signed by the owner of the public key.
      * @param request is {@link SignedRequest} where client sends {@link SearchRequest} and
