@@ -13,6 +13,7 @@ import com.bitclave.node.repository.models.OfferPrice
 import com.bitclave.node.repository.models.OfferPriceRules
 import com.bitclave.node.repository.models.OfferResultAction
 import com.bitclave.node.repository.models.OfferSearch
+import com.bitclave.node.repository.models.OfferSearchState
 import com.bitclave.node.repository.models.OfferShareData
 import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.offer.OfferCrudRepository
@@ -46,7 +47,6 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import java.math.BigDecimal
-import java.util.ArrayList
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
@@ -134,8 +134,7 @@ class OfferShareServiceTest {
         val searchRequestRepository =
             PostgresSearchRequestRepositoryImpl(
                 searchRequestCrudRepository,
-                offerSearchCrudRepository,
-                offerSearchStateCrudRepository
+                offerSearchCrudRepository
             )
         val searchRequestRepositoryStrategy = SearchRequestRepositoryStrategy(searchRequestRepository)
 
@@ -180,12 +179,17 @@ class OfferShareServiceTest {
                     0,
                     searchRequest.owner,
                     searchRequest.id,
-                    1,
-                    OfferResultAction.ACCEPT,
-                    "",
-                    ArrayList()
+                    1
                 )
             )
+        offerSearchStateRepository.repository.save(
+            OfferSearchState(
+                0,
+                searchRequest.owner,
+                1,
+                OfferResultAction.ACCEPT
+            )
+        )
     }
 
     @Test

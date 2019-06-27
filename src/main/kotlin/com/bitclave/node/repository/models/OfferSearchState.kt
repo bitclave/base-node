@@ -1,7 +1,6 @@
 package com.bitclave.node.repository.models
 
 import org.springframework.format.annotation.DateTimeFormat
-import java.util.ArrayList
 import java.util.Date
 import javax.persistence.Column
 import javax.persistence.ElementCollection
@@ -44,7 +43,7 @@ data class OfferSearchState(
 
     @Column(length = 4096) var info: String = "[]",
 
-    @ElementCollection(fetch = FetchType.EAGER) var events: MutableList<String> = ArrayList(),
+    @ElementCollection(fetch = FetchType.EAGER) var events: List<String> = emptyList(),
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) var createdAt: Date = Date(),
 

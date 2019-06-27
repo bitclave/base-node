@@ -13,5 +13,13 @@ interface OfferSearchStateCrudRepository : PagingAndSortingRepository<OfferSearc
 
     fun findByOfferIdInAndOwnerIn(offerIds: List<Long>, owners: List<String>): List<OfferSearchState>
 
-    fun deleteAllByOwner(owner: String)
+    fun findByOfferIdInAndOwner(offerIds: List<Long>, owner: String): List<OfferSearchState>
+
+    fun findByOfferId(offerId: Long): List<OfferSearchState>
+
+    fun findByOfferIdIn(offerIds: List<Long>): List<OfferSearchState>
+
+    fun deleteAllByOwner(owner: String): Long
+
+    fun deleteByIdIn(ids: List<Long>): Long
 }

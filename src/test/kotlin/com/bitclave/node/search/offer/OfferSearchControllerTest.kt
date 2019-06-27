@@ -2,7 +2,6 @@ package com.bitclave.node.search.offer
 
 import com.bitclave.node.extensions.toJsonString
 import com.bitclave.node.repository.RepositoryStrategyType
-import com.bitclave.node.repository.models.OfferResultAction
 import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.models.SignedRequest
@@ -22,7 +21,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import java.util.ArrayList
 import java.util.Date
 
 @ActiveProfiles("test")
@@ -48,9 +46,6 @@ class OfferSearchControllerTest {
         publicKey,
         1L,
         1L,
-        OfferResultAction.NONE,
-        "",
-        ArrayList(),
         Date(1550561756503)
     )
 

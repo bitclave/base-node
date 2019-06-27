@@ -25,13 +25,5 @@ data class OfferSearch(
 
     val offerId: Long = 0,
 
-    @Transient val state: OfferResultAction = OfferResultAction.NONE,
-
-    @Transient val info: String = "[]",
-
-    @Transient val events: MutableList<String> = ArrayList(),
-
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) val createdAt: Date = Date(),
-
-    @Transient val updatedAt: Date = Date()
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) val createdAt: Date = Date()
 )

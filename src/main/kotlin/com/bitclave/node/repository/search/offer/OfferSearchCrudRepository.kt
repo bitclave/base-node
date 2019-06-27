@@ -17,7 +17,23 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     fun deleteAllBySearchRequestId(id: Long): Long
 
+    fun deleteAllBySearchRequestIdIn(ids: List<Long>): Long
+
     fun deleteAllByOwner(owner: String): List<Long>
+
+    @Modifying
+    @Query(
+        value = """
+            DELETE FROM offer_search_state ss
+            WHERE ss.offer_id = :offerId AND ss.state IN (0,2)
+        """,
+        nativeQuery = true
+    )
+    fun deleteAllByOfferIdAndStateIn(
+        @Param("offerId") offerId: Long
+    ): Int
+
+    fun deleteAllByOfferId(id: Long): Long
 
     @Query(
         """
@@ -40,11 +56,9 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         offerIds: List<Long>
     ): List<OfferSearch>
 
-    fun findBySearchRequestIdIn(searchRequestIds: List<Long>): List<OfferSearch>
+    fun findBySearchRequestIdInAndOwner(searchRequestIds: List<Long>, owner: String): List<OfferSearch>
 
     fun findByOwner(owner: String): List<OfferSearch>
-
-    fun findByOwnerIn(owners: List<String>): List<OfferSearch>
 
     @Query(
         value = """
@@ -55,7 +69,7 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         """,
         nativeQuery = true
     )
-    fun findAllByOwnerAndStateIn(@Param("owner") owner: String, @Param("state") state: List<OfferResultAction>): List<OfferSearch>
+    fun findAllByOwnerAndStateIn(@Param("owner") owner: String, @Param("state") state: List<Int>): List<OfferSearch>
 
     fun findAllByOwnerAndSearchRequestIdIn(owner: String, searchIds: List<Long>): List<OfferSearch>
 
@@ -320,45 +334,33 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     ): List<OfferSearch>
 
     @Query(
-        value = "SELECT s.* from offer_search s, "+
-            "( SELECT b.offer_id, b.owner from "+
-            " ( SELECT os_inner.offer_id, os_inner.owner,  os_inner.state, e.events from "+
-            "( select s.* from offer_search_state s, "+
-            "( select offer_id, owner, count(*) offer_owner_count "+
-            "from offer_search_state "+
-            "group by offer_id, owner "+
-            "having count(*) > 1 "+
-            " ) c "+
-            "where s.offer_id = c.offer_id "+
-            " and s.owner = c.owner "+
-            ") os_inner "+
-            "left outer join "+
-            "( select e_in.offer_search_state_id, string_agg(e_in.events, ',') events "+
-            "from offer_search_state_events e_in "+
-            "group by e_in.offer_search_state_id "+
-            " ) e on e.offer_search_state_id = os_inner.id "+
-            " GROUP BY os_inner.offer_id, os_inner.owner,  os_inner.state, e.events "+
-            " HAVING COUNT(*) < 2 "+
-            " ) b "+
-            " GROUP BY b.offer_id, b.owner "+
+        value = "SELECT s.* from offer_search s, " +
+            "( SELECT b.offer_id, b.owner from " +
+            " ( SELECT os_inner.offer_id, os_inner.owner,  os_inner.state, e.events from " +
+            "( select s.* from offer_search_state s, " +
+            "( select offer_id, owner, count(*) offer_owner_count " +
+            "from offer_search_state " +
+            "group by offer_id, owner " +
+            "having count(*) > 1 " +
+            " ) c " +
+            "where s.offer_id = c.offer_id " +
+            " and s.owner = c.owner " +
+            ") os_inner " +
+            "left outer join " +
+            "( select e_in.offer_search_state_id, string_agg(e_in.events, ',') events " +
+            "from offer_search_state_events e_in " +
+            "group by e_in.offer_search_state_id " +
+            " ) e on e.offer_search_state_id = os_inner.id " +
+            " GROUP BY os_inner.offer_id, os_inner.owner,  os_inner.state, e.events " +
+            " HAVING COUNT(*) < 2 " +
+            " ) b " +
+            " GROUP BY b.offer_id, b.owner " +
             " ) a " +
-            "where s.offer_id = a.offer_id "+
+            "where s.offer_id = a.offer_id " +
             "and s.owner = a.owner ",
         nativeQuery = true
     )
     fun findAllDiff(): List<OfferSearch>
 
     fun countBySearchRequestId(id: Long): Long
-
-    @Modifying
-    @Query(
-        value = """
-            DELETE FROM offer_search_state ss
-            WHERE ss.offer_id = :offerId AND ss.state IN (0,2)
-        """,
-        nativeQuery = true
-    )
-    fun deleteAllByOfferIdAndStateIn(
-        @Param("offerId") offerId: Long
-    ): Int
 }

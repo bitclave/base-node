@@ -18,7 +18,8 @@ import java.util.concurrent.CompletableFuture
 @Qualifier("v1")
 class OfferService(
     private val offerRepository: RepositoryStrategy<OfferRepository>,
-    private val offerPriceRepository: RepositoryStrategy<OfferPriceRepository>
+    private val offerPriceRepository: RepositoryStrategy<OfferPriceRepository>,
+    private val offerSearchService: OfferSearchService
 ) {
 
     fun putOffer(
@@ -67,8 +68,9 @@ class OfferService(
             )
             val processedOffer = offerRepository.changeStrategy(strategy).saveOffer(putOffer)
             offerPriceRepository.changeStrategy(strategy).savePrices(processedOffer, offer.offerPrices)
-            val updatedOffer = offerRepository.changeStrategy(strategy).findById(processedOffer.id)
-            updatedOffer
+
+            offerSearchService.deleteByOfferId(id, strategy)
+            offerRepository.changeStrategy(strategy).findById(processedOffer.id)
         }
     }
 
@@ -80,8 +82,8 @@ class OfferService(
     ): CompletableFuture<Offer> {
 
         return CompletableFuture.supplyAsync {
-            var originalOffer = offerRepository.changeStrategy(strategy)
-                    .findByIdAndOwner(id, owner) ?: throw BadArgumentException()
+            val originalOffer = offerRepository.changeStrategy(strategy)
+                .findByIdAndOwner(id, owner) ?: throw BadArgumentException()
 
             if (offer.compare.isEmpty() ||
                 offer.compare.size != offer.rules.size ||
@@ -114,8 +116,9 @@ class OfferService(
             )
             val processedOffer = offerRepository.changeStrategy(strategy).shallowSaveOffer(putOffer)
             offerPriceRepository.changeStrategy(strategy).savePrices(processedOffer, offer.offerPrices)
-            val updatedOffer = offerRepository.changeStrategy(strategy).findById(processedOffer.id)
-            updatedOffer
+            offerSearchService.deleteByOfferId(id, strategy)
+
+            offerRepository.changeStrategy(strategy).findById(processedOffer.id)
         }
     }
 
@@ -130,6 +133,8 @@ class OfferService(
             if (deletedId == 0L) {
                 throw NotFoundException()
             }
+            offerSearchService.deleteByOfferId(deletedId, strategy)
+
             deletedId
         }
     }
