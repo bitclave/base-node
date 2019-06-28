@@ -1179,7 +1179,6 @@ class OfferSearchServiceTest {
                 true
             ).get().content
 
-
         result.forEach {
             assert(it.interaction != null)
             assert(it.interaction!!.offerId == it.offer.id)
@@ -1413,7 +1412,6 @@ class OfferSearchServiceTest {
         assert(result[2].offerId == 4L)
         assert(result[2].state == OfferAction.REJECT)
     }
-
 
     @Test
     fun `should return interactions by owner and offers`() {
