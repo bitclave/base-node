@@ -1,6 +1,6 @@
 package com.bitclave.node.repository.search.offer
 
-import com.bitclave.node.repository.models.OfferResultAction
+import com.bitclave.node.repository.models.OfferAction
 import com.bitclave.node.repository.models.OfferSearch
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
@@ -89,7 +89,7 @@ class PostgresOfferSearchRepositoryImpl(
 
     override fun findAllByOwnerAndStateIn(
         owner: String,
-        state: List<OfferResultAction>,
+        state: List<OfferAction>,
         sort: Sort?
     ): List<OfferSearch> {
         val condition = state.map { it.ordinal.toLong() }
@@ -153,7 +153,7 @@ class PostgresOfferSearchRepositoryImpl(
     override fun findAllByOwnerAndStateAndSearchRequestIdIn(
         owner: String,
         searchRequestIds: List<Long>,
-        state: List<OfferResultAction>,
+        state: List<OfferAction>,
         sort: Sort?
     ): List<OfferSearch> {
         val conditions = state.map { it.ordinal.toLong() }

@@ -9,10 +9,11 @@ import com.bitclave.node.repository.account.HybridAccountRepositoryImpl
 import com.bitclave.node.repository.account.PostgresAccountRepositoryImpl
 import com.bitclave.node.repository.models.Account
 import com.bitclave.node.repository.models.Offer
+import com.bitclave.node.repository.models.OfferAction
+import com.bitclave.node.repository.models.OfferInteraction
 import com.bitclave.node.repository.models.OfferPrice
 import com.bitclave.node.repository.models.OfferPriceRules
 import com.bitclave.node.repository.models.OfferRank
-import com.bitclave.node.repository.models.OfferResultAction
 import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.repository.models.OfferShareData
 import com.bitclave.node.repository.models.SearchRequest
@@ -30,13 +31,13 @@ import com.bitclave.node.repository.rtSearch.RtSearchRepositoryImpl
 import com.bitclave.node.repository.search.PostgresSearchRequestRepositoryImpl
 import com.bitclave.node.repository.search.SearchRequestCrudRepository
 import com.bitclave.node.repository.search.SearchRequestRepositoryStrategy
+import com.bitclave.node.repository.search.interaction.OfferInteractionCrudRepository
+import com.bitclave.node.repository.search.interaction.OfferInteractionRepositoryStrategy
+import com.bitclave.node.repository.search.interaction.PostgresOfferInteractionRepositoryImpl
 import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.repository.search.offer.OfferSearchRepositoryStrategy
 import com.bitclave.node.repository.search.offer.PostgresOfferSearchRepositoryImpl
 import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepository
-import com.bitclave.node.repository.search.interaction.OfferInteractionCrudRepository
-import com.bitclave.node.repository.search.interaction.OfferInteractionRepositoryStrategy
-import com.bitclave.node.repository.search.interaction.PostgresOfferInteractionRepositoryImpl
 import com.bitclave.node.repository.share.OfferShareCrudRepository
 import com.bitclave.node.repository.share.OfferShareRepositoryStrategy
 import com.bitclave.node.repository.share.PostgresOfferShareRepositoryImpl
@@ -414,7 +415,7 @@ class OfferSearchServiceTest {
 
         assert(result.isNotEmpty())
         assert(result[0].offerSearch.id >= 1L)
-        assert(state!!.state == OfferResultAction.NONE)
+        assert(state!!.state == OfferAction.NONE)
         assert(result[0].offer.id == createdOffer1.id)
         assert(result[0].offer.owner == businessPublicKey)
     }
@@ -564,7 +565,7 @@ class OfferSearchServiceTest {
                 publicKey,
                 unique = false,
                 searchRequestIds = emptyList(),
-                state = arrayListOf(OfferResultAction.COMPLAIN)
+                state = arrayListOf(OfferAction.COMPLAIN)
             ).get()
             .content
 
@@ -577,7 +578,7 @@ class OfferSearchServiceTest {
                 businessPublicKey,
                 unique = false,
                 searchRequestIds = emptyList(),
-                state = arrayListOf(OfferResultAction.NONE)
+                state = arrayListOf(OfferAction.NONE)
             ).get()
             .content
 
@@ -674,7 +675,7 @@ class OfferSearchServiceTest {
 
         assert(result.isNotEmpty())
         assert(result[0].offerSearch.id >= 1L)
-        assert(state!!.state == OfferResultAction.COMPLAIN)
+        assert(state!!.state == OfferAction.COMPLAIN)
         assert(result[0].offer.id == createdOffer1.id)
         assert(result[0].offer.owner == businessPublicKey)
     }
@@ -701,7 +702,7 @@ class OfferSearchServiceTest {
             offerInteractionCrudRepository.findByOfferIdAndOwner(result[0].offer.id, createdSearchRequest1.owner)
         assert(result.size == 1)
         assert(result[0].offerSearch.id == createdSearchRequest1.id)
-        assert(state!!.state == OfferResultAction.ACCEPT)
+        assert(state!!.state == OfferAction.ACCEPT)
         assert(result[0].offer.id == createdOffer1.id)
         assert(result[0].offer.owner == businessPublicKey)
     }
@@ -718,7 +719,7 @@ class OfferSearchServiceTest {
 
         assert(result.size == 2)
         assert(result[0].id >= 1L)
-        assert(state1!!.state == OfferResultAction.COMPLAIN)
+        assert(state1!!.state == OfferAction.COMPLAIN)
         assert(result[1].id >= 1L)
 
         result = offerSearchService.getOfferSearches(strategy, createdOffer2.id, createdSearchRequest1.id).get()
@@ -726,7 +727,7 @@ class OfferSearchServiceTest {
 
         assert(result.size == 1)
         assert(result[0].id >= 1L)
-        assert(state2!!.state == OfferResultAction.NONE)
+        assert(state2!!.state == OfferAction.NONE)
     }
 
     @Test
@@ -740,7 +741,7 @@ class OfferSearchServiceTest {
 
         assert(result.size == 2)
         assert(result[0].id >= 1L)
-        assert(state!!.state == OfferResultAction.COMPLAIN)
+        assert(state!!.state == OfferAction.COMPLAIN)
         assert(result[1].id >= 1L)
     }
 
@@ -1043,7 +1044,7 @@ class OfferSearchServiceTest {
                 publicKey,
                 false,
                 emptyList(),
-                arrayListOf(OfferResultAction.COMPLAIN)
+                arrayListOf(OfferAction.COMPLAIN)
             ).get().content
 
         assert(result.size == 4)
@@ -1110,7 +1111,7 @@ class OfferSearchServiceTest {
                 publicKey,
                 false,
                 emptyList(),
-                arrayListOf(OfferResultAction.COMPLAIN),
+                arrayListOf(OfferAction.COMPLAIN),
                 PageRequest(0, 4, Sort("rank"))
             ).get().content
 
@@ -1173,7 +1174,7 @@ class OfferSearchServiceTest {
                 publicKey,
                 false,
                 emptyList(),
-                arrayListOf(OfferResultAction.COMPLAIN),
+                arrayListOf(OfferAction.COMPLAIN),
                 PageRequest(0, 4, Sort("rank")),
                 true
             ).get().content
@@ -1227,7 +1228,7 @@ class OfferSearchServiceTest {
                 publicKey,
                 false,
                 emptyList(),
-                arrayListOf(OfferResultAction.COMPLAIN),
+                arrayListOf(OfferAction.COMPLAIN),
                 PageRequest(0, 4, Sort("updatedAt"))
             ).get().content
 
@@ -1368,5 +1369,101 @@ class OfferSearchServiceTest {
         assert(result[0].offer.id == savedOffer3.id)
         assert(result[1].offer.id == savedOffer2.id)
         assert(result[2].offer.id == savedOffer1.id)
+    }
+
+    @Test
+    fun `should return interactions by owner`() {
+        offerInteractionCrudRepository.save(OfferInteraction(0, publicKey, 123))
+        offerInteractionCrudRepository.save(OfferInteraction(0, businessPublicKey, 1234))
+
+        val result = offerSearchService.getInteractions(publicKey).get()
+        assert(result.size == 1)
+        assert(result[0].owner == publicKey)
+        assert(result[0].offerId == 123L)
+    }
+
+    @Test
+    fun `should return interactions by owner and states`() {
+        offerInteractionCrudRepository.save(OfferInteraction(0, publicKey, 1))
+        offerInteractionCrudRepository.save(OfferInteraction(0, publicKey, 2, OfferAction.COMPLAIN))
+        offerInteractionCrudRepository.save(OfferInteraction(0, publicKey, 3, OfferAction.COMPLAIN))
+        offerInteractionCrudRepository.save(OfferInteraction(0, publicKey, 4, OfferAction.REJECT))
+        offerInteractionCrudRepository.save(OfferInteraction(0, publicKey, 5, OfferAction.EVALUATE))
+
+        offerInteractionCrudRepository.save(OfferInteraction(0, businessPublicKey, 1))
+        offerInteractionCrudRepository.save(OfferInteraction(0, businessPublicKey, 2, OfferAction.COMPLAIN))
+        offerInteractionCrudRepository.save(OfferInteraction(0, businessPublicKey, 3, OfferAction.COMPLAIN))
+        offerInteractionCrudRepository.save(OfferInteraction(0, businessPublicKey, 4, OfferAction.REJECT))
+        offerInteractionCrudRepository.save(OfferInteraction(0, businessPublicKey, 5, OfferAction.EVALUATE))
+
+        val result = offerSearchService
+            .getInteractions(publicKey, listOf(OfferAction.COMPLAIN, OfferAction.REJECT))
+            .get()
+
+        assert(result.size == 3)
+        assert(result[0].owner == publicKey)
+        assert(result[0].offerId == 2L)
+        assert(result[0].state == OfferAction.COMPLAIN)
+
+        assert(result[1].owner == publicKey)
+        assert(result[1].offerId == 3L)
+        assert(result[1].state == OfferAction.COMPLAIN)
+
+        assert(result[2].owner == publicKey)
+        assert(result[2].offerId == 4L)
+        assert(result[2].state == OfferAction.REJECT)
+    }
+
+
+    @Test
+    fun `should return interactions by owner and offers`() {
+        offerInteractionCrudRepository.save(OfferInteraction(0, publicKey, 1))
+        offerInteractionCrudRepository.save(OfferInteraction(0, publicKey, 2, OfferAction.COMPLAIN))
+        offerInteractionCrudRepository.save(OfferInteraction(0, publicKey, 3, OfferAction.COMPLAIN))
+        offerInteractionCrudRepository.save(OfferInteraction(0, publicKey, 4, OfferAction.REJECT))
+        offerInteractionCrudRepository.save(OfferInteraction(0, publicKey, 5, OfferAction.EVALUATE))
+
+        offerInteractionCrudRepository.save(OfferInteraction(0, businessPublicKey, 1))
+        offerInteractionCrudRepository.save(OfferInteraction(0, businessPublicKey, 2, OfferAction.COMPLAIN))
+        offerInteractionCrudRepository.save(OfferInteraction(0, businessPublicKey, 3, OfferAction.COMPLAIN))
+        offerInteractionCrudRepository.save(OfferInteraction(0, businessPublicKey, 4, OfferAction.REJECT))
+        offerInteractionCrudRepository.save(OfferInteraction(0, businessPublicKey, 5, OfferAction.EVALUATE))
+
+        val result = offerSearchService
+            .getInteractions(publicKey, emptyList(), listOf(1, 2, 7))
+            .get()
+
+        assert(result.size == 2)
+        assert(result[0].owner == publicKey)
+        assert(result[0].offerId == 1L)
+        assert(result[0].state == OfferAction.NONE)
+
+        assert(result[1].owner == publicKey)
+        assert(result[1].offerId == 2L)
+        assert(result[1].state == OfferAction.COMPLAIN)
+    }
+
+    @Test
+    fun `should return interactions by owner, states and offers`() {
+        offerInteractionCrudRepository.save(OfferInteraction(0, publicKey, 1))
+        offerInteractionCrudRepository.save(OfferInteraction(0, publicKey, 2, OfferAction.COMPLAIN))
+        offerInteractionCrudRepository.save(OfferInteraction(0, publicKey, 3, OfferAction.COMPLAIN))
+        offerInteractionCrudRepository.save(OfferInteraction(0, publicKey, 4, OfferAction.REJECT))
+        offerInteractionCrudRepository.save(OfferInteraction(0, publicKey, 5, OfferAction.EVALUATE))
+
+        offerInteractionCrudRepository.save(OfferInteraction(0, businessPublicKey, 1))
+        offerInteractionCrudRepository.save(OfferInteraction(0, businessPublicKey, 2, OfferAction.COMPLAIN))
+        offerInteractionCrudRepository.save(OfferInteraction(0, businessPublicKey, 3, OfferAction.COMPLAIN))
+        offerInteractionCrudRepository.save(OfferInteraction(0, businessPublicKey, 4, OfferAction.REJECT))
+        offerInteractionCrudRepository.save(OfferInteraction(0, businessPublicKey, 5, OfferAction.EVALUATE))
+
+        val result = offerSearchService
+            .getInteractions(publicKey, listOf(OfferAction.COMPLAIN), listOf(1, 3, 7))
+            .get()
+
+        assert(result.size == 1)
+        assert(result[0].owner == publicKey)
+        assert(result[0].offerId == 3L)
+        assert(result[0].state == OfferAction.COMPLAIN)
     }
 }

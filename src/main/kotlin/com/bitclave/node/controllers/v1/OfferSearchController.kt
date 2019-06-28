@@ -2,7 +2,8 @@ package com.bitclave.node.controllers.v1
 
 import com.bitclave.node.controllers.AbstractController
 import com.bitclave.node.repository.models.Account
-import com.bitclave.node.repository.models.OfferResultAction
+import com.bitclave.node.repository.models.OfferAction
+import com.bitclave.node.repository.models.OfferInteraction
 import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.repository.models.OfferSearchResultItem
 import com.bitclave.node.repository.models.SearchRequest
@@ -200,7 +201,7 @@ class OfferSearchController(
 
         @ApiParam("query by state")
         @RequestParam(value = "state", required = false, defaultValue = "")
-        state: List<OfferResultAction>,
+        state: List<OfferAction>,
 
         @ApiParam("Optional page number to retrieve a particular page. If not specified this API retrieves first page.")
         @RequestParam("page", defaultValue = "0", required = false)
@@ -332,7 +333,7 @@ class OfferSearchController(
      *
      */
     @ApiOperation("Add event")
-    @ApiResponses(value = [ApiResponse(code = 201, message = "Added")])
+    @ApiResponses(value = [ApiResponse(code = 200, message = "Added")])
     @RequestMapping(method = [RequestMethod.PATCH], value = ["/result/event/{id}"])
     @ResponseStatus(HttpStatus.OK)
     fun addEvent(
@@ -354,6 +355,35 @@ class OfferSearchController(
                 offerSearchService.addEventTo(event.data!!, searchResultId, getStrategyType(strategy))
             }.exceptionally { e ->
                 logger.error("Request: addEvent/$event raised $e")
+                throw e
+            }
+    }
+
+    @ApiOperation("get states of interactions with offers")
+    @ApiResponses(value = [ApiResponse(code = 200, message = "Success")])
+    @RequestMapping(method = [RequestMethod.GET], value = ["/result/interaction"])
+    @ResponseStatus(HttpStatus.OK)
+    fun getInteractions(
+        @ApiParam("owner of interaction", required = true)
+        @RequestParam("owner", required = true, defaultValue = "")
+        owner: String,
+
+        @ApiParam("get interaction by state. use single param query states or offers", required = false)
+        @RequestParam("states", required = false, defaultValue = "")
+        states: List<OfferAction>,
+
+        @ApiParam("get interaction by offers. use single param query states or offers", required = false)
+        @RequestParam("offers", required = false, defaultValue = "")
+        offers: List<Long>,
+
+        @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
+    ): CompletableFuture<List<OfferInteraction>> {
+
+        return offerSearchService.getInteractions(owner, states, offers, getStrategyType(strategy))
+            .exceptionally { e ->
+                logger.error("Request: getInteractions: $owner, $states, $offers  raised $e")
                 throw e
             }
     }

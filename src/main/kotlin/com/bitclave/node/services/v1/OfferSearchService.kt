@@ -3,19 +3,19 @@ package com.bitclave.node.services.v1
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.Offer
-import com.bitclave.node.repository.models.OfferResultAction
-import com.bitclave.node.repository.models.OfferSearch
-import com.bitclave.node.repository.models.OfferSearchResultItem
+import com.bitclave.node.repository.models.OfferAction
 import com.bitclave.node.repository.models.OfferInteraction
 import com.bitclave.node.repository.models.OfferInteractionId
+import com.bitclave.node.repository.models.OfferSearch
+import com.bitclave.node.repository.models.OfferSearchResultItem
 import com.bitclave.node.repository.models.QuerySearchRequest
 import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.offer.OfferRepository
 import com.bitclave.node.repository.rtSearch.RtSearchRepository
 import com.bitclave.node.repository.search.SearchRequestRepository
+import com.bitclave.node.repository.search.interaction.OfferInteractionRepository
 import com.bitclave.node.repository.search.offer.OfferSearchRepository
 import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepository
-import com.bitclave.node.repository.search.interaction.OfferInteractionRepository
 import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
@@ -34,13 +34,13 @@ import kotlin.system.measureTimeMillis
 
 data class OfferSearchEvent(
     val updater: String,
-    val status: OfferResultAction,
+    val status: OfferAction,
     val date: Date = Date()
 )
 
 data class OfferSearchEventConfirmed(
     val updater: String,
-    val status: OfferResultAction,
+    val status: OfferAction,
     val CAT: String,
     val date: Date = Date()
 )
@@ -106,7 +106,7 @@ class OfferSearchService(
         owner: String,
         unique: Boolean = false,
         searchRequestIds: List<Long> = emptyList(),
-        state: List<OfferResultAction> = emptyList(),
+        state: List<OfferAction> = emptyList(),
         pageRequest: PageRequest = PageRequest(0, 20),
         interaction: Boolean = false
     ): CompletableFuture<Page<OfferSearchResultItem>> {
@@ -204,7 +204,7 @@ class OfferSearchService(
                             0,
                             searchRequest.owner,
                             offerSearch.offerId,
-                            OfferResultAction.NONE
+                            OfferAction.NONE
                         )
                     )
         }
@@ -263,7 +263,7 @@ class OfferSearchService(
 
             offerInteractionRepository
                 .changeStrategy(strategy)
-                .save(state.copy(state = OfferResultAction.COMPLAIN, updatedAt = Date(), events = events))
+                .save(state.copy(state = OfferAction.COMPLAIN, updatedAt = Date(), events = events))
         }
     }
 
@@ -293,7 +293,7 @@ class OfferSearchService(
 
             offerInteractionRepository
                 .changeStrategy(strategy)
-                .save(state.copy(state = OfferResultAction.EVALUATE, updatedAt = Date(), events = events))
+                .save(state.copy(state = OfferAction.EVALUATE, updatedAt = Date(), events = events))
         }
     }
 
@@ -323,7 +323,7 @@ class OfferSearchService(
 
             offerInteractionRepository
                 .changeStrategy(strategy)
-                .save(state.copy(state = OfferResultAction.REJECT, updatedAt = Date(), events = events))
+                .save(state.copy(state = OfferAction.REJECT, updatedAt = Date(), events = events))
         }
     }
 
@@ -353,7 +353,7 @@ class OfferSearchService(
 
             offerInteractionRepository
                 .changeStrategy(strategy)
-                .save(state.copy(state = OfferResultAction.CLAIMPURCHASE, updatedAt = Date(), events = events))
+                .save(state.copy(state = OfferAction.CLAIMPURCHASE, updatedAt = Date(), events = events))
         }
     }
 
@@ -396,7 +396,7 @@ class OfferSearchService(
 
             offerInteractionRepository
                 .changeStrategy(strategy)
-                .save(state.copy(state = OfferResultAction.CONFIRMED, updatedAt = Date(), events = events))
+                .save(state.copy(state = OfferAction.CONFIRMED, updatedAt = Date(), events = events))
         }
     }
 
@@ -683,6 +683,28 @@ class OfferSearchService(
         }
     }
 
+    fun getInteractions(
+        owner: String,
+        states: List<OfferAction> = emptyList(),
+        offers: List<Long> = emptyList(),
+        strategy: RepositoryStrategyType = RepositoryStrategyType.POSTGRES
+    ): CompletableFuture<List<OfferInteraction>> {
+        return CompletableFuture.supplyAsync {
+            val repos = offerInteractionRepository.changeStrategy(strategy)
+
+            when {
+                states.isNotEmpty() && offers.isNotEmpty() ->
+                    repos.findByOwnerAndOfferIdInAndStateIn(owner, offers, states)
+
+                states.isEmpty() && offers.isNotEmpty() -> repos.findByOfferIdInAndOwner(offers, owner)
+
+                states.isNotEmpty() && offers.isEmpty() -> repos.findByOwnerAndStateIn(owner, states)
+
+                else -> repos.findByOwner(owner)
+            }
+        }
+    }
+
     private fun offerSearchListToResult(
         offerSearch: List<OfferSearch>,
         offersRepository: OfferRepository,
@@ -757,7 +779,7 @@ class OfferSearchService(
     fun deleteByOfferId(offerId: Long, strategy: RepositoryStrategyType) {
         offerSearchRepository.changeStrategy(strategy).deleteAllByOfferId(offerId)
         offerInteractionRepository.changeStrategy(strategy).findByOfferId(offerId).filter {
-            it.state == OfferResultAction.NONE || it.state == OfferResultAction.REJECT
+            it.state == OfferAction.NONE || it.state == OfferAction.REJECT
         }
     }
 
@@ -773,7 +795,7 @@ class OfferSearchService(
         val filteredStateIds = offerInteractionRepository
             .changeStrategy(strategy)
             .findByOfferIdInAndOwner(offerIds, owner).filter {
-                it.state == OfferResultAction.NONE || it.state == OfferResultAction.REJECT
+                it.state == OfferAction.NONE || it.state == OfferAction.REJECT
             }.map { it.id }
 
         offerInteractionRepository.changeStrategy(strategy).delete(filteredStateIds)
@@ -791,7 +813,7 @@ class OfferSearchService(
         val filteredStateIds = offerInteractionRepository
             .changeStrategy(strategy)
             .findByOfferIdInAndOwner(offerIds, owner).filter {
-                it.state == OfferResultAction.NONE || it.state == OfferResultAction.REJECT
+                it.state == OfferAction.NONE || it.state == OfferAction.REJECT
             }.map { it.id }
 
         offerInteractionRepository.changeStrategy(strategy).delete(filteredStateIds)

@@ -12,7 +12,7 @@ import javax.persistence.Id
 import javax.persistence.Table
 import javax.persistence.UniqueConstraint
 
-enum class OfferResultAction {
+enum class OfferAction {
     NONE,
     ACCEPT,         // set by ???
     REJECT,         // set by User when rejects the offer
@@ -36,7 +36,7 @@ data class OfferInteraction(
 
     val offerId: Long = 0,
 
-    var state: OfferResultAction = OfferResultAction.NONE,
+    var state: OfferAction = OfferAction.NONE,
 
     @Column(length = 4096) var info: String = "[]",
 

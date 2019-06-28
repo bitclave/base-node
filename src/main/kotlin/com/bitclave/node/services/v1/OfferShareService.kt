@@ -2,7 +2,7 @@ package com.bitclave.node.services.v1
 
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
-import com.bitclave.node.repository.models.OfferResultAction
+import com.bitclave.node.repository.models.OfferAction
 import com.bitclave.node.repository.models.OfferInteraction
 import com.bitclave.node.repository.models.OfferShareData
 import com.bitclave.node.repository.offer.OfferRepository
@@ -99,7 +99,7 @@ class OfferShareService(
 
             offerInteractionRepository
                 .changeStrategy(strategy)
-                .save(state.copy(state = OfferResultAction.ACCEPT, updatedAt = Date()))
+                .save(state.copy(state = OfferAction.ACCEPT, updatedAt = Date()))
         }
     }
 

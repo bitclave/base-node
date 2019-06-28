@@ -11,7 +11,7 @@ import com.bitclave.node.repository.models.Account
 import com.bitclave.node.repository.models.Offer
 import com.bitclave.node.repository.models.OfferPrice
 import com.bitclave.node.repository.models.OfferPriceRules
-import com.bitclave.node.repository.models.OfferResultAction
+import com.bitclave.node.repository.models.OfferAction
 import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.repository.models.OfferInteraction
 import com.bitclave.node.repository.models.OfferShareData
@@ -187,7 +187,7 @@ class OfferShareServiceTest {
                 0,
                 searchRequest.owner,
                 1,
-                OfferResultAction.ACCEPT
+                OfferAction.ACCEPT
             )
         )
     }
