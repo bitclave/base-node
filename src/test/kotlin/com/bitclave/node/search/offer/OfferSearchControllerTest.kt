@@ -187,7 +187,7 @@ class OfferSearchControllerTest {
     }
 
     @Test
-    fun `get offer search list by owner, searchIds, state, unique, page, size, offersState`() {
+    fun `get offer search list by owner, searchIds, state, unique, page, size, interaction`() {
         this.mvc.perform(
             get("/$version/search/result/user")
                 .param("owner", publicKey)
@@ -196,7 +196,7 @@ class OfferSearchControllerTest {
                 .param("unique", "true")
                 .param("page", "0")
                 .param("size", "20")
-                .param("offersState", "0")
+                .param("interaction", "0")
                 .headers(httpHeaders)
         )
             .andExpect(status().isOk)

@@ -26,9 +26,9 @@ import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.repository.search.offer.OfferSearchRepositoryStrategy
 import com.bitclave.node.repository.search.offer.PostgresOfferSearchRepositoryImpl
 import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepository
-import com.bitclave.node.repository.search.state.OfferSearchStateCrudRepository
-import com.bitclave.node.repository.search.state.OfferSearchStateRepositoryStrategy
-import com.bitclave.node.repository.search.state.PostgresOfferSearchStateRepositoryImpl
+import com.bitclave.node.repository.search.interaction.OfferInteractionCrudRepository
+import com.bitclave.node.repository.search.interaction.OfferInteractionRepositoryStrategy
+import com.bitclave.node.repository.search.interaction.PostgresOfferInteractionRepositoryImpl
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferSearchService
 import com.bitclave.node.services.v1.OfferService
@@ -79,7 +79,7 @@ class OfferServiceTest {
     protected val rtSearchRepository = Mockito.mock(RtSearchRepositoryImpl::class.java)
 
     @Autowired
-    protected lateinit var offerSearchStateCrudRepository: OfferSearchStateCrudRepository
+    protected lateinit var offerInteractionCrudRepository: OfferInteractionCrudRepository
 
     @Autowired
     protected lateinit var searchRequestCrudRepository: SearchRequestCrudRepository
@@ -179,8 +179,8 @@ class OfferServiceTest {
             PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository)
         val offerSearchRepositoryStrategy = OfferSearchRepositoryStrategy(offerSearchRepository)
 
-        val offerSearchStateRepository = PostgresOfferSearchStateRepositoryImpl(offerSearchStateCrudRepository)
-        val offerSearchStateRepositoryStrategy = OfferSearchStateRepositoryStrategy(offerSearchStateRepository)
+        val offerSearchStateRepository = PostgresOfferInteractionRepositoryImpl(offerInteractionCrudRepository)
+        val offerSearchStateRepositoryStrategy = OfferInteractionRepositoryStrategy(offerSearchStateRepository)
 
         val offerSearchService = OfferSearchService(
             requestRepositoryStrategy,

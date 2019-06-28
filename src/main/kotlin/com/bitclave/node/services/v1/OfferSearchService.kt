@@ -6,8 +6,8 @@ import com.bitclave.node.repository.models.Offer
 import com.bitclave.node.repository.models.OfferResultAction
 import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.repository.models.OfferSearchResultItem
-import com.bitclave.node.repository.models.OfferSearchState
-import com.bitclave.node.repository.models.OfferSearchStateId
+import com.bitclave.node.repository.models.OfferInteraction
+import com.bitclave.node.repository.models.OfferInteractionId
 import com.bitclave.node.repository.models.QuerySearchRequest
 import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.offer.OfferRepository
@@ -15,7 +15,7 @@ import com.bitclave.node.repository.rtSearch.RtSearchRepository
 import com.bitclave.node.repository.search.SearchRequestRepository
 import com.bitclave.node.repository.search.offer.OfferSearchRepository
 import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepository
-import com.bitclave.node.repository.search.state.OfferSearchStateRepository
+import com.bitclave.node.repository.search.interaction.OfferInteractionRepository
 import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
@@ -53,7 +53,7 @@ class OfferSearchService(
     private val offerSearchRepository: RepositoryStrategy<OfferSearchRepository>,
     private val querySearchRequestCrudRepository: QuerySearchRequestCrudRepository,
     private val rtSearchRepository: RtSearchRepository,
-    private val offerSearchStateRepository: RepositoryStrategy<OfferSearchStateRepository>,
+    private val offerInteractionRepository: RepositoryStrategy<OfferInteractionRepository>,
     private val gson: Gson
 ) {
 
@@ -92,7 +92,7 @@ class OfferSearchService(
             val content = offerSearchListToResult(
                 result.content,
                 offerRepository.changeStrategy(strategy),
-                offerSearchStateRepository.changeStrategy(strategy)
+                offerInteractionRepository.changeStrategy(strategy)
             )
 
             val pageable = PageRequest(result.number, result.size, result.sort)
@@ -108,7 +108,7 @@ class OfferSearchService(
         searchRequestIds: List<Long> = emptyList(),
         state: List<OfferResultAction> = emptyList(),
         pageRequest: PageRequest = PageRequest(0, 20),
-        offersState: Boolean = false
+        interaction: Boolean = false
     ): CompletableFuture<Page<OfferSearchResultItem>> {
 
         return CompletableFuture.supplyAsync {
@@ -161,8 +161,8 @@ class OfferSearchService(
                 content = offerSearchListToResult(
                     subItems,
                     offerRepository.changeStrategy(strategy),
-                    offerSearchStateRepository.changeStrategy(strategy),
-                    offersState
+                    offerInteractionRepository.changeStrategy(strategy),
+                    interaction
                 )
             }
             logger.debug { "4 step) content ms: $step4" }
@@ -195,12 +195,12 @@ class OfferSearchService(
                     )
                 )
 
-            offerSearchStateRepository
+            offerInteractionRepository
                 .changeStrategy(strategy)
                 .findByOfferIdAndOwner(offerSearch.offerId, searchRequest.owner)
-                ?: offerSearchStateRepository
+                ?: offerInteractionRepository
                     .changeStrategy(strategy).save(
-                        OfferSearchState(
+                        OfferInteraction(
                             0,
                             searchRequest.owner,
                             offerSearch.offerId,
@@ -221,16 +221,16 @@ class OfferSearchService(
                 .findById(offerSearchId)
                 ?: throw BadArgumentException("offer search item id not exist")
 
-            val state = offerSearchStateRepository
+            val state = offerInteractionRepository
                 .changeStrategy(strategy)
                 .findByOfferIdAndOwner(item.offerId, item.owner)
-                ?: OfferSearchState(0, item.owner, item.offerId)
+                ?: OfferInteraction(0, item.owner, item.offerId)
 
             val events = mutableListOf<String>()
             events.addAll(state.events)
             events.add(event)
 
-            offerSearchStateRepository
+            offerInteractionRepository
                 .changeStrategy(strategy)
                 .save(state.copy(updatedAt = Date(), events = events))
         }
@@ -250,10 +250,10 @@ class OfferSearchService(
                 .findByIdAndOwner(item.searchRequestId, callerPublicKey)
                 ?: throw BadArgumentException("searchRequestId id not exist")
 
-            val state = offerSearchStateRepository
+            val state = offerInteractionRepository
                 .changeStrategy(strategy)
                 .findByOfferIdAndOwner(item.offerId, item.owner)
-                ?: OfferSearchState(0, item.owner, item.offerId)
+                ?: OfferInteraction(0, item.owner, item.offerId)
 
             val event = gson.toJson(OfferSearchEvent(callerPublicKey, state.state))
 
@@ -261,7 +261,7 @@ class OfferSearchService(
             events.addAll(state.events)
             events.add(event)
 
-            offerSearchStateRepository
+            offerInteractionRepository
                 .changeStrategy(strategy)
                 .save(state.copy(state = OfferResultAction.COMPLAIN, updatedAt = Date(), events = events))
         }
@@ -281,17 +281,17 @@ class OfferSearchService(
                 .findByIdAndOwner(item.searchRequestId, callerPublicKey)
                 ?: throw AccessDeniedException()
 
-            val state = offerSearchStateRepository
+            val state = offerInteractionRepository
                 .changeStrategy(strategy)
                 .findByOfferIdAndOwner(item.offerId, item.owner)
-                ?: OfferSearchState(0, item.owner, item.offerId)
+                ?: OfferInteraction(0, item.owner, item.offerId)
 
             val event = OfferSearchEvent(callerPublicKey, state.state)
             val events = mutableListOf<String>()
             events.addAll(state.events)
             events.add(gson.toJson(event))
 
-            offerSearchStateRepository
+            offerInteractionRepository
                 .changeStrategy(strategy)
                 .save(state.copy(state = OfferResultAction.EVALUATE, updatedAt = Date(), events = events))
         }
@@ -311,17 +311,17 @@ class OfferSearchService(
                 .findByIdAndOwner(item.searchRequestId, callerPublicKey)
                 ?: throw BadArgumentException("searchRequestId item id not exist")
 
-            val state = offerSearchStateRepository
+            val state = offerInteractionRepository
                 .changeStrategy(strategy)
                 .findByOfferIdAndOwner(item.offerId, item.owner)
-                ?: OfferSearchState(0, item.owner, item.offerId)
+                ?: OfferInteraction(0, item.owner, item.offerId)
 
             val event = OfferSearchEvent(callerPublicKey, state.state)
             val events = mutableListOf<String>()
             events.addAll(state.events)
             events.add(gson.toJson(event))
 
-            offerSearchStateRepository
+            offerInteractionRepository
                 .changeStrategy(strategy)
                 .save(state.copy(state = OfferResultAction.REJECT, updatedAt = Date(), events = events))
         }
@@ -341,17 +341,17 @@ class OfferSearchService(
                 .findByIdAndOwner(item.searchRequestId, callerPublicKey)
                 ?: throw BadArgumentException("searchRequestId id not exist")
 
-            val state = offerSearchStateRepository
+            val state = offerInteractionRepository
                 .changeStrategy(strategy)
                 .findByOfferIdAndOwner(item.offerId, item.owner)
-                ?: OfferSearchState(0, item.owner, item.offerId)
+                ?: OfferInteraction(0, item.owner, item.offerId)
 
             val event = OfferSearchEvent(callerPublicKey, state.state)
             val events = mutableListOf<String>()
             events.addAll(state.events)
             events.add(gson.toJson(event))
 
-            offerSearchStateRepository
+            offerInteractionRepository
                 .changeStrategy(strategy)
                 .save(state.copy(state = OfferResultAction.CLAIMPURCHASE, updatedAt = Date(), events = events))
         }
@@ -383,10 +383,10 @@ class OfferSearchService(
             if (offer.owner != callerPublicKey)
                 throw BadArgumentException("the caller must be the owner of the offer")
 
-            val state = offerSearchStateRepository
+            val state = offerInteractionRepository
                 .changeStrategy(strategy)
                 .findByOfferIdAndOwner(item.offerId, item.owner)
-                ?: OfferSearchState(0, item.owner, item.offerId)
+                ?: OfferInteraction(0, item.owner, item.offerId)
 
             // fixme anti-pattern 'magic numbers'
             val event = OfferSearchEventConfirmed(callerPublicKey, state.state, "22")
@@ -394,7 +394,7 @@ class OfferSearchService(
             events.addAll(state.events)
             events.add(gson.toJson(event))
 
-            offerSearchStateRepository
+            offerInteractionRepository
                 .changeStrategy(strategy)
                 .save(state.copy(state = OfferResultAction.CONFIRMED, updatedAt = Date(), events = events))
         }
@@ -639,15 +639,15 @@ class OfferSearchService(
                 val uniqueOwners = offerSearches.map { it.owner }
                 val uniqueOfferIds = offerSearches.map { it.offerId }
 
-                val states = offerSearchStateRepository
+                val states = offerInteractionRepository
                     .changeStrategy(strategyType)
                     .findByOfferIdInAndOwnerIn(uniqueOfferIds, uniqueOwners)
-                    .groupBy { OfferSearchStateId(it.offerId, it.owner) }
+                    .groupBy { OfferInteractionId(it.offerId, it.owner) }
 
-                val stateForSave = offerSearches.filter { states[OfferSearchStateId(it.offerId, it.owner)] == null }
-                    .map { OfferSearchState(0, it.owner, it.offerId) }
+                val stateForSave = offerSearches.filter { states[OfferInteractionId(it.offerId, it.owner)] == null }
+                    .map { OfferInteraction(0, it.owner, it.offerId) }
 
-                offerSearchStateRepository
+                offerInteractionRepository
                     .changeStrategy(strategyType)
                     .save(stateForSave)
             }
@@ -670,7 +670,7 @@ class OfferSearchService(
                 val resultItems = offerSearchListToResult(
                     offerSearchResult,
                     offerRepository.changeStrategy(strategyType),
-                    offerSearchStateRepository.changeStrategy(strategyType)
+                    offerInteractionRepository.changeStrategy(strategyType)
                 )
 
                 val pageable = PageRequest(offerIds.number, offerIds.size, offerIds.sort)
@@ -686,8 +686,8 @@ class OfferSearchService(
     private fun offerSearchListToResult(
         offerSearch: List<OfferSearch>,
         offersRepository: OfferRepository,
-        offerSearchStateRepository: OfferSearchStateRepository,
-        offersState: Boolean = false
+        offerInteractionRepository: OfferInteractionRepository,
+        interactions: Boolean = false
     ): List<OfferSearchResultItem> {
 
         var offerIds = listOf<Long>()
@@ -720,11 +720,11 @@ class OfferSearchService(
         }
         logger.debug { "3.3 step) offerSearch with existed offers ms: $step33" }
 
-        val states = mutableMapOf<Long, List<OfferSearchState>>()
+        val states = mutableMapOf<Long, List<OfferInteraction>>()
 
-        if (offersState && withExistedOffers.isNotEmpty()) {
+        if (interactions && withExistedOffers.isNotEmpty()) {
             val uniqueOffersIds = withExistedOffers.map { it.offerId }
-            states.putAll(offerSearchStateRepository
+            states.putAll(offerInteractionRepository
                 .findByOfferIdInAndOwner(uniqueOffersIds, withExistedOffers[0].owner)
                 .groupBy { it.offerId })
         }
@@ -750,13 +750,13 @@ class OfferSearchService(
     ): CompletableFuture<Void> {
         return CompletableFuture.runAsync {
             offerSearchRepository.changeStrategy(strategyType).deleteAllByOwner(owner)
-            offerSearchStateRepository.changeStrategy(strategyType).deleteAllByOwner(owner)
+            offerInteractionRepository.changeStrategy(strategyType).deleteAllByOwner(owner)
         }
     }
 
     fun deleteByOfferId(offerId: Long, strategy: RepositoryStrategyType) {
         offerSearchRepository.changeStrategy(strategy).deleteAllByOfferId(offerId)
-        offerSearchStateRepository.changeStrategy(strategy).findByOfferId(offerId).filter {
+        offerInteractionRepository.changeStrategy(strategy).findByOfferId(offerId).filter {
             it.state == OfferResultAction.NONE || it.state == OfferResultAction.REJECT
         }
     }
@@ -770,13 +770,13 @@ class OfferSearchService(
 
         offerSearchRepository.changeStrategy(strategy).deleteAllBySearchRequestId(searchRequestId)
 
-        val filteredStateIds = offerSearchStateRepository
+        val filteredStateIds = offerInteractionRepository
             .changeStrategy(strategy)
             .findByOfferIdInAndOwner(offerIds, owner).filter {
                 it.state == OfferResultAction.NONE || it.state == OfferResultAction.REJECT
             }.map { it.id }
 
-        offerSearchStateRepository.changeStrategy(strategy).delete(filteredStateIds)
+        offerInteractionRepository.changeStrategy(strategy).delete(filteredStateIds)
     }
 
     fun deleteBySearchRequestIdIn(searchRequestIds: List<Long>, owner: String, strategy: RepositoryStrategyType) {
@@ -788,12 +788,12 @@ class OfferSearchService(
 
         offerSearchRepository.changeStrategy(strategy).deleteAllBySearchRequestIdIn(searchRequestIds)
 
-        val filteredStateIds = offerSearchStateRepository
+        val filteredStateIds = offerInteractionRepository
             .changeStrategy(strategy)
             .findByOfferIdInAndOwner(offerIds, owner).filter {
                 it.state == OfferResultAction.NONE || it.state == OfferResultAction.REJECT
             }.map { it.id }
 
-        offerSearchStateRepository.changeStrategy(strategy).delete(filteredStateIds)
+        offerInteractionRepository.changeStrategy(strategy).delete(filteredStateIds)
     }
 }

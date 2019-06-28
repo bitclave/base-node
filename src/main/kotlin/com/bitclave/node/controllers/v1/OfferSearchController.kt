@@ -214,9 +214,9 @@ class OfferSearchController(
         @RequestParam("sort", defaultValue = "rank", required = false)
         sort: String,
 
-        @ApiParam("Optional. if true when return list of states by offerIds and owner")
-        @RequestParam("offersState", defaultValue = "0", required = false)
-        offersState: Boolean,
+        @ApiParam("Optional. if true when return list of interactions by offerIds and owner")
+        @RequestParam("interaction", defaultValue = "0", required = false)
+        interaction: Boolean,
 
         @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
         @RequestHeader("Strategy", required = false)
@@ -230,7 +230,7 @@ class OfferSearchController(
             searchIds,
             state,
             PageRequest(page, size, Sort(sort)),
-            offersState
+            interaction
         ).exceptionally { e ->
             logger.error("Request: getResultByOwner/$owner raised $e")
             throw e

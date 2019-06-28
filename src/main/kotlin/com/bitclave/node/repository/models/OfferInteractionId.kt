@@ -1,10 +1,10 @@
 package com.bitclave.node.repository.models
 
-data class OfferSearchStateId(
+data class OfferInteractionId(
     val offerId: Long,
     val owner: String
-) : Comparable<OfferSearchStateId> {
-    override fun compareTo(other: OfferSearchStateId): Int {
+) : Comparable<OfferInteractionId> {
+    override fun compareTo(other: OfferInteractionId): Int {
         return if (other.offerId == this.offerId && other.owner == this.owner) 1 else 0
     }
 
@@ -12,7 +12,7 @@ data class OfferSearchStateId(
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
 
-        other as OfferSearchStateId
+        other as OfferInteractionId
 
         if (offerId != other.offerId) return false
         if (owner != other.owner) return false

@@ -34,9 +34,9 @@ import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.repository.search.offer.OfferSearchRepositoryStrategy
 import com.bitclave.node.repository.search.offer.PostgresOfferSearchRepositoryImpl
 import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepository
-import com.bitclave.node.repository.search.state.OfferSearchStateCrudRepository
-import com.bitclave.node.repository.search.state.OfferSearchStateRepositoryStrategy
-import com.bitclave.node.repository.search.state.PostgresOfferSearchStateRepositoryImpl
+import com.bitclave.node.repository.search.interaction.OfferInteractionCrudRepository
+import com.bitclave.node.repository.search.interaction.OfferInteractionRepositoryStrategy
+import com.bitclave.node.repository.search.interaction.PostgresOfferInteractionRepositoryImpl
 import com.bitclave.node.repository.share.OfferShareCrudRepository
 import com.bitclave.node.repository.share.OfferShareRepositoryStrategy
 import com.bitclave.node.repository.share.PostgresOfferShareRepositoryImpl
@@ -107,7 +107,7 @@ class OfferSearchServiceTest {
     protected lateinit var offerSearchService: OfferSearchService
 
     @Autowired
-    protected lateinit var offerSearchStateCrudRepository: OfferSearchStateCrudRepository
+    protected lateinit var offerInteractionCrudRepository: OfferInteractionCrudRepository
 
     @Autowired
     protected lateinit var offerShareCrudRepository: OfferShareCrudRepository
@@ -188,8 +188,8 @@ class OfferSearchServiceTest {
         val offerSearchRepository = PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository)
         val offerSearchRepositoryStrategy = OfferSearchRepositoryStrategy(offerSearchRepository)
 
-        val offerSearchStateRepository = PostgresOfferSearchStateRepositoryImpl(offerSearchStateCrudRepository)
-        val offerSearchStateRepositoryStrategy = OfferSearchStateRepositoryStrategy(offerSearchStateRepository)
+        val offerSearchStateRepository = PostgresOfferInteractionRepositoryImpl(offerInteractionCrudRepository)
+        val offerSearchStateRepositoryStrategy = OfferInteractionRepositoryStrategy(offerSearchStateRepository)
 
         val offerPriceRepository =
             PostgresOfferPriceRepositoryImpl(offerPriceCrudRepository, offerPriceRuleCrudRepository)
@@ -409,7 +409,7 @@ class OfferSearchServiceTest {
             .get()
             .content
 
-        val state = offerSearchStateCrudRepository
+        val state = offerInteractionCrudRepository
             .findByOfferIdAndOwner(createdOffer1.id, createdSearchRequest1.owner)
 
         assert(result.isNotEmpty())
@@ -640,7 +640,7 @@ class OfferSearchServiceTest {
 
         offerSearchService.addEventTo("bla bla bla", createdSearchRequest1.id, strategy).get()
 
-        val state = offerSearchStateCrudRepository.findByOfferIdAndOwner(createdOffer1.id, createdSearchRequest1.owner)
+        val state = offerInteractionCrudRepository.findByOfferIdAndOwner(createdOffer1.id, createdSearchRequest1.owner)
 
         assert(state!!.events.contains("bla bla bla"))
         assert(state.updatedAt.time > state.createdAt.time)
@@ -670,7 +670,7 @@ class OfferSearchServiceTest {
             .get()
             .content
 
-        val state = offerSearchStateCrudRepository.findByOfferIdAndOwner(1L, createdSearchRequest1.owner)
+        val state = offerInteractionCrudRepository.findByOfferIdAndOwner(1L, createdSearchRequest1.owner)
 
         assert(result.isNotEmpty())
         assert(result[0].offerSearch.id >= 1L)
@@ -698,7 +698,7 @@ class OfferSearchServiceTest {
             .content
 
         val state =
-            offerSearchStateCrudRepository.findByOfferIdAndOwner(result[0].offer.id, createdSearchRequest1.owner)
+            offerInteractionCrudRepository.findByOfferIdAndOwner(result[0].offer.id, createdSearchRequest1.owner)
         assert(result.size == 1)
         assert(result[0].offerSearch.id == createdSearchRequest1.id)
         assert(state!!.state == OfferResultAction.ACCEPT)
@@ -714,7 +714,7 @@ class OfferSearchServiceTest {
         `client can complain to search item`()
 
         var result = offerSearchService.getOfferSearches(strategy, createdOffer1.id).get()
-        val state1 = offerSearchStateCrudRepository.findByOfferIdAndOwner(createdOffer1.id, createdSearchRequest2.owner)
+        val state1 = offerInteractionCrudRepository.findByOfferIdAndOwner(createdOffer1.id, createdSearchRequest2.owner)
 
         assert(result.size == 2)
         assert(result[0].id >= 1L)
@@ -722,7 +722,7 @@ class OfferSearchServiceTest {
         assert(result[1].id >= 1L)
 
         result = offerSearchService.getOfferSearches(strategy, createdOffer2.id, createdSearchRequest1.id).get()
-        val state2 = offerSearchStateCrudRepository.findByOfferIdAndOwner(createdOffer2.id, createdSearchRequest1.owner)
+        val state2 = offerInteractionCrudRepository.findByOfferIdAndOwner(createdOffer2.id, createdSearchRequest1.owner)
 
         assert(result.size == 1)
         assert(result[0].id >= 1L)
@@ -736,7 +736,7 @@ class OfferSearchServiceTest {
         createOfferSearch(createdSearchRequest2, createdOffer1)
 
         val result = offerSearchService.getOfferSearches(strategy, createdOffer1.id).get()
-        val state = offerSearchStateCrudRepository.findByOfferIdAndOwner(createdOffer1.id, createdSearchRequest2.owner)
+        val state = offerInteractionCrudRepository.findByOfferIdAndOwner(createdOffer1.id, createdSearchRequest2.owner)
 
         assert(result.size == 2)
         assert(result[0].id >= 1L)

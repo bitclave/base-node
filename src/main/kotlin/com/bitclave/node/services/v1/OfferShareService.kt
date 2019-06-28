@@ -3,12 +3,12 @@ package com.bitclave.node.services.v1
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.OfferResultAction
-import com.bitclave.node.repository.models.OfferSearchState
+import com.bitclave.node.repository.models.OfferInteraction
 import com.bitclave.node.repository.models.OfferShareData
 import com.bitclave.node.repository.offer.OfferRepository
 import com.bitclave.node.repository.search.SearchRequestRepository
 import com.bitclave.node.repository.search.offer.OfferSearchRepository
-import com.bitclave.node.repository.search.state.OfferSearchStateRepository
+import com.bitclave.node.repository.search.interaction.OfferInteractionRepository
 import com.bitclave.node.repository.share.OfferShareRepository
 import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.errors.BadArgumentException
@@ -26,7 +26,7 @@ class OfferShareService(
     private val offerRepository: RepositoryStrategy<OfferRepository>,
     private val offerSearchRepository: RepositoryStrategy<OfferSearchRepository>,
     private val searchRequestRepository: RepositoryStrategy<SearchRequestRepository>,
-    private val offerSearchStateRepository: RepositoryStrategy<OfferSearchStateRepository>
+    private val offerInteractionRepository: RepositoryStrategy<OfferInteractionRepository>
 ) {
     fun getShareData(
         offerOwner: String,
@@ -75,10 +75,10 @@ class OfferShareService(
                 .findById(offerSearch.offerId)
                 ?: throw BadArgumentException("offer id not exist")
 
-            val state = offerSearchStateRepository
+            val state = offerInteractionRepository
                 .changeStrategy(strategy)
                 .findByOfferIdAndOwner(offerSearch.offerId, offerSearch.owner)
-                ?: OfferSearchState(-1, offerSearch.owner, offerSearch.offerId)
+                ?: OfferInteraction(0, offerSearch.owner, offerSearch.offerId)
 
             val price = offer.offerPrices.find { it.id == data.priceId }
                 ?: throw BadArgumentException("priceId should be in offer")
@@ -97,7 +97,7 @@ class OfferShareService(
                 .changeStrategy(strategy)
                 .saveShareData(shareData)
 
-            offerSearchStateRepository
+            offerInteractionRepository
                 .changeStrategy(strategy)
                 .save(state.copy(state = OfferResultAction.ACCEPT, updatedAt = Date()))
         }

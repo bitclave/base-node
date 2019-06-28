@@ -13,7 +13,7 @@ import com.bitclave.node.repository.models.OfferPrice
 import com.bitclave.node.repository.models.OfferPriceRules
 import com.bitclave.node.repository.models.OfferResultAction
 import com.bitclave.node.repository.models.OfferSearch
-import com.bitclave.node.repository.models.OfferSearchState
+import com.bitclave.node.repository.models.OfferInteraction
 import com.bitclave.node.repository.models.OfferShareData
 import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.offer.OfferCrudRepository
@@ -29,9 +29,9 @@ import com.bitclave.node.repository.search.SearchRequestRepositoryStrategy
 import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.repository.search.offer.OfferSearchRepositoryStrategy
 import com.bitclave.node.repository.search.offer.PostgresOfferSearchRepositoryImpl
-import com.bitclave.node.repository.search.state.OfferSearchStateCrudRepository
-import com.bitclave.node.repository.search.state.OfferSearchStateRepositoryStrategy
-import com.bitclave.node.repository.search.state.PostgresOfferSearchStateRepositoryImpl
+import com.bitclave.node.repository.search.interaction.OfferInteractionCrudRepository
+import com.bitclave.node.repository.search.interaction.OfferInteractionRepositoryStrategy
+import com.bitclave.node.repository.search.interaction.PostgresOfferInteractionRepositoryImpl
 import com.bitclave.node.repository.share.OfferShareCrudRepository
 import com.bitclave.node.repository.share.OfferShareRepositoryStrategy
 import com.bitclave.node.repository.share.PostgresOfferShareRepositoryImpl
@@ -86,7 +86,7 @@ class OfferShareServiceTest {
     protected lateinit var offerSearchCrudRepository: OfferSearchCrudRepository
 
     @Autowired
-    protected lateinit var offerSearchStateCrudRepository: OfferSearchStateCrudRepository
+    protected lateinit var offerInteractionCrudRepository: OfferInteractionCrudRepository
 
     private val accountClient: Account =
         Account("02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea")
@@ -141,8 +141,8 @@ class OfferShareServiceTest {
         val offerSearchRepository = PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository)
         val offerSearchRepositoryStrategy = OfferSearchRepositoryStrategy(offerSearchRepository)
 
-        val offerSearchStateRepository = PostgresOfferSearchStateRepositoryImpl(offerSearchStateCrudRepository)
-        val offerSearchStateRepositoryStrategy = OfferSearchStateRepositoryStrategy(offerSearchStateRepository)
+        val offerSearchStateRepository = PostgresOfferInteractionRepositoryImpl(offerInteractionCrudRepository)
+        val offerSearchStateRepositoryStrategy = OfferInteractionRepositoryStrategy(offerSearchStateRepository)
 
         val offerPriceRepository =
             PostgresOfferPriceRepositoryImpl(offerPriceCrudRepository, offerPriceRuleCrudRepository)
@@ -183,7 +183,7 @@ class OfferShareServiceTest {
                 )
             )
         offerSearchStateRepository.repository.save(
-            OfferSearchState(
+            OfferInteraction(
                 0,
                 searchRequest.owner,
                 1,

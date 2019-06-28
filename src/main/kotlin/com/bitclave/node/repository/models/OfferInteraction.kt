@@ -29,7 +29,7 @@ enum class OfferResultAction {
         UniqueConstraint(columnNames = ["owner", "offerId"])
     ]
 )
-data class OfferSearchState(
+data class OfferInteraction(
     @GeneratedValue(strategy = GenerationType.TABLE) @Id val id: Long = 0,
 
     @Column(length = 256) val owner: String = "",
