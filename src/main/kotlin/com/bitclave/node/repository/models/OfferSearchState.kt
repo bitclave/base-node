@@ -22,9 +22,6 @@ enum class OfferResultAction {
     COMPLAIN,       // set by User when complains on the offer
     CLAIMPURCHASE   // set by User to communicate that he mad the purchase for external offer
 }
-// Общий для всех OfferSearch.
-// общая модель потому что я мог посмотреть на офер из разных SearchRequest
-//
 
 @Entity
 @Table(

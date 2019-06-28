@@ -91,8 +91,10 @@ class OfferSearchService(
 
             val content = offerSearchListToResult(
                 result.content,
-                offerRepository.changeStrategy(strategy)
+                offerRepository.changeStrategy(strategy),
+                offerSearchStateRepository.changeStrategy(strategy)
             )
+
             val pageable = PageRequest(result.number, result.size, result.sort)
 
             PageImpl(content, pageable, result.totalElements)
@@ -105,7 +107,8 @@ class OfferSearchService(
         unique: Boolean = false,
         searchRequestIds: List<Long> = emptyList(),
         state: List<OfferResultAction> = emptyList(),
-        pageRequest: PageRequest = PageRequest(0, 20)
+        pageRequest: PageRequest = PageRequest(0, 20),
+        offersState: Boolean = false
     ): CompletableFuture<Page<OfferSearchResultItem>> {
 
         return CompletableFuture.supplyAsync {
@@ -157,7 +160,9 @@ class OfferSearchService(
             val step4 = measureTimeMillis {
                 content = offerSearchListToResult(
                     subItems,
-                    offerRepository.changeStrategy(strategy)
+                    offerRepository.changeStrategy(strategy),
+                    offerSearchStateRepository.changeStrategy(strategy),
+                    offersState
                 )
             }
             logger.debug { "4 step) content ms: $step4" }
@@ -366,7 +371,7 @@ class OfferSearchService(
 
             // check requestId exist
             searchRequestRepository.changeStrategy(strategy)
-                .findByIdAndOwner(item.searchRequestId, callerPublicKey)
+                .findById(item.searchRequestId)
                 ?: throw BadArgumentException("searchRequestId does not exists: ${item.searchRequestId}")
 
             // check OfferId exist
@@ -664,7 +669,8 @@ class OfferSearchService(
             val step8 = measureTimeMillis {
                 val resultItems = offerSearchListToResult(
                     offerSearchResult,
-                    offerRepository.changeStrategy(strategyType)
+                    offerRepository.changeStrategy(strategyType),
+                    offerSearchStateRepository.changeStrategy(strategyType)
                 )
 
                 val pageable = PageRequest(offerIds.number, offerIds.size, offerIds.sort)
@@ -679,7 +685,9 @@ class OfferSearchService(
 
     private fun offerSearchListToResult(
         offerSearch: List<OfferSearch>,
-        offersRepository: OfferRepository
+        offersRepository: OfferRepository,
+        offerSearchStateRepository: OfferSearchStateRepository,
+        offersState: Boolean = false
     ): List<OfferSearchResultItem> {
 
         var offerIds = listOf<Long>()
@@ -712,9 +720,24 @@ class OfferSearchService(
         }
         logger.debug { "3.3 step) offerSearch with existed offers ms: $step33" }
 
+        val states = mutableMapOf<Long, List<OfferSearchState>>()
+
+        if (offersState && withExistedOffers.isNotEmpty()) {
+            val uniqueOffersIds = withExistedOffers.map { it.offerId }
+            states.putAll(offerSearchStateRepository
+                .findByOfferIdInAndOwner(uniqueOffersIds, withExistedOffers[0].owner)
+                .groupBy { it.offerId })
+        }
+
         var result = listOf<OfferSearchResultItem>()
         val step34 = measureTimeMillis {
-            result = withExistedOffers.map { OfferSearchResultItem(it, offers.getValue(it.offerId)[0]) }
+            result = withExistedOffers.map {
+                OfferSearchResultItem(
+                    it,
+                    offers.getValue(it.offerId)[0],
+                    states[it.offerId]?.get(0)
+                )
+            }
         }
         logger.debug { "3.4 step) final result ms: $step34" }
 
@@ -750,8 +773,8 @@ class OfferSearchService(
         val filteredStateIds = offerSearchStateRepository
             .changeStrategy(strategy)
             .findByOfferIdInAndOwner(offerIds, owner).filter {
-            it.state == OfferResultAction.NONE || it.state == OfferResultAction.REJECT
-        }.map { it.id }
+                it.state == OfferResultAction.NONE || it.state == OfferResultAction.REJECT
+            }.map { it.id }
 
         offerSearchStateRepository.changeStrategy(strategy).delete(filteredStateIds)
     }

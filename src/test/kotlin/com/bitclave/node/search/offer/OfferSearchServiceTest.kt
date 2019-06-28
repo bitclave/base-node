@@ -819,8 +819,7 @@ class OfferSearchServiceTest {
         `delete all OfferSearch objects when related SearchRequest object is deleted`()
 
         val result = offerSearchService.getDanglingOfferSearches(strategy, false, true).get()
-        assert(result.size == 1)
-        assert(result[0].searchRequestId == createdSearchRequest1.id)
+        assert(result.isEmpty())
     }
 
     @Test
@@ -1125,6 +1124,66 @@ class OfferSearchServiceTest {
         assert(result[1].offer.id == savedOffer1.id)
         assert(result[2].offer.id == savedOffer3.id)
         assert(result[3].offer.id == savedOffer2.id)
+    }
+
+    @Test
+    fun `should return offers & offerSearches and offerSearchStates`() {
+        val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
+        val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
+        val repository = offerRepositoryStrategy.changeStrategy(strategy)
+
+        val offerRankRepository = PostgresOfferRankRepositoryImpl(offerRankCrudRepository)
+        val offerRankRepositoryStrategy = OfferRankRepositoryStrategy(offerRankRepository)
+        val rankRepository = offerRankRepositoryStrategy.changeStrategy(strategy)
+
+        val offer1 = Offer(0, businessPublicKey, listOf(), "desc", "title", "url")
+        val offer2 = Offer(0, businessPublicKey, listOf(), "desc", "title", "url")
+        val offer3 = Offer(0, businessPublicKey, listOf(), "desc", "title", "url")
+
+        val savedOffer1 = repository.saveOffer(offer1)
+        val savedOffer2 = repository.saveOffer(offer2)
+        val savedOffer3 = repository.saveOffer(offer3)
+
+        rankRepository.saveRankOffer(OfferRank(0, 1, savedOffer2.id, publicKey))
+        rankRepository.saveRankOffer(OfferRank(0, 2, savedOffer3.id, publicKey))
+        rankRepository.saveRankOffer(OfferRank(0, 3, savedOffer1.id, publicKey))
+
+        createOfferSearch(createdSearchRequest1, savedOffer1)
+        createOfferSearch(createdSearchRequest1, savedOffer2)
+        createOfferSearch(createdSearchRequest2, savedOffer3)
+        createOfferSearch(createdSearchRequest2, savedOffer1)
+
+        val offerSearches = offerSearchService
+            .getOffersAndOfferSearchesByParams(
+                strategy,
+                publicKey,
+                false,
+                emptyList(),
+                emptyList(),
+                PageRequest(0, 4)
+            ).get().content
+
+        offerSearches.forEach {
+            offerSearchService.complain(it.offerSearch.id, publicKey, strategy).get()
+        }
+
+        val result = offerSearchService
+            .getOffersAndOfferSearchesByParams(
+                strategy,
+                publicKey,
+                false,
+                emptyList(),
+                arrayListOf(OfferResultAction.COMPLAIN),
+                PageRequest(0, 4, Sort("rank")),
+                true
+            ).get().content
+
+
+        result.forEach {
+            assert(it.states != null)
+            assert(it.states!!.offerId == it.offer.id)
+            assert(it.states!!.owner == it.offerSearch.owner)
+        }
     }
 
     @Test

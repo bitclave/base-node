@@ -187,6 +187,22 @@ class OfferSearchControllerTest {
     }
 
     @Test
+    fun `get offer search list by owner, searchIds, state, unique, page, size, offersState`() {
+        this.mvc.perform(
+            get("/$version/search/result/user")
+                .param("owner", publicKey)
+                .param("searchIds", "1,2")
+                .param("state", "EVALUATE,ACCEPT")
+                .param("unique", "true")
+                .param("page", "0")
+                .param("size", "20")
+                .param("offersState", "0")
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
+    }
+
+    @Test
     fun `get error with wrong state value`() {
         this.mvc.perform(
             get("/$version/search/result/user")
