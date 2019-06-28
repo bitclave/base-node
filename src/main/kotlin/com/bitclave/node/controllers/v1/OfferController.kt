@@ -311,7 +311,7 @@ class OfferController(
                 owner,
                 PageRequest(0, 20), getStrategyType(strategy)
             ).exceptionally { e ->
-                logger.error("Request: getPageableOffers/$page/$size raised $e")
+                logger.error("Request: getPageableOffersByOwner/$page/$size raised $e")
                 throw e
             }
         }
@@ -321,7 +321,7 @@ class OfferController(
             PageRequest(page, size),
             getStrategyType(strategy)
         ).exceptionally { e ->
-            logger.error("Request: getPageableOffers/$page/$size raised $e")
+            logger.error("Request: getPageableOffersByOwner/$page/$size raised $e")
             throw e
         }
     }

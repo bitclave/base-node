@@ -95,4 +95,8 @@ class PostgresOfferRepositoryImpl(
     override fun getOfferByOwnerAndTag(owner: String, tagKey: String): List<Offer> {
         return repository.getOfferByOwnerAndTag(owner, tagKey)
     }
+
+    override fun getAllOffersExceptProducts(pageable: Pageable): Page<Offer> {
+        return repository.getAllOffersExceptProducts(pageable)
+    }
 }
