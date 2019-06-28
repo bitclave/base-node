@@ -1128,7 +1128,7 @@ class OfferSearchServiceTest {
     }
 
     @Test
-    fun `should return offers & offerSearches and offerSearchStates`() {
+    fun `should return offers & offerSearches and OfferIntracations`() {
         val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
         val repository = offerRepositoryStrategy.changeStrategy(strategy)
@@ -1181,9 +1181,9 @@ class OfferSearchServiceTest {
 
 
         result.forEach {
-            assert(it.states != null)
-            assert(it.states!!.offerId == it.offer.id)
-            assert(it.states!!.owner == it.offerSearch.owner)
+            assert(it.interaction != null)
+            assert(it.interaction!!.offerId == it.offer.id)
+            assert(it.interaction!!.owner == it.offerSearch.owner)
         }
     }
 
