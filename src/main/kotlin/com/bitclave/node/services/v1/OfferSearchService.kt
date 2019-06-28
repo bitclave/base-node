@@ -550,6 +550,26 @@ class OfferSearchService(
         }
     }
 
+    fun getSuggestion(decodedQuery: String, size: Int): CompletableFuture<List<String>> {
+        return CompletableFuture.supplyAsync {
+            var result = emptyList<String>()
+
+            try {
+                result = rtSearchRepository
+                    .getSuggestionByQuery(decodedQuery, size)
+                    .get()
+            } catch (e: HttpClientErrorException) {
+                logger.error("rt-search error: $e")
+
+                if (e.rawStatusCode <= 499) {
+                    throw e
+                }
+            }
+
+            return@supplyAsync result
+        }
+    }
+
     fun createOfferSearchesByQuery(
         searchRequestId: Long,
         owner: String,

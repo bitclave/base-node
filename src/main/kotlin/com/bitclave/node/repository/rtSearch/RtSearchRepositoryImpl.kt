@@ -46,4 +46,21 @@ class RtSearchRepositoryImpl(
             return@supplyAsync offerIdsResponse.body
         }
     }
+
+    override fun getSuggestionByQuery(decodedQuery: String, size: Int): CompletableFuture<List<String>> {
+        return CompletableFuture.supplyAsync {
+
+            val parameters = mapOf(
+                "query" to decodedQuery,
+                "size" to size
+            )
+            val offerIdsResponse = restTemplate.exchange(
+                "/v1/suggest?q={query}&s={size}",
+                HttpMethod.GET, null,
+                object : ParameterizedTypeReference<List<String>>() {},
+                parameters
+            )
+            return@supplyAsync offerIdsResponse.body
+        }
+    }
 }
