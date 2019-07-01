@@ -51,7 +51,6 @@ class PostgresOfferRepositoryImpl(
     }
 
     override fun deleteOffers(owner: String): Long {
-        // TODO delete OfferSearch based on BULK deleted offers
         return repository.deleteByOwner(owner)
     }
 

@@ -2,7 +2,6 @@ package com.bitclave.node.search.offer
 
 import com.bitclave.node.extensions.toJsonString
 import com.bitclave.node.repository.RepositoryStrategyType
-import com.bitclave.node.repository.models.OfferResultAction
 import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.models.SignedRequest
@@ -22,7 +21,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import java.util.ArrayList
 import java.util.Date
 
 @ActiveProfiles("test")
@@ -48,9 +46,6 @@ class OfferSearchControllerTest {
         publicKey,
         1L,
         1L,
-        OfferResultAction.NONE,
-        "",
-        ArrayList(),
         Date(1550561756503)
     )
 
@@ -192,14 +187,69 @@ class OfferSearchControllerTest {
     }
 
     @Test
+    fun `get offer search list by owner, searchIds, state, unique, page, size, interaction`() {
+        this.mvc.perform(
+            get("/$version/search/result/user")
+                .param("owner", publicKey)
+                .param("searchIds", "1,2")
+                .param("state", "EVALUATE,ACCEPT")
+                .param("unique", "true")
+                .param("page", "0")
+                .param("size", "20")
+                .param("interaction", "0")
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
+    }
+
+    @Test
+    fun `get interactions by owner`() {
+        this.mvc.perform(
+            get("/$version/search/result/interaction")
+                .param("owner", publicKey)
+                .headers(httpHeaders)
+        ).andExpect(status().isOk)
+    }
+
+    @Test
+    fun `get interactions by owner and states`() {
+        this.mvc.perform(
+            get("/$version/search/result/interaction")
+                .param("owner", publicKey)
+                .param("states", "COMPLAIN,REJECT")
+                .headers(httpHeaders)
+        ).andExpect(status().isOk)
+    }
+
+    @Test
+    fun `get interactions by owner and offers`() {
+        this.mvc.perform(
+            get("/$version/search/result/interaction")
+                .param("owner", publicKey)
+                .param("offers", "1,2")
+                .headers(httpHeaders)
+        ).andExpect(status().isOk)
+    }
+
+    @Test
+    fun `get interactions by owner, states and offers`() {
+        this.mvc.perform(
+            get("/$version/search/result/interaction")
+                .param("owner", publicKey)
+                .param("states", "COMPLAIN,REJECT")
+                .param("offers", "1,2")
+                .headers(httpHeaders)
+        ).andExpect(status().isOk)
+    }
+
+    @Test
     fun `get error with wrong state value`() {
         this.mvc.perform(
             get("/$version/search/result/user")
                 .param("owner", publicKey)
                 .param("state", "SOME_VALUE")
                 .headers(httpHeaders)
-        )
-            .andExpect(status().isBadRequest)
+        ).andExpect(status().isBadRequest)
     }
 
     @Test
@@ -208,8 +258,7 @@ class OfferSearchControllerTest {
             patch("/$version/search/result/event/1")
                 .content(offerEventRequest.toJsonString())
                 .headers(httpHeaders)
-        )
-            .andExpect(status().isOk)
+        ).andExpect(status().isOk)
     }
 
     @Test
@@ -218,8 +267,7 @@ class OfferSearchControllerTest {
             patch("/$version/search/result/1")
                 .content(offerSearchIdRequest.toJsonString())
                 .headers(httpHeaders)
-        )
-            .andExpect(status().isOk)
+        ).andExpect(status().isOk)
     }
 
     @Test
@@ -228,8 +276,7 @@ class OfferSearchControllerTest {
             post("/$version/search/result/")
                 .content(offerSearchRequest.toJsonString())
                 .headers(httpHeaders)
-        )
-            .andExpect(status().isCreated)
+        ).andExpect(status().isCreated)
     }
 
     @Test
@@ -240,8 +287,7 @@ class OfferSearchControllerTest {
             post("/$version/search/result/")
                 .content(modelWithoutUpdateAt)
                 .headers(httpHeaders)
-        )
-            .andExpect(status().isCreated)
+        ).andExpect(status().isCreated)
     }
 
     @Test
@@ -249,8 +295,7 @@ class OfferSearchControllerTest {
         this.mvc.perform(
             get("/$version/search/results?page=0&size=2")
                 .headers(httpHeaders)
-        )
-            .andExpect(status().isOk)
+        ).andExpect(status().isOk)
     }
 
     @Test
@@ -259,7 +304,6 @@ class OfferSearchControllerTest {
             put("/$version/search/result/$publicKey/1")
                 .content(requestSearch.toJsonString())
                 .headers(httpHeaders)
-        )
-            .andExpect(status().isOk)
+        ).andExpect(status().isOk)
     }
 }

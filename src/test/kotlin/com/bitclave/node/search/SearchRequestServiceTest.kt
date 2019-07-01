@@ -9,7 +9,6 @@ import com.bitclave.node.repository.account.HybridAccountRepositoryImpl
 import com.bitclave.node.repository.account.PostgresAccountRepositoryImpl
 import com.bitclave.node.repository.models.Account
 import com.bitclave.node.repository.models.Offer
-import com.bitclave.node.repository.models.OfferResultAction
 import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.offer.OfferCrudRepository
@@ -23,6 +22,9 @@ import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.repository.search.offer.OfferSearchRepositoryStrategy
 import com.bitclave.node.repository.search.offer.PostgresOfferSearchRepositoryImpl
 import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepository
+import com.bitclave.node.repository.search.interaction.OfferInteractionCrudRepository
+import com.bitclave.node.repository.search.interaction.OfferInteractionRepositoryStrategy
+import com.bitclave.node.repository.search.interaction.PostgresOfferInteractionRepositoryImpl
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferSearchService
 import com.bitclave.node.services.v1.SearchRequestService
@@ -40,7 +42,6 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
-import java.util.ArrayList
 import java.util.concurrent.CompletableFuture
 
 @ActiveProfiles("test")
@@ -68,6 +69,9 @@ class SearchRequestServiceTest {
     @Autowired
     protected lateinit var offerSearchCrudRepository: OfferSearchCrudRepository
     protected lateinit var offerSearchService: OfferSearchService
+
+    @Autowired
+    protected lateinit var offerInteractionCrudRepository: OfferInteractionCrudRepository
 
     @Autowired
     protected lateinit var offerCrudRepository: OfferCrudRepository
@@ -130,19 +134,20 @@ class SearchRequestServiceTest {
         val repositoryStrategy = AccountRepositoryStrategy(postgres, hybrid)
         val accountService = AccountService(repositoryStrategy)
         val searchRequestRepository =
-            PostgresSearchRequestRepositoryImpl(searchRequestCrudRepository, offerSearchCrudRepository)
+            PostgresSearchRequestRepositoryImpl(
+                searchRequestCrudRepository,
+                offerSearchCrudRepository
+            )
         val requestRepositoryStrategy = SearchRequestRepositoryStrategy(searchRequestRepository)
         val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
 
         val offerSearchRepository =
-            PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository, searchRequestRepository)
+            PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository)
         val offerSearchRepositoryStrategy = OfferSearchRepositoryStrategy(offerSearchRepository)
 
-        searchRequestService = SearchRequestService(
-            requestRepositoryStrategy,
-            querySearchRequestCrudRepository
-        )
+        val offerSearchStateRepository = PostgresOfferInteractionRepositoryImpl(offerInteractionCrudRepository)
+        val offerSearchStateRepositoryStrategy = OfferInteractionRepositoryStrategy(offerSearchStateRepository)
 
         offerSearchService = OfferSearchService(
             requestRepositoryStrategy,
@@ -150,7 +155,15 @@ class SearchRequestServiceTest {
             offerSearchRepositoryStrategy,
             querySearchRequestCrudRepository,
             rtSearchRepository,
+            offerSearchStateRepositoryStrategy,
             gson
+        )
+
+        searchRequestService = SearchRequestService(
+            requestRepositoryStrategy,
+            offerSearchRepositoryStrategy,
+            querySearchRequestCrudRepository,
+            offerSearchService
         )
 
         strategy = RepositoryStrategyType.POSTGRES
@@ -330,10 +343,7 @@ class SearchRequestServiceTest {
                 0,
                 result1.owner,
                 result1.id,
-                createdOffer1.id,
-                OfferResultAction.NONE,
-                "",
-                ArrayList()
+                createdOffer1.id
             ),
             strategy
         ).get()
@@ -343,10 +353,7 @@ class SearchRequestServiceTest {
                 0,
                 result1.owner,
                 result1.id,
-                createdOffer2.id,
-                OfferResultAction.NONE,
-                "",
-                ArrayList()
+                createdOffer2.id
             ),
             strategy
         ).get()
@@ -358,16 +365,14 @@ class SearchRequestServiceTest {
                 0,
                 result2.owner,
                 result2.id,
-                createdOffer1.id,
-                OfferResultAction.NONE,
-                "",
-                ArrayList()
+                createdOffer1.id
             ),
             strategy
         ).get()
 
-        val clonedRequest =
-            searchRequestService.cloneSearchRequestWithOfferSearches(account.publicKey, result1, strategy).get()
+        val clonedRequest = searchRequestService
+            .cloneSearchRequestWithOfferSearches(account.publicKey, result1, strategy)
+            .get()
 
         assertThat(clonedRequest).isEqualToIgnoringGivenFields(searchRequest, *ignoredFields)
 
@@ -380,15 +385,12 @@ class SearchRequestServiceTest {
             .content
 
         assertThat(offerSearches.size).isEqualTo(2)
-        assert(offerSearches[0].offerSearch.state != offerSearches[1].offerSearch.state)
 
         val clonedOfferSearches = offerSearchService.getOffersResult(strategy, clonedRequest.id)
             .get()
             .content
 
         assertThat(clonedOfferSearches.size).isEqualTo(2)
-        assert(clonedOfferSearches[0].offerSearch.state == OfferResultAction.NONE)
-        assert(clonedOfferSearches[1].offerSearch.state == OfferResultAction.NONE)
     }
 
     @Test
