@@ -1237,10 +1237,10 @@ class OfferSearchServiceTest {
         assert(result[2].offerSearch.offerId == result[2].offer.id)
         assert(result[3].offerSearch.offerId == result[3].offer.id)
 
-        assert(result[0].offer.id == savedOffer3.id)
-        assert(result[1].offer.id == savedOffer2.id)
-        assert(result[2].offer.id == savedOffer1.id)
-        assert(result[3].offer.id == savedOffer1.id)
+        assert(result[0].offer.id == savedOffer1.id)
+        assert(result[1].offer.id == savedOffer1.id)
+        assert(result[2].offer.id == savedOffer3.id)
+        assert(result[3].offer.id == savedOffer2.id)
     }
 
     @Test
