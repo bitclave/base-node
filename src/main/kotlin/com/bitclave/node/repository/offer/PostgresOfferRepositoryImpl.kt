@@ -102,6 +102,10 @@ class PostgresOfferRepositoryImpl(
         return syncElementCollections(repository.getOfferByOwnerAndTag(owner, tagKey))
     }
 
+    override fun getAllOffersExceptProducts(pageable: Pageable): Page<Offer> {
+        return syncElementCollections(repository.getAllOffersExceptProducts(pageable))
+    }
+
     private fun syncElementCollections(offer: Offer?): Offer? {
         return offer ?: syncElementCollections(listOf(offer!!))[0]
     }
@@ -167,9 +171,5 @@ class PostgresOfferRepositoryImpl(
 
         println("syncElementCollections merge result: $mergeResult")
         return result
-    }
-
-    override fun getAllOffersExceptProducts(pageable: Pageable): Page<Offer> {
-        return repository.getAllOffersExceptProducts(pageable)
     }
 }
