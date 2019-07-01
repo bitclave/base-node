@@ -106,9 +106,12 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     @Query(
         value = """
-            SELECT *
-            FROM offer_search s, offer o WHERE s.offer_id = o.id AND s.owner = :owner
-            ORDER BY o.updated_at DESC
+            SELECT *,
+            CASE WHEN ss.updated_at IS NULL THEN s.created_at ELSE ss.updated_at END AS updated_at
+            FROM offer_search s
+            LEFT JOIN offer_interaction ss on s.offer_id = ss.offer_id AND s.owner = ss.owner
+            WHERE s.owner = :owner
+            ORDER BY updated_at DESC
         """,
         nativeQuery = true
     )
@@ -217,9 +220,12 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     @Query(
         value = """
-            SELECT *
-            FROM offer_search s, offer o WHERE s.offer_id = o.id AND s.owner = :owner AND s.search_request_id IN :ids
-            ORDER BY o.updated_at DESC
+            SELECT *,
+            CASE WHEN ss.updated_at IS NULL THEN s.created_at ELSE ss.updated_at END AS updated_at
+            FROM offer_search s
+            LEFT JOIN offer_interaction ss on s.offer_id = ss.offer_id AND s.owner = ss.owner
+            WHERE s.owner = :owner AND s.search_request_id IN :ids
+            ORDER BY updated_at DESC
         """,
         nativeQuery = true
     )
@@ -249,14 +255,13 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     @Query(
         value = """
             SELECT *
-            FROM offer o, offer_search s
+            FROM offer_search s
             JOIN offer_interaction ss on s.offer_id = ss.offer_id AND s.owner = ss.owner
             WHERE
-                s.offer_id = o.id
-                AND s.owner = :owner
+                s.owner = :owner
                 AND s.search_request_id IN :ids
                 AND ss.state IN :state
-            ORDER BY o.updated_at DESC
+            ORDER BY ss.updated_at DESC
         """,
         nativeQuery = true
     )
