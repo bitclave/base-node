@@ -156,9 +156,9 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     @Query(
         value = """
             SELECT *
-            FROM offer o, offer_search s JOIN offer_interaction ss on s.offer_id = ss.offer_id AND s.owner = ss.owner
-            WHERE s.offer_id = o.id AND s.owner = :owner AND ss.state IN :state
-            order by o.updated_at DESC
+            FROM offer_search s JOIN offer_interaction ss on s.offer_id = ss.offer_id AND s.owner = ss.owner
+            WHERE s.owner = :owner AND ss.state IN :state
+            order by ss.updated_at DESC
         """,
         nativeQuery = true
     )
