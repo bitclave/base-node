@@ -168,4 +168,8 @@ class PostgresOfferRepositoryImpl(
         println("syncElementCollections merge result: $mergeResult")
         return result
     }
+
+    override fun getAllOffersExceptProducts(pageable: Pageable): Page<Offer> {
+        return repository.getAllOffersExceptProducts(pageable)
+    }
 }

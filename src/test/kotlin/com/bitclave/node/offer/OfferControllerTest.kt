@@ -197,6 +197,16 @@ class OfferControllerTest {
     }
 
     @Test
+    fun `get offers by page for matcher`() {
+        this.mvc.perform(
+            MockMvcRequestBuilders.get("/$version/offers/matcher?page=0&size=2")
+                .headers(httpHeaders)
+        )
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andReturn()
+    }
+
+    @Test
     fun `get the total count of Offers`() {
         this.mvc.perform(
             get("/$version/client/$publicKey/offer/count")
