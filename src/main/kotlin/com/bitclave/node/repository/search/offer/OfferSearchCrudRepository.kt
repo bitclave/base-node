@@ -94,11 +94,11 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     @Query(
         value = """
             SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank,
-            CASE WHEN ss.updated_at IS NULL THEN s.created_at ELSE ss.updated_at END AS updated_at
+            CASE WHEN ss.updated_at IS NULL THEN s.created_at ELSE ss.updated_at END AS updated_at_sort
             FROM offer_search s LEFT JOIN offer_rank r ON s.offer_id = r.offer_id
             LEFT JOIN offer_interaction ss on s.offer_id = ss.offer_id AND s.owner = ss.owner
             WHERE s.owner = :owner
-            order by united_rank desc, updated_at DESC
+            order by united_rank desc, updated_at_sort DESC
         """,
         nativeQuery = true
     )
@@ -107,11 +107,11 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     @Query(
         value = """
             SELECT *,
-            CASE WHEN ss.updated_at IS NULL THEN s.created_at ELSE ss.updated_at END AS updated_at
+            CASE WHEN ss.updated_at IS NULL THEN s.created_at ELSE ss.updated_at END AS updated_at_sort
             FROM offer_search s
             LEFT JOIN offer_interaction ss on s.offer_id = ss.offer_id AND s.owner = ss.owner
             WHERE s.owner = :owner
-            ORDER BY updated_at DESC
+            ORDER BY updated_at_sort DESC
         """,
         nativeQuery = true
     )
@@ -205,11 +205,11 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     @Query(
         value = """
             SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank,
-            CASE WHEN ss.updated_at IS NULL THEN s.created_at ELSE ss.updated_at END AS updated_at
+            CASE WHEN ss.updated_at IS NULL THEN s.created_at ELSE ss.updated_at END AS updated_at_sort
             FROM offer_search s LEFT JOIN offer_rank r ON s.offer_id = r.offer_id
             LEFT JOIN offer_interaction ss on s.offer_id = ss.offer_id AND s.owner = ss.owner
             where s.owner = :owner AND s.search_request_id IN :ids
-            order by united_rank desc, updated_at DESC
+            order by united_rank desc, updated_at_sort DESC
         """,
         nativeQuery = true
     )
@@ -221,11 +221,11 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     @Query(
         value = """
             SELECT *,
-            CASE WHEN ss.updated_at IS NULL THEN s.created_at ELSE ss.updated_at END AS updated_at
+            CASE WHEN ss.updated_at IS NULL THEN s.created_at ELSE ss.updated_at END AS updated_at_sort
             FROM offer_search s
             LEFT JOIN offer_interaction ss on s.offer_id = ss.offer_id AND s.owner = ss.owner
             WHERE s.owner = :owner AND s.search_request_id IN :ids
-            ORDER BY updated_at DESC
+            ORDER BY updated_at_sort DESC
         """,
         nativeQuery = true
     )
