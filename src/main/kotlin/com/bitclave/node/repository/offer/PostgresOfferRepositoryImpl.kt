@@ -128,6 +128,10 @@ class PostgresOfferRepositoryImpl(
     private fun syncElementCollections(offers: List<Offer>): List<Offer> {
         val ids = offers.map { it.id }.distinct().joinToString(",")
 
+        if (ids.isEmpty()) {
+            return emptyList()
+        }
+
         var queryResultTags = emptyList<Array<Any>>()
         var queryResultCompare = emptyList<Array<Any>>()
         var queryResultRules = emptyList<Array<Any>>()
@@ -211,12 +215,23 @@ class PostgresOfferRepositoryImpl(
 
     private fun syncPriceRules(offerPriceIds: List<Long>): Map<Long, List<OfferPriceRules>> {
         val ids = offerPriceIds.joinToString(",")
-        @Suppress("UNCHECKED_CAST")
-        return (entityManager
-            .createNativeQuery(
-                "SELECT * FROM offer_price_rules WHERE offer_price_id in ($ids);",
-                OfferPriceRules::class.java
-            )
-            .resultList as List<OfferPriceRules>).groupBy { it.originalOfferPriceId }
+        var result = mapOf<Long, List<OfferPriceRules>>()
+
+        if (offerPriceIds.isEmpty()) {
+            return result
+        }
+
+        val loadPrices = measureTimeMillis {
+            @Suppress("UNCHECKED_CAST")
+            result = (entityManager
+                .createNativeQuery(
+                    "SELECT * FROM offer_price_rules WHERE offer_price_id in ($ids);",
+                    OfferPriceRules::class.java
+                )
+                .resultList as List<OfferPriceRules>).groupBy { it.originalOfferPriceId }
+        }
+        println("syncElementCollections syncPriceRules: $loadPrices")
+
+        return result
     }
 }
