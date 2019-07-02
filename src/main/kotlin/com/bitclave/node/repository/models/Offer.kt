@@ -20,7 +20,7 @@ data class Offer(
     @GeneratedValue(strategy = GenerationType.TABLE) @Id val id: Long = 0,
     @Column(length = 256) val owner: String = "",
 
-    @OneToMany(mappedBy = "offer", cascade = [CascadeType.REMOVE], fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "offer", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
     val offerPrices: List<OfferPrice> = emptyList(),
 
     @Column(length = 512) val description: String = "",

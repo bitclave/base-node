@@ -22,13 +22,13 @@ import com.bitclave.node.repository.rtSearch.RtSearchRepositoryImpl
 import com.bitclave.node.repository.search.PostgresSearchRequestRepositoryImpl
 import com.bitclave.node.repository.search.SearchRequestCrudRepository
 import com.bitclave.node.repository.search.SearchRequestRepositoryStrategy
+import com.bitclave.node.repository.search.interaction.OfferInteractionCrudRepository
+import com.bitclave.node.repository.search.interaction.OfferInteractionRepositoryStrategy
+import com.bitclave.node.repository.search.interaction.PostgresOfferInteractionRepositoryImpl
 import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.repository.search.offer.OfferSearchRepositoryStrategy
 import com.bitclave.node.repository.search.offer.PostgresOfferSearchRepositoryImpl
 import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepository
-import com.bitclave.node.repository.search.interaction.OfferInteractionCrudRepository
-import com.bitclave.node.repository.search.interaction.OfferInteractionRepositoryStrategy
-import com.bitclave.node.repository.search.interaction.PostgresOfferInteractionRepositoryImpl
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferSearchService
 import com.bitclave.node.services.v1.OfferService
@@ -45,6 +45,7 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import java.math.BigDecimal
+import javax.persistence.EntityManager
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
@@ -86,6 +87,9 @@ class OfferServiceTest {
 
     @Autowired
     private lateinit var gson: Gson
+
+    @Autowired
+    private lateinit var entityManager: EntityManager
 
     private val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
 
@@ -159,7 +163,8 @@ class OfferServiceTest {
         val repositoryStrategy = AccountRepositoryStrategy(postgres, hybrid)
         val accountService = AccountService(repositoryStrategy)
 
-        val postgresOfferRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
+        val postgresOfferRepository =
+            PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository, entityManager)
         val offerServiceStrategy = OfferRepositoryStrategy(postgresOfferRepository)
 
         val postgresOfferPriceRepository =
@@ -172,8 +177,6 @@ class OfferServiceTest {
                 offerSearchCrudRepository
             )
         val requestRepositoryStrategy = SearchRequestRepositoryStrategy(searchRequestRepository)
-        val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
-        val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
 
         val offerSearchRepository =
             PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository)
@@ -184,7 +187,7 @@ class OfferServiceTest {
 
         val offerSearchService = OfferSearchService(
             requestRepositoryStrategy,
-            offerRepositoryStrategy,
+            offerServiceStrategy,
             offerSearchRepositoryStrategy,
             querySearchRequestCrudRepository,
             rtSearchRepository,

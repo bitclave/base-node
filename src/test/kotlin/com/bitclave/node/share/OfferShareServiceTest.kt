@@ -9,11 +9,11 @@ import com.bitclave.node.repository.account.HybridAccountRepositoryImpl
 import com.bitclave.node.repository.account.PostgresAccountRepositoryImpl
 import com.bitclave.node.repository.models.Account
 import com.bitclave.node.repository.models.Offer
+import com.bitclave.node.repository.models.OfferAction
+import com.bitclave.node.repository.models.OfferInteraction
 import com.bitclave.node.repository.models.OfferPrice
 import com.bitclave.node.repository.models.OfferPriceRules
-import com.bitclave.node.repository.models.OfferAction
 import com.bitclave.node.repository.models.OfferSearch
-import com.bitclave.node.repository.models.OfferInteraction
 import com.bitclave.node.repository.models.OfferShareData
 import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.offer.OfferCrudRepository
@@ -26,12 +26,12 @@ import com.bitclave.node.repository.priceRule.OfferPriceRulesCrudRepository
 import com.bitclave.node.repository.search.PostgresSearchRequestRepositoryImpl
 import com.bitclave.node.repository.search.SearchRequestCrudRepository
 import com.bitclave.node.repository.search.SearchRequestRepositoryStrategy
-import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
-import com.bitclave.node.repository.search.offer.OfferSearchRepositoryStrategy
-import com.bitclave.node.repository.search.offer.PostgresOfferSearchRepositoryImpl
 import com.bitclave.node.repository.search.interaction.OfferInteractionCrudRepository
 import com.bitclave.node.repository.search.interaction.OfferInteractionRepositoryStrategy
 import com.bitclave.node.repository.search.interaction.PostgresOfferInteractionRepositoryImpl
+import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
+import com.bitclave.node.repository.search.offer.OfferSearchRepositoryStrategy
+import com.bitclave.node.repository.search.offer.PostgresOfferSearchRepositoryImpl
 import com.bitclave.node.repository.share.OfferShareCrudRepository
 import com.bitclave.node.repository.share.OfferShareRepositoryStrategy
 import com.bitclave.node.repository.share.PostgresOfferShareRepositoryImpl
@@ -47,6 +47,7 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import java.math.BigDecimal
+import javax.persistence.EntityManager
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
@@ -88,6 +89,9 @@ class OfferShareServiceTest {
     @Autowired
     protected lateinit var offerInteractionCrudRepository: OfferInteractionCrudRepository
 
+    @Autowired
+    private lateinit var entityManager: EntityManager
+
     private val accountClient: Account =
         Account("02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea")
     private val accountBusiness: Account =
@@ -125,7 +129,8 @@ class OfferShareServiceTest {
         val hybrid = HybridAccountRepositoryImpl(web3Provider, hybridProperties)
         val repositoryStrategy = AccountRepositoryStrategy(postgres, hybrid)
         val accountService = AccountService(repositoryStrategy)
-        val postgresOfferRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
+        val postgresOfferRepository =
+            PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository, entityManager)
         val offerRepositoryStrategy = OfferRepositoryStrategy(postgresOfferRepository)
 
         val offerShareRepository = PostgresOfferShareRepositoryImpl(offerShareCrudRepository)

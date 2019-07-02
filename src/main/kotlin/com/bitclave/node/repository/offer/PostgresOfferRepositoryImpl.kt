@@ -1,6 +1,8 @@
 package com.bitclave.node.repository.offer
 
 import com.bitclave.node.repository.models.Offer
+import com.bitclave.node.repository.models.OfferPrice
+import com.bitclave.node.repository.models.OfferPriceRules
 import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.services.errors.DataNotSavedException
 import mu.KotlinLogging
@@ -90,7 +92,14 @@ class PostgresOfferRepositoryImpl(
     }
 
     override fun findAll(pageable: Pageable): Page<Offer> {
-        return syncElementCollections(repository.findAll(pageable))
+        var result: Page<Offer>? = null
+        val step1 = measureTimeMillis {
+            result = repository.findAll(pageable)
+        }
+
+        println("syncElementCollections get pageable: $step1")
+
+        return syncElementCollections(result!!)
     }
 
     override fun getTotalCount(): Long {
@@ -106,7 +115,7 @@ class PostgresOfferRepositoryImpl(
     }
 
     private fun syncElementCollections(offer: Offer?): Offer? {
-        return offer ?: syncElementCollections(listOf(offer!!))[0]
+        return if (offer == null) null else syncElementCollections(listOf(offer))[0]
     }
 
     private fun syncElementCollections(page: Page<Offer>): Page<Offer> {
@@ -119,56 +128,95 @@ class PostgresOfferRepositoryImpl(
     private fun syncElementCollections(offers: List<Offer>): List<Offer> {
         val ids = offers.map { it.id }.distinct().joinToString(",")
 
-        var queryResult = emptyList<Array<Any?>>()
+        var queryResultTags = emptyList<Array<Any>>()
+        var queryResultCompare = emptyList<Array<Any>>()
+        var queryResultRules = emptyList<Array<Any>>()
+        var queryResultPrices = emptyList<OfferPrice>()
 
         val step1 = measureTimeMillis {
             @Suppress("UNCHECKED_CAST")
-            queryResult = entityManager.createNativeQuery(
-                "SELECT *" +
-                    "FROM offer_tags" +
-                    " NATURAL RIGHT OUTER JOIN offer_rules " +
-                    " NATURAL RIGHT OUTER JOIN offer_compare" +
-                    " WHERE offer_id in ($ids);"
-            ).resultList as List<Array<Any?>>
+            queryResultTags = entityManager
+                .createNativeQuery("SELECT * FROM offer_tags WHERE offer_id in ($ids);")
+                .resultList as List<Array<Any>>
+
+            @Suppress("UNCHECKED_CAST")
+            queryResultCompare = entityManager
+                .createNativeQuery("SELECT * FROM offer_compare WHERE offer_id in ($ids);")
+                .resultList as List<Array<Any>>
+
+            @Suppress("UNCHECKED_CAST")
+            queryResultRules = entityManager
+                .createNativeQuery("SELECT * FROM offer_rules WHERE offer_id in ($ids);")
+                .resultList as List<Array<Any>>
+
+            @Suppress("UNCHECKED_CAST")
+            queryResultPrices = entityManager
+                .createNativeQuery("SELECT * FROM offer_price WHERE offer_id in ($ids);", OfferPrice::class.java)
+                .resultList as List<OfferPrice>
         }
 
         println("syncElementCollections get raw result objects: $step1")
 
-        var mappedById = emptyMap<Long, List<Array<Any?>>>()
+        var mappedTags = emptyMap<Long, List<Array<Any>>>()
+        var mappedCompare = emptyMap<Long, List<Array<Any>>>()
+        var mappedRules = emptyMap<Long, List<Array<Any>>>()
+        var mappedPrices = emptyMap<Long, List<OfferPrice>>()
+        var priceIds = emptyList<Long>()
+
         val step2 = measureTimeMillis {
-            mappedById = (queryResult).groupBy { (it[0] as BigInteger).toLong() }
+            mappedTags = (queryResultTags).groupBy { (it[0] as BigInteger).toLong() }
+            mappedCompare = (queryResultCompare).groupBy { (it[0] as BigInteger).toLong() }
+            mappedRules = (queryResultRules).groupBy { (it[0] as BigInteger).toLong() }
+            mappedPrices = (queryResultPrices).groupBy { it.originalOfferId }
+            priceIds = queryResultPrices.map { it.id }.distinct()
         }
         println("syncElementCollections mapping ids: $step2")
 
+        return mergeOfferWithMaps(offers, mappedTags, mappedCompare, mappedRules, mappedPrices, priceIds)
+    }
+
+    private fun mergeOfferWithMaps(
+        offers: List<Offer>,
+        mapTags: Map<Long, List<Array<Any>>>,
+        mapCompare: Map<Long, List<Array<Any>>>,
+        mapRules: Map<Long, List<Array<Any>>>,
+        mapPrices: Map<Long, List<OfferPrice>>,
+        pricesIds: List<Long>
+    ): List<Offer> {
         var result = emptyList<Offer>()
+        val mapPricesRules = syncPriceRules(pricesIds)
 
         val mergeResult = measureTimeMillis {
             result = offers.map {
-                val queryItems = mappedById[it.id]
-                if (queryItems != null) {
-                    val tags = HashMap<String, String>()
-                    val compare = HashMap<String, String>()
-                    val rules = HashMap<String, Offer.CompareAction>()
+                val tags = HashMap<String, String>()
+                val compare = HashMap<String, String>()
+                val rules = HashMap<String, Offer.CompareAction>()
+                val prices = (mapPrices[it.id] ?: emptyList())
+                    .map { price -> price.copy(rules = mapPricesRules[price.id] ?: emptyList()) }
 
-                    queryItems.forEach { item ->
-                        if (item[2] != null) {
-                            tags[item[2] as String] = item[1] as String
-                        }
-                        if (item[4] != null) {
-                            rules[item[4] as String] = Offer.CompareAction.values()[item[3] as Int]
-                        }
-                        if (item[6] != null) {
-                            compare[item[6] as String] = item[5] as String
-                        }
-                    }
-                    return@map it.copy(tags = tags, compare = compare, rules = rules)
+                mapTags[it.id]?.forEach { rawTag -> tags[rawTag[2] as String] = rawTag[1] as String }
+                mapCompare[it.id]?.forEach { rawCompare -> compare[rawCompare[2] as String] = rawCompare[1] as String }
+                mapRules[it.id]?.forEach { rawCompare ->
+                    rules[rawCompare[2] as String] = Offer.CompareAction.values()[rawCompare[1] as Int]
                 }
 
-                return@map it
+                return@map it.copy(tags = tags, compare = compare, rules = rules, offerPrices = prices)
             }
         }
 
         println("syncElementCollections merge result: $mergeResult")
+
         return result
+    }
+
+    private fun syncPriceRules(offerPriceIds: List<Long>): Map<Long, List<OfferPriceRules>> {
+        val ids = offerPriceIds.joinToString(",")
+        @Suppress("UNCHECKED_CAST")
+        return (entityManager
+            .createNativeQuery(
+                "SELECT * FROM offer_price_rules WHERE offer_price_id in ($ids);",
+                OfferPriceRules::class.java
+            )
+            .resultList as List<OfferPriceRules>).groupBy { it.originalOfferPriceId }
     }
 }
