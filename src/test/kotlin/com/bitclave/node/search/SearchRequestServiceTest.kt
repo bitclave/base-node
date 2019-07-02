@@ -140,7 +140,8 @@ class SearchRequestServiceTest {
         val searchRequestRepository =
             PostgresSearchRequestRepositoryImpl(
                 searchRequestCrudRepository,
-                offerSearchCrudRepository
+                offerSearchCrudRepository,
+                entityManager
             )
         val requestRepositoryStrategy = SearchRequestRepositoryStrategy(searchRequestRepository)
         val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository, entityManager)
@@ -150,7 +151,8 @@ class SearchRequestServiceTest {
             PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository)
         val offerSearchRepositoryStrategy = OfferSearchRepositoryStrategy(offerSearchRepository)
 
-        val offerSearchStateRepository = PostgresOfferInteractionRepositoryImpl(offerInteractionCrudRepository)
+        val offerSearchStateRepository =
+            PostgresOfferInteractionRepositoryImpl(offerInteractionCrudRepository, entityManager)
         val offerSearchStateRepositoryStrategy = OfferInteractionRepositoryStrategy(offerSearchStateRepository)
 
         offerSearchService = OfferSearchService(

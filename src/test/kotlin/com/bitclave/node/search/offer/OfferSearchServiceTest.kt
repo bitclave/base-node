@@ -169,6 +169,7 @@ class OfferSearchServiceTest {
     protected lateinit var offerPrices: List<OfferPrice>
     private val searchPageRequest: PageRequest = PageRequest(0, 20)
     private lateinit var searchRequestRepositoryStrategy: SearchRequestRepositoryStrategy
+    private lateinit var offerInteractionRepositoryStrategy: OfferInteractionRepositoryStrategy
 
     @Before
     fun setup() {
@@ -183,7 +184,8 @@ class OfferSearchServiceTest {
         val searchRequestRepository =
             PostgresSearchRequestRepositoryImpl(
                 searchRequestCrudRepository,
-                offerSearchCrudRepository
+                offerSearchCrudRepository,
+                entityManager
             )
         searchRequestRepositoryStrategy = SearchRequestRepositoryStrategy(searchRequestRepository)
 
@@ -193,8 +195,9 @@ class OfferSearchServiceTest {
         val offerSearchRepository = PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository)
         val offerSearchRepositoryStrategy = OfferSearchRepositoryStrategy(offerSearchRepository)
 
-        val offerSearchStateRepository = PostgresOfferInteractionRepositoryImpl(offerInteractionCrudRepository)
-        val offerSearchStateRepositoryStrategy = OfferInteractionRepositoryStrategy(offerSearchStateRepository)
+        val offerInteractionRepository =
+            PostgresOfferInteractionRepositoryImpl(offerInteractionCrudRepository, entityManager)
+        offerInteractionRepositoryStrategy = OfferInteractionRepositoryStrategy(offerInteractionRepository)
 
         val offerPriceRepository =
             PostgresOfferPriceRepositoryImpl(offerPriceCrudRepository, offerPriceRuleCrudRepository)
@@ -208,7 +211,7 @@ class OfferSearchServiceTest {
             offerRepositoryStrategy,
             offerSearchRepositoryStrategy,
             searchRequestRepositoryStrategy,
-            offerSearchStateRepositoryStrategy
+            offerInteractionRepositoryStrategy
         )
 
         offerSearchService = OfferSearchService(
@@ -217,7 +220,7 @@ class OfferSearchServiceTest {
             offerSearchRepositoryStrategy,
             querySearchRequestCrudRepository,
             rtSearchRepository,
-            offerSearchStateRepositoryStrategy,
+            offerInteractionRepositoryStrategy,
             gson
         )
 
@@ -645,7 +648,9 @@ class OfferSearchServiceTest {
 
         offerSearchService.addEventTo("bla bla bla", createdSearchRequest1.id, strategy).get()
 
-        val state = offerInteractionCrudRepository.findByOfferIdAndOwner(createdOffer1.id, createdSearchRequest1.owner)
+        val state = offerInteractionRepositoryStrategy
+            .changeStrategy(RepositoryStrategyType.POSTGRES)
+            .findByOfferIdAndOwner(createdOffer1.id, createdSearchRequest1.owner)
 
         assert(state!!.events.contains("bla bla bla"))
         assert(state.updatedAt.time > state.createdAt.time)
