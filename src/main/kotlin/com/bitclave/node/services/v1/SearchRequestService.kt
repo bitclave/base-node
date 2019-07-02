@@ -4,6 +4,7 @@ import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.search.SearchRequestRepository
+import com.bitclave.node.repository.search.offer.OfferSearchRepository
 import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepository
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
@@ -18,7 +19,9 @@ import java.util.concurrent.CompletableFuture
 @Qualifier("v1")
 class SearchRequestService(
     private val repository: RepositoryStrategy<SearchRequestRepository>,
-    private val querySearchRequestCrudRepository: QuerySearchRequestCrudRepository
+    private val repositoryOfferSearch: RepositoryStrategy<OfferSearchRepository>,
+    private val querySearchRequestCrudRepository: QuerySearchRequestCrudRepository,
+    private val offerSearchService: OfferSearchService
 ) {
 
     fun putSearchRequest(
@@ -44,7 +47,11 @@ class SearchRequestService(
                 createAt
             )
 
-            repository.changeStrategy(strategy).saveSearchRequest(updateSearchRequest)
+            offerSearchService.deleteBySearchRequestId(id, owner, strategy)
+
+            repository
+                .changeStrategy(strategy)
+                .save(updateSearchRequest)
         }
     }
 
@@ -55,10 +62,12 @@ class SearchRequestService(
     ): CompletableFuture<Long> {
 
         return CompletableFuture.supplyAsync {
-            val deletedId = repository.changeStrategy(strategy).deleteSearchRequest(id, owner)
+            val deletedId = repository.changeStrategy(strategy).deleteByIdAndOwner(id, owner)
             if (deletedId == 0L) {
                 throw NotFoundException()
             }
+
+            offerSearchService.deleteBySearchRequestId(id, owner, strategy)
 
             return@supplyAsync deletedId
         }
@@ -70,7 +79,13 @@ class SearchRequestService(
     ): CompletableFuture<Void> {
 
         return CompletableFuture.runAsync {
-            repository.changeStrategy(strategy).deleteSearchRequests(owner)
+            val deletedIds = repository
+                .changeStrategy(strategy)
+                .findByOwner(owner)
+                .map { it.id }
+            repository.changeStrategy(strategy).deleteByOwner(owner)
+
+            offerSearchService.deleteBySearchRequestIdIn(deletedIds, owner, strategy)
         }
     }
 
@@ -111,13 +126,29 @@ class SearchRequestService(
     ): CompletableFuture<SearchRequest> {
 
         return CompletableFuture.supplyAsync {
-            val clonedSearchRequest = SearchRequest(
-                searchRequest.id,
-                owner,
-                searchRequest.tags
-            )
 
-            repository.changeStrategy(strategy).cloneSearchRequestWithOfferSearches(clonedSearchRequest)
+            val existingRequest = repository
+                .changeStrategy(strategy)
+                .findById(searchRequest.id)
+                ?: throw BadArgumentException("SearchRequest does not exist: ${searchRequest.id}")
+
+            val relatedOfferSearches = repositoryOfferSearch
+                .changeStrategy(strategy)
+                .findBySearchRequestId(existingRequest.id)
+
+            val createSearchRequest = repository
+                .changeStrategy(strategy)
+                .save(SearchRequest(0, owner, existingRequest.tags))
+
+            val toBeSavedOfferSearched = relatedOfferSearches.map {
+                it.copy(id = 0, owner = createSearchRequest.owner, searchRequestId = createSearchRequest.id)
+            }
+
+            repositoryOfferSearch
+                .changeStrategy(strategy)
+                .save(toBeSavedOfferSearched)
+
+            createSearchRequest
         }
     }
 

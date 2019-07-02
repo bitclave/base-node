@@ -18,13 +18,26 @@ import com.bitclave.node.repository.price.OfferPriceCrudRepository
 import com.bitclave.node.repository.price.OfferPriceRepositoryStrategy
 import com.bitclave.node.repository.price.PostgresOfferPriceRepositoryImpl
 import com.bitclave.node.repository.priceRule.OfferPriceRulesCrudRepository
+import com.bitclave.node.repository.rtSearch.RtSearchRepositoryImpl
+import com.bitclave.node.repository.search.PostgresSearchRequestRepositoryImpl
+import com.bitclave.node.repository.search.SearchRequestCrudRepository
+import com.bitclave.node.repository.search.SearchRequestRepositoryStrategy
 import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
+import com.bitclave.node.repository.search.offer.OfferSearchRepositoryStrategy
+import com.bitclave.node.repository.search.offer.PostgresOfferSearchRepositoryImpl
+import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepository
+import com.bitclave.node.repository.search.interaction.OfferInteractionCrudRepository
+import com.bitclave.node.repository.search.interaction.OfferInteractionRepositoryStrategy
+import com.bitclave.node.repository.search.interaction.PostgresOfferInteractionRepositoryImpl
 import com.bitclave.node.services.v1.AccountService
+import com.bitclave.node.services.v1.OfferSearchService
 import com.bitclave.node.services.v1.OfferService
+import com.google.gson.Gson
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.domain.PageRequest
@@ -59,6 +72,20 @@ class OfferServiceTest {
 
     @Autowired
     protected lateinit var offerSearchCrudRepository: OfferSearchCrudRepository
+
+    @Autowired
+    protected lateinit var querySearchRequestCrudRepository: QuerySearchRequestCrudRepository
+
+    protected val rtSearchRepository = Mockito.mock(RtSearchRepositoryImpl::class.java)
+
+    @Autowired
+    protected lateinit var offerInteractionCrudRepository: OfferInteractionCrudRepository
+
+    @Autowired
+    protected lateinit var searchRequestCrudRepository: SearchRequestCrudRepository
+
+    @Autowired
+    private lateinit var gson: Gson
 
     private val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
 
@@ -139,7 +166,33 @@ class OfferServiceTest {
             PostgresOfferPriceRepositoryImpl(offerPriceCrudRepository, offerPriceRulesCrudRepository)
         val offerPriceServiceStrategy = OfferPriceRepositoryStrategy(postgresOfferPriceRepository)
 
-        offerService = OfferService(offerServiceStrategy, offerPriceServiceStrategy)
+        val searchRequestRepository =
+            PostgresSearchRequestRepositoryImpl(
+                searchRequestCrudRepository,
+                offerSearchCrudRepository
+            )
+        val requestRepositoryStrategy = SearchRequestRepositoryStrategy(searchRequestRepository)
+        val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
+        val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
+
+        val offerSearchRepository =
+            PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository)
+        val offerSearchRepositoryStrategy = OfferSearchRepositoryStrategy(offerSearchRepository)
+
+        val offerSearchStateRepository = PostgresOfferInteractionRepositoryImpl(offerInteractionCrudRepository)
+        val offerSearchStateRepositoryStrategy = OfferInteractionRepositoryStrategy(offerSearchStateRepository)
+
+        val offerSearchService = OfferSearchService(
+            requestRepositoryStrategy,
+            offerRepositoryStrategy,
+            offerSearchRepositoryStrategy,
+            querySearchRequestCrudRepository,
+            rtSearchRepository,
+            offerSearchStateRepositoryStrategy,
+            gson
+        )
+
+        offerService = OfferService(offerServiceStrategy, offerPriceServiceStrategy, offerSearchService)
 
         strategy = RepositoryStrategyType.POSTGRES
         accountService.registrationClient(account, strategy)

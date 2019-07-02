@@ -1,122 +1,42 @@
 package com.bitclave.node.repository.search.offer
 
-import com.bitclave.node.repository.models.OfferResultAction
+import com.bitclave.node.repository.models.OfferAction
 import com.bitclave.node.repository.models.OfferSearch
-import com.bitclave.node.repository.models.SearchRequest
-import com.bitclave.node.repository.search.SearchRequestRepository
-import com.bitclave.node.services.errors.BadArgumentException
-import com.bitclave.node.services.errors.DataNotSavedException
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Component
-import java.util.ArrayList
 import kotlin.system.measureTimeMillis
 
 @Component
 @Qualifier("postgres")
 class PostgresOfferSearchRepositoryImpl(
-    val repository: OfferSearchCrudRepository,
-    val searchRequestRepository: SearchRequestRepository
+    val repository: OfferSearchCrudRepository
 ) : OfferSearchRepository {
 
     private val logger = KotlinLogging.logger {}
 
-    override fun deleteAllBySearchRequestId(id: Long): Long {
-        return repository.deleteAllBySearchRequestId(id)
-    }
+    override fun deleteAllBySearchRequestId(id: Long): Long = repository.deleteAllBySearchRequestId(id)
+
+    override fun deleteAllBySearchRequestIdIn(ids: List<Long>): Long = repository.deleteAllBySearchRequestIdIn(ids)
 
     override fun deleteAllByOwner(owner: String): List<Long> {
         return repository.deleteAllByOwner(owner)
     }
 
-    override fun saveSearchResult(list: List<OfferSearch>) {
-        var allOffersByOwner: MutableList<OfferSearch> = emptyList<OfferSearch>().toMutableList()
-
-        val step1 = measureTimeMillis {
-            val searchRequestsIds = list
-                .map { it.searchRequestId }
-                .distinct()
-
-            val existedRequests = searchRequestRepository.findById(searchRequestsIds)
-            if (searchRequestsIds.size != existedRequests.size) {
-                throw throw BadArgumentException("search request id not exist")
-            }
-
-            val owners = list
-                .map { it.owner }
-                .distinct()
-
-            val offers = list
-                .map { it.offerId }
-                .distinct()
-
-            allOffersByOwner = when {
-                list.size == 1 -> repository
-                    .findByOwnerAndOfferId(list[0].owner, list[0].offerId)
-                    .toMutableList()
-
-                owners.size == 1 -> repository
-                    .findByOwnerAndOfferIdIn(owners[0], offers)
-                    .toMutableList()
-
-                list.size > 1 -> repository
-                    .findByOwnerIn(owners)
-                    .toMutableList()
-
-                else -> mutableListOf()
-            }
-        }
-        logger.debug { "saveSearchResult: step 1: ms: $step1, l1: ${list.size}, l2: ${allOffersByOwner.size}" }
-
-        val step2 = measureTimeMillis {
-            list.forEach { offer ->
-                val relatedOfferSearches = allOffersByOwner
-                    .filter {
-                        it.id > 0 &&
-                            it.offerId == offer.offerId &&
-                            it.owner == offer.owner
-                    }
-
-                relatedOfferSearches.forEach { it.updatedAt = offer.updatedAt }
-
-                when {
-                    offer.id > 0 -> relatedOfferSearches.forEach { related ->
-                        related.state = offer.state
-                        related.events = offer.events
-                        related.info = offer.info
-                    }
-
-                    relatedOfferSearches.isNotEmpty() -> {
-                        val firstItem = relatedOfferSearches[0]
-                        val events = offer.events
-                            .toMutableList()
-                        events.addAll(firstItem.events)
-
-                        val copiedOffer = offer.copy(
-                            state = firstItem.state,
-                            events = events,
-                            info = firstItem.info
-                        )
-                        allOffersByOwner.add(copiedOffer)
-                    }
-
-                    relatedOfferSearches.isEmpty() -> allOffersByOwner.add(offer.copy())
-                }
-            }
-        }
-        logger.debug { "saveSearchResult: step 2: ms: $step2, l1: ${list.size}, l2: ${allOffersByOwner.size}" }
-
-        val step3 = measureTimeMillis {
-            repository.save(allOffersByOwner) ?: throw DataNotSavedException()
-        }
-        logger.debug { "saveSearchResult: step 3: ms: $step3, l1: ${list.size}, l2: ${allOffersByOwner.size}" }
+    override fun deleteAllByOfferIdAndStateIn(offerId: Long): Int {
+        return repository.deleteAllByOfferIdAndStateIn(offerId)
     }
 
-    override fun saveSearchResult(item: OfferSearch) {
-        saveSearchResult(listOf(item))
+    override fun deleteAllByOfferId(id: Long): Long = repository.deleteAllByOfferId(id)
+
+    override fun save(list: List<OfferSearch>): List<OfferSearch> =
+        repository.save(list).toList()
+
+    override fun save(item: OfferSearch) {
+        save(listOf(item))
     }
 
     override fun findById(id: Long): OfferSearch? {
@@ -125,7 +45,6 @@ class PostgresOfferSearchRepositoryImpl(
 
     override fun findById(ids: List<Long>): List<OfferSearch> {
         return repository.findAll(ids)
-            .asSequence()
             .toList()
     }
 
@@ -137,8 +56,8 @@ class PostgresOfferSearchRepositoryImpl(
         return repository.findBySearchRequestId(id, pageable)
     }
 
-    override fun findBySearchRequestIds(ids: List<Long>): List<OfferSearch> {
-        return repository.findBySearchRequestIdIn(ids)
+    override fun findBySearchRequestIdInAndOwner(ids: List<Long>, owner: String): List<OfferSearch> {
+        return repository.findBySearchRequestIdInAndOwner(ids, owner)
     }
 
     override fun findByOfferId(id: Long): List<OfferSearch> {
@@ -170,7 +89,7 @@ class PostgresOfferSearchRepositoryImpl(
 
     override fun findAllByOwnerAndStateIn(
         owner: String,
-        state: List<OfferResultAction>,
+        state: List<OfferAction>,
         sort: Sort?
     ): List<OfferSearch> {
         val condition = state.map { it.ordinal.toLong() }
@@ -184,7 +103,7 @@ class PostgresOfferSearchRepositoryImpl(
             Sort(Sort.Direction.ASC, "cashback") ->
                 repository.getOfferSearchByOwnerAndStateAndSortByCashBack(owner, condition)
             else ->
-                repository.findAllByOwnerAndStateIn(owner, state)
+                repository.findAllByOwnerAndStateIn(owner, condition)
         }
     }
 
@@ -234,7 +153,7 @@ class PostgresOfferSearchRepositoryImpl(
     override fun findAllByOwnerAndStateAndSearchRequestIdIn(
         owner: String,
         searchRequestIds: List<Long>,
-        state: List<OfferResultAction>,
+        state: List<OfferAction>,
         sort: Sort?
     ): List<OfferSearch> {
         val conditions = state.map { it.ordinal.toLong() }
@@ -264,7 +183,7 @@ class PostgresOfferSearchRepositoryImpl(
                     conditions
                 )
             else ->
-                repository.findByOwnerAndSearchRequestIdInAndStateIn(owner, searchRequestIds, state)
+                repository.findByOwnerAndSearchRequestIdInAndStateIn(owner, searchRequestIds, conditions)
         }
     }
 
@@ -300,38 +219,5 @@ class PostgresOfferSearchRepositoryImpl(
         return repository.count()
     }
 
-    override fun cloneOfferSearchOfSearchRequest(
-        sourceSearchRequestId: Long,
-        targetSearchRequest: SearchRequest
-    ): List<OfferSearch> {
-        val copiedOfferSearchList = repository.findBySearchRequestId(sourceSearchRequestId)
-        val existedOfferSearchList = repository.findBySearchRequestId(targetSearchRequest.id)
-
-        val toBeSavedOfferSearched: MutableList<OfferSearch> = mutableListOf()
-        for (offerSearch: OfferSearch in copiedOfferSearchList) {
-            val exist = existedOfferSearchList
-                .find { it.offerId == offerSearch.offerId && it.owner == offerSearch.owner }
-
-            if (exist == null) {
-                val newOfferSearch = OfferSearch(
-                    0,
-                    targetSearchRequest.owner,
-                    targetSearchRequest.id,
-                    offerSearch.offerId,
-                    OfferResultAction.NONE,
-                    offerSearch.info,
-                    ArrayList()
-                )
-                toBeSavedOfferSearched.add(newOfferSearch)
-            }
-        }
-
-        return repository.save(toBeSavedOfferSearched).toList()
-    }
-
     override fun countBySearchRequestId(id: Long): Long = repository.countBySearchRequestId(id)
-
-    override fun deleteAllByOfferIdAndStateIn(offerId: Long): Int {
-        return repository.deleteAllByOfferIdAndStateIn(offerId)
-    }
 }
