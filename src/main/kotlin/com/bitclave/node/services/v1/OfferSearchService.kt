@@ -185,6 +185,9 @@ class OfferSearchService(
                 .findById(offerSearch.offerId)
                 ?: throw BadArgumentException("offer id not exist")
 
+            logger.debug { "saveNewOfferSearch: " +
+                "$searchRequest, $offerSearch" }
+
             offerSearchRepository.changeStrategy(strategy)
                 .save(
                     OfferSearch(
@@ -572,7 +575,7 @@ class OfferSearchService(
             logger.debug {
                 "cloneOfferSearchOfSearchRequest: toBeSavedOfferSearched before final save " +
                         "size = ${toBeSavedOfferSearched.size}" +
-                        "$toBeSavedOfferSearched"
+                        ", $toBeSavedOfferSearched"
             }
             repository.save(toBeSavedOfferSearched)
         }
