@@ -138,10 +138,10 @@ class SearchRequestService(
 
             val createSearchRequest = repository
                 .changeStrategy(strategy)
-                .save(SearchRequest(0, owner, existingRequest.tags))
+                .save(SearchRequest(0, owner, existingRequest.tags.toMap()))
 
             val toBeSavedOfferSearched = relatedOfferSearches.map {
-                it.copy(id = 0, owner = createSearchRequest.owner, searchRequestId = createSearchRequest.id)
+                it.copy(id = 0, owner = owner, searchRequestId = createSearchRequest.id)
             }
 
             repositoryOfferSearch
