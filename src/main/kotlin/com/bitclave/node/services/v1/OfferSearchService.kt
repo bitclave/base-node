@@ -528,7 +528,16 @@ class OfferSearchService(
 
             val copiedOfferSearchList = repository
                 .findBySearchRequestId(originSearchRequestId)
+            logger.debug {
+                "cloneOfferSearchOfSearchRequest: copiedOfferSearchList size = ${copiedOfferSearchList.size}" +
+                        ", ${originSearchRequestId}"
+            }
+
             val existedOfferSearchList = repository.findBySearchRequestId(searchRequest.id)
+            logger.debug {
+                "cloneOfferSearchOfSearchRequest: existedOfferSearchList size = ${existedOfferSearchList.size}" +
+                        "${searchRequest.id}, ${searchRequest.owner}"
+            }
 
             val toBeSavedOfferSearched: MutableList<OfferSearch> = mutableListOf()
 
@@ -544,6 +553,10 @@ class OfferSearchService(
                         offerSearch.offerId
                     )
                     toBeSavedOfferSearched.add(newOfferSearch)
+                    logger.debug {
+                        "cloneOfferSearchOfSearchRequest: toBeSavedOfferSearched size = ${toBeSavedOfferSearched.size}" +
+                                "${newOfferSearch.id}, ${newOfferSearch.owner}"
+                    }
                 }
             }
 
@@ -556,6 +569,11 @@ class OfferSearchService(
             val interactions = notExistedOffersInInteractions.map { OfferInteraction(0, searchRequest.owner, it) }
             offerInteractionRepository.changeStrategy(strategy).save(interactions)
 
+            logger.debug {
+                "cloneOfferSearchOfSearchRequest: toBeSavedOfferSearched before final save " +
+                        "size = ${toBeSavedOfferSearched.size}" +
+                        "${toBeSavedOfferSearched.toString()}"
+            }
             repository.save(toBeSavedOfferSearched)
         }
     }
