@@ -530,7 +530,7 @@ class OfferSearchService(
                 .findBySearchRequestId(originSearchRequestId)
             logger.debug {
                 "cloneOfferSearchOfSearchRequest: copiedOfferSearchList size = ${copiedOfferSearchList.size}" +
-                        ", ${originSearchRequestId}"
+                        ", $originSearchRequestId"
             }
 
             val existedOfferSearchList = repository.findBySearchRequestId(searchRequest.id)
@@ -572,7 +572,7 @@ class OfferSearchService(
             logger.debug {
                 "cloneOfferSearchOfSearchRequest: toBeSavedOfferSearched before final save " +
                         "size = ${toBeSavedOfferSearched.size}" +
-                        "${toBeSavedOfferSearched}"
+                        "$toBeSavedOfferSearched"
             }
             repository.save(toBeSavedOfferSearched)
         }
