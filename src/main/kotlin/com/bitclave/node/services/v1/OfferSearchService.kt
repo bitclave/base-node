@@ -554,8 +554,8 @@ class OfferSearchService(
                     )
                     toBeSavedOfferSearched.add(newOfferSearch)
                     logger.debug {
-                        "cloneOfferSearchOfSearchRequest: toBeSavedOfferSearched size = ${toBeSavedOfferSearched.size}" +
-                                "${newOfferSearch.id}, ${newOfferSearch.owner}"
+                        "cloneOfferSearchOfSearchRequest: toBeSavedOfferSearched size = " +
+                        "${toBeSavedOfferSearched.size}" + "${newOfferSearch.id}, ${newOfferSearch.owner}"
                     }
                 }
             }
@@ -572,7 +572,7 @@ class OfferSearchService(
             logger.debug {
                 "cloneOfferSearchOfSearchRequest: toBeSavedOfferSearched before final save " +
                         "size = ${toBeSavedOfferSearched.size}" +
-                        "${toBeSavedOfferSearched.toString()}"
+                        "${toBeSavedOfferSearched}"
             }
             repository.save(toBeSavedOfferSearched)
         }
