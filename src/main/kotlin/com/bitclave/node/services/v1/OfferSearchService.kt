@@ -536,7 +536,7 @@ class OfferSearchService(
             val existedOfferSearchList = repository.findBySearchRequestId(searchRequest.id)
             logger.debug {
                 "cloneOfferSearchOfSearchRequest: existedOfferSearchList size = ${existedOfferSearchList.size}" +
-                        "${searchRequest.id}, ${searchRequest.owner}"
+                        ", ${searchRequest.id}, ${searchRequest.owner}"
             }
 
             val toBeSavedOfferSearched: MutableList<OfferSearch> = mutableListOf()
