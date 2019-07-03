@@ -132,21 +132,12 @@ class SearchRequestService(
                 .findById(searchRequest.id)
                 ?: throw BadArgumentException("SearchRequest does not exist: ${searchRequest.id}")
 
-            val relatedOfferSearches = repositoryOfferSearch
-                .changeStrategy(strategy)
-                .findBySearchRequestId(existingRequest.id)
-
             val createSearchRequest = repository
                 .changeStrategy(strategy)
                 .save(SearchRequest(0, owner, existingRequest.tags.toMap()))
 
-            val toBeSavedOfferSearched = relatedOfferSearches.map {
-                it.copy(id = 0, owner = owner, searchRequestId = createSearchRequest.id)
-            }
-
-            repositoryOfferSearch
-                .changeStrategy(strategy)
-                .save(toBeSavedOfferSearched)
+            offerSearchService.cloneOfferSearchOfSearchRequest(existingRequest.id, createSearchRequest, strategy)
+                .get()
 
             createSearchRequest
         }
