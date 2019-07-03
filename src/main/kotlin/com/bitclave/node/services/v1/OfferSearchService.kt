@@ -514,19 +514,20 @@ class OfferSearchService(
     }
 
     fun cloneOfferSearchOfSearchRequest(
-        id: Long,
+        originSearchRequestId: Long,
         searchRequest: SearchRequest,
         strategy: RepositoryStrategyType
     ): CompletableFuture<List<OfferSearch>> {
 
         return CompletableFuture.supplyAsync {
-            searchRequestRepository.changeStrategy(strategy).findById(id)
+            searchRequestRepository.changeStrategy(strategy)
+                .findById(originSearchRequestId)
                 ?: throw BadArgumentException()
 
             val repository = offerSearchRepository.changeStrategy(strategy)
 
             val copiedOfferSearchList = repository
-                .findBySearchRequestId(id)
+                .findBySearchRequestId(originSearchRequestId)
             val existedOfferSearchList = repository.findBySearchRequestId(searchRequest.id)
 
             val toBeSavedOfferSearched: MutableList<OfferSearch> = mutableListOf()
@@ -545,6 +546,15 @@ class OfferSearchService(
                     toBeSavedOfferSearched.add(newOfferSearch)
                 }
             }
+
+            val offerIds = toBeSavedOfferSearched.map { it.offerId }.distinct()
+            val existedOffersInInteractions = offerInteractionRepository.changeStrategy(strategy)
+                .findByOfferIdInAndOwner(offerIds, searchRequest.owner)
+                .map { it.offerId }
+                .toSet()
+            val notExistedOffersInInteractions = offerIds.filter { !existedOffersInInteractions.contains(it) }
+            val interactions = notExistedOffersInInteractions.map { OfferInteraction(0, searchRequest.owner, it) }
+            offerInteractionRepository.changeStrategy(strategy).save(interactions)
 
             repository.save(toBeSavedOfferSearched)
         }
