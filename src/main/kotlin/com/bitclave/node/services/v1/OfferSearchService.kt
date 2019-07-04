@@ -340,9 +340,18 @@ class OfferSearchService(
             val item = repository.findById(offerSearchId)
                 ?: throw BadArgumentException("offer search item id not exist")
 
+
+//            searchRequestRepository.changeStrategy(strategy)
+//                .findByIdAndOwner(item.searchRequestId, callerPublicKey)
+//                ?: throw BadArgumentException("searchRequestId id not exist")
+
+            // while the correct logic is above and we need to verify that the caller
+            // is the owner of the offerSearch, we have some workaround on shepherd-backend
+            // that fails when we add this verification. SHEP-558 created to track the removal of the
+            // hack
             searchRequestRepository.changeStrategy(strategy)
-                .findByIdAndOwner(item.searchRequestId, callerPublicKey)
-                ?: throw BadArgumentException("searchRequestId id not exist")
+                    .findById(item.searchRequestId)
+                    ?: throw BadArgumentException("searchRequestId id not exist")
 
             val state = offerInteractionRepository
                 .changeStrategy(strategy)
