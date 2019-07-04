@@ -185,8 +185,10 @@ class OfferSearchService(
                 .findById(offerSearch.offerId)
                 ?: throw BadArgumentException("offer id not exist")
 
-            logger.debug { "saveNewOfferSearch: " +
-                "$searchRequest, $offerSearch" }
+            logger.debug {
+                "saveNewOfferSearch: " +
+                    "$searchRequest, $offerSearch"
+            }
 
             offerSearchRepository.changeStrategy(strategy)
                 .save(
@@ -349,8 +351,8 @@ class OfferSearchService(
             // that fails when we add this verification. SHEP-558 created to track the removal of the
             // hack
             searchRequestRepository.changeStrategy(strategy)
-                    .findById(item.searchRequestId)
-                    ?: throw BadArgumentException("searchRequestId id not exist")
+                .findById(item.searchRequestId)
+                ?: throw BadArgumentException("searchRequestId id not exist")
 
             val state = offerInteractionRepository
                 .changeStrategy(strategy)
@@ -541,13 +543,13 @@ class OfferSearchService(
                 .findBySearchRequestId(originSearchRequestId)
             logger.debug {
                 "cloneOfferSearchOfSearchRequest: copiedOfferSearchList size = ${copiedOfferSearchList.size}" +
-                        ", $originSearchRequestId"
+                    ", $originSearchRequestId"
             }
 
             val existedOfferSearchList = repository.findBySearchRequestId(searchRequest.id)
             logger.debug {
                 "cloneOfferSearchOfSearchRequest: existedOfferSearchList size = ${existedOfferSearchList.size}" +
-                        ", ${searchRequest.id}, ${searchRequest.owner}"
+                    ", ${searchRequest.id}, ${searchRequest.owner}"
             }
 
             val toBeSavedOfferSearched: MutableList<OfferSearch> = mutableListOf()
@@ -566,7 +568,7 @@ class OfferSearchService(
                     toBeSavedOfferSearched.add(newOfferSearch)
                     logger.debug {
                         "cloneOfferSearchOfSearchRequest: toBeSavedOfferSearched size = " +
-                        "${toBeSavedOfferSearched.size}" + "${newOfferSearch.id}, ${newOfferSearch.owner}"
+                            "${toBeSavedOfferSearched.size}" + "${newOfferSearch.id}, ${newOfferSearch.owner}"
                     }
                 }
             }
@@ -582,8 +584,8 @@ class OfferSearchService(
 
             logger.debug {
                 "cloneOfferSearchOfSearchRequest: toBeSavedOfferSearched before final save " +
-                        "size = ${toBeSavedOfferSearched.size}" +
-                        ", $toBeSavedOfferSearched"
+                    "size = ${toBeSavedOfferSearched.size}" +
+                    ", $toBeSavedOfferSearched"
             }
             repository.save(toBeSavedOfferSearched)
         }
@@ -629,9 +631,7 @@ class OfferSearchService(
             }
 
             val step1 = measureTimeMillis {
-                offerSearchRepository
-                    .changeStrategy(strategyType)
-                    .deleteAllBySearchRequestId(searchRequest.id)
+                deleteBySearchRequestId(searchRequest.id, owner, strategyType)
 
                 searchRequestRepository
                     .changeStrategy(strategyType)
