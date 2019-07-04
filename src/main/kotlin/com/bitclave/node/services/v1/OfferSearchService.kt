@@ -340,7 +340,6 @@ class OfferSearchService(
             val item = repository.findById(offerSearchId)
                 ?: throw BadArgumentException("offer search item id not exist")
 
-
 //            searchRequestRepository.changeStrategy(strategy)
 //                .findByIdAndOwner(item.searchRequestId, callerPublicKey)
 //                ?: throw BadArgumentException("searchRequestId id not exist")
