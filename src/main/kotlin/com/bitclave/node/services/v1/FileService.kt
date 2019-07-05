@@ -74,4 +74,10 @@ class FileService(private val fileRepository: RepositoryStrategy<FileRepository>
             deletedId
         }
     }
+
+    fun deleteFileByPublicKey(publicKey: String, strategy: RepositoryStrategyType): CompletableFuture<Long> {
+        return CompletableFuture.supplyAsync {
+            fileRepository.changeStrategy(strategy).deleteByPublicKey(publicKey)
+        }
+    }
 }
