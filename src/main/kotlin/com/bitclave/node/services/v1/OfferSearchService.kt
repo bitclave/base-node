@@ -538,6 +538,10 @@ class OfferSearchService(
                 .findById(originSearchRequestId)
                 ?: throw BadArgumentException()
 
+            searchRequestRepository.changeStrategy(strategy)
+                .findByIdAndOwner(searchRequest.id, owner)
+                ?: throw BadArgumentException("invalid search request id or owner")
+
             val repository = offerSearchRepository.changeStrategy(strategy)
 
             val copiedOfferSearchList = repository
