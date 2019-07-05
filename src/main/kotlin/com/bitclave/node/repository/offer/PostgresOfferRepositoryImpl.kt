@@ -54,6 +54,8 @@ class PostgresOfferRepositoryImpl(
         return repository.deleteByOwner(owner)
     }
 
+    override fun findIdsByOwner(owner: String): List<Long> = repository.findIdsByOwner(owner)
+
     override fun findByOwner(owner: String): List<Offer> {
         return repository.findByOwner(owner)
     }

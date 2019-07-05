@@ -10,6 +10,7 @@ class OfferPriceRepositoryStrategy(
     @Qualifier("postgres")
     private val postgres: PostgresOfferPriceRepositoryImpl
 ) : RepositoryStrategy<OfferPriceRepository> {
+
     override fun changeStrategy(type: RepositoryStrategyType): OfferPriceRepository {
         return when (type) {
             RepositoryStrategyType.POSTGRES -> postgres

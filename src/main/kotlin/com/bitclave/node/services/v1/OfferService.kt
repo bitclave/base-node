@@ -5,6 +5,7 @@ import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.Offer
 import com.bitclave.node.repository.offer.OfferRepository
 import com.bitclave.node.repository.price.OfferPriceRepository
+import com.bitclave.node.repository.rank.OfferRankRepository
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
 import org.springframework.beans.factory.annotation.Qualifier
@@ -19,6 +20,7 @@ import java.util.concurrent.CompletableFuture
 class OfferService(
     private val offerRepository: RepositoryStrategy<OfferRepository>,
     private val offerPriceRepository: RepositoryStrategy<OfferPriceRepository>,
+    private val offerRankRepository: RepositoryStrategy<OfferRankRepository>,
     private val offerSearchService: OfferSearchService
 ) {
 
@@ -145,7 +147,10 @@ class OfferService(
     ): CompletableFuture<Void> {
 
         return CompletableFuture.runAsync {
+            val offerIds = offerRepository.changeStrategy(strategy).findIdsByOwner(owner)
+
             offerRepository.changeStrategy(strategy).deleteOffers(owner)
+            offerRankRepository.changeStrategy(strategy).deleteByOfferIdIn(offerIds)
         }
     }
 
