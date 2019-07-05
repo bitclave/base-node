@@ -14,6 +14,7 @@ class PostgresOfferPriceRepositoryImpl(
     val repository: OfferPriceCrudRepository,
     val rulesRepository: OfferPriceRulesCrudRepository
 ) : OfferPriceRepository {
+
     override fun savePrices(offer: Offer, prices: List<OfferPrice>): List<OfferPrice> {
         val copyPrices = prices.map { it.copy() }
 

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component
 class PostgresOfferRankRepositoryImpl(
     val repository: OfferRankCrudRepository
 ) : OfferRankRepository {
+
     override fun findByOfferIdAndRankerId(offerId: Long, rankerId: String): OfferRank? {
         return repository.findByOfferIdAndRankerId(offerId, rankerId)
     }
@@ -24,4 +25,6 @@ class PostgresOfferRankRepositoryImpl(
     override fun findById(id: Long): OfferRank? {
         return repository.findById(id)
     }
+
+    override fun deleteByOfferIdIn(offerIds: List<Long>): Long = repository.deleteByOfferIdIn(offerIds)
 }

@@ -8,12 +8,16 @@ import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
+import java.math.BigInteger
 
 @Repository
 @Transactional
 interface OfferCrudRepository : PagingAndSortingRepository<Offer, Long> {
 
     fun findAllByIdIn(ids: List<Long>, pageable: Pageable): Page<Offer>
+
+    @Query("SELECT id FROM Offer WHERE owner = :owner", nativeQuery = true)
+    fun findIdsByOwner(@Param("owner") owner: String): List<BigInteger>
 
     fun findByOwner(owner: String): List<Offer>
 
@@ -30,7 +34,8 @@ interface OfferCrudRepository : PagingAndSortingRepository<Offer, Long> {
     @Query("FROM Offer o JOIN  o.tags t WHERE o.owner = :owner and KEY(t) = :tagKey")
     fun getOfferByOwnerAndTag(@Param("owner") owner: String, @Param("tagKey") tagKey: String): List<Offer>
 
-    @Query(value = """
+    @Query(
+        value = """
             select * from offer o
             where not exists
             (select 1 from offer_tags ot where o.id = ot.offer_id and ot.tags_key = 'product' and ot.tags = 'true')
@@ -41,6 +46,7 @@ interface OfferCrudRepository : PagingAndSortingRepository<Offer, Long> {
             where not exists
             (select 1 from offer_tags ot where o.id = ot.offer_id and ot.tags_key = 'product' and ot.tags = 'true')
         """,
-        nativeQuery = true)
+        nativeQuery = true
+    )
     fun getAllOffersExceptProducts(@Param("pageable") pageable: Pageable): Page<Offer>
 }

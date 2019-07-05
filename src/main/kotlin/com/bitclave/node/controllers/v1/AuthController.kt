@@ -5,6 +5,7 @@ import com.bitclave.node.repository.models.Account
 import com.bitclave.node.repository.models.SignedRequest
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.ClientProfileService
+import com.bitclave.node.services.v1.FileService
 import com.bitclave.node.services.v1.OfferSearchService
 import com.bitclave.node.services.v1.OfferService
 import com.bitclave.node.services.v1.RequestDataService
@@ -35,7 +36,8 @@ class AuthController(
     @Qualifier("v1") private val requestDataService: RequestDataService,
     @Qualifier("v1") private val offerService: OfferService,
     @Qualifier("v1") private val searchRequestService: SearchRequestService,
-    @Qualifier("v1") private val offerSearchService: OfferSearchService
+    @Qualifier("v1") private val offerSearchService: OfferSearchService,
+    @Qualifier("v1") private val fileService: FileService
 ) : AbstractController() {
 
     /**
@@ -243,6 +245,7 @@ class AuthController(
                 offerSearchService.deleteByOwner(it.publicKey, strategyType).get()
                 searchRequestService.deleteSearchRequests(it.publicKey, strategyType).get()
                 searchRequestService.deleteQuerySearchRequest(it.publicKey).get()
+                fileService.deleteFileByPublicKey(it.publicKey, strategyType).get()
             }.exceptionally { e ->
                 logger.error("Request: deleteUser/$request raised $e")
                 throw e

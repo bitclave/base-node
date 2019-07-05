@@ -18,17 +18,20 @@ import com.bitclave.node.repository.price.OfferPriceCrudRepository
 import com.bitclave.node.repository.price.OfferPriceRepositoryStrategy
 import com.bitclave.node.repository.price.PostgresOfferPriceRepositoryImpl
 import com.bitclave.node.repository.priceRule.OfferPriceRulesCrudRepository
+import com.bitclave.node.repository.rank.OfferRankCrudRepository
+import com.bitclave.node.repository.rank.OfferRankRepositoryStrategy
+import com.bitclave.node.repository.rank.PostgresOfferRankRepositoryImpl
 import com.bitclave.node.repository.rtSearch.RtSearchRepositoryImpl
 import com.bitclave.node.repository.search.PostgresSearchRequestRepositoryImpl
 import com.bitclave.node.repository.search.SearchRequestCrudRepository
 import com.bitclave.node.repository.search.SearchRequestRepositoryStrategy
+import com.bitclave.node.repository.search.interaction.OfferInteractionCrudRepository
+import com.bitclave.node.repository.search.interaction.OfferInteractionRepositoryStrategy
+import com.bitclave.node.repository.search.interaction.PostgresOfferInteractionRepositoryImpl
 import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.repository.search.offer.OfferSearchRepositoryStrategy
 import com.bitclave.node.repository.search.offer.PostgresOfferSearchRepositoryImpl
 import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepository
-import com.bitclave.node.repository.search.interaction.OfferInteractionCrudRepository
-import com.bitclave.node.repository.search.interaction.OfferInteractionRepositoryStrategy
-import com.bitclave.node.repository.search.interaction.PostgresOfferInteractionRepositoryImpl
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferSearchService
 import com.bitclave.node.services.v1.OfferService
@@ -75,6 +78,9 @@ class OfferServiceTest {
 
     @Autowired
     protected lateinit var querySearchRequestCrudRepository: QuerySearchRequestCrudRepository
+
+    @Autowired
+    protected lateinit var offerRankCrudRepository: OfferRankCrudRepository
 
     protected val rtSearchRepository = Mockito.mock(RtSearchRepositoryImpl::class.java)
 
@@ -182,6 +188,9 @@ class OfferServiceTest {
         val offerSearchStateRepository = PostgresOfferInteractionRepositoryImpl(offerInteractionCrudRepository)
         val offerSearchStateRepositoryStrategy = OfferInteractionRepositoryStrategy(offerSearchStateRepository)
 
+        val offerRankStateRepository = PostgresOfferRankRepositoryImpl(offerRankCrudRepository)
+        val offerRankRepositoryStrategy = OfferRankRepositoryStrategy(offerRankStateRepository)
+
         val offerSearchService = OfferSearchService(
             requestRepositoryStrategy,
             offerRepositoryStrategy,
@@ -192,7 +201,12 @@ class OfferServiceTest {
             gson
         )
 
-        offerService = OfferService(offerServiceStrategy, offerPriceServiceStrategy, offerSearchService)
+        offerService = OfferService(
+            offerServiceStrategy,
+            offerPriceServiceStrategy,
+            offerRankRepositoryStrategy,
+            offerSearchService
+        )
 
         strategy = RepositoryStrategyType.POSTGRES
         accountService.registrationClient(account, strategy)
