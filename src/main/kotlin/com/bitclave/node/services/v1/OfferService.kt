@@ -204,6 +204,17 @@ class OfferService(
         }
     }
 
+    fun getPageableOffersByUpdatedAtForMatcher(
+        page: PageRequest,
+        updatedAt: Date,
+        strategy: RepositoryStrategyType
+    ): CompletableFuture<Page<Offer>> {
+        return CompletableFuture.supplyAsync {
+            val repository = offerRepository.changeStrategy(strategy)
+            return@supplyAsync repository.getOffersExceptProductsByUpdatedDate(page, updatedAt)
+        }
+    }
+
     fun getOfferTotalCount(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Long> {

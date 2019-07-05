@@ -8,6 +8,7 @@ import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
+import java.util.Date
 
 @Repository
 @Transactional
@@ -43,4 +44,23 @@ interface OfferCrudRepository : PagingAndSortingRepository<Offer, Long> {
         """,
         nativeQuery = true)
     fun getAllOffersExceptProducts(@Param("pageable") pageable: Pageable): Page<Offer>
+
+    @Query(value = """
+            select * from offer o
+            where not exists
+            (select 1 from offer_tags ot where o.id = ot.offer_id and ot.tags_key = 'product' and ot.tags = 'true')
+            AND o.updated_at > :updatedAt
+            order by ?#{#pageable}
+        """,
+        countQuery = """
+            select count(0) from offer o
+            where not exists
+            (select 1 from offer_tags ot where o.id = ot.offer_id and ot.tags_key = 'product' and ot.tags = 'true')
+            AND o.updated_at > :updatedAt
+        """,
+        nativeQuery = true)
+    fun getOffersExceptProductsByUpdatedDate(
+        @Param("pageable") pageable: Pageable,
+        @Param("updatedAt") updatedAt: Date
+    ): Page<Offer>
 }

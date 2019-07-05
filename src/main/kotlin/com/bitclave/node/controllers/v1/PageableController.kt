@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.util.Date
 import java.util.concurrent.CompletableFuture
 
 private val logger = KotlinLogging.logger {}
@@ -88,25 +89,37 @@ class PageableController(
         @RequestParam("size")
         size: Int?,
 
+        @ApiParam("Optional last updated date for filtering offers.")
+        @RequestParam("time", required = false)
+        time: Long?,
+
         @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
         @RequestHeader("Strategy", required = false)
         strategy: String?
     ): CompletableFuture<Page<Offer>> {
 
-        if (page == null || size == null) {
+        var pageNum = 0
+        var pageSize = 20
+        if (page != null && size != null) {
+            pageNum = page
+            pageSize = size
+        }
+
+        if (time == null) {
             return offerService.getPageableOffersForMatcher(
-                PageRequest(0, 20), getStrategyType(strategy)
+                PageRequest(pageNum, pageSize), getStrategyType(strategy)
             ).exceptionally { e ->
-                logger.error("Request: getPageableOffersForMatcher/$page/$size raised $e")
+                logger.error("Request: getPageableOffersForMatcher/$page/$size/$time raised $e")
                 throw e
             }
         }
 
-        return offerService.getPageableOffersForMatcher(
-            PageRequest(page, size),
+        return offerService.getPageableOffersByUpdatedAtForMatcher(
+            PageRequest(pageNum, pageSize),
+            Date(time),
             getStrategyType(strategy)
         ).exceptionally { e ->
-            logger.error("Request: getPageableOffersForMatcher/$page/$size raised $e")
+            logger.error("Request: getPageableOffersForMatcher/$page/$size/$time raised $e")
             throw e
         }
     }

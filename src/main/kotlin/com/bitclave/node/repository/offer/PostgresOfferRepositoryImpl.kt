@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Component
+import java.util.Date
 import kotlin.system.measureTimeMillis
 
 @Component
@@ -97,5 +98,9 @@ class PostgresOfferRepositoryImpl(
 
     override fun getAllOffersExceptProducts(pageable: Pageable): Page<Offer> {
         return repository.getAllOffersExceptProducts(pageable)
+    }
+
+    override fun getOffersExceptProductsByUpdatedDate(pageable: Pageable, updatedAt: Date): Page<Offer> {
+        return repository.getOffersExceptProductsByUpdatedDate(pageable, updatedAt)
     }
 }
