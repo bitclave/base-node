@@ -10,6 +10,7 @@ class OfferRankRepositoryStrategy(
     @Qualifier("postgres")
     private val postgres: PostgresOfferRankRepositoryImpl
 ) : RepositoryStrategy<OfferRankRepository> {
+
     override fun changeStrategy(type: RepositoryStrategyType): OfferRankRepository {
         return when (type) {
             RepositoryStrategyType.POSTGRES -> postgres

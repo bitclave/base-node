@@ -10,6 +10,8 @@ interface FileRepository {
 
     fun deleteFile(id: Long, publicKey: String): Long
 
+    fun deleteByPublicKey(publicKey: String): Long
+
     fun findByPublicKey(publicKey: String): List<UploadedFile>
 
     fun findByIdAndPublicKey(id: Long, publicKey: String): UploadedFile?

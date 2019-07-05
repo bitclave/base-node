@@ -14,6 +14,8 @@ interface OfferRepository {
 
     fun deleteOffers(owner: String): Long
 
+    fun findIdsByOwner(owner: String): List<Long>
+
     fun findByOwner(owner: String): List<Offer>
 
     fun findByOwner(owner: String, pageable: Pageable): Page<Offer>

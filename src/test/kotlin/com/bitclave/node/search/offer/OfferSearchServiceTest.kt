@@ -220,6 +220,7 @@ class OfferSearchServiceTest {
         offerService = OfferService(
             offerRepositoryStrategy,
             offerPriceRepositoryStrategy,
+            offerRankRepositoryStrategy,
             offerSearchService
         )
 
