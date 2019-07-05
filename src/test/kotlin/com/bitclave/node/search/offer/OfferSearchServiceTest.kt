@@ -905,7 +905,12 @@ class OfferSearchServiceTest {
         createOfferSearch(createdSearchRequest1, createdOffer2)
         createOfferSearch(createdSearchRequest2, createdOffer2)
 
-        offerSearchService.cloneOfferSearchOfSearchRequest(createdSearchRequest1.id, createdSearchRequest2, strategy)
+        offerSearchService.cloneOfferSearchOfSearchRequest(
+            createdSearchRequest2.owner,
+            createdSearchRequest1.id,
+            createdSearchRequest2,
+            strategy
+        )
             .get()
 
         val result = offerSearchService.getOffersResult(strategy, createdSearchRequest2.id)

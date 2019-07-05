@@ -136,7 +136,7 @@ class SearchRequestService(
                 .changeStrategy(strategy)
                 .save(SearchRequest(0, owner, existingRequest.tags.toMap()))
 
-            offerSearchService.cloneOfferSearchOfSearchRequest(existingRequest.id, createSearchRequest, strategy)
+            offerSearchService.cloneOfferSearchOfSearchRequest(owner, existingRequest.id, createSearchRequest, strategy)
                 .get()
 
             createSearchRequest

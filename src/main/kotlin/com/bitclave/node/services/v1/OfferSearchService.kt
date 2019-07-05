@@ -527,6 +527,7 @@ class OfferSearchService(
     }
 
     fun cloneOfferSearchOfSearchRequest(
+        owner: String,
         originSearchRequestId: Long,
         searchRequest: SearchRequest,
         strategy: RepositoryStrategyType
@@ -549,7 +550,7 @@ class OfferSearchService(
             val existedOfferSearchList = repository.findBySearchRequestId(searchRequest.id)
             logger.debug {
                 "cloneOfferSearchOfSearchRequest: existedOfferSearchList size = ${existedOfferSearchList.size}" +
-                    ", ${searchRequest.id}, ${searchRequest.owner}"
+                    ", ${searchRequest.id}, $owner"
             }
 
             val toBeSavedOfferSearched: MutableList<OfferSearch> = mutableListOf()
@@ -561,7 +562,7 @@ class OfferSearchService(
                 if (exist == null) {
                     val newOfferSearch = OfferSearch(
                         0,
-                        searchRequest.owner,
+                        owner,
                         searchRequest.id,
                         offerSearch.offerId
                     )
@@ -575,11 +576,11 @@ class OfferSearchService(
 
             val offerIds = toBeSavedOfferSearched.map { it.offerId }.distinct()
             val existedOffersInInteractions = offerInteractionRepository.changeStrategy(strategy)
-                .findByOfferIdInAndOwner(offerIds, searchRequest.owner)
+                .findByOfferIdInAndOwner(offerIds, owner)
                 .map { it.offerId }
                 .toSet()
             val notExistedOffersInInteractions = offerIds.filter { !existedOffersInInteractions.contains(it) }
-            val interactions = notExistedOffersInInteractions.map { OfferInteraction(0, searchRequest.owner, it) }
+            val interactions = notExistedOffersInInteractions.map { OfferInteraction(0, owner, it) }
             offerInteractionRepository.changeStrategy(strategy).save(interactions)
 
             logger.debug {
