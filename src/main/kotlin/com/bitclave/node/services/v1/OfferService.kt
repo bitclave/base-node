@@ -114,9 +114,8 @@ class OfferService(
                 offer.rules,
                 createdAt
             )
-            val processedOffer = offerRepository.changeStrategy(strategy).shallowSaveOffer(putOffer)
+            val processedOffer = offerRepository.changeStrategy(strategy).saveOffer(putOffer)
             offerPriceRepository.changeStrategy(strategy).savePrices(processedOffer, offer.offerPrices)
-            offerSearchService.deleteByOfferId(id, strategy)
 
             offerRepository.changeStrategy(strategy).findById(processedOffer.id)
         }

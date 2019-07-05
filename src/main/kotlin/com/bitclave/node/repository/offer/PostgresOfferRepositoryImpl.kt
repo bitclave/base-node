@@ -19,23 +19,8 @@ class PostgresOfferRepositoryImpl(
 
     private val logger = KotlinLogging.logger {}
 
-    override fun saveOffer(offer: Offer): Offer {
-        val id = offer.id
+    override fun saveOffer(offer: Offer): Offer =
         repository.save(offer) ?: throw DataNotSavedException()
-        if (id > 0) {
-            var deletedOfferSearchCount = 0
-            val step1 = measureTimeMillis {
-                deletedOfferSearchCount = offerSearchRepository.deleteAllByOfferIdAndStateIn(offer.id)
-            }
-            logger.debug { "saveOffer: step 1: ms: $step1, l1: $deletedOfferSearchCount" }
-        }
-        return offer
-    }
-
-    override fun shallowSaveOffer(offer: Offer): Offer {
-        repository.save(offer) ?: throw DataNotSavedException()
-        return offer
-    }
 
     override fun deleteOffer(id: Long, owner: String): Long {
         val count = repository.deleteByIdAndOwner(id, owner)

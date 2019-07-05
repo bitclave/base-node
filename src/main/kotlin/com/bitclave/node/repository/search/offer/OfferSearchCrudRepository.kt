@@ -20,18 +20,6 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     fun deleteAllByOwner(owner: String): List<Long>
 
-    @Modifying
-    @Query(
-        value = """
-            DELETE FROM offer_interaction ss
-            WHERE ss.offer_id = :offerId AND ss.state IN (0,2)
-        """,
-        nativeQuery = true
-    )
-    fun deleteAllByOfferIdAndStateIn(
-        @Param("offerId") offerId: Long
-    ): Int
-
     fun deleteAllByOfferId(id: Long): Long
 
     @Query(

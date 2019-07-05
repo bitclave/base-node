@@ -26,10 +26,6 @@ class PostgresOfferSearchRepositoryImpl(
         return repository.deleteAllByOwner(owner)
     }
 
-    override fun deleteAllByOfferIdAndStateIn(offerId: Long): Int {
-        return repository.deleteAllByOfferIdAndStateIn(offerId)
-    }
-
     override fun deleteAllByOfferId(id: Long): Long = repository.deleteAllByOfferId(id)
 
     override fun save(list: List<OfferSearch>): List<OfferSearch> =
