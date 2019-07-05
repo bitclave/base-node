@@ -8,6 +8,7 @@ import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
+import java.math.BigInteger
 
 @Repository
 @Transactional
@@ -16,7 +17,7 @@ interface OfferCrudRepository : PagingAndSortingRepository<Offer, Long> {
     fun findAllByIdIn(ids: List<Long>, pageable: Pageable): Page<Offer>
 
     @Query("SELECT id FROM Offer WHERE owner = :owner", nativeQuery = true)
-    fun findIdsByOwner(@Param("owner") owner: String): List<Long>
+    fun findIdsByOwner(@Param("owner") owner: String): List<BigInteger>
 
     fun findByOwner(owner: String): List<Offer>
 
