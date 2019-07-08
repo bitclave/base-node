@@ -18,6 +18,8 @@ class PostgresSearchRequestRepositoryImpl(
     override fun save(request: SearchRequest): SearchRequest =
         repository.save(request) ?: throw DataNotSavedException()
 
+    override fun save(request: List<SearchRequest>): List<SearchRequest> = repository.save(request).toList()
+
     override fun deleteByIdAndOwner(id: Long, owner: String): Long = repository.deleteByIdAndOwner(id, owner)
 
     override fun deleteByOwner(owner: String): Long {

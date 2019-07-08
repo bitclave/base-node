@@ -598,19 +598,15 @@ class OfferSearchController(
             ApiResponse(code = 200, message = "Success", response = List::class)
         ]
     )
-    @RequestMapping(method = [RequestMethod.PUT], value = ["/result/{owner}/{id}"])
+    @RequestMapping(method = [RequestMethod.PUT], value = ["/result/{owner}"])
     fun cloneOfferSearchOfSearchRequest(
         @ApiParam("public key owner of target search request")
         @PathVariable(value = "owner")
         owner: String,
 
-        @ApiParam("id of source search request.")
-        @PathVariable(value = "id")
-        id: Long,
-
         @ApiParam("where client sends SearchRequest and signature of the message.", required = true)
         @RequestBody
-        request: SignedRequest<SearchRequest>,
+        request: SignedRequest<List<Pair<Long, Long>>>,
 
         @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
         @RequestHeader("Strategy", required = false)
@@ -626,7 +622,6 @@ class OfferSearchController(
 
                 val result = offerSearchService.cloneOfferSearchOfSearchRequest(
                     owner,
-                    id,
                     request.data!!,
                     getStrategyType(strategy)
                 ).get()

@@ -34,17 +34,11 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     fun deleteAllByOfferId(id: Long): Long
 
-    @Query(
-        """
-            SELECT * FROM offer_search a 
-            INNER JOIN offer_interaction b 
-            ON a.search_request_id = :id and a.owner = b.owner and a.offer_id = b.offer_id
-        """,
-        nativeQuery = true
-    )
-    fun findBySearchRequestId(@Param("id") id: Long): List<OfferSearch>
+    fun findBySearchRequestId(id: Long): List<OfferSearch>
 
     fun findBySearchRequestId(id: Long, pageable: Pageable): Page<OfferSearch>
+
+    fun findBySearchRequestIdIn(ids: List<Long>): List<OfferSearch>
 
     fun findByOfferId(id: Long): List<OfferSearch>
 

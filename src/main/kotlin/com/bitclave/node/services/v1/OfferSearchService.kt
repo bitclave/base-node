@@ -9,7 +9,6 @@ import com.bitclave.node.repository.models.OfferInteractionId
 import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.repository.models.OfferSearchResultItem
 import com.bitclave.node.repository.models.QuerySearchRequest
-import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.offer.OfferRepository
 import com.bitclave.node.repository.rtSearch.RtSearchRepository
 import com.bitclave.node.repository.search.SearchRequestRepository
@@ -528,57 +527,46 @@ class OfferSearchService(
 
     fun cloneOfferSearchOfSearchRequest(
         owner: String,
-        originSearchRequestId: Long,
-        searchRequest: SearchRequest,
+        originToCopySearchRequestIds: List<Pair<Long, Long>>,
         strategy: RepositoryStrategyType
     ): CompletableFuture<List<OfferSearch>> {
 
         return CompletableFuture.supplyAsync {
-            searchRequestRepository.changeStrategy(strategy)
-                .findById(originSearchRequestId)
-                ?: throw BadArgumentException()
+            val pairs = originToCopySearchRequestIds.unzip()
+            val searchRequestsIds = pairs.first.toMutableList()
+            searchRequestsIds.addAll(pairs.second)
 
-            searchRequestRepository.changeStrategy(strategy)
-                .findByIdAndOwner(searchRequest.id, owner)
-                ?: throw BadArgumentException("invalid search request id or owner")
+            val existedSearchRequests = searchRequestRepository.changeStrategy(strategy)
+                .findById(searchRequestsIds.distinct())
 
-            val repository = offerSearchRepository.changeStrategy(strategy)
-
-            val copiedOfferSearchList = repository
-                .findBySearchRequestId(originSearchRequestId)
-            logger.debug {
-                "cloneOfferSearchOfSearchRequest: copiedOfferSearchList size = ${copiedOfferSearchList.size}" +
-                    ", $originSearchRequestId"
+            if (existedSearchRequests.size != searchRequestsIds.distinct().size) {
+                throw BadArgumentException("some search request id not found")
             }
 
-            val existedOfferSearchList = repository.findBySearchRequestId(searchRequest.id)
-            logger.debug {
-                "cloneOfferSearchOfSearchRequest: existedOfferSearchList size = ${existedOfferSearchList.size}" +
-                    ", ${searchRequest.id}, $owner"
-            }
-
-            val toBeSavedOfferSearched: MutableList<OfferSearch> = mutableListOf()
-
-            for (offerSearch: OfferSearch in copiedOfferSearchList) {
-                val exist = existedOfferSearchList
-                    .find { it.offerId == offerSearch.offerId && it.owner == offerSearch.owner }
-
-                if (exist == null) {
-                    val newOfferSearch = OfferSearch(
-                        0,
-                        owner,
-                        searchRequest.id,
-                        offerSearch.offerId
-                    )
-                    toBeSavedOfferSearched.add(newOfferSearch)
-                    logger.debug {
-                        "cloneOfferSearchOfSearchRequest: toBeSavedOfferSearched size = " +
-                            "${toBeSavedOfferSearched.size}" + "${newOfferSearch.id}, ${newOfferSearch.owner}"
-                    }
+            existedSearchRequests.forEach {
+                if (searchRequestsIds.contains(it.id) && it.owner != owner) {
+                    throw BadArgumentException("invalid search request id or owner")
                 }
             }
 
-            val offerIds = toBeSavedOfferSearched.map { it.offerId }.distinct()
+            val repository = offerSearchRepository.changeStrategy(strategy)
+
+            val allOfferSearches = repository.findBySearchRequestIdIn(searchRequestsIds.distinct())
+
+            val result = originToCopySearchRequestIds.map { pair ->
+                val forCopy = allOfferSearches.filter { it.searchRequestId == pair.first }
+                val existed = allOfferSearches
+                    .filter { it.searchRequestId == pair.second }
+                    .groupBy { it.hashCodeByOfferIdAndOwner() }
+
+                val filterExcludeExist = forCopy
+                    .filter { !existed.containsKey(it.hashCodeByOfferIdAndOwner()) }
+                    .map { OfferSearch(0, owner, pair.second, it.offerId) }
+
+                filterExcludeExist
+            }.flatten()
+
+            val offerIds = result.map { it.offerId }.distinct()
             val existedOffersInInteractions = offerInteractionRepository.changeStrategy(strategy)
                 .findByOfferIdInAndOwner(offerIds, owner)
                 .map { it.offerId }
@@ -587,12 +575,7 @@ class OfferSearchService(
             val interactions = notExistedOffersInInteractions.map { OfferInteraction(0, owner, it) }
             offerInteractionRepository.changeStrategy(strategy).save(interactions)
 
-            logger.debug {
-                "cloneOfferSearchOfSearchRequest: toBeSavedOfferSearched before final save " +
-                    "size = ${toBeSavedOfferSearched.size}" +
-                    ", $toBeSavedOfferSearched"
-            }
-            repository.save(toBeSavedOfferSearched)
+            repository.save(result)
         }
     }
 

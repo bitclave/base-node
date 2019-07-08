@@ -241,12 +241,12 @@ class SearchRequestController(
 
         @ApiParam("where client sends SearchRequest and signature of the message.", required = true)
         @RequestBody
-        request: SignedRequest<SearchRequest>,
+        request: SignedRequest<List<Long>>,
 
         @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
         @RequestHeader("Strategy", required = false)
         strategy: String?
-    ): CompletableFuture<SearchRequest> {
+    ): CompletableFuture<List<SearchRequest>> {
 
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
             .thenCompose { account: Account -> accountService.validateNonce(request, account) }
