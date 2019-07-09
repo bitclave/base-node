@@ -3,7 +3,6 @@ package com.bitclave.node.repository.search.offer
 import com.bitclave.node.repository.models.OfferSearch
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
-import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.data.repository.query.Param
@@ -19,18 +18,6 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     fun deleteAllBySearchRequestIdIn(ids: List<Long>): Long
 
     fun deleteAllByOwner(owner: String): List<Long>
-
-    @Modifying
-    @Query(
-        value = """
-            DELETE FROM offer_interaction ss
-            WHERE ss.offer_id = :offerId AND ss.state IN (0,2)
-        """,
-        nativeQuery = true
-    )
-    fun deleteAllByOfferIdAndStateIn(
-        @Param("offerId") offerId: Long
-    ): Int
 
     fun deleteAllByOfferId(id: Long): Long
 

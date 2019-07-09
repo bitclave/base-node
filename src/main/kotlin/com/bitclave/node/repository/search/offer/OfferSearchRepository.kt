@@ -14,8 +14,6 @@ interface OfferSearchRepository {
 
     fun deleteAllByOwner(owner: String): List<Long>
 
-    fun deleteAllByOfferIdAndStateIn(offerId: Long): Int
-
     fun deleteAllByOfferId(id: Long): Long
 
     fun save(list: List<OfferSearch>): List<OfferSearch>
