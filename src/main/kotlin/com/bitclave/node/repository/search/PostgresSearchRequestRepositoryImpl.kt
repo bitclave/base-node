@@ -77,7 +77,7 @@ class PostgresSearchRequestRepositoryImpl(
         val result = syncElementCollections(page.content)
         val pageable = PageRequest(page.number, page.size, page.sort)
 
-        return PageImpl(result, pageable, result.size.toLong())
+        return PageImpl(result, pageable, page.totalElements)
     }
 
     private fun syncElementCollections(searchRequests: List<SearchRequest>): List<SearchRequest> {
