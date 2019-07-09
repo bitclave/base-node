@@ -377,13 +377,14 @@ class SearchRequestServiceTest {
         ).get()
 
         val clonedRequest = searchRequestService
-            .cloneSearchRequestWithOfferSearches(account.publicKey, result1, strategy)
+            .cloneSearchRequestWithOfferSearches(account.publicKey, listOf(result1.id), strategy)
             .get()
 
-        assertThat(clonedRequest).isEqualToIgnoringGivenFields(searchRequest, *ignoredFields)
+        assertThat(clonedRequest.size == 1)
+        assertThat(clonedRequest[0]).isEqualToIgnoringGivenFields(searchRequest, *ignoredFields)
 
         val savedListResult =
-            searchRequestService.getSearchRequests(clonedRequest.id, account.publicKey, strategy).get()
+            searchRequestService.getSearchRequests(clonedRequest[0].id, account.publicKey, strategy).get()
         assertThat(savedListResult.size).isEqualTo(1)
 
         val offerSearches = offerSearchService.getOffersResult(strategy, result1.id)
@@ -392,7 +393,7 @@ class SearchRequestServiceTest {
 
         assertThat(offerSearches.size).isEqualTo(2)
 
-        val clonedOfferSearches = offerSearchService.getOffersResult(strategy, clonedRequest.id)
+        val clonedOfferSearches = offerSearchService.getOffersResult(strategy, clonedRequest[0].id)
             .get()
             .content
 

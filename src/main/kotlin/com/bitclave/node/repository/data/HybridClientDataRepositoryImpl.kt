@@ -17,7 +17,7 @@ class HybridClientDataRepositoryImpl(
     hybridProperties: HybridProperties
 ) : ClientDataRepository {
 
-    var allKeysArr: Array<String> = emptyArray()
+    var allKeysArr = emptyList<String>()
 
     private val nameServiceData = hybridProperties.contracts.nameService
     private lateinit var nameServiceContract: NameServiceContract
@@ -41,13 +41,13 @@ class HybridClientDataRepositoryImpl(
         )
     }
 
-    override fun allKeys(): Array<String> {
+    override fun allKeys(): List<String> {
         if (allKeysArr.isEmpty()) {
             val keysCount = contract.keysCount().send().toLong()
             allKeysArr = (0..(keysCount - 1))
                 .map {
                     deserializeKey(contract.keys(it.toBigInteger()).send())
-                }.toTypedArray()
+                }.toList()
         }
         return allKeysArr
     }
@@ -68,7 +68,7 @@ class HybridClientDataRepositoryImpl(
                 contract.setInfo(ecPoint.affineX, serializeKey(entry.key), entry.value).send()
             }
         }
-        allKeysArr = emptyArray()
+        allKeysArr = emptyList()
         getData(publicKey)
     }
 

@@ -917,11 +917,9 @@ class OfferSearchServiceTest {
 
         offerSearchService.cloneOfferSearchOfSearchRequest(
             createdSearchRequest2.owner,
-            createdSearchRequest1.id,
-            createdSearchRequest2,
+            listOf(Pair(createdSearchRequest1.id, createdSearchRequest2.id)),
             strategy
-        )
-            .get()
+        ).get()
 
         val result = offerSearchService.getOffersResult(strategy, createdSearchRequest2.id)
             .get()
