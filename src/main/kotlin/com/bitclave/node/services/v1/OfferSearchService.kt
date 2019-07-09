@@ -25,7 +25,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
-import org.springframework.web.client.HttpClientErrorException
+import org.springframework.web.client.HttpServerErrorException
 import java.util.Date
 import java.util.concurrent.CompletableFuture
 import kotlin.math.min
@@ -587,10 +587,12 @@ class OfferSearchService(
                 result = rtSearchRepository
                     .getSuggestionByQuery(decodedQuery, size)
                     .get()
-            } catch (e: HttpClientErrorException) {
-                logger.error("rt-search error: $e")
+            } catch (e: Throwable) {
+                logger.error("rt-search getSuggestion error: $e")
 
-                if (e.rawStatusCode <= 499) {
+                if (e.cause is HttpServerErrorException &&
+                    (e.cause as HttpServerErrorException).rawStatusCode <= 499
+                ) {
                     throw e
                 }
             }
@@ -650,10 +652,12 @@ class OfferSearchService(
                     offerIds = rtSearchRepository
                         .getOffersIdByQuery(query, pageRequest, interests, mode)
                         .get()
-                } catch (e: HttpClientErrorException) {
+                } catch (e: Throwable) {
                     logger.error("rt-search error: $e")
 
-                    if (e.rawStatusCode > 499) {
+                    if (e.cause is HttpServerErrorException &&
+                        (e.cause as HttpServerErrorException).rawStatusCode > 499
+                    ) {
                         val pageable = PageRequest(0, 1)
                         return@supplyAsync PageImpl(emptyList<OfferSearchResultItem>(), pageable, 0)
                     } else {
