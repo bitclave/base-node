@@ -2,6 +2,7 @@ package com.bitclave.node.controllers.dev
 
 import com.bitclave.node.controllers.AbstractController
 import com.bitclave.node.repository.models.Account
+import com.bitclave.node.repository.models.OfferInteraction
 import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.repository.models.SignedRequest
 import com.bitclave.node.services.v1.AccountService
@@ -12,6 +13,7 @@ import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
@@ -156,13 +158,13 @@ class VerifyConsistencyController(
     }
 
     /**
-     * Returns the dangling OfferSearches by Offers
+     * Returns the dangling OfferSearches
      *
      * @return {@link List<OfferSearch>}, Http status - 200.
      *
      */
     @ApiOperation(
-        "Returns the dangling OfferSearches by Offers",
+        "Returns the dangling OfferSearches",
         response = OfferSearch::class, responseContainer = "List"
     )
     @ApiResponses(
@@ -170,8 +172,19 @@ class VerifyConsistencyController(
             ApiResponse(code = 200, message = "Success", response = List::class)
         ]
     )
-    @RequestMapping(method = [RequestMethod.GET], value = ["/offersearch/byOffer"])
-    fun getDanglingOfferSearchesByOffer(
+    @RequestMapping(method = [RequestMethod.GET], value = ["/offersearch/dangling/{type}"])
+    fun getDanglingOfferSearches(
+
+        @ApiParam(
+            "Search type of dangling offerSearches - " +
+                "0:no offer - " +
+                "1: no searchRequest - " +
+                "2: no owner * " +
+                "3: no offerInteraction",
+            allowableValues = "0, 1, 2, 3",
+            required = true)
+        @PathVariable(value = "type")
+        type: Int,
 
         @ApiParam(
             "change repository strategy",
@@ -184,45 +197,7 @@ class VerifyConsistencyController(
 
         return offerSearchService.getDanglingOfferSearches(
             getStrategyType(strategy),
-            byOffer = true,
-            bySearchRequest = false
-        ).exceptionally { e ->
-            logger.error("Request: getDanglingOfferSearchesByOffer raised $e")
-            throw e
-        }
-    }
-
-    /**
-     * Returns the dangling OfferSearches by SearchRequests
-     *
-     * @return {@link List<OfferSearch>}, Http status - 200.
-     *
-     */
-    @ApiOperation(
-        "Returns the dangling OfferSearches by SearchRequests",
-        response = OfferSearch::class, responseContainer = "List"
-    )
-    @ApiResponses(
-        value = [
-            ApiResponse(code = 200, message = "Success", response = List::class)
-        ]
-    )
-    @RequestMapping(method = [RequestMethod.GET], value = ["/offersearch/bySearchRequest"])
-    fun getDanglingOfferSearchesBySearchRequest(
-
-        @ApiParam(
-            "change repository strategy",
-            allowableValues = "POSTGRES, HYBRID",
-            required = false
-        )
-        @RequestHeader("Strategy", required = false)
-        strategy: String?
-    ): CompletableFuture<List<OfferSearch>> {
-
-        return offerSearchService.getDanglingOfferSearches(
-            getStrategyType(strategy),
-            byOffer = false,
-            bySearchRequest = true
+            type
         ).exceptionally { e ->
             logger.error("Request: getDanglingOfferSearchesBySearchRequest raised $e")
             throw e
@@ -261,5 +236,40 @@ class VerifyConsistencyController(
                 logger.error("Request: getDiffOfferSearches raised $e")
                 throw e
             }
+    }
+
+    /**
+     * Returns the dangling OfferInteractions
+     *
+     * @return {@link List<OfferInteraction>}, Http status - 200.
+     *
+     */
+    @ApiOperation(
+        "Returns the dangling OfferInteractions",
+        response = OfferInteraction::class, responseContainer = "List"
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(code = 200, message = "Success", response = List::class)
+        ]
+    )
+    @RequestMapping(method = [RequestMethod.GET], value = ["/offerinteraction/dangling"])
+    fun getDanglingOfferInteractions(
+
+        @ApiParam(
+            "change repository strategy",
+            allowableValues = "POSTGRES, HYBRID",
+            required = false
+        )
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
+    ): CompletableFuture<List<OfferInteraction>> {
+
+        return offerSearchService.getDanglingOfferInteractions(
+            getStrategyType(strategy)
+        ).exceptionally { e ->
+            logger.error("Request: getDanglingOfferInteractions raised $e")
+            throw e
+        }
     }
 }

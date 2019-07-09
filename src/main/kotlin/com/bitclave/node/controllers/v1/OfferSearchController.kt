@@ -625,8 +625,8 @@ class OfferSearchController(
                 }
 
                 val result = offerSearchService.cloneOfferSearchOfSearchRequest(
-                    id,
-                    request.data!!,
+                    owner,
+                    listOf(Pair(id, request.data!!.id)),
                     getStrategyType(strategy)
                 ).get()
 
