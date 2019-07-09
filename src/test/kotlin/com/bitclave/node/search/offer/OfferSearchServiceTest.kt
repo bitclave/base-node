@@ -67,6 +67,7 @@ import org.springframework.test.context.junit4.SpringRunner
 import java.math.BigDecimal
 import java.util.concurrent.CompletableFuture
 import java.util.stream.LongStream
+import javax.persistence.EntityManager
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
@@ -117,6 +118,9 @@ class OfferSearchServiceTest {
     @Autowired
     protected lateinit var querySearchRequestCrudRepository: QuerySearchRequestCrudRepository
 
+    @Autowired
+    private lateinit var entityManager: EntityManager
+
     protected val rtSearchRepository = mock(RtSearchRepositoryImpl::class.java)
 
     private val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
@@ -165,6 +169,7 @@ class OfferSearchServiceTest {
     protected lateinit var offerPrices: List<OfferPrice>
     private val searchPageRequest: PageRequest = PageRequest(0, 20)
     private lateinit var searchRequestRepositoryStrategy: SearchRequestRepositoryStrategy
+    private lateinit var offerInteractionRepositoryStrategy: OfferInteractionRepositoryStrategy
 
     @Before
     fun setup() {
@@ -179,18 +184,20 @@ class OfferSearchServiceTest {
         val searchRequestRepository =
             PostgresSearchRequestRepositoryImpl(
                 searchRequestCrudRepository,
-                offerSearchCrudRepository
+                offerSearchCrudRepository,
+                entityManager
             )
         searchRequestRepositoryStrategy = SearchRequestRepositoryStrategy(searchRequestRepository)
 
-        val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
+        val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository, entityManager)
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
 
         val offerSearchRepository = PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository)
         val offerSearchRepositoryStrategy = OfferSearchRepositoryStrategy(offerSearchRepository)
 
-        val offerSearchStateRepository = PostgresOfferInteractionRepositoryImpl(offerInteractionCrudRepository)
-        val offerSearchStateRepositoryStrategy = OfferInteractionRepositoryStrategy(offerSearchStateRepository)
+        val offerInteractionRepository =
+            PostgresOfferInteractionRepositoryImpl(offerInteractionCrudRepository, entityManager)
+        offerInteractionRepositoryStrategy = OfferInteractionRepositoryStrategy(offerInteractionRepository)
 
         val offerPriceRepository =
             PostgresOfferPriceRepositoryImpl(offerPriceCrudRepository, offerPriceRuleCrudRepository)
@@ -204,7 +211,7 @@ class OfferSearchServiceTest {
             offerRepositoryStrategy,
             offerSearchRepositoryStrategy,
             searchRequestRepositoryStrategy,
-            offerSearchStateRepositoryStrategy
+            offerInteractionRepositoryStrategy
         )
 
         offerSearchService = OfferSearchService(
@@ -213,7 +220,7 @@ class OfferSearchServiceTest {
             offerSearchRepositoryStrategy,
             querySearchRequestCrudRepository,
             rtSearchRepository,
-            offerSearchStateRepositoryStrategy,
+            offerInteractionRepositoryStrategy,
             gson
         )
 
@@ -642,7 +649,9 @@ class OfferSearchServiceTest {
 
         offerSearchService.addEventTo("bla bla bla", createdSearchRequest1.id, strategy).get()
 
-        val state = offerInteractionCrudRepository.findByOfferIdAndOwner(createdOffer1.id, createdSearchRequest1.owner)
+        val state = offerInteractionRepositoryStrategy
+            .changeStrategy(RepositoryStrategyType.POSTGRES)
+            .findByOfferIdAndOwner(createdOffer1.id, createdSearchRequest1.owner)
 
         assert(state!!.events.contains("bla bla bla"))
         assert(state.updatedAt.time > state.createdAt.time)
@@ -976,7 +985,7 @@ class OfferSearchServiceTest {
     @Test
     fun `should return offers & offerSearches by owner with sorting by updatedAt`() {
 
-        val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
+        val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository, entityManager)
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
         val repository = offerRepositoryStrategy.changeStrategy(strategy)
 
@@ -1013,7 +1022,7 @@ class OfferSearchServiceTest {
 
     @Test
     fun `should return offers & offerSearches by owner and state with default sorting`() {
-        val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
+        val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository, entityManager)
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
         val repository = offerRepositoryStrategy.changeStrategy(strategy)
 
@@ -1072,7 +1081,7 @@ class OfferSearchServiceTest {
 
     @Test
     fun `should return offers & offerSearches by owner and state with rank sorting`() {
-        val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
+        val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository, entityManager)
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
         val repository = offerRepositoryStrategy.changeStrategy(strategy)
 
@@ -1135,7 +1144,7 @@ class OfferSearchServiceTest {
 
     @Test
     fun `should return offers & offerSearches and OfferIntracations`() {
-        val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
+        val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository, entityManager)
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
         val repository = offerRepositoryStrategy.changeStrategy(strategy)
 
@@ -1194,7 +1203,7 @@ class OfferSearchServiceTest {
 
     @Test
     fun `should return offers & offerSearches by owner and state with updated time sorting`() {
-        val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
+        val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository, entityManager)
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
         val repository = offerRepositoryStrategy.changeStrategy(strategy)
 
@@ -1251,7 +1260,7 @@ class OfferSearchServiceTest {
 
     @Test
     fun `should return offers & offerSearches by owner and searchRequestIds with default sorting`() {
-        val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
+        val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository, entityManager)
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
         val repository = offerRepositoryStrategy.changeStrategy(strategy)
 
@@ -1290,7 +1299,7 @@ class OfferSearchServiceTest {
 
     @Test
     fun `should return offers & offerSearches by owner and searchRequestIds with rank sorting`() {
-        val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
+        val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository, entityManager)
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
         val repository = offerRepositoryStrategy.changeStrategy(strategy)
 
@@ -1337,7 +1346,7 @@ class OfferSearchServiceTest {
 
     @Test
     fun `should return offers & offerSearches by owner and searchRequestIds with updatedAt sorting`() {
-        val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
+        val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository, entityManager)
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
         val repository = offerRepositoryStrategy.changeStrategy(strategy)
 

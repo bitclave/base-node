@@ -14,7 +14,7 @@ import javax.persistence.Id
 data class SearchRequest(
     @GeneratedValue(strategy = GenerationType.TABLE) @Id val id: Long = 0,
     val owner: String = "",
-    @ElementCollection(fetch = FetchType.EAGER) val tags: Map<String, String> = HashMap(),
+    @ElementCollection(fetch = FetchType.LAZY) val tags: Map<String, String> = HashMap(),
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     val createdAt: Date = Date(),

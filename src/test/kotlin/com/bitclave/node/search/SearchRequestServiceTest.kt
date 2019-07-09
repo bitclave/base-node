@@ -18,13 +18,13 @@ import com.bitclave.node.repository.rtSearch.RtSearchRepositoryImpl
 import com.bitclave.node.repository.search.PostgresSearchRequestRepositoryImpl
 import com.bitclave.node.repository.search.SearchRequestCrudRepository
 import com.bitclave.node.repository.search.SearchRequestRepositoryStrategy
+import com.bitclave.node.repository.search.interaction.OfferInteractionCrudRepository
+import com.bitclave.node.repository.search.interaction.OfferInteractionRepositoryStrategy
+import com.bitclave.node.repository.search.interaction.PostgresOfferInteractionRepositoryImpl
 import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.repository.search.offer.OfferSearchRepositoryStrategy
 import com.bitclave.node.repository.search.offer.PostgresOfferSearchRepositoryImpl
 import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepository
-import com.bitclave.node.repository.search.interaction.OfferInteractionCrudRepository
-import com.bitclave.node.repository.search.interaction.OfferInteractionRepositoryStrategy
-import com.bitclave.node.repository.search.interaction.PostgresOfferInteractionRepositoryImpl
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferSearchService
 import com.bitclave.node.services.v1.SearchRequestService
@@ -43,6 +43,7 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import java.util.concurrent.CompletableFuture
+import javax.persistence.EntityManager
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
@@ -78,6 +79,9 @@ class SearchRequestServiceTest {
 
     @Autowired
     protected lateinit var querySearchRequestCrudRepository: QuerySearchRequestCrudRepository
+
+    @Autowired
+    private lateinit var entityManager: EntityManager
 
     protected val rtSearchRepository = Mockito.mock(RtSearchRepositoryImpl::class.java)
 
@@ -136,17 +140,19 @@ class SearchRequestServiceTest {
         val searchRequestRepository =
             PostgresSearchRequestRepositoryImpl(
                 searchRequestCrudRepository,
-                offerSearchCrudRepository
+                offerSearchCrudRepository,
+                entityManager
             )
         val requestRepositoryStrategy = SearchRequestRepositoryStrategy(searchRequestRepository)
-        val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
+        val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository, entityManager)
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
 
         val offerSearchRepository =
             PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository)
         val offerSearchRepositoryStrategy = OfferSearchRepositoryStrategy(offerSearchRepository)
 
-        val offerSearchStateRepository = PostgresOfferInteractionRepositoryImpl(offerInteractionCrudRepository)
+        val offerSearchStateRepository =
+            PostgresOfferInteractionRepositoryImpl(offerInteractionCrudRepository, entityManager)
         val offerSearchStateRepositoryStrategy = OfferInteractionRepositoryStrategy(offerSearchStateRepository)
 
         offerSearchService = OfferSearchService(
