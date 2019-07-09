@@ -54,6 +54,8 @@ class PostgresOfferInteractionRepositoryImpl(
 
     override fun delete(ids: List<Long>): Long = repository.deleteByIdIn(ids)
 
+    override fun getDanglingOfferInteractions(): List<OfferInteraction> = repository.getDanglingOfferInteractions()
+
     private fun syncElementCollections(interaction: OfferInteraction?): OfferInteraction? {
         return if (interaction == null) null else syncElementCollections(listOf(interaction))[0]
     }

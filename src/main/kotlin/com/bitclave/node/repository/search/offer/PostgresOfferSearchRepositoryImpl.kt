@@ -223,4 +223,12 @@ class PostgresOfferSearchRepositoryImpl(
     }
 
     override fun countBySearchRequestId(id: Long): Long = repository.countBySearchRequestId(id)
+
+    override fun findAllWithoutOffer(): List<OfferSearch> = repository.findAllWithoutOffer()
+
+    override fun findAllWithoutSearchRequest(): List<OfferSearch> = repository.findAllWithoutSearchRequest()
+
+    override fun findAllWithoutOwner(): List<OfferSearch> = repository.findAllWithoutOwner()
+
+    override fun findAllWithoutOfferInteraction(): List<OfferSearch> = repository.findAllWithoutOfferInteraction()
 }
