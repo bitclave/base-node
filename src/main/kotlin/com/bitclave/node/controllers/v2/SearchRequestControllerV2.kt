@@ -63,7 +63,7 @@ class SearchRequestControllerV2(
         @PathVariable(value = "owner")
         owner: String,
 
-        @ApiParam("where client sends SearchRequest and signature of the message.", required = true)
+        @ApiParam("where client sends List of SearchRequestIds and signature of the message.", required = true)
         @RequestBody
         request: SignedRequest<List<Long>>,
 
