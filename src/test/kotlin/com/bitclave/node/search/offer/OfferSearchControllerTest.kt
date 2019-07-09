@@ -39,7 +39,7 @@ class OfferSearchControllerTest {
     protected lateinit var offerSearchIdRequest: SignedRequest<Long>
     protected lateinit var offerEventRequest: SignedRequest<String>
     protected lateinit var requestSearch: SignedRequest<SearchRequest>
-    protected lateinit var cloneRequestSearch: SignedRequest<List<Pair<Long, Long>>>
+    protected lateinit var cloneRequestSearch: SignedRequest<SearchRequest>
     private var httpHeaders: HttpHeaders = HttpHeaders()
 
     private val offerSearchModel = OfferSearch(
@@ -66,7 +66,7 @@ class OfferSearchControllerTest {
 
         requestSearch = SignedRequest(searchRequest, publicKey)
 
-        cloneRequestSearch = SignedRequest(listOf(Pair(1L, 2L)), publicKey)
+        cloneRequestSearch = SignedRequest(searchRequest, publicKey)
 
         httpHeaders.set("Accept", "application/json")
         httpHeaders.set("Content-Type", "application/json")
@@ -304,7 +304,7 @@ class OfferSearchControllerTest {
     @Test
     fun `clone offer search of search request`() {
         this.mvc.perform(
-            put("/$version/search/result/$publicKey")
+            put("/$version/search/result/$publicKey/1")
                 .content(cloneRequestSearch.toJsonString())
                 .headers(httpHeaders)
         ).andExpect(status().isOk)

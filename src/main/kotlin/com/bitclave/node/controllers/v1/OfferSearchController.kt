@@ -6,6 +6,7 @@ import com.bitclave.node.repository.models.OfferAction
 import com.bitclave.node.repository.models.OfferInteraction
 import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.repository.models.OfferSearchResultItem
+import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.models.SignedRequest
 import com.bitclave.node.repository.models.controllers.OfferSearchByQueryParameters
 import com.bitclave.node.services.v1.AccountService
@@ -597,15 +598,19 @@ class OfferSearchController(
             ApiResponse(code = 200, message = "Success", response = List::class)
         ]
     )
-    @RequestMapping(method = [RequestMethod.PUT], value = ["/result/{owner}"])
+    @RequestMapping(method = [RequestMethod.PUT], value = ["/result/{owner}/{id}"])
     fun cloneOfferSearchOfSearchRequest(
         @ApiParam("public key owner of target search request")
         @PathVariable(value = "owner")
         owner: String,
 
+        @ApiParam("id of source search request.")
+        @PathVariable(value = "id")
+        id: Long,
+
         @ApiParam("where client sends SearchRequest and signature of the message.", required = true)
         @RequestBody
-        request: SignedRequest<List<Pair<Long, Long>>>,
+        request: SignedRequest<SearchRequest>,
 
         @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
         @RequestHeader("Strategy", required = false)
@@ -621,7 +626,7 @@ class OfferSearchController(
 
                 val result = offerSearchService.cloneOfferSearchOfSearchRequest(
                     owner,
-                    request.data!!,
+                    listOf(Pair(id, request.data!!.id)),
                     getStrategyType(strategy)
                 ).get()
 

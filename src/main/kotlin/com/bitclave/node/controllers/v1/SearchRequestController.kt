@@ -241,12 +241,12 @@ class SearchRequestController(
 
         @ApiParam("where client sends SearchRequest and signature of the message.", required = true)
         @RequestBody
-        request: SignedRequest<List<Long>>,
+        request: SignedRequest<SearchRequest>,
 
         @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
         @RequestHeader("Strategy", required = false)
         strategy: String?
-    ): CompletableFuture<List<SearchRequest>> {
+    ): CompletableFuture<SearchRequest> {
 
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
             .thenCompose { account: Account -> accountService.validateNonce(request, account) }
@@ -257,13 +257,13 @@ class SearchRequestController(
 
                 val result = searchRequestService.cloneSearchRequestWithOfferSearches(
                     it.publicKey,
-                    request.data!!,
+                    listOf(request.data!!.id),
                     getStrategyType(strategy)
                 ).get()
 
                 accountService.incrementNonce(it, getStrategyType(strategy)).get()
 
-                CompletableFuture.completedFuture(result)
+                CompletableFuture.completedFuture(result[0])
             }.exceptionally { e ->
                 logger.error("Request: cloneSearchRequest/$owner/$request raised $e")
                 throw e
