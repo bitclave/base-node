@@ -361,4 +361,41 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     fun findAllDiff(): List<OfferSearch>
 
     fun countBySearchRequestId(id: Long): Long
+
+    @Query(
+        value = """
+            SELECT * FROM offer_search WHERE offer_id NOT IN
+            ( SELECT id FROM offer o)
+        """,
+        nativeQuery = true
+    )
+    fun findAllWithoutOffer(): List<OfferSearch>
+
+    @Query(
+        value = """
+            SELECT * FROM offer_search WHERE search_request_id NOT IN
+            ( SELECT id FROM search_request)
+        """,
+        nativeQuery = true
+    )
+    fun findAllWithoutSearchRequest(): List<OfferSearch>
+
+    @Query(
+        value = """
+            SELECT * FROM offer_search WHERE owner NOT IN
+            ( SELECT public_key FROM account)
+        """,
+        nativeQuery = true
+    )
+    fun findAllWithoutOwner(): List<OfferSearch>
+
+    @Query(
+        value = """
+            SELECT * FROM offer_search os WHERE os.id NOT IN
+            ( SELECT oo.id FROM offer_search oo, offer_interaction oi
+            WHERE oo.offer_id = oi.offer_id AND oo.owner = oi.owner)
+        """,
+        nativeQuery = true
+    )
+    fun findAllWithoutOfferInteraction(): List<OfferSearch>
 }

@@ -443,31 +443,28 @@ class OfferSearchService(
 
     fun getDanglingOfferSearches(
         strategy: RepositoryStrategyType,
-        byOffer: Boolean? = false,
-        bySearchRequest: Boolean? = false
+        type: Int
     ): CompletableFuture<List<OfferSearch>> {
 
         return CompletableFuture.supplyAsync {
-            val allOfferSearches = offerSearchRepository
-                .changeStrategy(strategy)
-                .findAll()
-
-            when {
-                byOffer!! -> {
-                    // get all relevant offers of offerSearches
-                    val offerIds: List<Long> = allOfferSearches.map { it.offerId }
-                    val offers = offerRepository.changeStrategy(strategy).findByIds(offerIds.distinct())
-                    val existedOfferIds: List<Long> = offers.map { it.id }
-                    allOfferSearches.filter { it.offerId !in existedOfferIds }
+            when (type) {
+                0 -> {
+                    // have no matching offer
+                    offerSearchRepository.changeStrategy(strategy).findAllWithoutOffer()
                 }
-                bySearchRequest!! -> {
-                    // get all relevant searchRequests of offerSearches
-                    val searchRequestIds: List<Long> = allOfferSearches.map { it.searchRequestId }
-                    val searchRequests = searchRequestRepository.changeStrategy(strategy).findById(searchRequestIds)
-                    val existedSearchRequestIds: List<Long> = searchRequests.map { it.id }
-                    allOfferSearches.filter { it.searchRequestId !in existedSearchRequestIds }
+                1 -> {
+                    // have no matching searchRequest
+                    offerSearchRepository.changeStrategy(strategy).findAllWithoutSearchRequest()
                 }
-                else -> throw BadArgumentException("specify either byOffer or bySearchRequest")
+                2 -> {
+                    // have no matching owner
+                    offerSearchRepository.changeStrategy(strategy).findAllWithoutOwner()
+                }
+                3 -> {
+                    // have no offer_interaction with matching offer_id and owner
+                    offerSearchRepository.changeStrategy(strategy).findAllWithoutOfferInteraction()
+                }
+                else -> throw BadArgumentException("specify search type")
             }
         }
     }
@@ -753,6 +750,15 @@ class OfferSearchService(
 
                 else -> repos.findByOwner(owner)
             }
+        }
+    }
+
+    fun getDanglingOfferInteractions(
+        strategy: RepositoryStrategyType
+    ): CompletableFuture<List<OfferInteraction>> {
+
+        return CompletableFuture.supplyAsync {
+            offerInteractionRepository.changeStrategy(strategy).getDanglingOfferInteractions()
         }
     }
 
