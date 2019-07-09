@@ -13,10 +13,8 @@ import com.bitclave.node.requestData.RequestDataControllerTest
 import com.bitclave.node.requestData.RequestDataServiceHybridTest
 import com.bitclave.node.requestData.RequestDataServiceTest
 import com.bitclave.node.search.SearchRequestControllerTest
-import com.bitclave.node.search.SearchRequestControllerV2Test
 import com.bitclave.node.search.SearchRequestServiceTest
 import com.bitclave.node.search.offer.OfferSearchControllerTest
-import com.bitclave.node.search.offer.OfferSearchControllerV2Test
 import com.bitclave.node.search.offer.OfferSearchServiceTest
 import com.bitclave.node.services.ExternalServicesControllerTest
 import com.bitclave.node.services.ExternalServicesServiceTest
@@ -45,10 +43,8 @@ import org.junit.runners.Suite
         RequestDataServiceTest::class,
         OfferControllerTest::class,
         OfferServiceTest::class,
-        SearchRequestControllerV2Test::class,
         SearchRequestControllerTest::class,
         SearchRequestServiceTest::class,
-        OfferSearchControllerV2Test::class,
         OfferSearchControllerTest::class,
         OfferSearchServiceTest::class,
         OfferShareControllerTest::class,

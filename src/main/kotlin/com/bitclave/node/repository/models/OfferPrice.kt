@@ -25,15 +25,11 @@ data class OfferPrice(
     @ColumnDefault("0")
     var worth: String = BigDecimal.ZERO.toString(),
 
-    @OneToMany(mappedBy = "offerPrice", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
-    var rules: List<OfferPriceRules> = emptyList(),
-
-    @Exclude
-    @Column(name = "offer_id", insertable = false, updatable = false)
-    val originalOfferId: Long = 0
+    @OneToMany(mappedBy = "offerPrice", cascade = [CascadeType.REMOVE], fetch = FetchType.EAGER)
+    var rules: List<OfferPriceRules> = emptyList()
 ) {
     @Exclude
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "offer_id")
     var offer: Offer? = null
 }

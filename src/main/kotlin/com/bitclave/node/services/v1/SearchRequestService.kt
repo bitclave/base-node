@@ -121,35 +121,25 @@ class SearchRequestService(
 
     fun cloneSearchRequestWithOfferSearches(
         owner: String,
-        searchRequestIds: List<Long>,
+        searchRequest: SearchRequest,
         strategy: RepositoryStrategyType
-    ): CompletableFuture<List<SearchRequest>> {
+    ): CompletableFuture<SearchRequest> {
 
         return CompletableFuture.supplyAsync {
 
             val existingRequest = repository
                 .changeStrategy(strategy)
-                .findById(searchRequestIds)
+                .findById(searchRequest.id)
+                ?: throw BadArgumentException("SearchRequest does not exist: ${searchRequest.id}")
 
-            val notExisted = existingRequest.filter { !searchRequestIds.contains(it.id) }
-
-            if (notExisted.isNotEmpty()) {
-                throw BadArgumentException("SearchRequest does not exist: $notExisted")
-            }
-
-            val preparedRequests = existingRequest.map { SearchRequest(0, owner, it.tags.toMap()) }
-
-            val createSearchRequests = repository
+            val createSearchRequest = repository
                 .changeStrategy(strategy)
-                .save(preparedRequests)
+                .save(SearchRequest(0, owner, existingRequest.tags.toMap()))
 
-            offerSearchService.cloneOfferSearchOfSearchRequest(
-                owner,
-                searchRequestIds.zip(createSearchRequests.map { it.id }),
-                strategy
-            ).get()
+            offerSearchService.cloneOfferSearchOfSearchRequest(existingRequest.id, createSearchRequest, strategy)
+                .get()
 
-            createSearchRequests
+            createSearchRequest
         }
     }
 

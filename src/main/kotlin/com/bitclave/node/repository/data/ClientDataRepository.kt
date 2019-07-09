@@ -2,7 +2,7 @@ package com.bitclave.node.repository.data
 
 interface ClientDataRepository {
 
-    fun allKeys(): List<String>
+    fun allKeys(): Array<String>
 
     fun getData(publicKey: String): Map<String, String>
 

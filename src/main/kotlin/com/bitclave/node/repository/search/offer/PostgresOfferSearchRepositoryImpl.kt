@@ -52,9 +52,6 @@ class PostgresOfferSearchRepositoryImpl(
         return repository.findBySearchRequestId(id, pageable)
     }
 
-    override fun findBySearchRequestIdIn(ids: List<Long>): List<OfferSearch> =
-        repository.findBySearchRequestIdIn(ids).toList()
-
     override fun findBySearchRequestIdInAndOwner(ids: List<Long>, owner: String): List<OfferSearch> {
         return repository.findBySearchRequestIdInAndOwner(ids, owner)
     }
@@ -219,12 +216,4 @@ class PostgresOfferSearchRepositoryImpl(
     }
 
     override fun countBySearchRequestId(id: Long): Long = repository.countBySearchRequestId(id)
-
-    override fun findAllWithoutOffer(): List<OfferSearch> = repository.findAllWithoutOffer()
-
-    override fun findAllWithoutSearchRequest(): List<OfferSearch> = repository.findAllWithoutSearchRequest()
-
-    override fun findAllWithoutOwner(): List<OfferSearch> = repository.findAllWithoutOwner()
-
-    override fun findAllWithoutOfferInteraction(): List<OfferSearch> = repository.findAllWithoutOfferInteraction()
 }

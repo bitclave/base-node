@@ -26,11 +26,4 @@ data class OfferSearch(
     val offerId: Long = 0,
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) val createdAt: Date = Date()
-) {
-    fun hashCodeByOfferIdAndOwner(): Int {
-        var result = owner.hashCode()
-        result = 31 * result + offerId.hashCode()
-
-        return result
-    }
-}
+)

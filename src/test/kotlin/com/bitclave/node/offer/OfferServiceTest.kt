@@ -48,7 +48,6 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import java.math.BigDecimal
-import javax.persistence.EntityManager
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
@@ -93,9 +92,6 @@ class OfferServiceTest {
 
     @Autowired
     private lateinit var gson: Gson
-
-    @Autowired
-    private lateinit var entityManager: EntityManager
 
     private val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
 
@@ -169,8 +165,7 @@ class OfferServiceTest {
         val repositoryStrategy = AccountRepositoryStrategy(postgres, hybrid)
         val accountService = AccountService(repositoryStrategy)
 
-        val postgresOfferRepository =
-            PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository, entityManager)
+        val postgresOfferRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
         val offerServiceStrategy = OfferRepositoryStrategy(postgresOfferRepository)
 
         val postgresOfferPriceRepository =
@@ -180,29 +175,29 @@ class OfferServiceTest {
         val searchRequestRepository =
             PostgresSearchRequestRepositoryImpl(
                 searchRequestCrudRepository,
-                offerSearchCrudRepository,
-                entityManager
+                offerSearchCrudRepository
             )
         val requestRepositoryStrategy = SearchRequestRepositoryStrategy(searchRequestRepository)
+        val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
+        val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
 
         val offerSearchRepository =
             PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository)
         val offerSearchRepositoryStrategy = OfferSearchRepositoryStrategy(offerSearchRepository)
 
-        val offerInteractionRepository =
-            PostgresOfferInteractionRepositoryImpl(offerInteractionCrudRepository, entityManager)
-        val offerInteractionRepositoryStrategy = OfferInteractionRepositoryStrategy(offerInteractionRepository)
+        val offerSearchStateRepository = PostgresOfferInteractionRepositoryImpl(offerInteractionCrudRepository)
+        val offerSearchStateRepositoryStrategy = OfferInteractionRepositoryStrategy(offerSearchStateRepository)
 
         val offerRankStateRepository = PostgresOfferRankRepositoryImpl(offerRankCrudRepository)
         val offerRankRepositoryStrategy = OfferRankRepositoryStrategy(offerRankStateRepository)
 
         val offerSearchService = OfferSearchService(
             requestRepositoryStrategy,
-            offerServiceStrategy,
+            offerRepositoryStrategy,
             offerSearchRepositoryStrategy,
             querySearchRequestCrudRepository,
             rtSearchRepository,
-            offerInteractionRepositoryStrategy,
+            offerSearchStateRepositoryStrategy,
             gson
         )
 

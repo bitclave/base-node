@@ -257,13 +257,13 @@ class SearchRequestController(
 
                 val result = searchRequestService.cloneSearchRequestWithOfferSearches(
                     it.publicKey,
-                    listOf(request.data!!.id),
+                    request.data!!,
                     getStrategyType(strategy)
                 ).get()
 
                 accountService.incrementNonce(it, getStrategyType(strategy)).get()
 
-                CompletableFuture.completedFuture(result[0])
+                CompletableFuture.completedFuture(result)
             }.exceptionally { e ->
                 logger.error("Request: cloneSearchRequest/$owner/$request raised $e")
                 throw e

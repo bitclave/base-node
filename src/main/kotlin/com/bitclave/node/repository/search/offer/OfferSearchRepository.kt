@@ -28,8 +28,6 @@ interface OfferSearchRepository {
 
     fun findBySearchRequestId(id: Long, pageable: Pageable): Page<OfferSearch>
 
-    fun findBySearchRequestIdIn(ids: List<Long>): List<OfferSearch>
-
     fun findBySearchRequestIdInAndOwner(ids: List<Long>, owner: String): List<OfferSearch>
 
     fun findByOfferId(id: Long): List<OfferSearch>
@@ -65,12 +63,4 @@ interface OfferSearchRepository {
     fun findAllDiff(): List<OfferSearch>
 
     fun countBySearchRequestId(id: Long): Long
-
-    fun findAllWithoutOffer(): List<OfferSearch>
-
-    fun findAllWithoutSearchRequest(): List<OfferSearch>
-
-    fun findAllWithoutOwner(): List<OfferSearch>
-
-    fun findAllWithoutOfferInteraction(): List<OfferSearch>
 }

@@ -40,7 +40,7 @@ data class OfferInteraction(
 
     @Column(length = 4096) var info: String = "[]",
 
-    @ElementCollection(fetch = FetchType.LAZY) var events: List<String> = emptyList(),
+    @ElementCollection(fetch = FetchType.EAGER) var events: List<String> = emptyList(),
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) var createdAt: Date = Date(),
 

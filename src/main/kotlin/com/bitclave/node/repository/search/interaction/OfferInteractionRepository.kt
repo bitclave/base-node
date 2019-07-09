@@ -32,6 +32,4 @@ interface OfferInteractionRepository {
     fun deleteAllByOwner(owner: String): Long
 
     fun delete(ids: List<Long>): Long
-
-    fun getDanglingOfferInteractions(): List<OfferInteraction>
 }
