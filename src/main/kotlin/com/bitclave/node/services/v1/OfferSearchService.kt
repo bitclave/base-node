@@ -541,7 +541,7 @@ class OfferSearchService(
             }
 
             existedSearchRequests.forEach {
-                if (searchRequestsIds.contains(it.id) && it.owner != owner) {
+                if (pairs.second.contains(it.id) && it.owner != owner) {
                     throw BadArgumentException("invalid search request id or owner")
                 }
             }
