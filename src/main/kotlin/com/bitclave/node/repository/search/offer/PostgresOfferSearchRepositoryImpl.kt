@@ -18,15 +18,15 @@ class PostgresOfferSearchRepositoryImpl(
 
     private val logger = KotlinLogging.logger {}
 
-    override fun deleteAllBySearchRequestId(id: Long): Long = repository.deleteAllBySearchRequestId(id)
+    override fun deleteAllBySearchRequestId(id: Long): Int = repository.deleteAllBySearchRequestId(id)
 
-    override fun deleteAllBySearchRequestIdIn(ids: List<Long>): Long = repository.deleteAllBySearchRequestIdIn(ids)
+    override fun deleteAllBySearchRequestIdIn(ids: List<Long>): Int = repository.deleteAllBySearchRequestIdIn(ids)
 
-    override fun deleteAllByOwner(owner: String): List<Long> {
+    override fun deleteAllByOwner(owner: String): Int {
         return repository.deleteAllByOwner(owner)
     }
 
-    override fun deleteAllByOfferId(id: Long): Long = repository.deleteAllByOfferId(id)
+    override fun deleteAllByOfferId(id: Long): Int = repository.deleteAllByOfferId(id)
 
     override fun save(list: List<OfferSearch>): List<OfferSearch> =
         repository.save(list).toList()

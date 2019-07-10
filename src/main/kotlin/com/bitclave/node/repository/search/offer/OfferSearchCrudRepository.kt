@@ -3,6 +3,7 @@ package com.bitclave.node.repository.search.offer
 import com.bitclave.node.repository.models.OfferSearch
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.data.repository.query.Param
@@ -13,13 +14,37 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Long> {
 
-    fun deleteAllBySearchRequestId(id: Long): Long
+    @Modifying
+    @Query(
+        value = """
+            DELETE FROM OfferSearch os WHERE os.searchRequestId = ?1
+        """
+    )
+    fun deleteAllBySearchRequestId(id: Long): Int
 
-    fun deleteAllBySearchRequestIdIn(ids: List<Long>): Long
+    @Modifying
+    @Query(
+        value = """
+            DELETE FROM OfferSearch os WHERE os.searchRequestId IN ?1
+        """
+    )
+    fun deleteAllBySearchRequestIdIn(ids: List<Long>): Int
 
-    fun deleteAllByOwner(owner: String): List<Long>
+    @Modifying
+    @Query(
+        value = """
+            DELETE FROM OfferSearch os WHERE os.owner = ?1
+        """
+    )
+    fun deleteAllByOwner(owner: String): Int
 
-    fun deleteAllByOfferId(id: Long): Long
+    @Modifying
+    @Query(
+        value = """
+            DELETE FROM OfferSearch os WHERE os.offerId = ?1
+        """
+    )
+    fun deleteAllByOfferId(id: Long): Int
 
     fun findBySearchRequestId(id: Long): List<OfferSearch>
 

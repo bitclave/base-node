@@ -45,7 +45,7 @@ class PostgresOfferRepositoryImpl(
         return 0
     }
 
-    override fun deleteOffers(owner: String): Long {
+    override fun deleteOffers(owner: String): Int {
         return repository.deleteByOwner(owner)
     }
 

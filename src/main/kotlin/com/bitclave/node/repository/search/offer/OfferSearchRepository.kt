@@ -8,13 +8,13 @@ import org.springframework.data.domain.Sort
 
 interface OfferSearchRepository {
 
-    fun deleteAllBySearchRequestId(id: Long): Long
+    fun deleteAllBySearchRequestId(id: Long): Int
 
-    fun deleteAllBySearchRequestIdIn(ids: List<Long>): Long
+    fun deleteAllBySearchRequestIdIn(ids: List<Long>): Int
 
-    fun deleteAllByOwner(owner: String): List<Long>
+    fun deleteAllByOwner(owner: String): Int
 
-    fun deleteAllByOfferId(id: Long): Long
+    fun deleteAllByOfferId(id: Long): Int
 
     fun save(list: List<OfferSearch>): List<OfferSearch>
 

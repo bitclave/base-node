@@ -12,5 +12,5 @@ interface OfferRankRepository {
 
     fun findByOfferIdAndRankerId(offerId: Long, rankerId: String): OfferRank?
 
-    fun deleteByOfferIdIn(offerIds: List<Long>): Long
+    fun deleteByOfferIdIn(offerIds: List<Long>): Int
 }
