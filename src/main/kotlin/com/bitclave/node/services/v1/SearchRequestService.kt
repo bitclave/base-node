@@ -137,7 +137,7 @@ class SearchRequestService(
                     .changeStrategy(strategy)
                     .findById(searchRequestIds)
             }
-            logger.debug { "clone search request: $step1" }
+            logger.debug { "clone search request step1: $step1" }
 
             var preparedRequests = emptyList<SearchRequest>()
 
@@ -150,7 +150,7 @@ class SearchRequestService(
 
                 preparedRequests = existingRequest.map { SearchRequest(0, owner, it.tags.toMap()) }
             }
-            logger.debug { "clone search request: $step2" }
+            logger.debug { "clone search request step2: $step2" }
 
             var createSearchRequests = emptyList<SearchRequest>()
 
@@ -160,21 +160,22 @@ class SearchRequestService(
                     .save(preparedRequests)
             }
 
-            logger.debug { "clone search request: $step3" }
+            logger.debug { "clone search request step3: $step3" }
+            val step4 = measureTimeMillis {
+                try {
+                    offerSearchService.cloneOfferSearchOfSearchRequest(
+                        owner,
+                        searchRequestIds.zip(createSearchRequests.map { it.id }),
+                        strategy
+                    ).get()
+                } catch (e: Throwable) {
+                    repository.changeStrategy(strategy)
+                        .deleteByIdIn(createSearchRequests.map { it.id })
 
-            try {
-                offerSearchService.cloneOfferSearchOfSearchRequest(
-                    owner,
-                    searchRequestIds.zip(createSearchRequests.map { it.id }),
-                    strategy
-                ).get()
-            } catch (e: Throwable) {
-                repository.changeStrategy(strategy)
-                    .deleteByIdIn(createSearchRequests.map { it.id })
-
-                throw e
+                    throw e
+                }
             }
-
+            logger.debug { "clone search request step4 (full clone offer search): $step4" }
             createSearchRequests
         }
     }

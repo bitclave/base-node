@@ -547,7 +547,7 @@ class OfferSearchService(
                     }
                 }
             }
-            logger.debug { "clone offer search: $step1" }
+            logger.debug { "clone offer search step1: $step1" }
 
             var allOfferSearches = emptyList<OfferSearch>()
             val repository = offerSearchRepository.changeStrategy(strategy)
@@ -555,7 +555,7 @@ class OfferSearchService(
             val step2 = measureTimeMillis {
                 allOfferSearches = repository.findBySearchRequestIdIn(searchRequestsIds.distinct())
             }
-            logger.debug { "clone offer search: $step2" }
+            logger.debug { "clone offer search step2: $step2" }
 
             var result = emptyList<OfferSearch>()
 
@@ -573,7 +573,7 @@ class OfferSearchService(
                     filterExcludeExist
                 }.flatten()
             }
-            logger.debug { "clone offer search: $step3" }
+            logger.debug { "clone offer search step3: $step3" }
 
             val step4 = measureTimeMillis {
                 val offerIds = result.map { it.offerId }.distinct()
@@ -585,8 +585,15 @@ class OfferSearchService(
                 val interactions = notExistedOffersInInteractions.map { OfferInteraction(0, owner, it) }
                 offerInteractionRepository.changeStrategy(strategy).save(interactions)
             }
-            logger.debug { "clone offer search: $step4" }
-            repository.save(result)
+            logger.debug { "clone offer search step4: $step4" }
+
+            var savedResult = emptyList<OfferSearch>()
+            val step5 = measureTimeMillis {
+                savedResult = repository.save(result)
+            }
+            logger.debug { "clone offer search step5: $step5" }
+
+            savedResult
         }
     }
 
