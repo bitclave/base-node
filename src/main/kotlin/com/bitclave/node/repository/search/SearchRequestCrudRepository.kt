@@ -26,7 +26,13 @@ interface SearchRequestCrudRepository : PagingAndSortingRepository<SearchRequest
     )
     fun deleteByOwner(owner: String): Int
 
-    fun deleteByIdIn(ids: List<Long>): Long
+    @Modifying
+    @Query(
+        value = """
+            DELETE FROM SearchRequest sr WHERE sr.id IN ?1
+        """
+    )
+    fun deleteByIdIn(ids: List<Long>): Int
 
     fun findByIdAndOwner(id: Long, owner: String): SearchRequest?
 
@@ -45,4 +51,13 @@ interface SearchRequestCrudRepository : PagingAndSortingRepository<SearchRequest
         nativeQuery = true
     )
     fun deleteTagsByOwner(owner: String): Int
+
+    @Modifying
+    @Query(
+        value = """
+            DELETE FROM search_request_tags srt WHERE srt.search_request_id IN ?
+        """,
+        nativeQuery = true
+    )
+    fun deleteTagsByIdIn(ids: List<Long>): Int
 }

@@ -33,7 +33,10 @@ class PostgresSearchRequestRepositoryImpl(
         return repository.deleteByOwner(owner)
     }
 
-    override fun deleteByIdIn(ids: List<Long>): Long = repository.deleteByIdIn(ids)
+    override fun deleteByIdIn(ids: List<Long>): Int {
+        repository.deleteTagsByIdIn(ids)
+        return repository.deleteByIdIn(ids)
+    }
 
     override fun findById(id: Long): SearchRequest? {
         return syncElementCollections(repository.findOne(id))
