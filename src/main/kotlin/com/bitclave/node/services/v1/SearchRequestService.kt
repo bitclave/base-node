@@ -8,12 +8,14 @@ import com.bitclave.node.repository.search.offer.OfferSearchRepository
 import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepository
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
+import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import java.util.Date
 import java.util.concurrent.CompletableFuture
+import kotlin.system.measureTimeMillis
 
 @Service
 @Qualifier("v1")
@@ -23,6 +25,8 @@ class SearchRequestService(
     private val querySearchRequestCrudRepository: QuerySearchRequestCrudRepository,
     private val offerSearchService: OfferSearchService
 ) {
+
+    private val logger = KotlinLogging.logger {}
 
     fun putSearchRequest(
         id: Long,
@@ -127,28 +131,51 @@ class SearchRequestService(
 
         return CompletableFuture.supplyAsync {
 
-            val existingRequest = repository
-                .changeStrategy(strategy)
-                .findById(searchRequestIds)
+            var existingRequest = emptyList<SearchRequest>()
+            val step1 = measureTimeMillis {
+                existingRequest = repository
+                    .changeStrategy(strategy)
+                    .findById(searchRequestIds)
+            }
+            logger.debug { "clone search request step1: $step1" }
 
-            val notExisted = existingRequest.filter { !searchRequestIds.contains(it.id) }
+            var preparedRequests = emptyList<SearchRequest>()
 
-            if (notExisted.isNotEmpty()) {
-                throw BadArgumentException("SearchRequest does not exist: $notExisted")
+            val step2 = measureTimeMillis {
+                val notExisted = existingRequest.filter { !searchRequestIds.contains(it.id) }
+
+                if (notExisted.isNotEmpty()) {
+                    throw BadArgumentException("SearchRequest does not exist: $notExisted")
+                }
+
+                preparedRequests = existingRequest.map { SearchRequest(0, owner, it.tags.toMap()) }
+            }
+            logger.debug { "clone search request step2: $step2" }
+
+            var createSearchRequests = emptyList<SearchRequest>()
+
+            val step3 = measureTimeMillis {
+                createSearchRequests = repository
+                    .changeStrategy(strategy)
+                    .save(preparedRequests)
             }
 
-            val preparedRequests = existingRequest.map { SearchRequest(0, owner, it.tags.toMap()) }
+            logger.debug { "clone search request step3: $step3" }
+            val step4 = measureTimeMillis {
+                try {
+                    offerSearchService.cloneOfferSearchOfSearchRequest(
+                        owner,
+                        searchRequestIds.zip(createSearchRequests.map { it.id }),
+                        strategy
+                    ).get()
+                } catch (e: Throwable) {
+                    repository.changeStrategy(strategy)
+                        .deleteByIdIn(createSearchRequests.map { it.id })
 
-            val createSearchRequests = repository
-                .changeStrategy(strategy)
-                .save(preparedRequests)
-
-            offerSearchService.cloneOfferSearchOfSearchRequest(
-                owner,
-                searchRequestIds.zip(createSearchRequests.map { it.id }),
-                strategy
-            ).get()
-
+                    throw e
+                }
+            }
+            logger.debug { "clone search request step4 (full clone offer search): $step4" }
             createSearchRequests
         }
     }

@@ -18,7 +18,7 @@ interface OfferSearchRepository {
 
     fun save(list: List<OfferSearch>): List<OfferSearch>
 
-    fun save(item: OfferSearch)
+    fun save(item: OfferSearch): OfferSearch
 
     fun findById(id: Long): OfferSearch?
 
