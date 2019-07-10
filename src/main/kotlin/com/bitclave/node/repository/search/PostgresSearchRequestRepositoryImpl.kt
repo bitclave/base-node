@@ -28,7 +28,8 @@ class PostgresSearchRequestRepositoryImpl(
 
     override fun deleteByIdAndOwner(id: Long, owner: String): Long = repository.deleteByIdAndOwner(id, owner)
 
-    override fun deleteByOwner(owner: String): Long {
+    override fun deleteByOwner(owner: String): Int {
+        repository.deleteTagsByOwner(owner)
         return repository.deleteByOwner(owner)
     }
 

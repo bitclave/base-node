@@ -29,9 +29,9 @@ interface OfferInteractionRepository {
         states: List<OfferAction>
     ): List<OfferInteraction>
 
-    fun deleteAllByOwner(owner: String): Long
+    fun deleteAllByOwner(owner: String): Int
 
-    fun delete(ids: List<Long>): Long
+    fun delete(ids: List<Long>): Int
 
     fun getDanglingOfferInteractions(): List<OfferInteraction>
 }

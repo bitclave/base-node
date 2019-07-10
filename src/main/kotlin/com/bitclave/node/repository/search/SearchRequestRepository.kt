@@ -12,7 +12,7 @@ interface SearchRequestRepository {
 
     fun deleteByIdAndOwner(id: Long, owner: String): Long
 
-    fun deleteByOwner(owner: String): Long
+    fun deleteByOwner(owner: String): Int
 
     fun findById(id: Long): SearchRequest?
 

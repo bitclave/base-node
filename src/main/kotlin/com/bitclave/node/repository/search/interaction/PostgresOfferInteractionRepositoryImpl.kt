@@ -50,9 +50,15 @@ class PostgresOfferInteractionRepositoryImpl(
     ): List<OfferInteraction> =
         syncElementCollections(repository.findByOwnerAndOfferIdInAndStateIn(owner, offers, states))
 
-    override fun deleteAllByOwner(owner: String): Long = repository.deleteAllByOwner(owner)
+    override fun deleteAllByOwner(owner: String): Int {
+        repository.deleteEventsByOwner(owner)
+        return repository.deleteAllByOwner(owner)
+    }
 
-    override fun delete(ids: List<Long>): Long = repository.deleteByIdIn(ids)
+    override fun delete(ids: List<Long>): Int {
+        repository.deleteEventsByIdIn(ids)
+        return repository.deleteByIdIn(ids)
+    }
 
     override fun getDanglingOfferInteractions(): List<OfferInteraction> = repository.getDanglingOfferInteractions()
 
