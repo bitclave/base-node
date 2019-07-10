@@ -26,6 +26,8 @@ interface SearchRequestCrudRepository : PagingAndSortingRepository<SearchRequest
     )
     fun deleteByOwner(owner: String): Int
 
+    fun deleteByIdIn(ids: List<Long>): Long
+
     fun findByIdAndOwner(id: Long, owner: String): SearchRequest?
 
     @Query("FROM SearchRequest s JOIN  s.tags t WHERE s.owner = :owner and KEY(t) = :tagKey")

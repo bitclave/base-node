@@ -31,9 +31,7 @@ class PostgresOfferSearchRepositoryImpl(
     override fun save(list: List<OfferSearch>): List<OfferSearch> =
         repository.save(list).toList()
 
-    override fun save(item: OfferSearch) {
-        save(listOf(item))
-    }
+    override fun save(item: OfferSearch): OfferSearch = repository.save(item)
 
     override fun findById(id: Long): OfferSearch? {
         return repository.findOne(id)
