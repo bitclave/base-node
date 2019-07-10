@@ -575,6 +575,8 @@ class OfferSearchService(
             }
             logger.debug { "clone offer search step3: $step3" }
 
+            var interactions = emptyList<OfferInteraction>()
+
             val step4 = measureTimeMillis {
                 val offerIds = result.map { it.offerId }.distinct()
                 val existedOffersInInteractions = offerInteractionRepository.changeStrategy(strategy)
@@ -582,16 +584,20 @@ class OfferSearchService(
                     .map { it.offerId }
                     .toSet()
                 val notExistedOffersInInteractions = offerIds.filter { !existedOffersInInteractions.contains(it) }
-                val interactions = notExistedOffersInInteractions.map { OfferInteraction(0, owner, it) }
-                offerInteractionRepository.changeStrategy(strategy).save(interactions)
+                interactions = notExistedOffersInInteractions.map { OfferInteraction(0, owner, it) }
             }
             logger.debug { "clone offer search step4: $step4" }
 
-            var savedResult = emptyList<OfferSearch>()
             val step5 = measureTimeMillis {
+                offerInteractionRepository.changeStrategy(strategy).save(interactions)
+            }
+            logger.debug { "clone offer search step5: $step5, count ${interactions.size}" }
+
+            var savedResult = emptyList<OfferSearch>()
+            val step6 = measureTimeMillis {
                 savedResult = repository.save(result)
             }
-            logger.debug { "clone offer search step5: $step5" }
+            logger.debug { "clone offer search step6: $step6, count ${result.size}" }
 
             savedResult
         }
