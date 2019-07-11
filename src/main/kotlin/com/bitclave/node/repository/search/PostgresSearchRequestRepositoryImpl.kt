@@ -34,6 +34,7 @@ class PostgresSearchRequestRepositoryImpl(
     }
 
     override fun deleteByIdIn(ids: List<Long>): Int {
+        if (ids.isEmpty()) return 0
         repository.deleteTagsByIdIn(ids)
         return repository.deleteByIdIn(ids)
     }

@@ -20,7 +20,10 @@ class PostgresOfferSearchRepositoryImpl(
 
     override fun deleteAllBySearchRequestId(id: Long): Int = repository.deleteAllBySearchRequestId(id)
 
-    override fun deleteAllBySearchRequestIdIn(ids: List<Long>): Int = repository.deleteAllBySearchRequestIdIn(ids)
+    override fun deleteAllBySearchRequestIdIn(ids: List<Long>): Int {
+        if (ids.isEmpty()) return 0
+        return repository.deleteAllBySearchRequestIdIn(ids)
+    }
 
     override fun deleteAllByOwner(owner: String): Int {
         return repository.deleteAllByOwner(owner)

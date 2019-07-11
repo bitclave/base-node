@@ -56,8 +56,7 @@ class PostgresOfferInteractionRepositoryImpl(
     }
 
     override fun delete(ids: List<Long>): Int {
-        if (ids.size == 0) return 0
-
+        if (ids.isEmpty()) return 0
         repository.deleteEventsByIdIn(ids)
         return repository.deleteByIdIn(ids)
     }
