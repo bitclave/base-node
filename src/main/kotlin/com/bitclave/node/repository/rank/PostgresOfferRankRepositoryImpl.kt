@@ -26,5 +26,8 @@ class PostgresOfferRankRepositoryImpl(
         return repository.findById(id)
     }
 
-    override fun deleteByOfferIdIn(offerIds: List<Long>): Int = repository.deleteByOfferIdIn(offerIds)
+    override fun deleteByOfferIdIn(offerIds: List<Long>): Int {
+        if (offerIds.isEmpty()) return 0
+        return repository.deleteByOfferIdIn(offerIds)
+    }
 }
