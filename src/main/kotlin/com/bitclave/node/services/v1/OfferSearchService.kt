@@ -874,30 +874,18 @@ class OfferSearchService(
                 .filter { it.state == OfferAction.NONE || it.state == OfferAction.REJECT }
                 .map { it.id }
         }
+
         logger.debug { "deleteByOfferId step 2 -> ms: $step2 filteredStateIds: ${filteredStateIds.size}" }
 
         val step3 = measureTimeMillis {
             offerInteractionRepository.changeStrategy(strategy).delete(filteredStateIds)
         }
+
         logger.debug { "deleteByOfferId step 3 -> ms: $step3 filteredStateIds: ${filteredStateIds.size}" }
     }
 
     fun deleteBySearchRequestId(searchRequestId: Long, owner: String, strategy: RepositoryStrategyType) {
-        val offerIds = offerSearchRepository
-            .changeStrategy(strategy)
-            .findBySearchRequestId(searchRequestId)
-            .map { it.offerId }
-            .distinct()
-
-        offerSearchRepository.changeStrategy(strategy).deleteAllBySearchRequestId(searchRequestId)
-
-        val filteredStateIds = offerInteractionRepository
-            .changeStrategy(strategy)
-            .findByOfferIdInAndOwner(offerIds, owner).filter {
-                it.state == OfferAction.NONE || it.state == OfferAction.REJECT
-            }.map { it.id }
-
-        offerInteractionRepository.changeStrategy(strategy).delete(filteredStateIds)
+        deleteBySearchRequestIdIn(listOf(searchRequestId), owner, strategy)
     }
 
     fun deleteBySearchRequestIdIn(searchRequestIds: List<Long>, owner: String, strategy: RepositoryStrategyType) {
@@ -909,9 +897,15 @@ class OfferSearchService(
 
         offerSearchRepository.changeStrategy(strategy).deleteAllBySearchRequestIdIn(searchRequestIds)
 
+        val excludeOfferIds = offerSearchRepository
+            .changeStrategy(strategy)
+            .findByOwnerAndOfferIdIn(owner, offerIds).map { it.offerId }
+
+        val notExistedOfferIds = offerIds.filter { !excludeOfferIds.contains(it) }
+
         val filteredStateIds = offerInteractionRepository
             .changeStrategy(strategy)
-            .findByOfferIdInAndOwner(offerIds, owner).filter {
+            .findByOfferIdInAndOwner(notExistedOfferIds, owner).filter {
                 it.state == OfferAction.NONE || it.state == OfferAction.REJECT
             }.map { it.id }
 
