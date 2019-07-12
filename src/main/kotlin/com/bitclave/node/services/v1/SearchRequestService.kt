@@ -8,6 +8,8 @@ import com.bitclave.node.repository.search.offer.OfferSearchRepository
 import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepository
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
+import com.bitclave.node.utils.runAsyncEx
+import com.bitclave.node.utils.supplyAsyncEx
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
@@ -15,6 +17,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import java.util.Date
 import java.util.concurrent.CompletableFuture
+import java.util.function.Supplier
 import kotlin.system.measureTimeMillis
 
 @Service
@@ -35,7 +38,7 @@ class SearchRequestService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<SearchRequest> {
 
-        return CompletableFuture.supplyAsync {
+        return supplyAsyncEx(Supplier {
             var existedSearchRequest: SearchRequest? = null
 
             if (id > 0) {
@@ -56,7 +59,7 @@ class SearchRequestService(
             repository
                 .changeStrategy(strategy)
                 .save(updateSearchRequest)
-        }
+        })
     }
 
     fun deleteSearchRequest(
@@ -65,7 +68,7 @@ class SearchRequestService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Long> {
 
-        return CompletableFuture.supplyAsync {
+        return supplyAsyncEx(Supplier {
             val deletedId = repository.changeStrategy(strategy).deleteByIdAndOwner(id, owner)
             if (deletedId == 0L) {
                 throw NotFoundException()
@@ -73,8 +76,8 @@ class SearchRequestService(
 
             offerSearchService.deleteBySearchRequestId(id, owner, strategy)
 
-            return@supplyAsync deletedId
-        }
+            deletedId
+        })
     }
 
     fun deleteSearchRequests(
@@ -82,7 +85,7 @@ class SearchRequestService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
 
-        return CompletableFuture.runAsync {
+        return runAsyncEx(Runnable {
             val deletedIds = repository
                 .changeStrategy(strategy)
                 .findByOwner(owner)
@@ -90,13 +93,13 @@ class SearchRequestService(
             repository.changeStrategy(strategy).deleteByOwner(owner)
 
             offerSearchService.deleteBySearchRequestIdIn(deletedIds, owner, strategy)
-        }
+        })
     }
 
     fun deleteQuerySearchRequest(owner: String): CompletableFuture<Void> {
-        return CompletableFuture.runAsync {
+        return runAsyncEx(Runnable {
             querySearchRequestCrudRepository.deleteAllByOwner(owner)
-        }
+        })
     }
 
     fun getSearchRequests(
@@ -105,7 +108,7 @@ class SearchRequestService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<List<SearchRequest>> {
 
-        return CompletableFuture.supplyAsync {
+        return supplyAsyncEx(Supplier {
             val repository = repository.changeStrategy(strategy)
 
             when {
@@ -113,14 +116,14 @@ class SearchRequestService(
                     val searchRequest = repository.findByIdAndOwner(id, owner)
 
                     if (searchRequest != null) {
-                        return@supplyAsync arrayListOf(searchRequest)
+                        return@Supplier arrayListOf(searchRequest)
                     }
-                    return@supplyAsync emptyList<SearchRequest>()
+                    return@Supplier emptyList<SearchRequest>()
                 }
-                owner != "0x0" -> return@supplyAsync repository.findByOwner(owner)
-                else -> return@supplyAsync repository.findAll()
+                owner != "0x0" -> return@Supplier repository.findByOwner(owner)
+                else -> return@Supplier repository.findAll()
             }
-        }
+        })
     }
 
     fun cloneSearchRequestWithOfferSearches(
@@ -129,7 +132,7 @@ class SearchRequestService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<List<SearchRequest>> {
 
-        return CompletableFuture.supplyAsync {
+        return supplyAsyncEx(Supplier {
 
             var existingRequest = emptyList<SearchRequest>()
             val step1 = measureTimeMillis {
@@ -177,30 +180,24 @@ class SearchRequestService(
             }
             logger.debug { "clone search request step4 (full clone offer search): $step4" }
             createSearchRequests
-        }
+        })
     }
 
     fun getPageableRequests(
         page: PageRequest,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Page<SearchRequest>> {
-
-        return CompletableFuture.supplyAsync {
-            val repository = repository.changeStrategy(strategy)
-            return@supplyAsync repository.findAll(page)
-        }
+        return supplyAsyncEx(Supplier {
+            repository.changeStrategy(strategy).findAll(page)
+        })
     }
 
     fun getSearchRequestTotalCount(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Long> {
-
-        return CompletableFuture.supplyAsync {
-
-            val repository = repository.changeStrategy(strategy)
-
-            return@supplyAsync repository.getTotalCount()
-        }
+        return supplyAsyncEx(Supplier {
+            repository.changeStrategy(strategy).getTotalCount()
+        })
     }
 
     fun getRequestByOwnerAndTag(
@@ -208,10 +205,8 @@ class SearchRequestService(
         tagKey: String,
         strategy: RepositoryStrategyType
     ): CompletableFuture<List<SearchRequest>> {
-
-        return CompletableFuture.supplyAsync {
-            val repository = repository.changeStrategy(strategy)
-            return@supplyAsync repository.getRequestByOwnerAndTag(owner, tagKey)
-        }
+        return supplyAsyncEx(Supplier {
+            repository.changeStrategy(strategy).getRequestByOwnerAndTag(owner, tagKey)
+        })
     }
 }
