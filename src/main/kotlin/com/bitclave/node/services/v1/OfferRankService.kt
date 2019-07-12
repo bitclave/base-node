@@ -5,10 +5,12 @@ import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.OfferRank
 import com.bitclave.node.repository.rank.OfferRankRepository
 import com.bitclave.node.services.errors.BadArgumentException
+import com.bitclave.node.utils.supplyAsyncEx
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
-import java.util.concurrent.CompletableFuture
 import java.util.Date
+import java.util.concurrent.CompletableFuture
+import java.util.function.Supplier
 
 @Service
 @Qualifier("v1")
@@ -19,7 +21,7 @@ class OfferRankService(
         strategy: RepositoryStrategyType,
         offerRank: OfferRank
     ): CompletableFuture<OfferRank> {
-        return CompletableFuture.supplyAsync {
+        return supplyAsyncEx(Supplier {
 
             val existedOfferRank: OfferRank? = offerRankRepository
                 .changeStrategy(strategy)
@@ -27,7 +29,7 @@ class OfferRankService(
 
             if (existedOfferRank != null) {
                 existedOfferRank.rank = offerRank.rank
-                return@supplyAsync updateOfferRank(strategy, existedOfferRank).get()
+                return@Supplier updateOfferRank(strategy, existedOfferRank).get()
             } else {
                 val readyToCreateOfferRank = OfferRank(
                     0,
@@ -35,11 +37,11 @@ class OfferRankService(
                     offerRank.offerId,
                     offerRank.rankerId
                 )
-                return@supplyAsync offerRankRepository
+                return@Supplier offerRankRepository
                     .changeStrategy(strategy)
                     .saveRankOffer(readyToCreateOfferRank)
             }
-        }
+        })
     }
 
     fun updateOfferRank(
@@ -47,9 +49,9 @@ class OfferRankService(
         offerRank: OfferRank
     ): CompletableFuture<OfferRank> {
 
-        return CompletableFuture.supplyAsync {
+        return supplyAsyncEx(Supplier {
             if (offerRank.id == 0L) {
-                return@supplyAsync createOfferRank(strategy, offerRank).get()
+                return@Supplier createOfferRank(strategy, offerRank).get()
             }
             val originalOffer = offerRankRepository
                 .changeStrategy(strategy)
@@ -69,23 +71,25 @@ class OfferRankService(
                 originalOffer.createdAt,
                 Date()
             )
-            return@supplyAsync offerRankRepository
+
+            offerRankRepository
                 .changeStrategy(strategy)
                 .saveRankOffer(readyToSave)
-        }
+        })
     }
 
     fun getOfferRanksByOfferId(
         strategy: RepositoryStrategyType,
         offerId: Long?
     ): CompletableFuture<List<OfferRank>> {
-        return CompletableFuture.supplyAsync {
+        return supplyAsyncEx(Supplier {
             if (offerId == 0L) {
-                BadArgumentException()
+                throw BadArgumentException()
             }
+
             offerRankRepository
                 .changeStrategy(strategy)
                 .findByOfferId(offerId!!)
-        }
+        })
     }
 }

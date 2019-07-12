@@ -6,21 +6,23 @@ import com.bitclave.node.repository.file.FileRepository
 import com.bitclave.node.repository.models.UploadedFile
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
+import com.bitclave.node.utils.supplyAsyncEx
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import org.springframework.web.multipart.MultipartFile
 import java.util.Date
 import java.util.concurrent.CompletableFuture
+import java.util.function.Supplier
 
 @Service
 @Qualifier("v1")
 class FileService(private val fileRepository: RepositoryStrategy<FileRepository>) {
 
     fun getFile(id: Long, publicKey: String, strategy: RepositoryStrategyType): CompletableFuture<UploadedFile> {
-        return CompletableFuture.supplyAsync {
+        return supplyAsyncEx(Supplier {
             val repository = fileRepository.changeStrategy(strategy)
             repository.findByIdAndPublicKey(id, publicKey) ?: throw NotFoundException("file not found")
-        }
+        })
     }
 
     fun saveFile(
@@ -30,7 +32,7 @@ class FileService(private val fileRepository: RepositoryStrategy<FileRepository>
         strategy: RepositoryStrategyType
     ): CompletableFuture<UploadedFile> {
 
-        return CompletableFuture.supplyAsync {
+        return supplyAsyncEx(Supplier {
             if (data.name.isNullOrEmpty()) {
                 throw BadArgumentException()
             }
@@ -54,10 +56,8 @@ class FileService(private val fileRepository: RepositoryStrategy<FileRepository>
                 Date()
             )
 
-            val processedFile = fileRepository.changeStrategy(strategy).saveFile(file)
-            val updatedFile = fileRepository.changeStrategy(strategy).findById(processedFile.id)
-            updatedFile
-        }
+            fileRepository.changeStrategy(strategy).saveFile(file)
+        })
     }
 
     fun deleteFile(
@@ -66,18 +66,18 @@ class FileService(private val fileRepository: RepositoryStrategy<FileRepository>
         strategy: RepositoryStrategyType
     ): CompletableFuture<Long> {
 
-        return CompletableFuture.supplyAsync {
+        return supplyAsyncEx(Supplier {
             val deletedId = fileRepository.changeStrategy(strategy).deleteFile(id, publicKey)
             if (deletedId == 0L) {
                 throw NotFoundException()
             }
             deletedId
-        }
+        })
     }
 
     fun deleteFileByPublicKey(publicKey: String, strategy: RepositoryStrategyType): CompletableFuture<Long> {
-        return CompletableFuture.supplyAsync {
+        return supplyAsyncEx(Supplier {
             fileRepository.changeStrategy(strategy).deleteByPublicKey(publicKey)
-        }
+        })
     }
 }

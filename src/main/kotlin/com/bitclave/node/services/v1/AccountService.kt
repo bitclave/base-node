@@ -10,11 +10,14 @@ import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.errors.AlreadyRegisteredException
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
+import com.bitclave.node.utils.runAsyncEx
+import com.bitclave.node.utils.supplyAsyncEx
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import java.util.Date
 import java.util.concurrent.CompletableFuture
+import java.util.function.Supplier
 
 private val logger = KotlinLogging.logger {}
 
@@ -59,34 +62,34 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
     }
 
     fun validateNonce(request: SignedRequest<*>, account: Account): CompletableFuture<Account> {
-        return CompletableFuture.supplyAsync {
+        return supplyAsyncEx(Supplier {
             if (request.nonce != account.nonce + 1) {
                 throw BadArgumentException()
             }
             account
-        }
+        })
     }
 
     fun incrementNonce(
         account: Account,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
-        return CompletableFuture.runAsync {
+        return runAsyncEx(Runnable {
             account.nonce++
             accountRepository.changeStrategy(strategy).saveAccount(account)
-        }
+        })
     }
 
     fun getNonce(publicKey: String, strategy: RepositoryStrategyType): CompletableFuture<Long> {
-        return CompletableFuture.supplyAsync {
+        return supplyAsyncEx(Supplier {
             val account = accountRepository.changeStrategy(strategy).findByPublicKey(publicKey)
 
             account?.nonce ?: 0
-        }
+        })
     }
 
     fun registrationClient(account: Account, strategy: RepositoryStrategyType): CompletableFuture<Account> {
-        return CompletableFuture.supplyAsync {
+        return supplyAsyncEx(Supplier {
             if (!account.isValid()) {
                 throw BadArgumentException()
             }
@@ -102,23 +105,23 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
                 .saveAccount(createdAccount)
 
             createdAccount
-        }
+        })
     }
 
     fun existAccount(account: Account, strategy: RepositoryStrategyType): CompletableFuture<Account> {
-        return CompletableFuture.supplyAsync {
+        return supplyAsyncEx(Supplier {
             accountRepository.changeStrategy(strategy)
                 .findByPublicKey(account.publicKey) ?: throw NotFoundException(
                 "User with baseID ${account.publicKey} does not exist"
             )
-        }
+        })
     }
 
     fun deleteAccount(clientId: String, strategy: RepositoryStrategyType): CompletableFuture<Void> {
-        return CompletableFuture.runAsync {
+        return runAsyncEx(Runnable {
             accountRepository.changeStrategy(strategy)
                 .deleteAccount(clientId)
-        }
+        })
     }
 
     fun getAccounts(
@@ -126,10 +129,10 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
         publicKeys: List<String>
     ): CompletableFuture<List<Account>> {
 
-        return CompletableFuture.supplyAsync {
+        return supplyAsyncEx(Supplier {
             accountRepository.changeStrategy(strategy)
                 .findByPublicKey(publicKeys)
-        }
+        })
     }
 
     fun getAllAccounts(
@@ -137,21 +140,18 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
         fromDate: Date
     ): CompletableFuture<List<Account>> {
 
-        return CompletableFuture.supplyAsync {
+        return supplyAsyncEx(Supplier {
             accountRepository.changeStrategy(strategy)
                 .findByCreatedAtAfter(fromDate)
-        }
+        })
     }
 
     fun getAccountTotalCount(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Long> {
 
-        return CompletableFuture.supplyAsync {
-
-            val repository = accountRepository.changeStrategy(strategy)
-
-            return@supplyAsync repository.getTotalCount()
-        }
+        return supplyAsyncEx(Supplier {
+            accountRepository.changeStrategy(strategy).getTotalCount()
+        })
     }
 }

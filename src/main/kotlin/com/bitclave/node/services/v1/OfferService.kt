@@ -8,12 +8,15 @@ import com.bitclave.node.repository.price.OfferPriceRepository
 import com.bitclave.node.repository.rank.OfferRankRepository
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
+import com.bitclave.node.utils.runAsyncEx
+import com.bitclave.node.utils.supplyAsyncEx
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import java.util.Date
 import java.util.concurrent.CompletableFuture
+import java.util.function.Supplier
 
 @Service
 @Qualifier("v1")
@@ -31,7 +34,7 @@ class OfferService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Offer> {
 
-        return CompletableFuture.supplyAsync {
+        return supplyAsyncEx(Supplier {
             var originalOffer: Offer? = null
 
             if (id > 0) {
@@ -72,8 +75,8 @@ class OfferService(
             offerPriceRepository.changeStrategy(strategy).savePrices(processedOffer, offer.offerPrices)
 
             offerSearchService.deleteByOfferId(id, strategy)
-            offerRepository.changeStrategy(strategy).findById(processedOffer.id)
-        }
+            offerRepository.changeStrategy(strategy).findById(processedOffer.id)!!
+        })
     }
 
     fun shallowUpdateOffer(
@@ -83,7 +86,7 @@ class OfferService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Offer> {
 
-        return CompletableFuture.supplyAsync {
+        return supplyAsyncEx(Supplier {
             val originalOffer = offerRepository.changeStrategy(strategy)
                 .findByIdAndOwner(id, owner) ?: throw BadArgumentException()
 
@@ -119,8 +122,8 @@ class OfferService(
             val processedOffer = offerRepository.changeStrategy(strategy).saveOffer(putOffer)
             offerPriceRepository.changeStrategy(strategy).savePrices(processedOffer, offer.offerPrices)
 
-            offerRepository.changeStrategy(strategy).findById(processedOffer.id)
-        }
+            offerRepository.changeStrategy(strategy).findById(processedOffer.id)!!
+        })
     }
 
     fun deleteOffer(
@@ -129,7 +132,7 @@ class OfferService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Long> {
 
-        return CompletableFuture.supplyAsync {
+        return supplyAsyncEx(Supplier {
             val deletedId = offerRepository.changeStrategy(strategy).deleteOffer(id, owner)
             if (deletedId == 0L) {
                 throw NotFoundException()
@@ -137,7 +140,7 @@ class OfferService(
             offerSearchService.deleteByOfferId(deletedId, strategy)
 
             deletedId
-        }
+        })
     }
 
     fun deleteOffers(
@@ -145,12 +148,12 @@ class OfferService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
 
-        return CompletableFuture.runAsync {
+        return runAsyncEx(Runnable {
             val offerIds = offerRepository.changeStrategy(strategy).findIdsByOwner(owner)
 
             offerRepository.changeStrategy(strategy).deleteOffers(owner)
             offerRankRepository.changeStrategy(strategy).deleteByOfferIdIn(offerIds)
-        }
+        })
     }
 
     fun getOffers(
@@ -159,32 +162,31 @@ class OfferService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<List<Offer>> {
 
-        return CompletableFuture.supplyAsync {
+        return supplyAsyncEx(Supplier {
             val repository = offerRepository.changeStrategy(strategy)
 
             if (id > 0 && owner != "0x0") {
                 val offer = repository.findByIdAndOwner(id, owner)
 
                 if (offer != null) {
-                    return@supplyAsync arrayListOf(offer)
+                    return@Supplier arrayListOf(offer)
                 }
-                return@supplyAsync emptyList<Offer>()
+                return@Supplier emptyList<Offer>()
             } else if (owner != "0x0") {
-                return@supplyAsync repository.findByOwner(owner)
+                return@Supplier repository.findByOwner(owner)
             } else {
-                return@supplyAsync repository.findAll()
+                return@Supplier repository.findAll()
             }
-        }
+        })
     }
 
     fun getPageableOffers(
         page: PageRequest,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Page<Offer>> {
-        return CompletableFuture.supplyAsync {
-            val repository = offerRepository.changeStrategy(strategy)
-            return@supplyAsync repository.findAll(page)
-        }
+        return supplyAsyncEx(Supplier {
+            offerRepository.changeStrategy(strategy).findAll(page)
+        })
     }
 
     fun getPageableOffersByOwner(
@@ -192,32 +194,26 @@ class OfferService(
         page: PageRequest,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Page<Offer>> {
-        return CompletableFuture.supplyAsync {
-            val repository = offerRepository.changeStrategy(strategy)
-            return@supplyAsync repository.findByOwner(owner, page)
-        }
+        return supplyAsyncEx(Supplier {
+            offerRepository.changeStrategy(strategy).findByOwner(owner, page)
+        })
     }
 
     fun getPageableOffersForMatcher(
         page: PageRequest,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Page<Offer>> {
-        return CompletableFuture.supplyAsync {
-            val repository = offerRepository.changeStrategy(strategy)
-            return@supplyAsync repository.getAllOffersExceptProducts(page)
-        }
+        return supplyAsyncEx(Supplier {
+            offerRepository.changeStrategy(strategy).getAllOffersExceptProducts(page)
+        })
     }
 
     fun getOfferTotalCount(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Long> {
-
-        return CompletableFuture.supplyAsync {
-
-            val repository = offerRepository.changeStrategy(strategy)
-
-            return@supplyAsync repository.getTotalCount()
-        }
+        return supplyAsyncEx(Supplier {
+            offerRepository.changeStrategy(strategy).getTotalCount()
+        })
     }
 
     fun getOfferByOwnerAndTag(
@@ -225,10 +221,8 @@ class OfferService(
         tagKey: String,
         strategy: RepositoryStrategyType
     ): CompletableFuture<List<Offer>> {
-
-        return CompletableFuture.supplyAsync {
-            val repository = offerRepository.changeStrategy(strategy)
-            return@supplyAsync repository.getOfferByOwnerAndTag(owner, tagKey)
-        }
+        return supplyAsyncEx(Supplier {
+            offerRepository.changeStrategy(strategy).getOfferByOwnerAndTag(owner, tagKey)
+        })
     }
 }

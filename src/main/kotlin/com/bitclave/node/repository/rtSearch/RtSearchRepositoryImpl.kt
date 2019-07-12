@@ -1,6 +1,7 @@
 package com.bitclave.node.repository.rtSearch
 
 import com.bitclave.node.configuration.properties.RtSearchProperties
+import com.bitclave.node.utils.supplyAsyncEx
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.core.ParameterizedTypeReference
 import org.springframework.data.domain.Page
@@ -11,6 +12,7 @@ import org.springframework.http.converter.json.GsonHttpMessageConverter
 import org.springframework.stereotype.Repository
 import org.springframework.web.client.RestTemplate
 import java.util.concurrent.CompletableFuture
+import java.util.function.Supplier
 
 @Repository
 class RtSearchRepositoryImpl(
@@ -28,7 +30,7 @@ class RtSearchRepositoryImpl(
         interests: List<String>?,
         mode: String?
     ): CompletableFuture<Page<Long>> {
-        return CompletableFuture.supplyAsync {
+        return supplyAsyncEx(Supplier {
 
             val parameters = mapOf(
                 "query" to query,
@@ -43,12 +45,13 @@ class RtSearchRepositoryImpl(
                 object : ParameterizedTypeReference<Page<Long>>() {},
                 parameters
             )
-            return@supplyAsync offerIdsResponse.body
-        }
+
+            offerIdsResponse.body
+        })
     }
 
     override fun getSuggestionByQuery(decodedQuery: String, size: Int): CompletableFuture<List<String>> {
-        return CompletableFuture.supplyAsync {
+        return supplyAsyncEx(Supplier {
 
             val parameters = mapOf(
                 "query" to decodedQuery,
@@ -60,7 +63,8 @@ class RtSearchRepositoryImpl(
                 object : ParameterizedTypeReference<List<String>>() {},
                 parameters
             )
-            return@supplyAsync offerIdsResponse.body
-        }
+
+            offerIdsResponse.body
+        })
     }
 }
