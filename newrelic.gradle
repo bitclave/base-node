@@ -6,7 +6,7 @@ task downloadNewrelic(type: Download) {
 
 task unzipNewrelic(type: Copy) {
     from zipTree(file('newrelic/newrelic-java.zip'))
-    into file('newrelic/unpacked')
+    into file('build')
 }
 
 task buildWithAgent(type: GradleBuild) {
