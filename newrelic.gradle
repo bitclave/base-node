@@ -1,0 +1,18 @@
+task downloadNewrelic(type: Download) {
+    mkdir 'newrelic'
+    src 'https://download.newrelic.com/newrelic/java-agent/newrelic-agent/current/newrelic-java.zip'
+    dest file('newrelic')
+}
+
+task unzipNewrelic(type: Copy) {
+    from zipTree(file('newrelic/newrelic-java.zip'))
+    into file('newrelic/unpacked')
+}
+
+task buildWithAgent(type: GradleBuild) {
+    test.enabled = false
+    tasks = ['build']
+}
+
+buildWithAgent.dependsOn unzipNewrelic
+unzipNewrelic.dependsOn downloadNewrelic

@@ -35,3 +35,6 @@ nbdist/
 /logs/
 
 local.properties
+
+#newrelic
+/newrelic
