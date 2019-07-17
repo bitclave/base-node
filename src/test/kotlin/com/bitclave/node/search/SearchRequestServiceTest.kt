@@ -25,6 +25,7 @@ import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.repository.search.offer.OfferSearchRepositoryStrategy
 import com.bitclave.node.repository.search.offer.PostgresOfferSearchRepositoryImpl
 import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepository
+import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferSearchService
 import com.bitclave.node.services.v1.SearchRequestService
@@ -167,7 +168,6 @@ class SearchRequestServiceTest {
 
         searchRequestService = SearchRequestService(
             requestRepositoryStrategy,
-            offerSearchRepositoryStrategy,
             querySearchRequestCrudRepository,
             offerSearchService
         )
@@ -198,6 +198,83 @@ class SearchRequestServiceTest {
         assertThat(result.tags).isEqualTo(searchRequest.tags)
         assertThat(result.createdAt.time > searchRequest.createdAt.time)
         assertThat(result.updatedAt.time > searchRequest.updatedAt.time)
+    }
+
+    @Test
+    fun `should be create few new search requests`() {
+        val result = searchRequestService.putSearchRequests(
+            account.publicKey,
+            listOf(searchRequest, searchRequest),
+            strategy
+        ).get()
+
+        assert(result.size == 2)
+
+        result.forEach { item ->
+            assert(item.id >= 1L)
+            assertThat(item.owner).isEqualTo(account.publicKey)
+            assertThat(item.tags).isEqualTo(searchRequest.tags)
+            assertThat(item.createdAt.time > searchRequest.createdAt.time)
+            assertThat(item.updatedAt.time > searchRequest.updatedAt.time)
+        }
+    }
+
+    @Test
+    fun `should be update few new search requests`() {
+        `should be create few new search requests`()
+
+        val existed = searchRequestService.getPageableRequests(PageRequest(0, 1000), strategy).get()
+        assert(existed.content.size == 2)
+        val updatedTags = mapOf("test" to "true")
+        val forUpdate = existed.map { it.copy(tags = updatedTags) }.content
+
+        val result = searchRequestService.putSearchRequests(
+            account.publicKey,
+            forUpdate,
+            strategy
+        ).get()
+
+        assert(result.size == 2)
+        val originGrouped = existed.content.groupBy { it.id }
+
+        result.forEach { item ->
+            assert(originGrouped.contains(item.id))
+            assertThat(item.owner).isEqualTo(account.publicKey)
+            assertThat(item.tags).isEqualTo(updatedTags)
+            assertThat(item.createdAt.time == originGrouped[item.id]?.get(0)?.createdAt?.time ?: -1)
+            assertThat(item.updatedAt.time > originGrouped[item.id]?.get(0)?.updatedAt?.time ?: -1)
+        }
+    }
+
+    @Test(expected = AccessDeniedException::class)
+    fun `should be throw error when try update search requests with diff owner`() {
+        val foreingSearchRequest = SearchRequest(
+            0,
+            account.publicKey.reversed(),
+            mapOf("car" to "true", "color" to "red")
+        )
+
+        val mySR = searchRequestService.putSearchRequests(
+            account.publicKey,
+            listOf(searchRequest),
+            strategy
+        ).get()[0]
+
+        val frSR = searchRequestService.putSearchRequests(
+            account.publicKey.reversed(),
+            listOf(foreingSearchRequest),
+            strategy
+        ).get()[0]
+
+        try {
+            searchRequestService.putSearchRequests(
+                account.publicKey,
+                listOf(mySR, frSR),
+                strategy
+            ).get()
+        } catch (e: Throwable) {
+            throw e.cause!!
+        }
     }
 
     @Test
