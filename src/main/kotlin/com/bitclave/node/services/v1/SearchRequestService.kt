@@ -4,8 +4,8 @@ import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.search.SearchRequestRepository
-import com.bitclave.node.repository.search.offer.OfferSearchRepository
 import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepository
+import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
 import com.bitclave.node.utils.runAsyncEx
@@ -24,7 +24,6 @@ import kotlin.system.measureTimeMillis
 @Qualifier("v1")
 class SearchRequestService(
     private val repository: RepositoryStrategy<SearchRequestRepository>,
-    private val repositoryOfferSearch: RepositoryStrategy<OfferSearchRepository>,
     private val querySearchRequestCrudRepository: QuerySearchRequestCrudRepository,
     private val offerSearchService: OfferSearchService
 ) {
@@ -59,6 +58,42 @@ class SearchRequestService(
             repository
                 .changeStrategy(strategy)
                 .save(updateSearchRequest)
+        })
+    }
+
+    fun putSearchRequests(
+        owner: String,
+        searchRequests: List<SearchRequest>,
+        strategy: RepositoryStrategyType
+    ): CompletableFuture<List<SearchRequest>> {
+
+        return supplyAsyncEx(Supplier {
+            val existedSearchRequests = repository.changeStrategy(strategy)
+                .findById(searchRequests.map { it.id }.distinct())
+
+            existedSearchRequests.forEach {
+                if (it.owner != owner) {
+                    throw AccessDeniedException("search request id: ${it.id} has different owner")
+                }
+            }
+
+            val grouped = existedSearchRequests.groupBy { it.id }
+
+            val result = searchRequests
+                .map {
+                    grouped[it.id]?.get(0)?.copy(tags = it.tags, updatedAt = Date())
+                        ?: SearchRequest(0, owner, it.tags)
+                }
+
+            offerSearchService.deleteBySearchRequestIdIn(
+                existedSearchRequests.map { it.id }.distinct(),
+                owner,
+                strategy
+            )
+
+            repository
+                .changeStrategy(strategy)
+                .save(result)
         })
     }
 

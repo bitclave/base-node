@@ -233,7 +233,6 @@ class OfferSearchServiceTest {
 
         searchRequestService = SearchRequestService(
             searchRequestRepositoryStrategy,
-            offerSearchRepositoryStrategy,
             querySearchRequestCrudRepository,
             offerSearchService
         )
