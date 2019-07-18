@@ -176,7 +176,7 @@ class OfferSearchService(
             }
             logger.debug { "5 step) content ms: $step5" }
             logger.debug { "total) ms: ${step1 + step2 + step3 + step4 + step5}" }
-            pageImpl
+            pageImpl as Page<OfferSearchResultItem>
         })
     }
 
