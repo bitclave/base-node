@@ -14,19 +14,19 @@ import java.util.concurrent.CompletableFuture
 
 @Repository
 class RtSearchRepositoryImpl(
-        rtSearchProperties: RtSearchProperties,
-        converter: GsonHttpMessageConverter
+    rtSearchProperties: RtSearchProperties,
+    converter: GsonHttpMessageConverter
 ) : RtSearchRepository {
 
     private val restTemplate: RestTemplate = RestTemplateBuilder()
-            .messageConverters(converter)
-            .rootUri(rtSearchProperties.url).build()
+        .messageConverters(converter)
+        .rootUri(rtSearchProperties.url).build()
 
     override fun getOffersIdByQuery(
-            query: String,
-            pageRequest: PageRequest,
-            filters: Map<String, List<String>>?,
-            mode: String?
+        query: String,
+        pageRequest: PageRequest,
+        filters: Map<String, List<String>>?,
+        mode: String?
     ): CompletableFuture<Page<Long>> {
         return CompletableFuture.supplyAsync {
 
