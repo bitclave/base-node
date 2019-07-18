@@ -173,7 +173,6 @@ class OfferSearchService(
             val step5 = measureTimeMillis {
                 val pageable = PageRequest(pageRequest.pageNumber, pageRequest.pageSize)
                 pageImpl = PageImpl(content, pageable, filteredByUnique.size.toLong())
-
             }
             logger.debug { "5 step) content ms: $step5" }
             logger.debug { "total) ms: ${step1 + step2 + step3 + step4 + step5}" }
