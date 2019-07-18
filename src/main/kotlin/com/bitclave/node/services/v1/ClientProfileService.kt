@@ -3,9 +3,12 @@ package com.bitclave.node.services.v1
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.data.ClientDataRepository
+import com.bitclave.node.utils.runAsyncEx
+import com.bitclave.node.utils.supplyAsyncEx
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
+import java.util.function.Supplier
 
 @Service
 @Qualifier("v1")
@@ -19,15 +22,15 @@ class ClientProfileService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Map<String, String>> {
 
-        return CompletableFuture.supplyAsync {
+        return supplyAsyncEx(Supplier {
             if ("first" == publicKey) {
-                return@supplyAsync hashMapOf("firstName" to "Adam", "lastName" to "Base")
+                return@Supplier hashMapOf("firstName" to "Adam", "lastName" to "Base")
             }
 
             clientDataRepository.changeStrategy(strategy)
                 .getData(publicKey)
                 .filter { includeOnly.isEmpty() || includeOnly.contains(it.key) }
-        }
+        })
     }
 
     fun updateData(
@@ -36,7 +39,7 @@ class ClientProfileService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Map<String, String>> {
 
-        return CompletableFuture.supplyAsync {
+        return supplyAsyncEx(Supplier {
             val oldData = clientDataRepository.changeStrategy(strategy)
                 .getData(publicKey)
                 .toMutableMap()
@@ -47,7 +50,7 @@ class ClientProfileService(
                 .updateData(publicKey, oldData)
 
             data
-        }
+        })
     }
 
     fun deleteData(
@@ -55,9 +58,9 @@ class ClientProfileService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
 
-        return CompletableFuture.runAsync {
+        return runAsyncEx(Runnable {
             clientDataRepository.changeStrategy(strategy)
                 .deleteData(publicKey)
-        }
+        })
     }
 }

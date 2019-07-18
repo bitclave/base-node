@@ -8,11 +8,9 @@ interface OfferRepository {
 
     fun saveOffer(offer: Offer): Offer
 
-    fun shallowSaveOffer(offer: Offer): Offer
-
     fun deleteOffer(id: Long, owner: String): Long
 
-    fun deleteOffers(owner: String): Long
+    fun deleteOffers(owner: String): Int
 
     fun findIdsByOwner(owner: String): List<Long>
 

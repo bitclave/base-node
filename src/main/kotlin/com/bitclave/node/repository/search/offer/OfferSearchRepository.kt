@@ -8,19 +8,17 @@ import org.springframework.data.domain.Sort
 
 interface OfferSearchRepository {
 
-    fun deleteAllBySearchRequestId(id: Long): Long
+    fun deleteAllBySearchRequestId(id: Long): Int
 
-    fun deleteAllBySearchRequestIdIn(ids: List<Long>): Long
+    fun deleteAllBySearchRequestIdIn(ids: List<Long>): Int
 
-    fun deleteAllByOwner(owner: String): List<Long>
+    fun deleteAllByOwner(owner: String): Int
 
-    fun deleteAllByOfferIdAndStateIn(offerId: Long): Int
-
-    fun deleteAllByOfferId(id: Long): Long
+    fun deleteAllByOfferId(id: Long): Int
 
     fun save(list: List<OfferSearch>): List<OfferSearch>
 
-    fun save(item: OfferSearch)
+    fun save(item: OfferSearch): OfferSearch
 
     fun findById(id: Long): OfferSearch?
 
@@ -29,6 +27,8 @@ interface OfferSearchRepository {
     fun findBySearchRequestId(id: Long): List<OfferSearch>
 
     fun findBySearchRequestId(id: Long, pageable: Pageable): Page<OfferSearch>
+
+    fun findBySearchRequestIdIn(ids: List<Long>): List<OfferSearch>
 
     fun findBySearchRequestIdInAndOwner(ids: List<Long>, owner: String): List<OfferSearch>
 
@@ -65,4 +65,12 @@ interface OfferSearchRepository {
     fun findAllDiff(): List<OfferSearch>
 
     fun countBySearchRequestId(id: Long): Long
+
+    fun findAllWithoutOffer(): List<OfferSearch>
+
+    fun findAllWithoutSearchRequest(): List<OfferSearch>
+
+    fun findAllWithoutOwner(): List<OfferSearch>
+
+    fun findAllWithoutOfferInteraction(): List<OfferSearch>
 }

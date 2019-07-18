@@ -91,19 +91,10 @@ class VerifyConsistencyControllerTest {
             .andExpect(status().isOk)
     }
 
-/*    @Test
-    fun `get dangling offer search list by offer`() {
-        this.mvc.perform(
-            get("/dev/verify/offersearch/byOffer")
-                .headers(httpHeaders)
-        )
-            .andExpect(status().isOk)
-    }*/
-
     @Test
     fun `get dangling offer search list by searchRequest`() {
         this.mvc.perform(
-            get("/dev/verify/offersearch/bySearchRequest")
+            get("/dev/verify/offersearch/dangling/1")
                 .headers(httpHeaders)
         )
             .andExpect(status().isOk)
@@ -113,6 +104,15 @@ class VerifyConsistencyControllerTest {
     fun `get offerSearches with the same owner and offerId but different content`() {
         this.mvc.perform(
             get("/dev/verify/offersearch/conflicted")
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
+    }
+
+    @Test
+    fun `get dangling offer interaction list`() {
+        this.mvc.perform(
+            get("/dev/verify/offerinteraction/dangling")
                 .headers(httpHeaders)
         )
             .andExpect(status().isOk)

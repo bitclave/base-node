@@ -11,8 +11,8 @@ class PostgresClientDataRepositoryImpl(
     private val repository: ClientDataCrudRepository
 ) : ClientDataRepository {
 
-    override fun allKeys(): Array<String> {
-        return emptyArray()
+    override fun allKeys(): List<String> {
+        return emptyList()
     }
 
     override fun getData(publicKey: String): Map<String, String> {

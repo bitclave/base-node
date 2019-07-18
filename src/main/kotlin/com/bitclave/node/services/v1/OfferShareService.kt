@@ -7,17 +7,20 @@ import com.bitclave.node.repository.models.OfferInteraction
 import com.bitclave.node.repository.models.OfferShareData
 import com.bitclave.node.repository.offer.OfferRepository
 import com.bitclave.node.repository.search.SearchRequestRepository
-import com.bitclave.node.repository.search.offer.OfferSearchRepository
 import com.bitclave.node.repository.search.interaction.OfferInteractionRepository
+import com.bitclave.node.repository.search.offer.OfferSearchRepository
 import com.bitclave.node.repository.share.OfferShareRepository
 import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.DuplicateException
+import com.bitclave.node.utils.runAsyncEx
+import com.bitclave.node.utils.supplyAsyncEx
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import java.math.BigDecimal
 import java.util.Date
 import java.util.concurrent.CompletableFuture
+import java.util.function.Supplier
 
 @Service
 @Qualifier("v1")
@@ -34,14 +37,14 @@ class OfferShareService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<List<OfferShareData>> {
 
-        return CompletableFuture.supplyAsync {
+        return supplyAsyncEx(Supplier {
             val repository = offerShareRepository.changeStrategy(strategy)
             if (accepted != null) {
-                return@supplyAsync repository.findByOfferOwnerAndAccepted(offerOwner, accepted)
+                return@Supplier repository.findByOfferOwnerAndAccepted(offerOwner, accepted)
             } else {
-                return@supplyAsync repository.findByOfferOwner(offerOwner)
+                return@Supplier repository.findByOfferOwner(offerOwner)
             }
-        }
+        })
     }
 
     fun grantAccess(
@@ -50,7 +53,7 @@ class OfferShareService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
 
-        return CompletableFuture.runAsync {
+        return runAsyncEx(Runnable {
             val offerSearch = offerSearchRepository.changeStrategy(strategy)
                 .findById(data.offerSearchId)
                 ?: throw BadArgumentException("offer search id not exist")
@@ -100,7 +103,7 @@ class OfferShareService(
             offerInteractionRepository
                 .changeStrategy(strategy)
                 .save(state.copy(state = OfferAction.ACCEPT, updatedAt = Date()))
-        }
+        })
     }
 
     fun acceptShareData(
@@ -109,7 +112,7 @@ class OfferShareService(
         worth: BigDecimal,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
-        return CompletableFuture.runAsync {
+        return runAsyncEx(Runnable {
             offerSearchRepository
                 .changeStrategy(strategy)
                 .findById(offerSearchId)
@@ -140,6 +143,6 @@ class OfferShareService(
 
             offerShareRepository.changeStrategy(strategy)
                 .saveShareData(shareData)
-        }
+        })
     }
 }

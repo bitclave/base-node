@@ -6,7 +6,7 @@ spring:
   datasource:
     driverClassName: org.postgresql.Driver
     platform: postgres
-    url: ${JDBC_DATABASE_URL}
+    url: ${JDBC_DATABASE_URL}?reWriteBatchedInserts=true
     username: ${JDBC_DATABASE_USERNAME}
     password: ${JDBC_DATABASE_PASSWORD}
 

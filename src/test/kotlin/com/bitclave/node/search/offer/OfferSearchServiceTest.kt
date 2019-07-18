@@ -233,7 +233,6 @@ class OfferSearchServiceTest {
 
         searchRequestService = SearchRequestService(
             searchRequestRepositoryStrategy,
-            offerSearchRepositoryStrategy,
             querySearchRequestCrudRepository,
             offerSearchService
         )
@@ -826,18 +825,42 @@ class OfferSearchServiceTest {
     }
 
     @Test
-    fun `get all dangling OfferSearch objects by SearchRequest`() {
-        `delete all OfferSearch objects when related SearchRequest object is deleted`()
+    fun `get all dangling OfferSearch objects by Offer`() {
+        `delete all OfferSearch objects when related Offer object is deleted`()
 
-        val result = offerSearchService.getDanglingOfferSearches(strategy, false, true).get()
+        val result = offerSearchService.getDanglingOfferSearches(strategy, 0).get()
         assert(result.isEmpty())
     }
 
     @Test
-    fun `get all dangling OfferSearch objects by Offer`() {
+    fun `get all dangling OfferSearch objects by SearchRequest`() {
+        `delete all OfferSearch objects when related SearchRequest object is deleted`()
+
+        val result = offerSearchService.getDanglingOfferSearches(strategy, 1).get()
+        assert(result.isEmpty())
+    }
+
+    @Test
+    fun `get all dangling OfferSearch objects by Owner`() {
         `delete all OfferSearch objects when related Offer object is deleted`()
 
-        val result = offerSearchService.getDanglingOfferSearches(strategy, true, false).get()
+        val result = offerSearchService.getDanglingOfferSearches(strategy, 2).get()
+        assert(result.isEmpty())
+    }
+
+    @Test
+    fun `get all dangling OfferSearch objects by OfferInteraction`() {
+        `delete all OfferSearch objects when related Offer object is deleted`()
+
+        val result = offerSearchService.getDanglingOfferSearches(strategy, 3).get()
+        assert(result.isEmpty())
+    }
+
+    @Test
+    fun `get all dangling OfferInteraction objects`() {
+        `delete all OfferSearch objects when related Offer object is deleted`()
+
+        val result = offerSearchService.getDanglingOfferInteractions(strategy).get()
         assert(result.isEmpty())
     }
 
@@ -917,11 +940,9 @@ class OfferSearchServiceTest {
 
         offerSearchService.cloneOfferSearchOfSearchRequest(
             createdSearchRequest2.owner,
-            createdSearchRequest1.id,
-            createdSearchRequest2,
+            listOf(Pair(createdSearchRequest1.id, createdSearchRequest2.id)),
             strategy
-        )
-            .get()
+        ).get()
 
         val result = offerSearchService.getOffersResult(strategy, createdSearchRequest2.id)
             .get()

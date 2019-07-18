@@ -50,9 +50,18 @@ class PostgresOfferInteractionRepositoryImpl(
     ): List<OfferInteraction> =
         syncElementCollections(repository.findByOwnerAndOfferIdInAndStateIn(owner, offers, states))
 
-    override fun deleteAllByOwner(owner: String): Long = repository.deleteAllByOwner(owner)
+    override fun deleteAllByOwner(owner: String): Int {
+        repository.deleteEventsByOwner(owner)
+        return repository.deleteAllByOwner(owner)
+    }
 
-    override fun delete(ids: List<Long>): Long = repository.deleteByIdIn(ids)
+    override fun delete(ids: List<Long>): Int {
+        if (ids.isEmpty()) return 0
+        repository.deleteEventsByIdIn(ids)
+        return repository.deleteByIdIn(ids)
+    }
+
+    override fun getDanglingOfferInteractions(): List<OfferInteraction> = repository.getDanglingOfferInteractions()
 
     private fun syncElementCollections(interaction: OfferInteraction?): OfferInteraction? {
         return if (interaction == null) null else syncElementCollections(listOf(interaction))[0]
@@ -62,7 +71,7 @@ class PostgresOfferInteractionRepositoryImpl(
         val result = syncElementCollections(page.content)
         val pageable = PageRequest(page.number, page.size, page.sort)
 
-        return PageImpl(result, pageable, result.size.toLong())
+        return PageImpl(result, pageable, page.totalElements)
     }
 
     private fun syncElementCollections(interactions: List<OfferInteraction>): List<OfferInteraction> {

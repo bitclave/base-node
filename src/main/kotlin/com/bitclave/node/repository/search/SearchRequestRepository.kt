@@ -8,9 +8,13 @@ interface SearchRequestRepository {
 
     fun save(request: SearchRequest): SearchRequest
 
+    fun save(request: List<SearchRequest>): List<SearchRequest>
+
     fun deleteByIdAndOwner(id: Long, owner: String): Long
 
-    fun deleteByOwner(owner: String): Long
+    fun deleteByOwner(owner: String): Int
+
+    fun deleteByIdIn(ids: List<Long>): Int
 
     fun findById(id: Long): SearchRequest?
 

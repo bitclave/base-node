@@ -24,10 +24,19 @@ class PostgresSearchRequestRepositoryImpl(
     override fun save(request: SearchRequest): SearchRequest =
         syncElementCollections(repository.save(request)) ?: throw DataNotSavedException()
 
+    override fun save(request: List<SearchRequest>): List<SearchRequest> = repository.save(request).toList()
+
     override fun deleteByIdAndOwner(id: Long, owner: String): Long = repository.deleteByIdAndOwner(id, owner)
 
-    override fun deleteByOwner(owner: String): Long {
+    override fun deleteByOwner(owner: String): Int {
+        repository.deleteTagsByOwner(owner)
         return repository.deleteByOwner(owner)
+    }
+
+    override fun deleteByIdIn(ids: List<Long>): Int {
+        if (ids.isEmpty()) return 0
+        repository.deleteTagsByIdIn(ids)
+        return repository.deleteByIdIn(ids)
     }
 
     override fun findById(id: Long): SearchRequest? {
@@ -75,7 +84,7 @@ class PostgresSearchRequestRepositoryImpl(
         val result = syncElementCollections(page.content)
         val pageable = PageRequest(page.number, page.size, page.sort)
 
-        return PageImpl(result, pageable, result.size.toLong())
+        return PageImpl(result, pageable, page.totalElements)
     }
 
     private fun syncElementCollections(searchRequests: List<SearchRequest>): List<SearchRequest> {

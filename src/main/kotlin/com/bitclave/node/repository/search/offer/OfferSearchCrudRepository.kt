@@ -14,37 +14,43 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Long> {
 
-    fun deleteAllBySearchRequestId(id: Long): Long
-
-    fun deleteAllBySearchRequestIdIn(ids: List<Long>): Long
-
-    fun deleteAllByOwner(owner: String): List<Long>
+    @Modifying
+    @Query(
+        value = """
+            DELETE FROM OfferSearch os WHERE os.searchRequestId = ?1
+        """
+    )
+    fun deleteAllBySearchRequestId(id: Long): Int
 
     @Modifying
     @Query(
         value = """
-            DELETE FROM offer_interaction ss
-            WHERE ss.offer_id = :offerId AND ss.state IN (0,2)
-        """,
-        nativeQuery = true
-    )
-    fun deleteAllByOfferIdAndStateIn(
-        @Param("offerId") offerId: Long
-    ): Int
-
-    fun deleteAllByOfferId(id: Long): Long
-
-    @Query(
+            DELETE FROM OfferSearch os WHERE os.searchRequestId IN ?1
         """
-            SELECT * FROM offer_search a 
-            INNER JOIN offer_interaction b 
-            ON a.search_request_id = :id and a.owner = b.owner and a.offer_id = b.offer_id
-        """,
-        nativeQuery = true
     )
-    fun findBySearchRequestId(@Param("id") id: Long): List<OfferSearch>
+    fun deleteAllBySearchRequestIdIn(ids: List<Long>): Int
+
+    @Modifying
+    @Query(
+        value = """
+            DELETE FROM OfferSearch os WHERE os.owner = ?1
+        """
+    )
+    fun deleteAllByOwner(owner: String): Int
+
+    @Modifying
+    @Query(
+        value = """
+            DELETE FROM OfferSearch os WHERE os.offerId = ?1
+        """
+    )
+    fun deleteAllByOfferId(id: Long): Int
+
+    fun findBySearchRequestId(id: Long): List<OfferSearch>
 
     fun findBySearchRequestId(id: Long, pageable: Pageable): Page<OfferSearch>
+
+    fun findBySearchRequestIdIn(ids: List<Long>): List<OfferSearch>
 
     fun findByOfferId(id: Long): List<OfferSearch>
 
@@ -367,4 +373,41 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     fun findAllDiff(): List<OfferSearch>
 
     fun countBySearchRequestId(id: Long): Long
+
+    @Query(
+        value = """
+            SELECT * FROM offer_search WHERE offer_id NOT IN
+            ( SELECT id FROM offer o)
+        """,
+        nativeQuery = true
+    )
+    fun findAllWithoutOffer(): List<OfferSearch>
+
+    @Query(
+        value = """
+            SELECT * FROM offer_search WHERE search_request_id NOT IN
+            ( SELECT id FROM search_request)
+        """,
+        nativeQuery = true
+    )
+    fun findAllWithoutSearchRequest(): List<OfferSearch>
+
+    @Query(
+        value = """
+            SELECT * FROM offer_search WHERE owner NOT IN
+            ( SELECT public_key FROM account)
+        """,
+        nativeQuery = true
+    )
+    fun findAllWithoutOwner(): List<OfferSearch>
+
+    @Query(
+        value = """
+            SELECT * FROM offer_search os WHERE os.id NOT IN
+            ( SELECT oo.id FROM offer_search oo, offer_interaction oi
+            WHERE oo.offer_id = oi.offer_id AND oo.owner = oi.owner)
+        """,
+        nativeQuery = true
+    )
+    fun findAllWithoutOfferInteraction(): List<OfferSearch>
 }

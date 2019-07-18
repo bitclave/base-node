@@ -1,6 +1,7 @@
 package com.bitclave.node.repository.search
 
 import com.bitclave.node.repository.models.SearchRequest
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.data.repository.query.Param
@@ -17,7 +18,21 @@ interface SearchRequestCrudRepository : PagingAndSortingRepository<SearchRequest
 
     fun deleteByIdAndOwner(id: Long, owner: String): Long
 
-    fun deleteByOwner(owner: String): Long
+    @Modifying
+    @Query(
+        value = """
+            DELETE FROM SearchRequest sr WHERE sr.owner = ?1
+        """
+    )
+    fun deleteByOwner(owner: String): Int
+
+    @Modifying
+    @Query(
+        value = """
+            DELETE FROM SearchRequest sr WHERE sr.id IN ?1
+        """
+    )
+    fun deleteByIdIn(ids: List<Long>): Int
 
     fun findByIdAndOwner(id: Long, owner: String): SearchRequest?
 
@@ -26,4 +41,23 @@ interface SearchRequestCrudRepository : PagingAndSortingRepository<SearchRequest
         @Param("owner") owner: String,
         @Param("tagKey") tagKey: String
     ): List<SearchRequest>
+
+    @Modifying
+    @Query(
+        value = """
+            DELETE FROM search_request_tags srt WHERE srt.search_request_id IN
+            ( SELECT id FROM search_request sr WHERE sr.owner = ?1 )
+        """,
+        nativeQuery = true
+    )
+    fun deleteTagsByOwner(owner: String): Int
+
+    @Modifying
+    @Query(
+        value = """
+            DELETE FROM search_request_tags srt WHERE srt.search_request_id IN ?
+        """,
+        nativeQuery = true
+    )
+    fun deleteTagsByIdIn(ids: List<Long>): Int
 }
