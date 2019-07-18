@@ -14,6 +14,7 @@ import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Slice
 import org.springframework.stereotype.Service
 import java.util.Date
 import java.util.concurrent.CompletableFuture
@@ -189,6 +190,15 @@ class SearchRequestService(
     ): CompletableFuture<Page<SearchRequest>> {
         return supplyAsyncEx(Supplier {
             repository.changeStrategy(strategy).findAll(page)
+        })
+    }
+
+    fun getPageableRequestsSlice(
+        page: PageRequest,
+        strategy: RepositoryStrategyType
+    ): CompletableFuture<Slice<SearchRequest>> {
+        return supplyAsyncEx(Supplier {
+            repository.changeStrategy(strategy).findAllSlice(page)
         })
     }
 

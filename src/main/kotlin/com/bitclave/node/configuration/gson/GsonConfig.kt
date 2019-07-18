@@ -7,6 +7,7 @@ import com.google.gson.GsonBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.Slice
 import org.springframework.http.converter.json.GsonHttpMessageConverter
 import springfox.documentation.spring.web.json.Json
 
@@ -18,6 +19,7 @@ class GsonConfig {
             .registerTypeAdapter(ServiceCall::class.java, ServiceCallDeserializer())
             .registerTypeAdapter(Page::class.java, PageResponseDeserializer())
             .registerTypeAdapter(Page::class.java, PageSerializer())
+            .registerTypeAdapter(Slice::class.java, SliceSerializer())
             .registerTypeAdapter(SignedRequest::class.java, SignedRequestDeserializer())
             .addSerializationExclusionStrategy(AnnotationExcludeStrategy())
             .addDeserializationExclusionStrategy(SuperclassExclusionStrategy())

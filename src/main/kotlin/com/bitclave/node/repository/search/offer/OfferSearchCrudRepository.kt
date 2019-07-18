@@ -3,6 +3,7 @@ package com.bitclave.node.repository.search.offer
 import com.bitclave.node.repository.models.OfferSearch
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Slice
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.PagingAndSortingRepository
@@ -64,6 +65,8 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     fun findBySearchRequestIdInAndOwner(searchRequestIds: List<Long>, owner: String): List<OfferSearch>
 
     fun findByOwner(owner: String): List<OfferSearch>
+
+    fun findAllBy(pageable: Pageable): Slice<OfferSearch>
 
     @Query(
         value = """

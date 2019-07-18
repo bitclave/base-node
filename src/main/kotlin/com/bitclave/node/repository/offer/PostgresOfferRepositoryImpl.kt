@@ -5,12 +5,13 @@ import com.bitclave.node.repository.models.OfferPrice
 import com.bitclave.node.repository.models.OfferPriceRules
 import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.services.errors.DataNotSavedException
-import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Slice
+import org.springframework.data.domain.SliceImpl
 import org.springframework.stereotype.Component
 import java.math.BigInteger
 import java.util.HashMap
@@ -24,8 +25,6 @@ class PostgresOfferRepositoryImpl(
     val offerSearchRepository: OfferSearchCrudRepository,
     val entityManager: EntityManager
 ) : OfferRepository {
-
-    private val logger = KotlinLogging.logger {}
 
     override fun saveOffer(offer: Offer): Offer {
         repository.save(offer) ?: throw DataNotSavedException()
@@ -102,6 +101,10 @@ class PostgresOfferRepositoryImpl(
         return syncElementCollections(repository.getAllOffersExceptProducts(pageable))
     }
 
+    override fun getAllOffersExceptProductsSlice(pageable: Pageable): Slice<Offer> {
+        return syncElementCollections(repository.getAllOffersExceptProductsSlice(pageable))
+    }
+
     private fun syncElementCollections(offer: Offer?): Offer? {
         return if (offer == null) null else syncElementCollections(listOf(offer))[0]
     }
@@ -111,6 +114,13 @@ class PostgresOfferRepositoryImpl(
         val pageable = PageRequest(page.number, page.size, page.sort)
 
         return PageImpl(result, pageable, page.totalElements)
+    }
+
+    private fun syncElementCollections(slice: Slice<Offer>): Slice<Offer> {
+        val result = syncElementCollections(slice.content)
+        val pageable = PageRequest(slice.number, slice.size, slice.sort)
+
+        return SliceImpl(result, pageable, slice.hasNext())
     }
 
     private fun syncElementCollections(offers: List<Offer>): List<Offer> {

@@ -8,6 +8,8 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Slice
+import org.springframework.data.domain.SliceImpl
 import org.springframework.stereotype.Component
 import java.math.BigInteger
 import java.util.HashMap
@@ -63,6 +65,10 @@ class PostgresSearchRequestRepositoryImpl(
         return syncElementCollections(repository.findAll(pageable))
     }
 
+    override fun findAllSlice(pageable: Pageable): Slice<SearchRequest> {
+        return syncElementCollections(repository.findAllBy(pageable))
+    }
+
     override fun getTotalCount(): Long {
         return repository.count()
     }
@@ -85,6 +91,13 @@ class PostgresSearchRequestRepositoryImpl(
         val pageable = PageRequest(page.number, page.size, page.sort)
 
         return PageImpl(result, pageable, page.totalElements)
+    }
+
+    private fun syncElementCollections(slice: Slice<SearchRequest>): Slice<SearchRequest> {
+        val result = syncElementCollections(slice.content)
+        val pageable = PageRequest(slice.number, slice.size, slice.sort)
+
+        return SliceImpl(result, pageable, slice.hasNext())
     }
 
     private fun syncElementCollections(searchRequests: List<SearchRequest>): List<SearchRequest> {
