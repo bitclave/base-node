@@ -46,6 +46,18 @@ class ConsumersOfferController(
         @RequestParam("size", defaultValue = "100")
         size: Int,
 
+        @ApiParam("Optional load data of compare field")
+        @RequestParam("compare", defaultValue = "0")
+        compare: Boolean,
+
+        @ApiParam("Optional load data of rules field")
+        @RequestParam("rules", defaultValue = "0")
+        rules: Boolean,
+
+        @ApiParam("Optional load data of prices field")
+        @RequestParam("prices", defaultValue = "0")
+        prices: Boolean,
+
         @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
         @RequestHeader("Strategy", required = false)
         strategy: String?
@@ -53,6 +65,9 @@ class ConsumersOfferController(
 
         return offerService.getConsumersOffers(
             PageRequest(page, size),
+            compare,
+            rules,
+            prices,
             getStrategyType(strategy)
         ).exceptionally { e ->
             logger.error("Request: getConsumersOffers/$page/$size raised $e")
