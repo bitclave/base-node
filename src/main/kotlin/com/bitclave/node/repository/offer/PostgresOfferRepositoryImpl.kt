@@ -101,8 +101,18 @@ class PostgresOfferRepositoryImpl(
         return syncElementCollections(repository.getAllOffersExceptProducts(pageable))
     }
 
-    override fun getAllOffersExceptProductsSlice(pageable: Pageable): Slice<Offer> {
-        return syncElementCollections(repository.getAllOffersExceptProductsSlice(pageable))
+    override fun getAllOffersExceptProductsSlice(
+        pageable: Pageable,
+        syncCompare: Boolean,
+        syncRules: Boolean,
+        syncPrices: Boolean
+    ): Slice<Offer> {
+        return syncElementCollections(
+            repository.getAllOffersExceptProductsSlice(pageable),
+            syncCompare,
+            syncRules,
+            syncPrices
+        )
     }
 
     private fun syncElementCollections(offer: Offer?): Offer? {
@@ -116,14 +126,24 @@ class PostgresOfferRepositoryImpl(
         return PageImpl(result, pageable, page.totalElements)
     }
 
-    private fun syncElementCollections(slice: Slice<Offer>): Slice<Offer> {
-        val result = syncElementCollections(slice.content)
+    private fun syncElementCollections(
+        slice: Slice<Offer>,
+        syncCompare: Boolean = true,
+        syncRules: Boolean = true,
+        syncPrices: Boolean = true
+    ): Slice<Offer> {
+        val result = syncElementCollections(slice.content, syncCompare, syncRules, syncPrices)
         val pageable = PageRequest(slice.number, slice.size, slice.sort)
 
         return SliceImpl(result, pageable, slice.hasNext())
     }
 
-    private fun syncElementCollections(offers: List<Offer>): List<Offer> {
+    private fun syncElementCollections(
+        offers: List<Offer>,
+        syncCompare: Boolean = true,
+        syncRules: Boolean = true,
+        syncPrices: Boolean = true
+    ): List<Offer> {
         val ids = offers.map { it.id }.distinct().joinToString(",")
 
         if (ids.isEmpty()) {
@@ -142,19 +162,31 @@ class PostgresOfferRepositoryImpl(
                 .resultList as List<Array<Any>>
 
             @Suppress("UNCHECKED_CAST")
-            queryResultCompare = entityManager
-                .createNativeQuery("SELECT * FROM offer_compare WHERE offer_id in ($ids);")
-                .resultList as List<Array<Any>>
+            queryResultCompare = if (syncCompare) {
+                entityManager
+                    .createNativeQuery("SELECT * FROM offer_compare WHERE offer_id in ($ids);")
+                    .resultList as List<Array<Any>>
+            } else {
+                emptyList()
+            }
 
             @Suppress("UNCHECKED_CAST")
-            queryResultRules = entityManager
-                .createNativeQuery("SELECT * FROM offer_rules WHERE offer_id in ($ids);")
-                .resultList as List<Array<Any>>
+            queryResultRules = if (syncRules) {
+                entityManager
+                    .createNativeQuery("SELECT * FROM offer_rules WHERE offer_id in ($ids);")
+                    .resultList as List<Array<Any>>
+            } else {
+                emptyList()
+            }
 
             @Suppress("UNCHECKED_CAST")
-            queryResultPrices = entityManager
-                .createNativeQuery("SELECT * FROM offer_price WHERE offer_id in ($ids);", OfferPrice::class.java)
-                .resultList as List<OfferPrice>
+            queryResultPrices = if (syncPrices) {
+                entityManager
+                    .createNativeQuery("SELECT * FROM offer_price WHERE offer_id in ($ids);", OfferPrice::class.java)
+                    .resultList as List<OfferPrice>
+            } else {
+                emptyList()
+            }
         }
 
         println("syncElementCollections get raw result objects: $step1")

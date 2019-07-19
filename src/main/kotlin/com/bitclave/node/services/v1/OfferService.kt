@@ -211,10 +211,14 @@ class OfferService(
 
     fun getConsumersOffers(
         page: PageRequest,
+        syncCompare: Boolean = true,
+        syncRules: Boolean = true,
+        syncPrices: Boolean = true,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Slice<Offer>> {
         return supplyAsyncEx(Supplier {
-            offerRepository.changeStrategy(strategy).getAllOffersExceptProductsSlice(page)
+            offerRepository.changeStrategy(strategy)
+                .getAllOffersExceptProductsSlice(page, syncCompare, syncRules, syncPrices)
         })
     }
 

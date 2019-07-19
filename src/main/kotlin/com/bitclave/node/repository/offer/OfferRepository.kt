@@ -21,7 +21,12 @@ interface OfferRepository {
 
     fun getAllOffersExceptProducts(pageable: Pageable): Page<Offer>
 
-    fun getAllOffersExceptProductsSlice(pageable: Pageable): Slice<Offer>
+    fun getAllOffersExceptProductsSlice(
+        pageable: Pageable,
+        syncCompare: Boolean,
+        syncRules: Boolean,
+        syncPrices: Boolean
+    ): Slice<Offer>
 
     fun findByIds(ids: List<Long>, pageable: Pageable): Page<Offer>
 
