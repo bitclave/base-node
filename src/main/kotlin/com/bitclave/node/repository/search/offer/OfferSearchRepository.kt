@@ -4,6 +4,7 @@ import com.bitclave.node.repository.models.OfferAction
 import com.bitclave.node.repository.models.OfferSearch
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Slice
 import org.springframework.data.domain.Sort
 
 interface OfferSearchRepository {
@@ -56,6 +57,8 @@ interface OfferSearchRepository {
     fun findByOwnerAndOfferIdIn(owner: String, offerIds: List<Long>): List<OfferSearch>
 
     fun findAll(pageable: Pageable): Page<OfferSearch>
+
+    fun findAllSlice(pageable: Pageable): Slice<OfferSearch>
 
     fun findAll(): List<OfferSearch>
 

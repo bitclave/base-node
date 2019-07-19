@@ -3,6 +3,7 @@ package com.bitclave.node.repository.offer
 import com.bitclave.node.repository.models.Offer
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Slice
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.PagingAndSortingRepository
 import org.springframework.data.repository.query.Param
@@ -49,4 +50,20 @@ interface OfferCrudRepository : PagingAndSortingRepository<Offer, Long> {
         nativeQuery = true
     )
     fun getAllOffersExceptProducts(@Param("pageable") pageable: Pageable): Page<Offer>
+
+    @Query(
+        value = """
+            select * from offer o
+            where not exists
+            (select 1 from offer_tags ot where o.id = ot.offer_id and ot.tags_key = 'product' and ot.tags = 'true')
+            order by ?#{#pageable}
+        """,
+        countQuery = """
+            select count(0) from offer o
+            where not exists
+            (select 1 from offer_tags ot where o.id = ot.offer_id and ot.tags_key = 'product' and ot.tags = 'true')
+        """,
+        nativeQuery = true
+    )
+    fun getAllOffersExceptProductsSlice(@Param("pageable") pageable: Pageable): Slice<Offer>
 }
