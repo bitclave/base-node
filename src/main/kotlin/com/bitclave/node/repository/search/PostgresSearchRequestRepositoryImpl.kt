@@ -69,6 +69,9 @@ class PostgresSearchRequestRepositoryImpl(
         return syncElementCollections(repository.findAllBy(pageable))
     }
 
+    override fun findByOwnerInSlice(owners: List<String>, pageable: Pageable): Slice<SearchRequest> =
+        syncElementCollections(repository.findByOwnerIn(owners, pageable))
+
     override fun getTotalCount(): Long {
         return repository.count()
     }

@@ -31,6 +31,8 @@ interface SearchRequestRepository {
 
     fun findAllSlice(pageable: Pageable): Slice<SearchRequest>
 
+    fun findByOwnerInSlice(owners: List<String>, pageable: Pageable): Slice<SearchRequest>
+
     fun getTotalCount(): Long
 
     fun getRequestByOwnerAndTag(owner: String, tagKey: String): List<SearchRequest>

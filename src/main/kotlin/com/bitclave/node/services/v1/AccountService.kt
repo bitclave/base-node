@@ -14,6 +14,8 @@ import com.bitclave.node.utils.runAsyncEx
 import com.bitclave.node.utils.supplyAsyncEx
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Slice
 import org.springframework.stereotype.Service
 import java.util.Date
 import java.util.concurrent.CompletableFuture
@@ -121,6 +123,15 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
         return runAsyncEx(Runnable {
             accountRepository.changeStrategy(strategy)
                 .deleteAccount(clientId)
+        })
+    }
+
+    fun getSliceAccounts(
+        page: PageRequest,
+        strategy: RepositoryStrategyType
+    ): CompletableFuture<Slice<Account>> {
+        return supplyAsyncEx(Supplier {
+            accountRepository.changeStrategy(strategy).findAll(page)
         })
     }
 
