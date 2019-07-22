@@ -18,6 +18,12 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.concurrent.CompletableFuture
 
+enum class OfferFields {
+    COMPARE,
+    RULE,
+    PRICE
+}
+
 @RestController
 @RequestMapping("/v1/consumers/")
 class ConsumersOfferController(
@@ -47,16 +53,8 @@ class ConsumersOfferController(
         size: Int,
 
         @ApiParam("Optional load data of compare field")
-        @RequestParam("compare", defaultValue = "0")
-        compare: Boolean,
-
-        @ApiParam("Optional load data of rules field")
-        @RequestParam("rules", defaultValue = "0")
-        rules: Boolean,
-
-        @ApiParam("Optional load data of prices field")
-        @RequestParam("prices", defaultValue = "0")
-        prices: Boolean,
+        @RequestParam("fields", defaultValue = "", required = false)
+        fields: Set<OfferFields>,
 
         @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
         @RequestHeader("Strategy", required = false)
@@ -65,9 +63,9 @@ class ConsumersOfferController(
 
         return offerService.getConsumersOffers(
             PageRequest(page, size),
-            compare,
-            rules,
-            prices,
+            fields.contains(OfferFields.COMPARE),
+            fields.contains(OfferFields.RULE),
+            fields.contains(OfferFields.PRICE),
             getStrategyType(strategy)
         ).exceptionally { e ->
             logger.error("Request: getConsumersOffers/$page/$size raised $e")
