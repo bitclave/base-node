@@ -26,6 +26,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Slice
 import org.springframework.stereotype.Service
 import org.springframework.web.client.HttpServerErrorException
 import java.util.Date
@@ -169,8 +170,14 @@ class OfferSearchService(
             }
             logger.debug { "4 step) content ms: $step4" }
 
-            val pageable = PageRequest(pageRequest.pageNumber, pageRequest.pageSize)
-            PageImpl(content, pageable, filteredByUnique.size.toLong()) as Page<OfferSearchResultItem>
+            var pageImpl = PageImpl(listOf<OfferSearchResultItem>())
+            val step5 = measureTimeMillis {
+                val pageable = PageRequest(pageRequest.pageNumber, pageRequest.pageSize)
+                pageImpl = PageImpl(content, pageable, filteredByUnique.size.toLong())
+            }
+            logger.debug { "5 step) content ms: $step5" }
+            logger.debug { "total) ms: ${step1 + step2 + step3 + step4 + step5}" }
+            pageImpl as Page<OfferSearchResultItem>
         })
     }
 
@@ -444,6 +451,18 @@ class OfferSearchService(
         })
     }
 
+    fun getConsumersOfferSearches(
+        page: PageRequest,
+        strategy: RepositoryStrategyType
+    ): CompletableFuture<Slice<OfferSearch>> {
+
+        return supplyAsyncEx(Supplier {
+            offerSearchRepository
+                .changeStrategy(strategy)
+                .findAllSlice(page)
+        })
+    }
+
     fun getDanglingOfferSearches(
         strategy: RepositoryStrategyType,
         type: Int
@@ -631,7 +650,7 @@ class OfferSearchService(
         query: String,
         pageRequest: PageRequest,
         strategyType: RepositoryStrategyType,
-        interests: List<String>? = listOf(),
+        filters: Map<String, List<String>>? = mapOf(),
         mode: String? = ""
     ): CompletableFuture<Page<OfferSearchResultItem>> {
         return supplyAsyncEx(Supplier {
@@ -674,7 +693,7 @@ class OfferSearchService(
             val step4 = measureTimeMillis {
                 try {
                     offerIds = rtSearchRepository
-                        .getOffersIdByQuery(query, pageRequest, interests, mode)
+                        .getOffersIdByQuery(query, pageRequest, filters, mode)
                         .get()
                 } catch (e: Throwable) {
                     logger.error("rt-search error: $e")

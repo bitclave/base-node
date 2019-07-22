@@ -27,23 +27,23 @@ class RtSearchRepositoryImpl(
     override fun getOffersIdByQuery(
         query: String,
         pageRequest: PageRequest,
-        interests: List<String>?,
+        filters: Map<String, List<String>>?,
         mode: String?
     ): CompletableFuture<Page<Long>> {
         return supplyAsyncEx(Supplier {
 
             val parameters = mapOf(
-                "query" to query,
-                "page" to pageRequest.pageNumber,
-                "size" to pageRequest.pageSize,
-                "mode" to mode
+                    "query" to query,
+                    "page" to pageRequest.pageNumber,
+                    "size" to pageRequest.pageSize,
+                    "mode" to mode
             )
-            val httpEntity = HttpEntity<List<String>>(interests)
+            val httpEntity = HttpEntity<Map<String, List<String>>>(filters)
             val offerIdsResponse = restTemplate.exchange(
-                "/v1/search/?q={query}&page={page}&size={size}&mode={mode}",
-                HttpMethod.POST, httpEntity,
-                object : ParameterizedTypeReference<Page<Long>>() {},
-                parameters
+                    "/v1/search/?q={query}&page={page}&size={size}&mode={mode}",
+                    HttpMethod.POST, httpEntity,
+                    object : ParameterizedTypeReference<Page<Long>>() {},
+                    parameters
             )
 
             offerIdsResponse.body
@@ -54,14 +54,14 @@ class RtSearchRepositoryImpl(
         return supplyAsyncEx(Supplier {
 
             val parameters = mapOf(
-                "query" to decodedQuery,
-                "size" to size
+                    "query" to decodedQuery,
+                    "size" to size
             )
             val offerIdsResponse = restTemplate.exchange(
-                "/v1/suggest?q={query}&s={size}",
-                HttpMethod.GET, null,
-                object : ParameterizedTypeReference<List<String>>() {},
-                parameters
+                    "/v1/suggest?q={query}&s={size}",
+                    HttpMethod.GET, null,
+                    object : ParameterizedTypeReference<List<String>>() {},
+                    parameters
             )
 
             offerIdsResponse.body

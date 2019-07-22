@@ -5,12 +5,13 @@ import com.bitclave.node.repository.models.OfferPrice
 import com.bitclave.node.repository.models.OfferPriceRules
 import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.services.errors.DataNotSavedException
-import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Slice
+import org.springframework.data.domain.SliceImpl
 import org.springframework.stereotype.Component
 import java.math.BigInteger
 import java.util.HashMap
@@ -24,8 +25,6 @@ class PostgresOfferRepositoryImpl(
     val offerSearchRepository: OfferSearchCrudRepository,
     val entityManager: EntityManager
 ) : OfferRepository {
-
-    private val logger = KotlinLogging.logger {}
 
     override fun saveOffer(offer: Offer): Offer {
         repository.save(offer) ?: throw DataNotSavedException()
@@ -102,6 +101,20 @@ class PostgresOfferRepositoryImpl(
         return syncElementCollections(repository.getAllOffersExceptProducts(pageable))
     }
 
+    override fun getAllOffersExceptProductsSlice(
+        pageable: Pageable,
+        syncCompare: Boolean,
+        syncRules: Boolean,
+        syncPrices: Boolean
+    ): Slice<Offer> {
+        return syncElementCollections(
+            repository.getAllOffersExceptProductsSlice(pageable),
+            syncCompare,
+            syncRules,
+            syncPrices
+        )
+    }
+
     private fun syncElementCollections(offer: Offer?): Offer? {
         return if (offer == null) null else syncElementCollections(listOf(offer))[0]
     }
@@ -113,7 +126,24 @@ class PostgresOfferRepositoryImpl(
         return PageImpl(result, pageable, page.totalElements)
     }
 
-    private fun syncElementCollections(offers: List<Offer>): List<Offer> {
+    private fun syncElementCollections(
+        slice: Slice<Offer>,
+        syncCompare: Boolean = true,
+        syncRules: Boolean = true,
+        syncPrices: Boolean = true
+    ): Slice<Offer> {
+        val result = syncElementCollections(slice.content, syncCompare, syncRules, syncPrices)
+        val pageable = PageRequest(slice.number, slice.size, slice.sort)
+
+        return SliceImpl(result, pageable, slice.hasNext())
+    }
+
+    private fun syncElementCollections(
+        offers: List<Offer>,
+        syncCompare: Boolean = true,
+        syncRules: Boolean = true,
+        syncPrices: Boolean = true
+    ): List<Offer> {
         val ids = offers.map { it.id }.distinct().joinToString(",")
 
         if (ids.isEmpty()) {
@@ -132,19 +162,31 @@ class PostgresOfferRepositoryImpl(
                 .resultList as List<Array<Any>>
 
             @Suppress("UNCHECKED_CAST")
-            queryResultCompare = entityManager
-                .createNativeQuery("SELECT * FROM offer_compare WHERE offer_id in ($ids);")
-                .resultList as List<Array<Any>>
+            queryResultCompare = if (syncCompare) {
+                entityManager
+                    .createNativeQuery("SELECT * FROM offer_compare WHERE offer_id in ($ids);")
+                    .resultList as List<Array<Any>>
+            } else {
+                emptyList()
+            }
 
             @Suppress("UNCHECKED_CAST")
-            queryResultRules = entityManager
-                .createNativeQuery("SELECT * FROM offer_rules WHERE offer_id in ($ids);")
-                .resultList as List<Array<Any>>
+            queryResultRules = if (syncRules) {
+                entityManager
+                    .createNativeQuery("SELECT * FROM offer_rules WHERE offer_id in ($ids);")
+                    .resultList as List<Array<Any>>
+            } else {
+                emptyList()
+            }
 
             @Suppress("UNCHECKED_CAST")
-            queryResultPrices = entityManager
-                .createNativeQuery("SELECT * FROM offer_price WHERE offer_id in ($ids);", OfferPrice::class.java)
-                .resultList as List<OfferPrice>
+            queryResultPrices = if (syncPrices) {
+                entityManager
+                    .createNativeQuery("SELECT * FROM offer_price WHERE offer_id in ($ids);", OfferPrice::class.java)
+                    .resultList as List<OfferPrice>
+            } else {
+                emptyList()
+            }
         }
 
         println("syncElementCollections get raw result objects: $step1")

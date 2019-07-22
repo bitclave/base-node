@@ -13,6 +13,7 @@ import com.bitclave.node.utils.supplyAsyncEx
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Slice
 import org.springframework.stereotype.Service
 import java.util.Date
 import java.util.concurrent.CompletableFuture
@@ -205,6 +206,19 @@ class OfferService(
     ): CompletableFuture<Page<Offer>> {
         return supplyAsyncEx(Supplier {
             offerRepository.changeStrategy(strategy).getAllOffersExceptProducts(page)
+        })
+    }
+
+    fun getConsumersOffers(
+        page: PageRequest,
+        syncCompare: Boolean = true,
+        syncRules: Boolean = true,
+        syncPrices: Boolean = true,
+        strategy: RepositoryStrategyType
+    ): CompletableFuture<Slice<Offer>> {
+        return supplyAsyncEx(Supplier {
+            offerRepository.changeStrategy(strategy)
+                .getAllOffersExceptProductsSlice(page, syncCompare, syncRules, syncPrices)
         })
     }
 

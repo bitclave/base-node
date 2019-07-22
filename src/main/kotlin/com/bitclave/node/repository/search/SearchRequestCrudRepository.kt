@@ -1,6 +1,8 @@
 package com.bitclave.node.repository.search
 
 import com.bitclave.node.repository.models.SearchRequest
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Slice
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.PagingAndSortingRepository
@@ -11,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional
 @Repository
 @Transactional
 interface SearchRequestCrudRepository : PagingAndSortingRepository<SearchRequest, Long> {
+
+    fun findAllBy(pageable: Pageable): Slice<SearchRequest>
 
     fun findById(id: Long): List<SearchRequest>
 

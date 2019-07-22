@@ -148,7 +148,7 @@ class OfferSearchController(
                     decodedQuery,
                     PageRequest(page, size),
                     getStrategyType(strategy),
-                    request.data.interests,
+                    request.data.filters,
                     mode
                 ).get()
 
