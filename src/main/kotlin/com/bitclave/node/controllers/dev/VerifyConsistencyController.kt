@@ -272,4 +272,40 @@ class VerifyConsistencyController(
             throw e
         }
     }
+
+    /**
+     * Fixes dangling OfferSearches by creating missing offerInteractions and returns the created OfferInteraction list
+     *
+     * @return {@link List<OfferInteraction>}, Http status - 200.
+     *
+     */
+    @ApiOperation(
+        "Fixes dangling OfferSearches by creating missing offerInteractions and returns the created " +
+            "OfferInteraction list",
+        response = OfferInteraction::class, responseContainer = "List"
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(code = 200, message = "Success", response = List::class)
+        ]
+    )
+    @RequestMapping(method = [RequestMethod.GET], value = ["/offersearch/fix"])
+    fun fixDanglingOfferSearchesByCreatingInteractions(
+
+        @ApiParam(
+            "change repository strategy",
+            allowableValues = "POSTGRES, HYBRID",
+            required = false
+        )
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
+    ): CompletableFuture<List<OfferInteraction>> {
+
+        return offerSearchService.fixDanglingOfferSearchesByCreatingInteractions(
+            getStrategyType(strategy)
+        ).exceptionally { e ->
+            logger.error("Request: fixDanglingOfferInteractions raised $e")
+            throw e
+        }
+    }
 }

@@ -812,6 +812,17 @@ class OfferSearchService(
         })
     }
 
+    fun fixDanglingOfferSearchesByCreatingInteractions(
+        strategy: RepositoryStrategyType
+    ): CompletableFuture<List<OfferInteraction>> {
+        return supplyAsyncEx(Supplier {
+            var danglingOfferSearches = offerSearchRepository.changeStrategy(strategy).findAllWithoutOfferInteraction()
+            danglingOfferSearches = danglingOfferSearches.distinctBy { Pair(it.owner, it.offerId) }
+            val interactions = danglingOfferSearches.map { OfferInteraction(0, it.owner, it.offerId) }
+            offerInteractionRepository.changeStrategy(strategy).save(interactions)
+        })
+    }
+
     private fun offerSearchListToResult(
         offerSearch: List<OfferSearch>,
         offersRepository: OfferRepository,
