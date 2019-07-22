@@ -408,9 +408,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     @Query(
         value = """
-            SELECT * FROM offer_search os WHERE os.id NOT IN
-            ( SELECT oo.id FROM offer_search oo, offer_interaction oi
-            WHERE oo.offer_id = oi.offer_id AND oo.owner = oi.owner)
+            SELECT oo.* FROM offer_search oo
+            left outer join offer_interaction oi on
+            oo.offer_id = oi.offer_id AND oo.owner = oi.owner
+            where oi.id is NULL
         """,
         nativeQuery = true
     )
