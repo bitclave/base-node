@@ -228,12 +228,22 @@ class SearchRequestService(
         })
     }
 
-    fun getPageableRequestsSlice(
+    fun getRequestsSlice(
         page: PageRequest,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Slice<SearchRequest>> {
         return supplyAsyncEx(Supplier {
             repository.changeStrategy(strategy).findAllSlice(page)
+        })
+    }
+
+    fun getRequestsSliceByOwners(
+        owners: List<String>,
+        page: PageRequest,
+        strategy: RepositoryStrategyType
+    ): CompletableFuture<Slice<SearchRequest>> {
+        return supplyAsyncEx(Supplier {
+            repository.changeStrategy(strategy).findByOwnerInSlice(owners, page)
         })
     }
 

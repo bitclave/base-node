@@ -68,6 +68,8 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     fun findAllBy(pageable: Pageable): Slice<OfferSearch>
 
+    fun findByOwnerIn(owners: List<String>, pageable: Pageable): Slice<OfferSearch>
+
     @Query(
         value = """
             SELECT * FROM offer_search s

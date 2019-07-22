@@ -443,11 +443,8 @@ class OfferSearchService(
         page: PageRequest,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Page<OfferSearch>> {
-
         return supplyAsyncEx(Supplier {
-            offerSearchRepository
-                .changeStrategy(strategy)
-                .findAll(page)
+            offerSearchRepository.changeStrategy(strategy).findAll(page)
         })
     }
 
@@ -455,11 +452,18 @@ class OfferSearchService(
         page: PageRequest,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Slice<OfferSearch>> {
-
         return supplyAsyncEx(Supplier {
-            offerSearchRepository
-                .changeStrategy(strategy)
-                .findAllSlice(page)
+            offerSearchRepository.changeStrategy(strategy).findAllSlice(page)
+        })
+    }
+
+    fun getConsumersOfferSearchesByOwners(
+        owners: List<String>,
+        page: PageRequest,
+        strategy: RepositoryStrategyType
+    ): CompletableFuture<Slice<OfferSearch>> {
+        return supplyAsyncEx(Supplier {
+            offerSearchRepository.changeStrategy(strategy).findByOwnerInSlice(owners, page)
         })
     }
 
