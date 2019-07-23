@@ -3,6 +3,7 @@ package com.bitclave.node.repository.search
 import com.bitclave.node.repository.models.SearchRequest
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Slice
 
 interface SearchRequestRepository {
 
@@ -27,6 +28,10 @@ interface SearchRequestRepository {
     fun findAll(): List<SearchRequest>
 
     fun findAll(pageable: Pageable): Page<SearchRequest>
+
+    fun findAllSlice(pageable: Pageable): Slice<SearchRequest>
+
+    fun findByOwnerInSlice(owners: List<String>, pageable: Pageable): Slice<SearchRequest>
 
     fun getTotalCount(): Long
 

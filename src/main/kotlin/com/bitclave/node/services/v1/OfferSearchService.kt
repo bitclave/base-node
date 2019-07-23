@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Slice
 import org.springframework.stereotype.Service
 import org.springframework.web.client.HttpServerErrorException
 import java.util.Date
@@ -170,8 +171,14 @@ class OfferSearchService(
             }
             logger.debug { "4 step) content ms: $step4" }
 
-            val pageable = PageRequest(pageRequest.pageNumber, pageRequest.pageSize)
-            PageImpl(content, pageable, filteredByUnique.size.toLong()) as Page<OfferSearchResultItem>
+            var pageImpl = PageImpl(listOf<OfferSearchResultItem>())
+            val step5 = measureTimeMillis {
+                val pageable = PageRequest(pageRequest.pageNumber, pageRequest.pageSize)
+                pageImpl = PageImpl(content, pageable, filteredByUnique.size.toLong())
+            }
+            logger.debug { "5 step) content ms: $step5" }
+            logger.debug { "total) ms: ${step1 + step2 + step3 + step4 + step5}" }
+            pageImpl as Page<OfferSearchResultItem>
         })
     }
 
@@ -437,11 +444,27 @@ class OfferSearchService(
         page: PageRequest,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Page<OfferSearch>> {
-
         return supplyAsyncEx(Supplier {
-            offerSearchRepository
-                .changeStrategy(strategy)
-                .findAll(page)
+            offerSearchRepository.changeStrategy(strategy).findAll(page)
+        })
+    }
+
+    fun getConsumersOfferSearches(
+        page: PageRequest,
+        strategy: RepositoryStrategyType
+    ): CompletableFuture<Slice<OfferSearch>> {
+        return supplyAsyncEx(Supplier {
+            offerSearchRepository.changeStrategy(strategy).findAllSlice(page)
+        })
+    }
+
+    fun getConsumersOfferSearchesByOwners(
+        owners: List<String>,
+        page: PageRequest,
+        strategy: RepositoryStrategyType
+    ): CompletableFuture<Slice<OfferSearch>> {
+        return supplyAsyncEx(Supplier {
+            offerSearchRepository.changeStrategy(strategy).findByOwnerInSlice(owners, page)
         })
     }
 
@@ -793,6 +816,17 @@ class OfferSearchService(
 
         return supplyAsyncEx(Supplier {
             offerInteractionRepository.changeStrategy(strategy).getDanglingOfferInteractions()
+        })
+    }
+
+    fun fixDanglingOfferSearchesByCreatingInteractions(
+        strategy: RepositoryStrategyType
+    ): CompletableFuture<List<OfferInteraction>> {
+        return supplyAsyncEx(Supplier {
+            var danglingOfferSearches = offerSearchRepository.changeStrategy(strategy).findAllWithoutOfferInteraction()
+            danglingOfferSearches = danglingOfferSearches.distinctBy { Pair(it.owner, it.offerId) }
+            val interactions = danglingOfferSearches.map { OfferInteraction(0, it.owner, it.offerId) }
+            offerInteractionRepository.changeStrategy(strategy).save(interactions)
         })
     }
 

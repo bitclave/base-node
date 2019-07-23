@@ -3,6 +3,7 @@ package com.bitclave.node.repository.search.offer
 import com.bitclave.node.repository.models.OfferSearch
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Slice
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.PagingAndSortingRepository
@@ -64,6 +65,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     fun findBySearchRequestIdInAndOwner(searchRequestIds: List<Long>, owner: String): List<OfferSearch>
 
     fun findByOwner(owner: String): List<OfferSearch>
+
+    fun findAllBy(pageable: Pageable): Slice<OfferSearch>
+
+    fun findByOwnerIn(owners: List<String>, pageable: Pageable): Slice<OfferSearch>
 
     @Query(
         value = """
@@ -403,9 +408,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     @Query(
         value = """
-            SELECT * FROM offer_search os WHERE os.id NOT IN
-            ( SELECT oo.id FROM offer_search oo, offer_interaction oi
-            WHERE oo.offer_id = oi.offer_id AND oo.owner = oi.owner)
+            SELECT oo.* FROM offer_search oo
+            left outer join offer_interaction oi on
+            oo.offer_id = oi.offer_id AND oo.owner = oi.owner
+            where oi.id is NULL
         """,
         nativeQuery = true
     )

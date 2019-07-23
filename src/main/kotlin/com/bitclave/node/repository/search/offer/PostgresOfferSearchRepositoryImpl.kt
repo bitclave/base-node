@@ -6,6 +6,7 @@ import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Slice
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Component
 import kotlin.system.measureTimeMillis
@@ -210,6 +211,11 @@ class PostgresOfferSearchRepositoryImpl(
             .asSequence()
             .toList()
     }
+
+    override fun findAllSlice(pageable: Pageable): Slice<OfferSearch> = repository.findAllBy(pageable)
+
+    override fun findByOwnerInSlice(owners: List<String>, pageable: Pageable): Slice<OfferSearch> =
+        repository.findByOwnerIn(owners, pageable)
 
     override fun findAllDiff(): List<OfferSearch> {
         return repository.findAllDiff()
