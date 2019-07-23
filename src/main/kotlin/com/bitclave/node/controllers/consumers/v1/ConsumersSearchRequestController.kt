@@ -87,7 +87,7 @@ class ConsumersSearchRequestController(
     ): CompletableFuture<Slice<SearchRequest>> {
         return searchRequestService.getRequestsSliceByOwners(
             owners,
-            PageRequest(page, size, Sort(Sort.Order(Sort.Direction.ASC, "owner"))),
+            PageRequest(page, size, Sort(Sort.Order(Sort.Direction.ASC, "id"))),
             getStrategyType(strategy)
         ).exceptionally { e ->
             logger.error("Request: getConsumersSearchRequestsByOwners/$page/$size/$owners raised $e")
