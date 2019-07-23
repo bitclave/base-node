@@ -283,7 +283,7 @@ class SearchRequestServiceTest {
         val searchPageRequest = PageRequest(0, 20)
 
         val list: Page<Long> = PageImpl(arrayListOf<Long>(1, 2, 3), searchPageRequest, 1)
-        var data = OffersWithCountersResponse();
+        var data = OffersWithCountersResponse()
 
         val searchRequestWithRtSearch = searchRequestService.putSearchRequest(
             0,

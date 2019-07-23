@@ -696,7 +696,6 @@ class OfferSearchService(
             var offerIds: Page<Long> = PageImpl(emptyList<Long>(), PageRequest(0, 1), 0)
             var counters: Map<String, Map<String, Int>> = mapOf()
 
-
             val step4 = measureTimeMillis {
                 try {
                     val searchedData = rtSearchRepository.getOffersIdByQuery(query, pageRequest, filters, mode).get()
@@ -783,7 +782,7 @@ class OfferSearchService(
             }
             logger.debug { "step 8 -> findBySearchRequestIdAndOfferIds(). ms: $step8" }
 
-            val data =  EnrichedOffersWithCountersResponse(result, counters)
+            val data = EnrichedOffersWithCountersResponse(result, counters)
             data
         })
     }

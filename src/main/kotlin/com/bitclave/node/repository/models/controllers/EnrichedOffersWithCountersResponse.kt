@@ -4,7 +4,7 @@ import com.bitclave.node.repository.models.OfferSearchResultItem
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 
-class EnrichedOffersWithCountersResponse (offers: Page<OfferSearchResultItem>, counters: Map<String, Map<String, Int>>) {
+class EnrichedOffersWithCountersResponse(offers: Page<OfferSearchResultItem>, counters: Map<String, Map<String, Int>>) {
 
     var counters: Map<String, Map<String, Int>> = mapOf()
     var content: List<OfferSearchResultItem> = listOf()
@@ -17,7 +17,7 @@ class EnrichedOffersWithCountersResponse (offers: Page<OfferSearchResultItem>, c
     var size = 0
     var totalPages: Long = 0
     var totalElements: Long = 0
-    var pageable = PageRequest(0,10)
+    var pageable = PageRequest(0, 10)
 
     init {
         this.counters = counters

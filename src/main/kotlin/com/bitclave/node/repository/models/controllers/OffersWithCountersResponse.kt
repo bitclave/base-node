@@ -21,7 +21,6 @@ class OffersWithCountersResponse {
     val totalElements: Long = 0
 
     fun getPageableOfferIds(): Page<Long> {
-        return PageImpl(this.offerIds, PageRequest(this.number,this.size), this.totalElements) as Page<Long>
+        return PageImpl(this.offerIds, PageRequest(this.number, this.size), this.totalElements) as Page<Long>
     }
-
 }
