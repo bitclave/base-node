@@ -9,6 +9,7 @@ import com.bitclave.node.repository.models.OfferInteractionId
 import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.repository.models.OfferSearchResultItem
 import com.bitclave.node.repository.models.QuerySearchRequest
+import com.bitclave.node.repository.models.controllers.EnrichedOffersWithCountersResponse
 import com.bitclave.node.repository.offer.OfferRepository
 import com.bitclave.node.repository.rtSearch.RtSearchRepository
 import com.bitclave.node.repository.search.SearchRequestRepository
@@ -633,7 +634,7 @@ class OfferSearchService(
         strategyType: RepositoryStrategyType,
         filters: Map<String, List<String>>? = mapOf(),
         mode: String? = ""
-    ): CompletableFuture<Page<OfferSearchResultItem>> {
+    ): CompletableFuture<EnrichedOffersWithCountersResponse> {
         return supplyAsyncEx(Supplier {
             val searchRequest = searchRequestRepository
                 .changeStrategy(strategyType)
@@ -670,12 +671,14 @@ class OfferSearchService(
             logger.debug { "step 3 -> findBySearchRequestId(). ms: $step3" }
 
             var offerIds: Page<Long> = PageImpl(emptyList<Long>(), PageRequest(0, 1), 0)
+            var counters: Map<String, Map<String, Int>> = mapOf()
+
 
             val step4 = measureTimeMillis {
                 try {
-                    offerIds = rtSearchRepository
-                        .getOffersIdByQuery(query, pageRequest, filters, mode)
-                        .get()
+                    val searchedData = rtSearchRepository.getOffersIdByQuery(query, pageRequest, filters, mode).get()
+                    offerIds = searchedData.getPageableOfferIds()
+                    counters = searchedData.counters
                 } catch (e: Throwable) {
                     logger.error("rt-search error: $e")
 
@@ -683,7 +686,10 @@ class OfferSearchService(
                         (e.cause as HttpServerErrorException).rawStatusCode > 499
                     ) {
                         val pageable = PageRequest(0, 1)
-                        return@Supplier PageImpl(emptyList<OfferSearchResultItem>(), pageable, 0)
+                        return@Supplier EnrichedOffersWithCountersResponse(
+                                PageImpl(emptyList<OfferSearchResultItem>(), pageable, 0),
+                                counters
+                        )
                     } else {
                         throw e
                     }
@@ -754,7 +760,8 @@ class OfferSearchService(
             }
             logger.debug { "step 8 -> findBySearchRequestIdAndOfferIds(). ms: $step8" }
 
-            result
+            val data =  EnrichedOffersWithCountersResponse(result, counters)
+            data
         })
     }
 
