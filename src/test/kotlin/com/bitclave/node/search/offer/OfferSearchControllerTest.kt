@@ -75,7 +75,12 @@ class OfferSearchControllerTest {
 
     @Test
     fun `create offerSearches request by query string`() {
-        val content = SignedRequest(OfferSearchByQueryParameters(1L, mapOf()))
+        val content = SignedRequest(
+            OfferSearchByQueryParameters(
+                1L,
+                mapOf("interests" to listOf("interest_personal_vault", "interest_paid_surveys"))
+            ), publicKey
+        )
         this.mvc.perform(
             post("/$version/search/query/")
                 .content(content.toJsonString())

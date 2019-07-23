@@ -17,6 +17,7 @@ import com.bitclave.node.repository.models.OfferRank
 import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.repository.models.OfferShareData
 import com.bitclave.node.repository.models.SearchRequest
+import com.bitclave.node.repository.models.controllers.OffersWithCountersResponse
 import com.bitclave.node.repository.offer.OfferCrudRepository
 import com.bitclave.node.repository.offer.OfferRepositoryStrategy
 import com.bitclave.node.repository.offer.PostgresOfferRepositoryImpl
@@ -57,8 +58,6 @@ import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.test.annotation.DirtiesContext
@@ -287,7 +286,8 @@ class OfferSearchServiceTest {
 
     @Test
     fun `should be create QuerySearchRequest`() {
-        val list: Page<Long> = PageImpl(arrayListOf<Long>(1, 2, 3), searchPageRequest, 1)
+//        val list: Page<Long> = PageImpl(arrayListOf<Long>(1, 2, 3), searchPageRequest, 1)
+        var data = OffersWithCountersResponse()
 
         val searchRequestWithRtSearch = searchRequestService.putSearchRequest(
             0,
@@ -298,7 +298,7 @@ class OfferSearchServiceTest {
 
         val searchQueryText = "some data"
         Mockito.`when`(rtSearchRepository.getOffersIdByQuery(searchQueryText, searchPageRequest))
-            .thenReturn(CompletableFuture.completedFuture(list))
+            .thenReturn(CompletableFuture.completedFuture(data))
 
         val offersResult = offerSearchService.createOfferSearchesByQuery(
             searchRequestWithRtSearch.id, publicKey, searchQueryText, searchPageRequest, strategy
@@ -311,7 +311,7 @@ class OfferSearchServiceTest {
         assertThat(existedSearchRequest)
         assertThat(queryRequestsByOwner.size == 1)
         assertThat(queryRequestsByOwner[0].query).isEqualTo(searchQueryText)
-        assertThat(offersResult.size == list.size)
+        assertThat(offersResult.size == data.offerIds.size)
     }
 
     @Test
@@ -328,7 +328,9 @@ class OfferSearchServiceTest {
 
     @Test
     fun `should be create offersSearch items`() {
-        val list: Page<Long> = PageImpl(arrayListOf<Long>(1, 2, 3), searchPageRequest, 1)
+//        val list: Page<Long> = PageImpl(arrayListOf<Long>(1, 2, 3), searchPageRequest, 1)
+        var data = OffersWithCountersResponse()
+        data.offerIds = arrayListOf<Long>(1, 2, 3)
 
         val searchRequestWithRtSearch = searchRequestService.putSearchRequest(
             0,
@@ -339,7 +341,7 @@ class OfferSearchServiceTest {
 
         val searchQueryText = "some data"
         Mockito.`when`(rtSearchRepository.getOffersIdByQuery(searchQueryText, searchPageRequest))
-            .thenReturn(CompletableFuture.completedFuture(list))
+            .thenReturn(CompletableFuture.completedFuture(data))
 
         val offersResult = offerSearchService.createOfferSearchesByQuery(
             searchRequestWithRtSearch.id, publicKey, searchQueryText, searchPageRequest, strategy
@@ -348,8 +350,8 @@ class OfferSearchServiceTest {
         val searchResult = offerSearchCrudRepository
             .findBySearchRequestId(searchRequestWithRtSearch.id)
         assert(searchResult.size == 3)
-        assert(searchResult.filter { list.indexOf(it.offerId) > -1 }.size == 3)
-        assertThat(offersResult.size == list.size)
+        assert(searchResult.filter { data.offerIds .indexOf(it.offerId) > -1 }.size == 3)
+        assertThat(offersResult.size == data.offerIds.size)
     }
 
     @Test
@@ -361,24 +363,28 @@ class OfferSearchServiceTest {
             strategy
         ).get()
 
-        val firstList: Page<Long> = PageImpl(arrayListOf<Long>(1, 2, 3, 4, 5), searchPageRequest, 1)
+//        val firstList: Page<Long> = PageImpl(arrayListOf<Long>(1, 2, 3, 4, 5), searchPageRequest, 1)
+        val firstData = OffersWithCountersResponse()
+        firstData.offerIds = arrayListOf<Long>(1, 2, 3, 4, 5)
         Mockito.`when`(rtSearchRepository.getOffersIdByQuery("some data", searchPageRequest))
-            .thenReturn(CompletableFuture.completedFuture(firstList))
+            .thenReturn(CompletableFuture.completedFuture(firstData))
 
         offerSearchService.createOfferSearchesByQuery(
             searchRequestWithRtSearch.id, publicKey, "some data", searchPageRequest, strategy
         ).get()
 
-        val secondList: Page<Long> = PageImpl(arrayListOf<Long>(4, 5), searchPageRequest, 1)
+//        val secondList: Page<Long> = PageImpl(arrayListOf<Long>(4, 5), searchPageRequest, 1)
+        val secondData = OffersWithCountersResponse()
+        secondData.offerIds = arrayListOf<Long>(4, 5)
         Mockito.`when`(rtSearchRepository.getOffersIdByQuery("some data", searchPageRequest))
-            .thenReturn(CompletableFuture.completedFuture(secondList))
+            .thenReturn(CompletableFuture.completedFuture(secondData))
         offerSearchService.createOfferSearchesByQuery(
             searchRequestWithRtSearch.id, publicKey, "some data", searchPageRequest, strategy
         ).get()
 
         val searchResult = offerSearchCrudRepository.findByOwner(publicKey)
         assert(searchResult.size == 2)
-        assert(searchResult.filter { secondList.indexOf(it.offerId) > -1 }.size == 2)
+        assert(searchResult.filter { secondData.offerIds.indexOf(it.offerId) > -1 }.size == 2)
     }
 
     @Test(expected = NotFoundException::class)

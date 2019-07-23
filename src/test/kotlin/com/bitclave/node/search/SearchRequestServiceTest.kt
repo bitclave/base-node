@@ -11,6 +11,7 @@ import com.bitclave.node.repository.models.Account
 import com.bitclave.node.repository.models.Offer
 import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.repository.models.SearchRequest
+import com.bitclave.node.repository.models.controllers.OffersWithCountersResponse
 import com.bitclave.node.repository.offer.OfferCrudRepository
 import com.bitclave.node.repository.offer.OfferRepositoryStrategy
 import com.bitclave.node.repository.offer.PostgresOfferRepositoryImpl
@@ -282,6 +283,7 @@ class SearchRequestServiceTest {
         val searchPageRequest = PageRequest(0, 20)
 
         val list: Page<Long> = PageImpl(arrayListOf<Long>(1, 2, 3), searchPageRequest, 1)
+        var data = OffersWithCountersResponse()
 
         val searchRequestWithRtSearch = searchRequestService.putSearchRequest(
             0,
@@ -292,7 +294,7 @@ class SearchRequestServiceTest {
 
         val searchQueryText = "some data"
         Mockito.`when`(rtSearchRepository.getOffersIdByQuery(searchQueryText, searchPageRequest))
-            .thenReturn(CompletableFuture.completedFuture(list))
+            .thenReturn(CompletableFuture.completedFuture(data))
 
         val offersResult = offerSearchService.createOfferSearchesByQuery(
             searchRequestWithRtSearch.id, publicKey, searchQueryText, searchPageRequest, strategy

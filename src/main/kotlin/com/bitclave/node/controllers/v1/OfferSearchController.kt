@@ -8,6 +8,7 @@ import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.repository.models.OfferSearchResultItem
 import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.models.SignedRequest
+import com.bitclave.node.repository.models.controllers.EnrichedOffersWithCountersResponse
 import com.bitclave.node.repository.models.controllers.OfferSearchByQueryParameters
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferSearchService
@@ -136,7 +137,7 @@ class OfferSearchController(
         @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
         @RequestHeader("Strategy", required = false)
         strategy: String?
-    ): CompletableFuture<Page<OfferSearchResultItem>> {
+    ): CompletableFuture<EnrichedOffersWithCountersResponse> {
 
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
             .thenCompose { account: Account -> accountService.validateNonce(request, account) }

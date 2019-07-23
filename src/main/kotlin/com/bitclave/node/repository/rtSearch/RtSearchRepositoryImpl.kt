@@ -1,10 +1,10 @@
 package com.bitclave.node.repository.rtSearch
 
 import com.bitclave.node.configuration.properties.RtSearchProperties
+import com.bitclave.node.repository.models.controllers.OffersWithCountersResponse
 import com.bitclave.node.utils.supplyAsyncEx
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.core.ParameterizedTypeReference
-import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpMethod
@@ -29,7 +29,7 @@ class RtSearchRepositoryImpl(
         pageRequest: PageRequest,
         filters: Map<String, List<String>>?,
         mode: String?
-    ): CompletableFuture<Page<Long>> {
+    ): CompletableFuture<OffersWithCountersResponse> {
         return supplyAsyncEx(Supplier {
 
             val parameters = mapOf(
@@ -42,7 +42,7 @@ class RtSearchRepositoryImpl(
             val offerIdsResponse = restTemplate.exchange(
                     "/v1/search/?q={query}&page={page}&size={size}&mode={mode}",
                     HttpMethod.POST, httpEntity,
-                    object : ParameterizedTypeReference<Page<Long>>() {},
+                    object : ParameterizedTypeReference<OffersWithCountersResponse>() {},
                     parameters
             )
 
