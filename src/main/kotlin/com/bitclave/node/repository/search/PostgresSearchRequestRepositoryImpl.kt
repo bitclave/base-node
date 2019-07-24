@@ -80,6 +80,10 @@ class PostgresSearchRequestRepositoryImpl(
         return syncElementCollections(repository.getRequestByOwnerAndTag(owner, tagKey))
     }
 
+    override fun getSearchRequestWithSameTags(): List<SearchRequest> {
+        return syncElementCollections(repository.getSearchRequestWithSameTags())
+    }
+
     private fun deleteRelevantOfferSearches(searchRequestId: Long) {
         val relatedOfferSearches = offerSearchRepository.findBySearchRequestId(searchRequestId)
         offerSearchRepository.delete(relatedOfferSearches)
