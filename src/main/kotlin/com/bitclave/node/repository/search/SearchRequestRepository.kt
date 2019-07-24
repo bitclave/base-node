@@ -36,4 +36,6 @@ interface SearchRequestRepository {
     fun getTotalCount(): Long
 
     fun getRequestByOwnerAndTag(owner: String, tagKey: String): List<SearchRequest>
+
+    fun getSearchRequestWithSameTags(): List<SearchRequest>
 }

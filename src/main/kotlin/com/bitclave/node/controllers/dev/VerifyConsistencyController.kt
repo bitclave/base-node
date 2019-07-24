@@ -4,9 +4,11 @@ import com.bitclave.node.controllers.AbstractController
 import com.bitclave.node.repository.models.Account
 import com.bitclave.node.repository.models.OfferInteraction
 import com.bitclave.node.repository.models.OfferSearch
+import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.models.SignedRequest
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferSearchService
+import com.bitclave.node.services.v1.SearchRequestService
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
@@ -28,7 +30,8 @@ private val logger = KotlinLogging.logger {}
 @RequestMapping("/dev/verify")
 class VerifyConsistencyController(
     @Qualifier("v1") private val accountService: AccountService,
-    @Qualifier("v1") private val offerSearchService: OfferSearchService
+    @Qualifier("v1") private val offerSearchService: OfferSearchService,
+    @Qualifier("v1") private val searchRequestService: SearchRequestService
 ) : AbstractController() {
 
     /**
@@ -305,6 +308,41 @@ class VerifyConsistencyController(
             getStrategyType(strategy)
         ).exceptionally { e ->
             logger.error("Request: fixDanglingOfferInteractions raised $e")
+            throw e
+        }
+    }
+
+    /**
+     * Returns the SearchRequests with the same tags
+     *
+     * @return {@link List<SearchRequest>}, Http status - 200.
+     *
+     */
+    @ApiOperation(
+        "Returns the SearchRequests with the same tags",
+        response = OfferInteraction::class, responseContainer = "List"
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(code = 200, message = "Success", response = List::class)
+        ]
+    )
+    @RequestMapping(method = [RequestMethod.GET], value = ["/searchrequest/sametag"])
+    fun getSearchRequestWithSameTags(
+
+        @ApiParam(
+            "change repository strategy",
+            allowableValues = "POSTGRES, HYBRID",
+            required = false
+        )
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
+    ): CompletableFuture<List<SearchRequest>> {
+
+        return searchRequestService.getSearchRequestWithSameTags(
+            getStrategyType(strategy)
+        ).exceptionally { e ->
+            logger.error("Request: getDanglingOfferInteractions raised $e")
             throw e
         }
     }

@@ -540,4 +540,24 @@ class SearchRequestServiceTest {
         result = searchRequestService.getRequestByOwnerAndTag(account.publicKey, "notexist", strategy).get()
         assertThat(result.size).isEqualTo(0)
     }
+
+    @Test
+    fun `should return search requests with the same tags`() {
+        searchRequestService.putSearchRequest(
+            0,
+            account.publicKey,
+            searchRequest,
+            strategy
+        ).get()
+
+        searchRequestService.putSearchRequest(
+            0,
+            account.publicKey,
+            searchRequest3,
+            strategy
+        ).get()
+
+        var result = searchRequestService.getSearchRequestWithSameTags(strategy).get()
+        assertThat(result.size).isEqualTo(2)
+    }
 }
