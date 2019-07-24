@@ -60,7 +60,7 @@ interface OfferSearchRepository {
 
     fun findAllSlice(pageable: Pageable): Slice<OfferSearch>
 
-    fun findByOwnerInSlice(owners: List<String>, pageable: Pageable): Slice<OfferSearch>
+    fun findBySearchRequestIdInSlice(ids: List<Long>, pageable: Pageable): Slice<OfferSearch>
 
     fun findAll(): List<OfferSearch>
 

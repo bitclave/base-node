@@ -68,7 +68,7 @@ class ConsumersOfferSearchController(
         ]
     )
     @RequestMapping(value = ["search/results"], method = [RequestMethod.POST], params = ["page", "size"])
-    fun getConsumersOfferSearchByOwners(
+    fun getConsumersOfferSearchBySearchRequestIds(
         @ApiParam("Optional page number to retrieve a particular page. If not specified this API retrieves first page.")
         @RequestParam("page", defaultValue = "0")
         page: Int,
@@ -77,22 +77,22 @@ class ConsumersOfferSearchController(
         @RequestParam("size", defaultValue = "100")
         size: Int,
 
-        @ApiParam("where client sends public keys of owners", required = true)
+        @ApiParam("where client sends ids of searchRequests", required = true)
         @RequestBody
-        owners: List<String>,
+        ids: List<Long>,
 
         @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
         @RequestHeader("Strategy", required = false)
         strategy: String?
     ): CompletableFuture<Slice<OfferSearch>> {
         return offerSearchService
-            .getConsumersOfferSearchesByOwners(
-                owners,
+            .getConsumersOfferSearchesBySearchRequestIds(
+                ids,
                 PageRequest(page, size, Sort(Sort.Order(Sort.Direction.ASC, "id"))),
                 getStrategyType(strategy)
             )
             .exceptionally { e ->
-                logger.error("Request: getConsumersOfferSearchByOwners/$page/$size/$owners raised $e")
+                logger.error("Request: getConsumersOfferSearchBySearchRequestIds/$page/$size/$ids raised $e")
                 throw e
             }
     }
