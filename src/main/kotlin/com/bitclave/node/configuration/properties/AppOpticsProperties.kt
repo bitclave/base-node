@@ -5,6 +5,6 @@ import org.springframework.stereotype.Component
 
 @Component
 @ConfigurationProperties("appoptics")
-data class AppOpticsProperties (
+data class AppOpticsProperties(
     var serviceKey: String = ""
 )

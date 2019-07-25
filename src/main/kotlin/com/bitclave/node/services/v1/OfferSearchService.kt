@@ -197,10 +197,10 @@ class OfferSearchService(
             logger.debug { "5 step) content ms: $step5" }
             logger.debug { "total) ms: ${step1 + step2 + step3 + step4 + step5}" }
 
-             val result: PostMeasuresResult = client.postMeasures(Measures().add(
-                 Measure("com.bitclave.node.services.v1.getOffersAndOfferSearchesByParams",
-                        (step1 + step2 + step3 + step4 + step5).toDouble(),
-                        Tag("owner", owner))))
+            val result: PostMeasuresResult = client.postMeasures(Measures().add(
+                Measure("com.bitclave.node.services.v1.getOffersAndOfferSearchesByParams",
+                    (step1 + step2 + step3 + step4 + step5).toDouble(),
+                    Tag("owner", owner))))
 
             for (result: PostResult in result.results) {
                 if (result.isError) {
