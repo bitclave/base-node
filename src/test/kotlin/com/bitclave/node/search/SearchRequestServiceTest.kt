@@ -1,5 +1,6 @@
 package com.bitclave.node.search
 
+import com.bitclave.node.configuration.properties.AppOpticsProperties
 import com.bitclave.node.configuration.properties.HybridProperties
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.Web3Provider
@@ -85,6 +86,9 @@ class SearchRequestServiceTest {
     @Autowired
     private lateinit var entityManager: EntityManager
 
+    @Autowired
+    private lateinit var appOpticsProperties: AppOpticsProperties
+
     protected val rtSearchRepository = Mockito.mock(RtSearchRepositoryImpl::class.java)
 
     private val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
@@ -164,7 +168,8 @@ class SearchRequestServiceTest {
             querySearchRequestCrudRepository,
             rtSearchRepository,
             offerSearchStateRepositoryStrategy,
-            gson
+            gson,
+            appOpticsProperties
         )
 
         searchRequestService = SearchRequestService(

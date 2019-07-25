@@ -35,6 +35,15 @@ import java.util.concurrent.CompletableFuture
 import java.util.function.Supplier
 import kotlin.math.min
 import kotlin.system.measureTimeMillis
+import com.appoptics.metrics.client.AppopticsClient
+import com.appoptics.metrics.client.Duration
+import java.util.concurrent.TimeUnit
+import com.appoptics.metrics.client.Measure
+import com.appoptics.metrics.client.Measures
+import com.appoptics.metrics.client.PostMeasuresResult
+import com.appoptics.metrics.client.Tag
+import com.appoptics.metrics.client.PostResult
+import com.bitclave.node.configuration.properties.AppOpticsProperties
 
 data class OfferSearchEvent(
     val updater: String,
@@ -58,12 +67,21 @@ class OfferSearchService(
     private val querySearchRequestCrudRepository: QuerySearchRequestCrudRepository,
     private val rtSearchRepository: RtSearchRepository,
     private val offerInteractionRepository: RepositoryStrategy<OfferInteractionRepository>,
-    private val gson: Gson
+    private val gson: Gson,
+    appOpticsProperties: AppOpticsProperties
 ) {
 
     private val defaultUnsignedOwner = "0fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
 
     private val logger = KotlinLogging.logger {}
+
+    private val client = AppopticsClient.builder(appOpticsProperties.serviceKey)
+        // these are optional
+        .setConnectTimeout(Duration(5, TimeUnit.SECONDS))
+        .setReadTimeout(Duration(5, TimeUnit.SECONDS))
+        .setAgentIdentifier("base-node")
+        // and finally build
+        .build()
 
     fun getOffersResult(
         strategy: RepositoryStrategyType,
@@ -180,7 +198,19 @@ class OfferSearchService(
             }
             logger.debug { "5 step) content ms: $step5" }
             logger.debug { "total) ms: ${step1 + step2 + step3 + step4 + step5}" }
-            pageImpl as Page<OfferSearchResultItem>
+
+            val result: PostMeasuresResult = client.postMeasures(Measures().add(
+                Measure("com.bitclave.node.services.v1.getOffersAndOfferSearchesByParams",
+                    (step1 + step2 + step3 + step4 + step5).toDouble(),
+                    Tag("owner", owner))))
+
+            for (result: PostResult in result.results) {
+                if (result.isError) {
+                    logger.debug(result.toString())
+                }
+            }
+
+                    pageImpl as Page<OfferSearchResultItem>
         })
     }
 

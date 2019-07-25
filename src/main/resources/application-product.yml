@@ -22,3 +22,6 @@ hybrid:
       address: ${DNS_CONTRACT_ADDRESS}
       gasPrice: ${ETHEREUM_GAS_PRICE}
       gasLimit: ${ETHEREUM_GAS_LIMIT}
+
+appoptics:
+  serviceKey: ${APPOPTICS_SERVICE_KEY}
