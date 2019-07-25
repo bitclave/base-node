@@ -224,7 +224,7 @@ class SearchRequestServiceTest {
     fun `should be update few new search requests`() {
         `should be create few new search requests`()
 
-        val existed = searchRequestService.getPageableRequests(PageRequest(0, 1000), strategy).get()
+        val existed = searchRequestService.getPageableRequests(PageRequest.of(0, 1000), strategy).get()
         assert(existed.content.size == 2)
         val updatedTags = mapOf("test" to "true")
         val forUpdate = existed.map { it.copy(tags = updatedTags) }.content
@@ -280,7 +280,7 @@ class SearchRequestServiceTest {
 
     @Test
     fun `should delete existed search request by owner`() {
-        val searchPageRequest = PageRequest(0, 20)
+        val searchPageRequest = PageRequest.of(0, 20)
 
         val list: Page<Long> = PageImpl(arrayListOf<Long>(1, 2, 3), searchPageRequest, 1)
         var data = OffersWithCountersResponse()
@@ -302,7 +302,7 @@ class SearchRequestServiceTest {
 
         var queryRequestsByOwner = querySearchRequestCrudRepository
             .findAllByOwner(publicKey)
-        val existedSearchRequest = searchRequestCrudRepository.findOne(searchRequestWithRtSearch.id)
+        val existedSearchRequest = searchRequestCrudRepository.findById(searchRequestWithRtSearch.id)
 
         assertThat(existedSearchRequest)
         assertThat(queryRequestsByOwner.size == 1)
@@ -486,12 +486,12 @@ class SearchRequestServiceTest {
         `should be create new search request`()
         `should be create new search request`()
 
-        val firstPage = searchRequestService.getPageableRequests(PageRequest(0, 2), strategy).get()
+        val firstPage = searchRequestService.getPageableRequests(PageRequest.of(0, 2), strategy).get()
         assertThat(firstPage.size).isEqualTo(2)
         assert(firstPage.first().id == 1L)
         assert(firstPage.last().id == 2L)
 
-        val secondPage = searchRequestService.getPageableRequests(PageRequest(1, 2), strategy).get()
+        val secondPage = searchRequestService.getPageableRequests(PageRequest.of(1, 2), strategy).get()
         assertThat(secondPage.size).isEqualTo(2)
         assert(secondPage.first().id == 3L)
         assert(secondPage.last().id == 4L)

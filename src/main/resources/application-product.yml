@@ -13,14 +13,6 @@ spring:
 rtsearch:
   url: ${RT_SEARCH_URL}
 
-flyway:
-  enabled: false
-  baseline-on-migrate: true
-  url: ${JDBC_DATABASE_URL}
-  user: ${JDBC_DATABASE_USERNAME}
-  password: ${JDBC_DATABASE_PASSWORD}
-  locations: db/migration
-
 hybrid:
   nodeUrl: https://ropsten.infura.io/
   ownerPrivateKey: ${OWNER_PRIVATE_KEY}

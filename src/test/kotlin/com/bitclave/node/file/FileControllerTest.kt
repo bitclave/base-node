@@ -52,7 +52,7 @@ class FileControllerTest {
     @Test
     fun `upload new file`() {
         this.mvc.perform(
-            MockMvcRequestBuilders.fileUpload("/$version/file/$publicKey/")
+            MockMvcRequestBuilders.multipart("/$version/file/$publicKey/")
                 .file(testFile)
                 .param("signature", requestPk.toJsonString())
                 .accept(MediaType.APPLICATION_JSON)
@@ -64,7 +64,7 @@ class FileControllerTest {
     @Test
     fun `update existing file`() {
         this.mvc.perform(
-            MockMvcRequestBuilders.fileUpload("/$version/file/$publicKey/1/")
+            MockMvcRequestBuilders.multipart("/$version/file/$publicKey/1/")
                 .file(testFile)
                 .param("signature", requestPk.toJsonString())
                 .accept(MediaType.APPLICATION_JSON)

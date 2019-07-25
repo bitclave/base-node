@@ -22,7 +22,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Matchers
+import org.mockito.ArgumentMatchers
 import org.mockito.Mock
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
@@ -108,11 +108,11 @@ class ExternalServicesServiceTest {
 
         Mockito.`when`(
             restTemplate.exchange(
-                Matchers.eq("$endpoint/"),
-                Matchers.eq(HttpMethod.GET),
-                Matchers.eq(entity),
-                Matchers.eq(Any::class.java),
-                Matchers.eq(emptyMap<String, String>())
+                ArgumentMatchers.eq("$endpoint/"),
+                ArgumentMatchers.eq(HttpMethod.GET),
+                ArgumentMatchers.eq(entity),
+                ArgumentMatchers.eq(Any::class.java),
+                ArgumentMatchers.eq(emptyMap<String, String>())
             )
         ).thenReturn(ResponseEntity<Any>(HttpStatus.OK))
 
@@ -128,11 +128,11 @@ class ExternalServicesServiceTest {
 
         Mockito.`when`(
             restTemplate.exchange(
-                Matchers.eq("$endpoint/"),
-                Matchers.eq(HttpMethod.GET),
-                Matchers.eq(entity),
-                Matchers.eq(Any::class.java),
-                Matchers.eq(emptyMap<String, String>())
+                ArgumentMatchers.eq("$endpoint/"),
+                ArgumentMatchers.eq(HttpMethod.GET),
+                ArgumentMatchers.eq(entity),
+                ArgumentMatchers.eq(Any::class.java),
+                ArgumentMatchers.eq(emptyMap<String, String>())
             )
         ).thenReturn(ResponseEntity<Any>(HttpStatus.NOT_FOUND))
 
@@ -148,11 +148,11 @@ class ExternalServicesServiceTest {
 
         Mockito.`when`(
             restTemplate.exchange(
-                Matchers.eq("$endpoint/?var1=1,2,3&var2=hello"),
-                Matchers.eq(HttpMethod.GET),
-                Matchers.eq(entity),
-                Matchers.eq(Any::class.java),
-                Matchers.eq(mapOf("var1" to "1,2,3", "var2" to "hello"))
+                ArgumentMatchers.eq("$endpoint/?var1=1,2,3&var2=hello"),
+                ArgumentMatchers.eq(HttpMethod.GET),
+                ArgumentMatchers.eq(entity),
+                ArgumentMatchers.eq(Any::class.java),
+                ArgumentMatchers.eq(mapOf("var1" to "1,2,3", "var2" to "hello"))
             )
         ).thenReturn(ResponseEntity<Any>(Account("0x0", 10), HttpStatus.OK))
 
@@ -182,11 +182,11 @@ class ExternalServicesServiceTest {
 
         Mockito.`when`(
             restTemplate.exchange(
-                Matchers.eq("$endpoint/"),
-                Matchers.eq(HttpMethod.GET),
-                Matchers.eq(entity),
-                Matchers.eq(Any::class.java),
-                Matchers.eq(emptyMap<String, String>())
+                ArgumentMatchers.eq("$endpoint/"),
+                ArgumentMatchers.eq(HttpMethod.GET),
+                ArgumentMatchers.eq(entity),
+                ArgumentMatchers.eq(Any::class.java),
+                ArgumentMatchers.eq(emptyMap<String, String>())
             )
         ).thenReturn(ResponseEntity<Any>(headers, HttpStatus.ACCEPTED))
 
@@ -215,11 +215,11 @@ class ExternalServicesServiceTest {
 
         Mockito.`when`(
             restTemplate.exchange(
-                Matchers.eq("$endpoint/"),
-                Matchers.eq(HttpMethod.POST),
-                Matchers.eq(entity),
-                Matchers.eq(Any::class.java),
-                Matchers.eq(emptyMap<String, String>())
+                ArgumentMatchers.eq("$endpoint/"),
+                ArgumentMatchers.eq(HttpMethod.POST),
+                ArgumentMatchers.eq(entity),
+                ArgumentMatchers.eq(Any::class.java),
+                ArgumentMatchers.eq(emptyMap<String, String>())
             )
         ).thenReturn(ResponseEntity<Any>(headers, HttpStatus.CREATED))
 
@@ -249,11 +249,11 @@ class ExternalServicesServiceTest {
 
         Mockito.`when`(
             restTemplate.exchange(
-                Matchers.eq("$endpoint/"),
-                Matchers.eq(HttpMethod.POST),
-                Matchers.eq(entity),
-                Matchers.eq(Any::class.java),
-                Matchers.eq(emptyMap<String, String>())
+                ArgumentMatchers.eq("$endpoint/"),
+                ArgumentMatchers.eq(HttpMethod.POST),
+                ArgumentMatchers.eq(entity),
+                ArgumentMatchers.eq(Any::class.java),
+                ArgumentMatchers.eq(emptyMap<String, String>())
             )
         ).thenReturn(ResponseEntity<Any>(headers, HttpStatus.CREATED))
 
@@ -284,11 +284,11 @@ class ExternalServicesServiceTest {
 
         Mockito.`when`(
             restTemplate.exchange(
-                Matchers.eq("$endpoint/"),
-                Matchers.eq(HttpMethod.POST),
-                Matchers.eq(entity),
-                Matchers.eq(Any::class.java),
-                Matchers.eq(emptyMap<String, String>())
+                ArgumentMatchers.eq("$endpoint/"),
+                ArgumentMatchers.eq(HttpMethod.POST),
+                ArgumentMatchers.eq(entity),
+                ArgumentMatchers.eq(Any::class.java),
+                ArgumentMatchers.eq(emptyMap<String, String>())
             )
         ).thenReturn(ResponseEntity<Any>(headers, HttpStatus.FORBIDDEN))
 

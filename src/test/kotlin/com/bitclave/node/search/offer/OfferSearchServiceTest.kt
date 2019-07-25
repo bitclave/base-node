@@ -166,7 +166,7 @@ class OfferSearchServiceTest {
     )
 
     protected lateinit var offerPrices: List<OfferPrice>
-    private val searchPageRequest: PageRequest = PageRequest(0, 20)
+    private val searchPageRequest: PageRequest = PageRequest.of(0, 20)
     private lateinit var searchRequestRepositoryStrategy: SearchRequestRepositoryStrategy
     private lateinit var offerInteractionRepositoryStrategy: OfferInteractionRepositoryStrategy
 
@@ -306,7 +306,7 @@ class OfferSearchServiceTest {
 
         val queryRequestsByOwner = querySearchRequestCrudRepository
             .findAllByOwner(publicKey)
-        val existedSearchRequest = searchRequestCrudRepository.findOne(searchRequestWithRtSearch.id)
+        val existedSearchRequest = searchRequestCrudRepository.findById(searchRequestWithRtSearch.id)
 
         assertThat(existedSearchRequest)
         assertThat(queryRequestsByOwner.size == 1)
@@ -350,7 +350,7 @@ class OfferSearchServiceTest {
         val searchResult = offerSearchCrudRepository
             .findBySearchRequestId(searchRequestWithRtSearch.id)
         assert(searchResult.size == 3)
-        assert(searchResult.filter { data.offerIds .indexOf(it.offerId) > -1 }.size == 3)
+        assert(searchResult.filter { data.offerIds.indexOf(it.offerId) > -1 }.size == 3)
         assertThat(offersResult.size == data.offerIds.size)
     }
 
@@ -459,7 +459,7 @@ class OfferSearchServiceTest {
         createOfferSearch(createdSearchRequest2, createdOffer2)
 
         var result = offerSearchService.getOffersAndOfferSearchesByParams(
-            strategy, publicKey, false, emptyList(), emptyList(), PageRequest(0, 2)
+            strategy, publicKey, false, emptyList(), emptyList(), PageRequest.of(0, 2)
         )
             .get()
             .content
@@ -469,7 +469,7 @@ class OfferSearchServiceTest {
         assert(result[1].offerSearch.id == 2L)
 
         result = offerSearchService.getOffersAndOfferSearchesByParams(
-            strategy, publicKey, false, emptyList(), emptyList(), PageRequest(1, 2)
+            strategy, publicKey, false, emptyList(), emptyList(), PageRequest.of(1, 2)
         )
             .get()
             .content
@@ -479,7 +479,7 @@ class OfferSearchServiceTest {
         assert(result[1].offerSearch.id == 4L)
 
         result = offerSearchService.getOffersAndOfferSearchesByParams(
-            strategy, publicKey, false, emptyList(), emptyList(), PageRequest(0, 20)
+            strategy, publicKey, false, emptyList(), emptyList(), PageRequest.of(0, 20)
         )
             .get()
             .content
@@ -491,7 +491,7 @@ class OfferSearchServiceTest {
         assert(result[3].offerSearch.id == 4L)
 
         result = offerSearchService.getOffersAndOfferSearchesByParams(
-            strategy, publicKey, false, emptyList(), emptyList(), PageRequest(5, 20)
+            strategy, publicKey, false, emptyList(), emptyList(), PageRequest.of(5, 20)
         )
             .get()
             .content
@@ -927,12 +927,12 @@ class OfferSearchServiceTest {
             ).get()
         }
 
-        val firstPage = offerSearchService.getPageableOfferSearches(PageRequest(0, 2), strategy).get()
+        val firstPage = offerSearchService.getPageableOfferSearches(PageRequest.of(0, 2), strategy).get()
         assertThat(firstPage.size).isEqualTo(2)
         assert(firstPage.first().id == 1L)
         assert(firstPage.last().id == 2L)
 
-        val secondPage = offerSearchService.getPageableOfferSearches(PageRequest(1, 2), strategy).get()
+        val secondPage = offerSearchService.getPageableOfferSearches(PageRequest.of(1, 2), strategy).get()
         assertThat(secondPage.size).isEqualTo(2)
         assert(secondPage.first().id == 3L)
         assert(secondPage.last().id == 4L)
@@ -965,7 +965,7 @@ class OfferSearchServiceTest {
         createOfferSearch(createdSearchRequest2, createdOffer2)
 
         val result = offerSearchService.getOffersAndOfferSearchesByParams(
-            strategy, publicKey, false, emptyList(), emptyList(), PageRequest(0, 4)
+            strategy, publicKey, false, emptyList(), emptyList(), PageRequest.of(0, 4)
         ).get().content
 
         assert(result.size == 4)
@@ -994,7 +994,7 @@ class OfferSearchServiceTest {
                 false,
                 emptyList(),
                 emptyList(),
-                PageRequest(0, 4, Sort("rank"))
+                PageRequest.of(0, 4, Sort.by("rank"))
             ).get().content
 
         assert(result.size == 4)
@@ -1032,7 +1032,7 @@ class OfferSearchServiceTest {
         createOfferSearch(createdSearchRequest2, savedOffer1)
 
         val result = offerSearchService.getOffersAndOfferSearchesByParams(
-            strategy, publicKey, false, emptyList(), emptyList(), PageRequest(0, 4, Sort("updatedAt"))
+            strategy, publicKey, false, emptyList(), emptyList(), PageRequest.of(0, 4, Sort.by("updatedAt"))
         ).get().content
 
         assert(result.size == 4)
@@ -1073,7 +1073,7 @@ class OfferSearchServiceTest {
                 false,
                 emptyList(),
                 emptyList(),
-                PageRequest(0, 4)
+                PageRequest.of(0, 4)
             ).get().content
 
         offerSearches.forEach {
@@ -1140,7 +1140,7 @@ class OfferSearchServiceTest {
                 false,
                 emptyList(),
                 emptyList(),
-                PageRequest(0, 4)
+                PageRequest.of(0, 4)
             ).get().content
 
         offerSearches.forEach {
@@ -1154,7 +1154,7 @@ class OfferSearchServiceTest {
                 false,
                 emptyList(),
                 arrayListOf(OfferAction.COMPLAIN),
-                PageRequest(0, 4, Sort("rank"))
+                PageRequest.of(0, 4, Sort.by("rank"))
             ).get().content
 
         assert(result.size == 4)
@@ -1203,7 +1203,7 @@ class OfferSearchServiceTest {
                 false,
                 emptyList(),
                 emptyList(),
-                PageRequest(0, 4)
+                PageRequest.of(0, 4)
             ).get().content
 
         offerSearches.forEach {
@@ -1217,7 +1217,7 @@ class OfferSearchServiceTest {
                 false,
                 emptyList(),
                 arrayListOf(OfferAction.COMPLAIN),
-                PageRequest(0, 4, Sort("rank")),
+                PageRequest.of(0, 4, Sort.by("rank")),
                 true
             ).get().content
 
@@ -1256,7 +1256,7 @@ class OfferSearchServiceTest {
                 false,
                 emptyList(),
                 emptyList(),
-                PageRequest(0, 4)
+                PageRequest.of(0, 4)
             ).get().content
 
         offerSearches.forEach {
@@ -1270,7 +1270,7 @@ class OfferSearchServiceTest {
                 false,
                 emptyList(),
                 arrayListOf(OfferAction.COMPLAIN),
-                PageRequest(0, 4, Sort("updatedAt"))
+                PageRequest.of(0, 4, Sort.by("updatedAt"))
             ).get().content
 
         assert(result.size == 4)
@@ -1311,7 +1311,7 @@ class OfferSearchServiceTest {
                 false,
                 arrayListOf(createdSearchRequest1.id),
                 emptyList(),
-                PageRequest(0, 4)
+                PageRequest.of(0, 4)
             ).get().content
 
         assert(result.size == 3)
@@ -1358,7 +1358,7 @@ class OfferSearchServiceTest {
                 false,
                 arrayListOf(createdSearchRequest1.id),
                 emptyList(),
-                PageRequest(0, 4, Sort("rank"))
+                PageRequest.of(0, 4, Sort.by("rank"))
             ).get().content
 
         assert(result.size == 3)
@@ -1399,7 +1399,7 @@ class OfferSearchServiceTest {
                 false,
                 arrayListOf(createdSearchRequest1.id),
                 emptyList(),
-                PageRequest(0, 4, Sort("updatedAt"))
+                PageRequest.of(0, 4, Sort.by("updatedAt"))
             ).get().content
 
         assert(result.size == 3)

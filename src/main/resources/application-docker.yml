@@ -12,14 +12,6 @@ spring:
     username: ${JDBC_DATABASE_USERNAME}
     password: ${JDBC_DATABASE_PASSWORD}
 
-flyway:
-  enabled: false
-  baseline-on-migrate: true
-  url: ${JDBC_DATABASE_URL}
-  user: ${JDBC_DATABASE_USERNAME}
-  password: ${JDBC_DATABASE_PASSWORD}
-  locations: db/migration
-
 rtsearch:
   url: ${RT_SEARCH_URL}
 

@@ -309,7 +309,7 @@ class OfferController(
         if (page == null || size == null) {
             return offerService.getPageableOffersByOwner(
                 owner,
-                PageRequest(0, 20), getStrategyType(strategy)
+                PageRequest.of(0, 20), getStrategyType(strategy)
             ).exceptionally { e ->
                 logger.error("Request: getPageableOffersByOwner/$page/$size raised $e")
                 throw e
@@ -318,7 +318,7 @@ class OfferController(
 
         return offerService.getPageableOffersByOwner(
             owner,
-            PageRequest(page, size),
+            PageRequest.of(page, size),
             getStrategyType(strategy)
         ).exceptionally { e ->
             logger.error("Request: getPageableOffersByOwner/$page/$size raised $e")

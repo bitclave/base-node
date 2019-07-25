@@ -3,6 +3,7 @@ package com.bitclave.node.repository.request
 import com.bitclave.node.repository.models.RequestData
 import com.bitclave.node.services.errors.DataNotSavedException
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
 
 @Component
@@ -23,7 +24,7 @@ class PostgresRequestDataRepositoryImpl(val repository: RequestDataCrudRepositor
     }
 
     override fun findById(id: Long): RequestData? {
-        return repository.findOne(id)
+        return repository.findByIdOrNull(id)
     }
 
     override fun updateData(request: RequestData): RequestData {
@@ -31,7 +32,7 @@ class PostgresRequestDataRepositoryImpl(val repository: RequestDataCrudRepositor
     }
 
     override fun deleteByFromAndTo(publicKey: String) {
-        repository.delete(repository.findByFromPk(publicKey))
-        repository.delete(repository.findByToPk(publicKey))
+        repository.deleteAll(repository.findByFromPk(publicKey))
+        repository.deleteAll(repository.findByToPk(publicKey))
     }
 }

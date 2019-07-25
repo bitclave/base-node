@@ -51,7 +51,7 @@ class ConsumersOfferSearchController(
         strategy: String?
     ): CompletableFuture<Slice<OfferSearch>> {
         return offerSearchService.getConsumersOfferSearches(
-            PageRequest(page, size, Sort(Sort.Order(Sort.Direction.ASC, "id"))), getStrategyType(strategy)
+            PageRequest.of(page, size, Sort.by(Sort.Order(Sort.Direction.ASC, "id"))), getStrategyType(strategy)
         ).exceptionally { e ->
             logger.error("Request: getConsumersOfferSearch/$page/$size raised $e")
             throw e
@@ -88,7 +88,7 @@ class ConsumersOfferSearchController(
         return offerSearchService
             .getConsumersOfferSearchesBySearchRequestIds(
                 ids,
-                PageRequest(page, size, Sort(Sort.Order(Sort.Direction.ASC, "id"))),
+                PageRequest.of(page, size, Sort.by(Sort.Order(Sort.Direction.ASC, "id"))),
                 getStrategyType(strategy)
             )
             .exceptionally { e ->

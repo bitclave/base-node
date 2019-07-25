@@ -20,7 +20,7 @@ class PostgresOfferInteractionRepositoryImpl(
     override fun save(state: OfferInteraction): OfferInteraction = repository.save(state)
 
     override fun save(states: List<OfferInteraction>): List<OfferInteraction> =
-        syncElementCollections(repository.save(states).toList())
+        syncElementCollections(repository.saveAll(states).toList())
 
     override fun findByOwner(owner: String): List<OfferInteraction> =
         syncElementCollections(repository.findByOwner(owner))
@@ -69,7 +69,7 @@ class PostgresOfferInteractionRepositoryImpl(
 
     private fun syncElementCollections(page: Page<OfferInteraction>): Page<OfferInteraction> {
         val result = syncElementCollections(page.content)
-        val pageable = PageRequest(page.number, page.size, page.sort)
+        val pageable = PageRequest.of(page.number, page.size, page.sort)
 
         return PageImpl(result, pageable, page.totalElements)
     }
