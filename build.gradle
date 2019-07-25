@@ -39,8 +39,8 @@ compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
 
-configurations {
-    jar.archiveName = 'base-node.jar'
+bootJar {
+    archiveFileName = "base-node.jar"
 }
 
 jacocoTestReport {
@@ -87,12 +87,12 @@ repositories {
 
 dependencies {
     compile 'org.web3j:core:3.3.1'
-    
+
     compile 'org.springframework.boot:spring-boot-configuration-processor'
 
     compile("org.springframework.boot:spring-boot-starter-web")
     compile("org.springframework.boot:spring-boot-starter-actuator")
-    
+
     compile 'io.github.microutils:kotlin-logging:1.6.24'
     compile 'com.internetitem:logback-elasticsearch-appender:1.6'
 
@@ -116,7 +116,7 @@ dependencies {
 
     // https://mvnrepository.com/artifact/com.appoptics.metrics/appoptics-api-java
     compile group: 'com.appoptics.metrics', name: 'appoptics-api-java', version: '1.0.5'
-    
+
     testCompile 'org.springframework.boot:spring-boot-starter-test'
     testCompile 'com.h2database:h2'
 }
