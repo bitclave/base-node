@@ -111,6 +111,9 @@ dependencies {
     compile 'org.postgresql:postgresql:42.2.5'
 
     compile 'javax.xml.bind:jaxb-api:2.3.0'
+
+    // https://mvnrepository.com/artifact/com.appoptics.metrics/appoptics-api-java
+    compile group: 'com.appoptics.metrics', name: 'appoptics-api-java', version: '1.0.5'
     
     testCompile 'org.springframework.boot:spring-boot-starter-test'
     testCompile 'com.h2database:h2'

@@ -1,5 +1,6 @@
 package com.bitclave.node.offer
 
+import com.bitclave.node.configuration.properties.AppOpticsProperties
 import com.bitclave.node.configuration.properties.HybridProperties
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.Web3Provider
@@ -93,6 +94,9 @@ class OfferServiceTest {
 
     @Autowired
     private lateinit var gson: Gson
+
+    @Autowired
+    private lateinit var appOpticsProperties: AppOpticsProperties
 
     @Autowired
     private lateinit var entityManager: EntityManager
@@ -203,7 +207,8 @@ class OfferServiceTest {
             querySearchRequestCrudRepository,
             rtSearchRepository,
             offerInteractionRepositoryStrategy,
-            gson
+            gson,
+            appOpticsProperties
         )
 
         offerService = OfferService(
