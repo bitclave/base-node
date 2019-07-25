@@ -64,4 +64,19 @@ interface SearchRequestCrudRepository : PagingAndSortingRepository<SearchRequest
         nativeQuery = true
     )
     fun deleteTagsByIdIn(ids: List<Long>): Int
+
+    @Query(
+        value = """
+            select sr.* from
+            ( select sr.owner, srt.tags_key, count(sr.id)
+            from search_request sr join search_request_tags srt on srt.search_request_id = sr.id
+            group by sr.owner, srt.tags_key
+            having count(sr.id) > 1) a,
+            search_request sr
+            join search_request_tags srt on srt.search_request_id = sr.id
+            where sr.owner = a.owner and srt.tags_key = a.tags_key
+        """,
+        nativeQuery = true
+    )
+    fun getSearchRequestWithSameTags(): List<SearchRequest>
 }

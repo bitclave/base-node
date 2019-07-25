@@ -264,4 +264,12 @@ class SearchRequestService(
             repository.changeStrategy(strategy).getRequestByOwnerAndTag(owner, tagKey)
         })
     }
+
+    fun getSearchRequestWithSameTags(
+        strategy: RepositoryStrategyType
+    ): CompletableFuture<List<SearchRequest>> {
+        return supplyAsyncEx(Supplier {
+            repository.changeStrategy(strategy).getSearchRequestWithSameTags()
+        })
+    }
 }

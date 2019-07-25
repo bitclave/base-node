@@ -458,13 +458,13 @@ class OfferSearchService(
         })
     }
 
-    fun getConsumersOfferSearchesByOwners(
-        owners: List<String>,
+    fun getConsumersOfferSearchesBySearchRequestIds(
+        ids: List<Long>,
         page: PageRequest,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Slice<OfferSearch>> {
         return supplyAsyncEx(Supplier {
-            offerSearchRepository.changeStrategy(strategy).findByOwnerInSlice(owners, page)
+            offerSearchRepository.changeStrategy(strategy).findBySearchRequestIdInSlice(ids, page)
         })
     }
 

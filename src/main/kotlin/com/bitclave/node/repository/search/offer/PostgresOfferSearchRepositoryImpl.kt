@@ -215,8 +215,8 @@ class PostgresOfferSearchRepositoryImpl(
 
     override fun findAllSlice(pageable: Pageable): Slice<OfferSearch> = repository.findAllBy(pageable)
 
-    override fun findByOwnerInSlice(owners: List<String>, pageable: Pageable): Slice<OfferSearch> =
-        repository.findByOwnerIn(owners, pageable)
+    override fun findBySearchRequestIdInSlice(ids: List<Long>, pageable: Pageable): Slice<OfferSearch> =
+        repository.findBySearchRequestIdIn(ids, pageable)
 
     override fun findAllDiff(): List<OfferSearch> {
         return repository.findAllDiff()
