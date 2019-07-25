@@ -6,4 +6,6 @@ data class SignedRequest<T>(
     val sig: String = "",
     val nonce: Long = 0,
     val rawData: String = ""
-)
+) {
+    fun hasSignature(): Boolean = this.sig.isNotBlank()
+}

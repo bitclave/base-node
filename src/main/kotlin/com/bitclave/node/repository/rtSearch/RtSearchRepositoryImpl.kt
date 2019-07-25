@@ -38,7 +38,7 @@ class RtSearchRepositoryImpl(
                     "size" to pageRequest.pageSize,
                     "mode" to mode
             )
-            val httpEntity = HttpEntity<Map<String, List<String>>>(filters)
+            val httpEntity = HttpEntity(filters!!)
             val offerIdsResponse = restTemplate.exchange(
                     "/v1/search/?q={query}&page={page}&size={size}&mode={mode}",
                     HttpMethod.POST, httpEntity,
