@@ -138,28 +138,38 @@ class OfferSearchController(
         @RequestHeader("Strategy", required = false)
         strategy: String?
     ): CompletableFuture<EnrichedOffersWithCountersResponse> {
+        val decodedQuery = URLDecoder.decode(query, "UTF-8")
 
-        return accountService.accountBySigMessage(request, getStrategyType(strategy))
-            .thenCompose { account: Account -> accountService.validateNonce(request, account) }
-            .thenCompose {
-                val decodedQuery = URLDecoder.decode(query, "UTF-8")
-                val result = offerSearchService.createOfferSearchesByQuery(
-                    request.data!!.searchRequestId,
-                    it.publicKey,
-                    decodedQuery,
-                    PageRequest.of(page, size),
-                    getStrategyType(strategy),
-                    request.data.filters,
-                    mode
-                ).get()
+        if (request.hasSignature()) {
+            return accountService.accountBySigMessage(request, getStrategyType(strategy))
+                .thenCompose { account: Account -> accountService.validateNonce(request, account) }
+                .thenCompose {
+                    val result = offerSearchService.createOfferSearchesByQuery(
+                        request.data!!.searchRequestId,
+                        it.publicKey,
+                        decodedQuery,
+                        PageRequest.of(page, size),
+                        getStrategyType(strategy),
+                        request.data.filters,
+                        mode
+                    ).get()
 
-                accountService.incrementNonce(it, getStrategyType(strategy)).get()
+                    accountService.incrementNonce(it, getStrategyType(strategy)).get()
 
-                CompletableFuture.completedFuture(result)
-            }.exceptionally { e ->
-                logger.error("Request: createOfferSearchesByQuery -> request: $request; error:$e")
-                throw e
-            }
+                    CompletableFuture.completedFuture(result)
+                }.exceptionally { e ->
+                    logger.error("Request: createOfferSearchesByQuery -> request: $request; error:$e")
+                    throw e
+                }
+        } else {
+            return offerSearchService.getOfferSearchesByQuery(
+                decodedQuery,
+                PageRequest.of(page, size),
+                getStrategyType(strategy),
+                request.data!!.filters,
+                mode
+            )
+        }
     }
 
     /**

@@ -61,6 +61,8 @@ class OfferSearchService(
     private val gson: Gson
 ) {
 
+    private val defaultUnsignedOwner = "0fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"
+
     private val logger = KotlinLogging.logger {}
 
     fun getOffersResult(
@@ -784,6 +786,56 @@ class OfferSearchService(
             }
             logger.debug { "step 8 -> findBySearchRequestIdAndOfferIds(). ms: $step8" }
 
+            val data = EnrichedOffersWithCountersResponse(result, counters)
+            data
+        })
+    }
+
+    fun getOfferSearchesByQuery(
+        query: String,
+        pageRequest: PageRequest,
+        strategyType: RepositoryStrategyType,
+        filters: Map<String, List<String>>? = mapOf(),
+        mode: String? = ""
+    ): CompletableFuture<EnrichedOffersWithCountersResponse> {
+        return supplyAsyncEx(Supplier {
+            val offerIds: Page<Long>
+            val counters: Map<String, Map<String, Int>>
+
+            try {
+                val searchedData = rtSearchRepository.getOffersIdByQuery(query, pageRequest, filters, mode).get()
+                offerIds = searchedData.getPageableOfferIds()
+                counters = searchedData.counters
+            } catch (e: Throwable) {
+                logger.error("rt-search error: $e")
+
+                if (e.cause is HttpServerErrorException &&
+                    (e.cause as HttpServerErrorException).rawStatusCode > 499
+                ) {
+                    val pageable = PageRequest.of(0, 1)
+                    return@Supplier EnrichedOffersWithCountersResponse(
+                        PageImpl(emptyList<OfferSearchResultItem>(), pageable, 0),
+                        emptyMap()
+                    )
+                } else {
+                    throw e
+                }
+            }
+
+            val offers = offerRepository
+                .changeStrategy(strategyType)
+                .findByIds(offerIds.content.distinct())
+
+            val resultItems = offers.map {
+                OfferSearchResultItem(
+                    OfferSearch(0, defaultUnsignedOwner, it.id),
+                    it,
+                    OfferInteraction(0, defaultUnsignedOwner, it.id)
+                )
+            }
+
+            val pageable = PageRequest.of(offerIds.number, offerIds.size, offerIds.sort)
+            val result = PageImpl(resultItems, pageable, offerIds.totalElements)
             val data = EnrichedOffersWithCountersResponse(result, counters)
             data
         })
