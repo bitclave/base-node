@@ -10,14 +10,6 @@ spring:
     username: postgres
     password: bitclave
 
-flyway:
-  enabled: false
-  baseline-on-migrate: true
-  url: jdbc:postgresql://localhost:5432/postgres
-  user: postgres
-  password: bitclave
-  locations: db/migration
-
 server:
   port: 8080
 

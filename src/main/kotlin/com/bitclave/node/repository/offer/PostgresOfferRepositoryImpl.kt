@@ -12,6 +12,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
 import java.math.BigInteger
 import java.util.HashMap
@@ -36,7 +37,7 @@ class PostgresOfferRepositoryImpl(
         if (count > 0) {
             val relatedOfferSearches = offerSearchRepository.findByOfferId(id)
 
-            offerSearchRepository.delete(relatedOfferSearches)
+            offerSearchRepository.deleteAll(relatedOfferSearches)
 
             return id
         }
@@ -59,7 +60,7 @@ class PostgresOfferRepositoryImpl(
     }
 
     override fun findById(id: Long): Offer? {
-        return syncElementCollections(repository.findById(id))
+        return syncElementCollections(repository.findByIdOrNull(id))
     }
 
     override fun findByIds(ids: List<Long>, pageable: Pageable): Page<Offer> {
@@ -67,7 +68,7 @@ class PostgresOfferRepositoryImpl(
     }
 
     override fun findByIds(ids: List<Long>): List<Offer> {
-        return syncElementCollections(repository.findAll(ids).toList())
+        return syncElementCollections(repository.findAllById(ids).toList())
     }
 
     override fun findByIdAndOwner(id: Long, owner: String): Offer? {
@@ -121,7 +122,7 @@ class PostgresOfferRepositoryImpl(
 
     private fun syncElementCollections(page: Page<Offer>): Page<Offer> {
         val result = syncElementCollections(page.content)
-        val pageable = PageRequest(page.number, page.size, page.sort)
+        val pageable = PageRequest.of(page.number, page.size, page.sort)
 
         return PageImpl(result, pageable, page.totalElements)
     }
@@ -133,7 +134,7 @@ class PostgresOfferRepositoryImpl(
         syncPrices: Boolean = true
     ): Slice<Offer> {
         val result = syncElementCollections(slice.content, syncCompare, syncRules, syncPrices)
-        val pageable = PageRequest(slice.number, slice.size, slice.sort)
+        val pageable = PageRequest.of(slice.number, slice.size, slice.sort)
 
         return SliceImpl(result, pageable, slice.hasNext())
     }

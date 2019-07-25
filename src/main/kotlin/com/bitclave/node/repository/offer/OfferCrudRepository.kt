@@ -30,8 +30,6 @@ interface OfferCrudRepository : PagingAndSortingRepository<Offer, Long> {
 
     fun findByIdAndOwner(id: Long, owner: String): Offer?
 
-    fun findById(id: Long): Offer?
-
     @Query("FROM Offer o JOIN  o.tags t WHERE o.owner = :owner and KEY(t) = :tagKey")
     fun getOfferByOwnerAndTag(@Param("owner") owner: String, @Param("tagKey") tagKey: String): List<Offer>
 

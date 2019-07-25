@@ -48,8 +48,8 @@ class FileService(private val fileRepository: RepositoryStrategy<FileRepository>
             val file = UploadedFile(
                 id,
                 publicKey,
-                data.originalFilename,
-                data.contentType,
+                data.originalFilename ?: "undefined",
+                data.contentType ?: "undefined",
                 data.size,
                 data.bytes,
                 createdAt,

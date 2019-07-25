@@ -53,7 +53,7 @@ class ConsumersAccountController(
     ): CompletableFuture<Slice<Account>> {
 
         return accountService.getSliceAccounts(
-            PageRequest(page, size, Sort(Sort.Order(Sort.Direction.ASC, "publicKey"))),
+            PageRequest.of(page, size, Sort.by(Sort.Order(Sort.Direction.ASC, "publicKey"))),
             getStrategyType(strategy)
         )
             .exceptionally { e ->

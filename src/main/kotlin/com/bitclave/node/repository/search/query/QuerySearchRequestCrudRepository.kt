@@ -11,5 +11,5 @@ interface QuerySearchRequestCrudRepository : CrudRepository<QuerySearchRequest, 
 
     fun findAllByOwner(owner: String): List<QuerySearchRequest>
 
-    fun deleteAllByOwner(owner: String): List<Long>
+    fun deleteAllByOwner(owner: String): Long
 }

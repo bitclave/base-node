@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.Sort
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
 import kotlin.system.measureTimeMillis
 
@@ -33,16 +34,16 @@ class PostgresOfferSearchRepositoryImpl(
     override fun deleteAllByOfferId(id: Long): Int = repository.deleteAllByOfferId(id)
 
     override fun save(list: List<OfferSearch>): List<OfferSearch> =
-        repository.save(list).toList()
+        repository.saveAll(list).toList()
 
     override fun save(item: OfferSearch): OfferSearch = repository.save(item)
 
     override fun findById(id: Long): OfferSearch? {
-        return repository.findOne(id)
+        return repository.findByIdOrNull(id)
     }
 
     override fun findById(ids: List<Long>): List<OfferSearch> {
-        return repository.findAll(ids)
+        return repository.findAllById(ids)
             .toList()
     }
 
@@ -75,13 +76,13 @@ class PostgresOfferSearchRepositoryImpl(
 
     override fun findByOwner(owner: String, sort: Sort?): List<OfferSearch> {
         return when (sort) {
-            Sort(Sort.Direction.ASC, "rank") ->
+            Sort.by(Sort.Direction.ASC, "rank") ->
                 repository.getOfferSearchByOwnerAndSortByRank(owner)
-            Sort(Sort.Direction.ASC, "updatedAt") ->
+            Sort.by(Sort.Direction.ASC, "updatedAt") ->
                 repository.getOfferSearchByOwnerAndSortByUpdatedAt(owner)
-            Sort(Sort.Direction.ASC, "price") ->
+            Sort.by(Sort.Direction.ASC, "price") ->
                 repository.getOfferSearchByOwnerAndSortByOfferPriceWorth(owner)
-            Sort(Sort.Direction.ASC, "cashback") ->
+            Sort.by(Sort.Direction.ASC, "cashback") ->
                 repository.getOfferSearchByOwnersAndSortByCashBack(owner)
             else ->
                 repository.findByOwner(owner)
@@ -95,13 +96,13 @@ class PostgresOfferSearchRepositoryImpl(
     ): List<OfferSearch> {
         val condition = state.map { it.ordinal.toLong() }
         return when (sort) {
-            Sort(Sort.Direction.ASC, "rank") ->
+            Sort.by(Sort.Direction.ASC, "rank") ->
                 repository.getOfferSearchByOwnerAndStateSortByRank(owner, condition)
-            Sort(Sort.Direction.ASC, "updatedAt") ->
+            Sort.by(Sort.Direction.ASC, "updatedAt") ->
                 repository.getOfferSearchByOwnerAndStateSortByUpdatedAt(owner, condition)
-            Sort(Sort.Direction.ASC, "price") ->
+            Sort.by(Sort.Direction.ASC, "price") ->
                 repository.getOfferSearchByOwnerAndStateAndSortByOfferPriceWorth(owner, condition)
-            Sort(Sort.Direction.ASC, "cashback") ->
+            Sort.by(Sort.Direction.ASC, "cashback") ->
                 repository.getOfferSearchByOwnerAndStateAndSortByCashBack(owner, condition)
             else ->
                 repository.findAllByOwnerAndStateIn(owner, condition)
@@ -116,28 +117,28 @@ class PostgresOfferSearchRepositoryImpl(
         var result = listOf<OfferSearch>()
 
         when (sort) {
-            Sort(Sort.Direction.ASC, "rank") -> {
+            Sort.by(Sort.Direction.ASC, "rank") -> {
                 val timeMs = measureTimeMillis {
                     result = repository.getOfferSearchByOwnerAndSearchRequestIdInSortByRank(owner, searchRequestIds)
                 }
                 logger.debug { " findAllByOwnerAndSearchRequestIdIn, sort ByRank ms: $timeMs, size: ${result.size}" }
             }
 
-            Sort(Sort.Direction.ASC, "updatedAt") -> {
+            Sort.by(Sort.Direction.ASC, "updatedAt") -> {
                 val timeMs = measureTimeMillis {
                     result = repository
                         .getOfferSearchByOwnerAndSearchRequestIdInSortByUpdatedAt(owner, searchRequestIds)
                 }
                 logger.debug { " findAllByOwnerAndSearchRequestIdIn, sort by UpdateAt ms: $timeMs" }
             }
-            Sort(Sort.Direction.ASC, "price") -> {
+            Sort.by(Sort.Direction.ASC, "price") -> {
                 val timeMs = measureTimeMillis {
                     result = repository
                         .getOfferSearchByOwnerAndSearchRequestIdInAndSortByOfferPriceWorth(owner, searchRequestIds)
                 }
                 logger.debug { " findAllByOwnerAndSearchRequestIdIn, sort by cashback ms: $timeMs" }
             }
-            Sort(Sort.Direction.ASC, "cashback") -> {
+            Sort.by(Sort.Direction.ASC, "cashback") -> {
                 result = repository.getOfferSearchByOwnerAndSearchRequestIdInAndSortByCashback(owner, searchRequestIds)
             }
 
@@ -159,25 +160,25 @@ class PostgresOfferSearchRepositoryImpl(
     ): List<OfferSearch> {
         val conditions = state.map { it.ordinal.toLong() }
         return when (sort) {
-            Sort(Sort.Direction.ASC, "rank") ->
+            Sort.by(Sort.Direction.ASC, "rank") ->
                 repository.getOfferSearchByOwnerAndSearchRequestIdInAndStateSortByRank(
                     owner,
                     searchRequestIds,
                     conditions
                 )
-            Sort(Sort.Direction.ASC, "updatedAt") ->
+            Sort.by(Sort.Direction.ASC, "updatedAt") ->
                 repository.getOfferSearchByOwnerAndSearchRequestIdInAndStateSortByUpdatedAt(
                     owner,
                     searchRequestIds,
                     conditions
                 )
-            Sort(Sort.Direction.ASC, "price") ->
+            Sort.by(Sort.Direction.ASC, "price") ->
                 repository.getOfferSearchByOwnerAndSearchRequestIdInAndStateSortByOfferPriceWorth(
                     owner,
                     searchRequestIds,
                     conditions
                 )
-            Sort(Sort.Direction.ASC, "cashback") ->
+            Sort.by(Sort.Direction.ASC, "cashback") ->
                 repository.getOfferSearchByOwnerAndSearchRequestIdAndStateSortByCashback(
                     owner,
                     searchRequestIds,

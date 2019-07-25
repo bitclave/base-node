@@ -18,8 +18,6 @@ interface SearchRequestCrudRepository : PagingAndSortingRepository<SearchRequest
 
     fun findByOwnerIn(owners: List<String>, pageable: Pageable): Slice<SearchRequest>
 
-    fun findById(id: Long): List<SearchRequest>
-
     fun findByOwner(owner: String): List<SearchRequest>
 
     fun deleteByIdAndOwner(id: Long, owner: String): Long

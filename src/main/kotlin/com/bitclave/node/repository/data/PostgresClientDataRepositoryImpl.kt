@@ -3,6 +3,7 @@ package com.bitclave.node.repository.data
 import com.bitclave.node.repository.models.ClientData
 import com.bitclave.node.services.errors.DataNotSavedException
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
 
 @Component
@@ -16,7 +17,7 @@ class PostgresClientDataRepositoryImpl(
     }
 
     override fun getData(publicKey: String): Map<String, String> {
-        return repository.findOne(publicKey)?.data ?: emptyMap()
+        return repository.findByIdOrNull(publicKey)?.data ?: emptyMap()
     }
 
     override fun updateData(publicKey: String, data: Map<String, String>) {

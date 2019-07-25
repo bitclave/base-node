@@ -147,7 +147,7 @@ class OfferSearchController(
                     request.data!!.searchRequestId,
                     it.publicKey,
                     decodedQuery,
-                    PageRequest(page, size),
+                    PageRequest.of(page, size),
                     getStrategyType(strategy),
                     request.data.filters,
                     mode
@@ -204,7 +204,7 @@ class OfferSearchController(
             getStrategyType(strategy),
             searchRequestId,
             offerSearchId,
-            PageRequest(page, size)
+            PageRequest.of(page, size)
         ).exceptionally { e ->
             logger.error("Request: getResult /$searchRequestId/$offerSearchId raised $e")
             throw e
@@ -271,7 +271,7 @@ class OfferSearchController(
             unique,
             searchIds,
             state,
-            PageRequest(page, size, Sort(sort)),
+            PageRequest.of(page, size, Sort.by(sort)),
             interaction
         ).exceptionally { e ->
             logger.error("Request: getResultByOwner/$owner raised $e")
