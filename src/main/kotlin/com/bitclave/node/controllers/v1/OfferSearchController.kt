@@ -142,9 +142,8 @@ class OfferSearchController(
 
         if (request.hasSignature()) {
             return accountService.accountBySigMessage(request, getStrategyType(strategy))
-                .thenCompose { account: Account -> accountService.validateNonce(request, account) }
                 .thenCompose {
-                    val result = offerSearchService.createOfferSearchesByQuery(
+                    offerSearchService.createOfferSearchesByQuery(
                         request.data!!.searchRequestId,
                         it.publicKey,
                         decodedQuery,
@@ -152,11 +151,7 @@ class OfferSearchController(
                         getStrategyType(strategy),
                         request.data.filters,
                         mode
-                    ).get()
-
-                    accountService.incrementNonce(it, getStrategyType(strategy)).get()
-
-                    CompletableFuture.completedFuture(result)
+                    )
                 }.exceptionally { e ->
                     logger.error("Request: createOfferSearchesByQuery -> request: $request; error:$e")
                     throw e
