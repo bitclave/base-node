@@ -204,9 +204,9 @@ class OfferSearchService(
                     (step1 + step2 + step3 + step4 + step5).toDouble(),
                     Tag("owner", owner))))
 
-            for (result: PostResult in result.results) {
-                if (result.isError) {
-                    logger.debug(result.toString())
+            for (postResult: PostResult in result.results) {
+                if (postResult.isError) {
+                    logger.debug(postResult.toString())
                 }
             }
 

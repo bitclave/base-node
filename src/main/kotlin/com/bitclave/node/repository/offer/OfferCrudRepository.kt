@@ -54,14 +54,8 @@ interface OfferCrudRepository : PagingAndSortingRepository<Offer, Long> {
             select * from offer o
             where not exists
             (select 1 from offer_tags ot where o.id = ot.offer_id and ot.tags_key = 'product' and ot.tags = 'true')
-            order by ?#{#pageable}
-        """,
-        countQuery = """
-            select count(0) from offer o
-            where not exists
-            (select 1 from offer_tags ot where o.id = ot.offer_id and ot.tags_key = 'product' and ot.tags = 'true')
         """,
         nativeQuery = true
     )
-    fun getAllOffersExceptProductsSlice(@Param("pageable") pageable: Pageable): Slice<Offer>
+    fun getAllOffersExceptProductsSlice(pageable: Pageable): Slice<Offer>
 }
