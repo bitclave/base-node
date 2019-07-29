@@ -57,4 +57,6 @@ interface OfferCrudRepository : PagingAndSortingRepository<Offer, Long> {
         nativeQuery = true
     )
     fun getAllOffersExceptProductsSlice(pageable: Pageable): Slice<Offer>
+
+    fun getAllOffersBy(pageable: Pageable): Slice<Offer>
 }

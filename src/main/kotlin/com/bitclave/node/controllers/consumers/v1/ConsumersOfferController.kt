@@ -56,6 +56,10 @@ class ConsumersOfferController(
         @RequestParam("fields", defaultValue = "", required = false)
         fields: Set<OfferFields>,
 
+        @ApiParam("Optional except by type of offers")
+        @RequestParam("except", required = false)
+        exceptType: Offer.OfferType?,
+
         @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
         @RequestHeader("Strategy", required = false)
         strategy: String?
@@ -66,7 +70,8 @@ class ConsumersOfferController(
             fields.contains(OfferFields.COMPARE),
             fields.contains(OfferFields.RULE),
             fields.contains(OfferFields.PRICE),
-            getStrategyType(strategy)
+            getStrategyType(strategy),
+            exceptType
         ).exceptionally { e ->
             logger.error("Request: getConsumersOffers/$page/$size raised $e")
             throw e
