@@ -102,14 +102,20 @@ class PostgresOfferRepositoryImpl(
         return syncElementCollections(repository.getAllOffersExceptProducts(pageable))
     }
 
-    override fun getAllOffersExceptProductsSlice(
+    override fun getAllOffersSlice(
         pageable: Pageable,
         syncCompare: Boolean,
         syncRules: Boolean,
-        syncPrices: Boolean
+        syncPrices: Boolean,
+        exceptType: Offer.OfferType?
     ): Slice<Offer> {
+        val slice = when (exceptType) {
+            Offer.OfferType.PRODUCT -> repository.getAllOffersExceptProductsSlice(pageable)
+            else -> repository.getAllOffersBy(pageable)
+        }
+
         return syncElementCollections(
-            repository.getAllOffersExceptProductsSlice(pageable),
+            slice,
             syncCompare,
             syncRules,
             syncPrices

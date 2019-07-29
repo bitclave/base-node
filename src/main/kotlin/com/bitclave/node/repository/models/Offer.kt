@@ -45,6 +45,10 @@ data class Offer(
     val updatedAt: Date = Date()
 ) {
 
+    enum class OfferType {
+        PRODUCT,
+    }
+
     enum class CompareAction(
         val value: String
     ) {
