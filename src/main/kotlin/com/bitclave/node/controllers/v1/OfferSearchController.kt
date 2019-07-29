@@ -129,10 +129,10 @@ class OfferSearchController(
 
         @ApiParam(
             "where client already existed search request id (who has rtSearch tag)" +
-                " and signature of the message.", required = true
+                " and signature of the message.", required = false
         )
         @RequestBody
-        request: SignedRequest<OfferSearchByQueryParameters>,
+        request: SignedRequest<OfferSearchByQueryParameters>?,
 
         @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
         @RequestHeader("Strategy", required = false)
@@ -140,7 +140,7 @@ class OfferSearchController(
     ): CompletableFuture<EnrichedOffersWithCountersResponse> {
         val decodedQuery = URLDecoder.decode(query, "UTF-8")
 
-        if (request.hasSignature()) {
+        if (request?.hasSignature() == true) {
             return accountService.accountBySigMessage(request, getStrategyType(strategy))
                 .thenCompose {
                     offerSearchService.createOfferSearchesByQuery(
@@ -161,7 +161,7 @@ class OfferSearchController(
                 decodedQuery,
                 PageRequest.of(page, size),
                 getStrategyType(strategy),
-                request.data!!.filters,
+                request?.data?.filters ?: emptyMap(),
                 mode
             )
         }
