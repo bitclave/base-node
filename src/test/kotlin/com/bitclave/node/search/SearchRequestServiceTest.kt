@@ -175,7 +175,8 @@ class SearchRequestServiceTest {
         searchRequestService = SearchRequestService(
             requestRepositoryStrategy,
             querySearchRequestCrudRepository,
-            offerSearchService
+            offerSearchService,
+            appOpticsProperties
         )
 
         strategy = RepositoryStrategyType.POSTGRES

@@ -238,7 +238,8 @@ class OfferSearchServiceTest {
         searchRequestService = SearchRequestService(
             searchRequestRepositoryStrategy,
             querySearchRequestCrudRepository,
-            offerSearchService
+            offerSearchService,
+            appOpticsProperties
         )
 
         strategy = RepositoryStrategyType.POSTGRES
