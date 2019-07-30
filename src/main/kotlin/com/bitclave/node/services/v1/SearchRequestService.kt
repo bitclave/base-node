@@ -1,5 +1,7 @@
 package com.bitclave.node.services.v1
 
+import com.appoptics.metrics.client.Tag
+import com.bitclave.node.configuration.properties.AppOpticsProperties
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.models.SearchRequest
@@ -8,6 +10,7 @@ import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepositor
 import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
+import com.bitclave.node.utils.AppOpticsUtil
 import com.bitclave.node.utils.runAsyncEx
 import com.bitclave.node.utils.supplyAsyncEx
 import mu.KotlinLogging
@@ -26,10 +29,13 @@ import kotlin.system.measureTimeMillis
 class SearchRequestService(
     private val repository: RepositoryStrategy<SearchRequestRepository>,
     private val querySearchRequestCrudRepository: QuerySearchRequestCrudRepository,
-    private val offerSearchService: OfferSearchService
+    private val offerSearchService: OfferSearchService,
+    appOpticsProperties: AppOpticsProperties
 ) {
 
     private val logger = KotlinLogging.logger {}
+
+    private val appOpticsUtil = AppOpticsUtil(appOpticsProperties)
 
     fun putSearchRequest(
         id: Long,
@@ -177,6 +183,11 @@ class SearchRequestService(
                     .findById(searchRequestIds)
             }
             logger.debug { "clone search request step1: $step1" }
+            appOpticsUtil.sendToAppOptics(
+                "com.bitclave.node.services.v1.cloneSearchRequestWithOfferSearches.step1",
+                (step1).toDouble(),
+                Tag("owner", owner)
+            )
 
             var preparedRequests = emptyList<SearchRequest>()
 
@@ -190,6 +201,11 @@ class SearchRequestService(
                 preparedRequests = existingRequest.map { SearchRequest(0, owner, it.tags.toMap()) }
             }
             logger.debug { "clone search request step2: $step2" }
+            appOpticsUtil.sendToAppOptics(
+                "com.bitclave.node.services.v1.cloneSearchRequestWithOfferSearches.step2",
+                (step2).toDouble(),
+                Tag("owner", owner)
+            )
 
             var createSearchRequests = emptyList<SearchRequest>()
 
@@ -200,6 +216,12 @@ class SearchRequestService(
             }
 
             logger.debug { "clone search request step3: $step3" }
+            appOpticsUtil.sendToAppOptics(
+                "com.bitclave.node.services.v1.cloneSearchRequestWithOfferSearches.step3",
+                (step3).toDouble(),
+                Tag("owner", owner)
+            )
+
             val step4 = measureTimeMillis {
                 try {
                     offerSearchService.cloneOfferSearchOfSearchRequest(
@@ -215,6 +237,16 @@ class SearchRequestService(
                 }
             }
             logger.debug { "clone search request step4 (full clone offer search): $step4" }
+            appOpticsUtil.sendToAppOptics(
+                "com.bitclave.node.services.v1.cloneSearchRequestWithOfferSearches.step4",
+                (step4).toDouble(),
+                Tag("owner", owner)
+            )
+            appOpticsUtil.sendToAppOptics(
+                "com.bitclave.node.services.v1.cloneSearchRequestWithOfferSearches.total",
+                (step1 + step2 + step3 + step4).toDouble(),
+                Tag("owner", owner)
+            )
             createSearchRequests
         })
     }
