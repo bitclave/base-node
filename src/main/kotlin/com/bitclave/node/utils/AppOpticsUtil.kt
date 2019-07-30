@@ -28,7 +28,7 @@ class AppOpticsUtil(
     fun sendToAppOptics(
         name: String,
         value: Double,
-        vararg  tags: Tag
+        vararg tags: Tag
     ) {
         val result: PostMeasuresResult = client.postMeasures(
             Measures().add(
