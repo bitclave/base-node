@@ -3,6 +3,7 @@ package com.bitclave.node.repository.share
 import com.bitclave.node.repository.models.OfferShareData
 import com.bitclave.node.services.errors.DataNotSavedException
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
 
 @Component
@@ -16,7 +17,7 @@ class PostgresOfferShareRepositoryImpl(
     }
 
     override fun findByOfferSearchId(id: Long): OfferShareData? {
-        return repository.findOne(id)
+        return repository.findByIdOrNull(id)
     }
 
     override fun findByOfferOwnerAndAccepted(offerOwner: String, accepted: Boolean): List<OfferShareData> {

@@ -10,6 +10,4 @@ import javax.transaction.Transactional
 interface OfferPriceRulesCrudRepository : CrudRepository<OfferPriceRules, Long> {
 
     fun findByOfferPriceId(offerPriceId: Long): List<OfferPriceRules>
-
-    fun findById(id: Long): OfferPriceRules?
 }

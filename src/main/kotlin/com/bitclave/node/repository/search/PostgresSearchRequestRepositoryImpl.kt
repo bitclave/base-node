@@ -10,6 +10,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
 import java.math.BigInteger
 import java.util.HashMap
@@ -26,7 +27,7 @@ class PostgresSearchRequestRepositoryImpl(
     override fun save(request: SearchRequest): SearchRequest =
         syncElementCollections(repository.save(request)) ?: throw DataNotSavedException()
 
-    override fun save(request: List<SearchRequest>): List<SearchRequest> = repository.save(request).toList()
+    override fun save(request: List<SearchRequest>): List<SearchRequest> = repository.saveAll(request).toList()
 
     override fun deleteByIdAndOwner(id: Long, owner: String): Long = repository.deleteByIdAndOwner(id, owner)
 
@@ -42,11 +43,11 @@ class PostgresSearchRequestRepositoryImpl(
     }
 
     override fun findById(id: Long): SearchRequest? {
-        return syncElementCollections(repository.findOne(id))
+        return syncElementCollections(repository.findByIdOrNull(id))
     }
 
     override fun findById(ids: List<Long>): List<SearchRequest> {
-        return syncElementCollections(repository.findAll(ids).toList())
+        return syncElementCollections(repository.findAllById(ids).toList())
     }
 
     override fun findByOwner(owner: String): List<SearchRequest> {
@@ -86,7 +87,7 @@ class PostgresSearchRequestRepositoryImpl(
 
     private fun deleteRelevantOfferSearches(searchRequestId: Long) {
         val relatedOfferSearches = offerSearchRepository.findBySearchRequestId(searchRequestId)
-        offerSearchRepository.delete(relatedOfferSearches)
+        offerSearchRepository.deleteAll(relatedOfferSearches)
     }
 
     private fun syncElementCollections(searchRequest: SearchRequest?): SearchRequest? {
@@ -95,14 +96,14 @@ class PostgresSearchRequestRepositoryImpl(
 
     private fun syncElementCollections(page: Page<SearchRequest>): Page<SearchRequest> {
         val result = syncElementCollections(page.content)
-        val pageable = PageRequest(page.number, page.size, page.sort)
+        val pageable = PageRequest.of(page.number, page.size, page.sort)
 
         return PageImpl(result, pageable, page.totalElements)
     }
 
     private fun syncElementCollections(slice: Slice<SearchRequest>): Slice<SearchRequest> {
         val result = syncElementCollections(slice.content)
-        val pageable = PageRequest(slice.number, slice.size, slice.sort)
+        val pageable = PageRequest.of(slice.number, slice.size, slice.sort)
 
         return SliceImpl(result, pageable, slice.hasNext())
     }

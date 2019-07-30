@@ -9,7 +9,5 @@ import javax.transaction.Transactional
 @Transactional
 interface OfferPriceCrudRepository : CrudRepository<OfferPrice, Long> {
 
-    fun findById(id: Long): OfferPrice?
-
     fun findByOfferId(id: Long): List<OfferPrice>
 }

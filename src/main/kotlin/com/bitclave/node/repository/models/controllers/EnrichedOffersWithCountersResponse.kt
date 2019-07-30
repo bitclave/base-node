@@ -17,7 +17,7 @@ class EnrichedOffersWithCountersResponse(offers: Page<OfferSearchResultItem>, co
     var size = 0
     var totalPages: Long = 0
     var totalElements: Long = 0
-    var pageable = PageRequest(0, 10)
+    var pageable = PageRequest.of(0, 10)
 
     init {
         this.counters = counters
@@ -33,6 +33,6 @@ class EnrichedOffersWithCountersResponse(offers: Page<OfferSearchResultItem>, co
         this.number = offers.number
         this.size = offers.size
 
-        this.pageable = PageRequest(this.number, this.size)
+        this.pageable = PageRequest.of(this.number, this.size)
     }
 }

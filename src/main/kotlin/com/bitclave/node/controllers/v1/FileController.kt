@@ -9,7 +9,6 @@ import com.bitclave.node.services.errors.NotFoundException
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.FileService
 import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
@@ -36,7 +35,8 @@ private val logger = KotlinLogging.logger {}
 @RequestMapping("/v1/file/{owner}")
 class FileController(
     @Qualifier("v1") private val accountService: AccountService,
-    @Qualifier("v1") private val fileService: FileService
+    @Qualifier("v1") private val fileService: FileService,
+    private val gson: Gson
 ) : AbstractController() {
 
     /**
@@ -89,11 +89,7 @@ class FileController(
         strategy: String?
     ): CompletableFuture<ResponseEntity<UploadedFile>> {
 
-        class Token : TypeToken<SignedRequest<String>>()
-
-        val signRaw: SignedRequest<String> = Gson().fromJson(signature, Token().type)
-        val rawData = Gson().toJson(signRaw.data)
-        val sign: SignedRequest<String> = signRaw.copy(rawData = rawData)
+        val sign = SignedRequest.valueOf<String>(gson, signature)
 
         return accountService
             .accountBySigMessage(sign, getStrategyType(strategy))

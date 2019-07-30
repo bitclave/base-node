@@ -214,11 +214,12 @@ class OfferService(
         syncCompare: Boolean = true,
         syncRules: Boolean = true,
         syncPrices: Boolean = true,
-        strategy: RepositoryStrategyType
+        strategy: RepositoryStrategyType,
+        exceptType: Offer.OfferType?
     ): CompletableFuture<Slice<Offer>> {
         return supplyAsyncEx(Supplier {
             offerRepository.changeStrategy(strategy)
-                .getAllOffersExceptProductsSlice(page, syncCompare, syncRules, syncPrices)
+                .getAllOffersSlice(page, syncCompare, syncRules, syncPrices, exceptType)
         })
     }
 

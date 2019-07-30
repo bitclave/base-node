@@ -129,37 +129,42 @@ class OfferSearchController(
 
         @ApiParam(
             "where client already existed search request id (who has rtSearch tag)" +
-                " and signature of the message.", required = true
+                " and signature of the message.", required = false
         )
         @RequestBody
-        request: SignedRequest<OfferSearchByQueryParameters>,
+        request: SignedRequest<OfferSearchByQueryParameters>?,
 
         @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
         @RequestHeader("Strategy", required = false)
         strategy: String?
     ): CompletableFuture<EnrichedOffersWithCountersResponse> {
+        val decodedQuery = URLDecoder.decode(query, "UTF-8")
 
-        return accountService.accountBySigMessage(request, getStrategyType(strategy))
-            .thenCompose { account: Account -> accountService.validateNonce(request, account) }
-            .thenCompose {
-                val decodedQuery = URLDecoder.decode(query, "UTF-8")
-                val result = offerSearchService.createOfferSearchesByQuery(
-                    request.data!!.searchRequestId,
-                    it.publicKey,
-                    decodedQuery,
-                    PageRequest(page, size),
-                    getStrategyType(strategy),
-                    request.data.filters,
-                    mode
-                ).get()
-
-                accountService.incrementNonce(it, getStrategyType(strategy)).get()
-
-                CompletableFuture.completedFuture(result)
-            }.exceptionally { e ->
-                logger.error("Request: createOfferSearchesByQuery -> request: $request; error:$e")
-                throw e
-            }
+        if (request?.hasSignature() == true) {
+            return accountService.accountBySigMessage(request, getStrategyType(strategy))
+                .thenCompose {
+                    offerSearchService.createOfferSearchesByQuery(
+                        request.data!!.searchRequestId,
+                        it.publicKey,
+                        decodedQuery,
+                        PageRequest.of(page, size),
+                        getStrategyType(strategy),
+                        request.data.filters,
+                        mode
+                    )
+                }.exceptionally { e ->
+                    logger.error("Request: createOfferSearchesByQuery -> request: $request; error:$e")
+                    throw e
+                }
+        } else {
+            return offerSearchService.getOfferSearchesByQuery(
+                decodedQuery,
+                PageRequest.of(page, size),
+                getStrategyType(strategy),
+                request?.data?.filters ?: emptyMap(),
+                mode
+            )
+        }
     }
 
     /**
@@ -204,7 +209,7 @@ class OfferSearchController(
             getStrategyType(strategy),
             searchRequestId,
             offerSearchId,
-            PageRequest(page, size)
+            PageRequest.of(page, size)
         ).exceptionally { e ->
             logger.error("Request: getResult /$searchRequestId/$offerSearchId raised $e")
             throw e
@@ -271,7 +276,7 @@ class OfferSearchController(
             unique,
             searchIds,
             state,
-            PageRequest(page, size, Sort(sort)),
+            PageRequest.of(page, size, Sort.by(sort)),
             interaction
         ).exceptionally { e ->
             logger.error("Request: getResultByOwner/$owner raised $e")

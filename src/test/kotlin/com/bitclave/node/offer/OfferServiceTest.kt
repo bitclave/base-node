@@ -393,12 +393,12 @@ class OfferServiceTest {
         `should be create new offer`()
         `should be create new offer`()
 
-        val firstPage = offerService.getPageableOffers(PageRequest(0, 2), strategy).get()
+        val firstPage = offerService.getPageableOffers(PageRequest.of(0, 2), strategy).get()
         assertThat(firstPage.size).isEqualTo(2)
         assert(firstPage.first().id == 1L)
         assert(firstPage.last().id == 2L)
 
-        val secondPage = offerService.getPageableOffers(PageRequest(1, 2), strategy).get()
+        val secondPage = offerService.getPageableOffers(PageRequest.of(1, 2), strategy).get()
         assertThat(secondPage.size).isEqualTo(2)
         assert(secondPage.first().id == 3L)
         assert(secondPage.last().id == 4L)
@@ -425,5 +425,23 @@ class OfferServiceTest {
 
         result = offerService.getOfferByOwnerAndTag(account.publicKey, "age", strategy).get()
         assertThat(result.size).isEqualTo(0)
+    }
+
+    @Test
+    fun `should return all offers except products by page for matcher`() {
+        `should be create new offer`()
+        `should be create new offer`()
+        `should be create new offer`()
+        `should be create new offer`()
+
+        val firstPage = offerService.getPageableOffersForMatcher(PageRequest.of(0, 2), strategy).get()
+        assertThat(firstPage.size).isEqualTo(2)
+        assert(firstPage.first().id == 1L)
+        assert(firstPage.last().id == 2L)
+
+        val secondPage = offerService.getPageableOffersForMatcher(PageRequest.of(1, 2), strategy).get()
+        assertThat(secondPage.size).isEqualTo(2)
+        assert(secondPage.first().id == 3L)
+        assert(secondPage.last().id == 4L)
     }
 }

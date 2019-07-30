@@ -15,8 +15,6 @@ interface OfferRankCrudRepository : PagingAndSortingRepository<OfferRank, Long> 
 
     fun findByOfferIdAndRankerId(offerId: Long, rankerId: String): OfferRank?
 
-    fun findById(id: Long): OfferRank?
-
     @Modifying
     @Query(
         value = """
