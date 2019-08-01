@@ -21,11 +21,9 @@ class PageWithCountersSerializer : JsonSerializer<EnrichedOffersWithCountersResp
             value.forEach { (name, counter) ->
                 aggregation.addProperty(name, counter)
             }
-            counters.add(key,aggregation)
+            counters.add(key, aggregation)
         }
         json.add("counters", counters)
         return json
     }
 }
-
-

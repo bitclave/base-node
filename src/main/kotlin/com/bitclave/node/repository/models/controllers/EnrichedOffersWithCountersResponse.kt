@@ -6,5 +6,5 @@ import org.springframework.data.domain.PageImpl
 
 class EnrichedOffersWithCountersResponse(
     offers: Page<OfferSearchResultItem>,
-    val counters: Map<String, Map<String, Int>>):
-    PageImpl<OfferSearchResultItem>(offers.content, offers.pageable, offers.totalElements) {}
+    val counters: Map<String, Map<String, Int>>
+) : PageImpl<OfferSearchResultItem>(offers.content, offers.pageable, offers.totalElements)

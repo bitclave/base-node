@@ -20,7 +20,7 @@ class PageWithCountersResponseDeserializer : PageResponseDeserializer() {
         val response = json!!.asJsonObject
         val empMapType = object : TypeToken<Map<String, Map<String, Int>>>() {}.type
         val rawCounters = response.getAsJsonObject("counters")
-        val counters: Map<String, Map<String, Int>> = Gson().fromJson(rawCounters,empMapType)
+        val counters: Map<String, Map<String, Int>> = Gson().fromJson(rawCounters, empMapType)
         return OffersWithCountersResponse(counters, one)
     }
 }
