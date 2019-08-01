@@ -10,7 +10,7 @@ import org.springframework.data.domain.PageRequest
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 
-class PageResponseDeserializer : JsonDeserializer<Page<*>> {
+open class PageResponseDeserializer : JsonDeserializer<Page<*>> {
 
     val pageableType = object : TypeToken<PageRequest>() {}.type
 
