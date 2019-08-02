@@ -11,7 +11,7 @@ import java.lang.reflect.Type
 
 class PageWithCountersResponseDeserializer : JsonDeserializer<OffersWithCountersResponse> {
 
-    private val pageTokenType = object : TypeToken<PageImpl<Long>>() {}.type
+    private val pageTokenType = object : TypeToken<Page<Long>>() {}.type
     private val mapTokenType = object : TypeToken<Map<String, Map<String, Int>>>() {}.type
 
     override fun deserialize(
@@ -19,8 +19,7 @@ class PageWithCountersResponseDeserializer : JsonDeserializer<OffersWithCounters
         typeOfT: Type,
         context: JsonDeserializationContext
     ): OffersWithCountersResponse {
-//        val page = context.deserialize<Page<Long>>(json, pageTokenType)
-        val page = PageResponseDeserializer().deserialize(json, pageTokenType, context) as Page<Long>
+        val page = context.deserialize<Page<Long>>(json, pageTokenType)
         val response = json.asJsonObject
         val rawCounters = response.getAsJsonObject("counters")
         val counters = context.deserialize<Map<String, Map<String, Int>>>(rawCounters, mapTokenType)

@@ -5,10 +5,12 @@ import com.google.gson.JsonElement
 import com.google.gson.JsonSerializationContext
 import com.google.gson.JsonSerializer
 import com.google.gson.reflect.TypeToken
+import org.springframework.data.domain.Page
 import java.lang.reflect.Type
 
 class PageWithCountersSerializer : JsonSerializer<EnrichedOffersWithCountersResponse> {
 
+    private val pageTokenType = object : TypeToken<Page<Long>>() {}.type
     private val tokenForCounters = object : TypeToken<Map<String, Map<String, Int>>>() {}.type
 
     override fun serialize(
@@ -16,7 +18,7 @@ class PageWithCountersSerializer : JsonSerializer<EnrichedOffersWithCountersResp
         typeOfSrc: Type,
         context: JsonSerializationContext
     ): JsonElement {
-        val json = PageSerializer().serialize(src, typeOfSrc, context).asJsonObject
+        val json = context.serialize(src, pageTokenType).asJsonObject
         json.add("counters", context.serialize(src.counters, tokenForCounters))
         return json
     }
