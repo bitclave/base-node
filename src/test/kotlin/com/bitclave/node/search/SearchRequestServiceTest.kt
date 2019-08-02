@@ -289,7 +289,7 @@ class SearchRequestServiceTest {
         val searchPageRequest = PageRequest.of(0, 20)
 
         val list: Page<Long> = PageImpl(arrayListOf<Long>(1, 2, 3), searchPageRequest, 1)
-        var data = OffersWithCountersResponse()
+        val data = OffersWithCountersResponse(emptyMap(), list)
 
         val searchRequestWithRtSearch = searchRequestService.putSearchRequest(
             0,
@@ -563,7 +563,7 @@ class SearchRequestServiceTest {
             strategy
         ).get()
 
-        var result = searchRequestService.getSearchRequestWithSameTags(strategy).get()
+        val result = searchRequestService.getSearchRequestWithSameTags(strategy).get()
         assertThat(result.size).isEqualTo(2)
     }
 }
