@@ -6,7 +6,7 @@ import org.springframework.data.domain.PageRequest
 
 data class OffersWithCountersResponse(
     val counters: Map<String, Map<String, Int>>,
-    val offerIds: Page<Long>
+    private val offerIds: Page<Long>
 ) : PageImpl<Long>(
     offerIds.content,
     offerIds.pageable,

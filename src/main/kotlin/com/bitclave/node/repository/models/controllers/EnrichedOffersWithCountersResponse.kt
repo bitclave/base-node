@@ -5,6 +5,6 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 
 data class EnrichedOffersWithCountersResponse(
-    val offers: Page<OfferSearchResultItem>,
+    private val offers: Page<OfferSearchResultItem>,
     val counters: Map<String, Map<String, Int>>
 ) : PageImpl<OfferSearchResultItem>(offers.content, offers.pageable, offers.totalElements)
