@@ -319,7 +319,7 @@ class OfferSearchServiceTest {
         assertThat(existedSearchRequest)
         assertThat(queryRequestsByOwner.size == 1)
         assertThat(queryRequestsByOwner[0].query).isEqualTo(searchQueryText)
-        assertThat(offersResult.size == data.offerIds.size)
+        assertThat(offersResult.size == data.content.size)
     }
 
     @Test
@@ -357,8 +357,8 @@ class OfferSearchServiceTest {
         val searchResult = offerSearchCrudRepository
             .findBySearchRequestId(searchRequestWithRtSearch.id)
         assert(searchResult.size == 3)
-        assert(searchResult.filter { data.offerIds.indexOf(it.offerId) > -1 }.size == 3)
-        assertThat(offersResult.size == data.offerIds.size)
+        assert(searchResult.filter { data.content.indexOf(it.offerId) > -1 }.size == 3)
+        assertThat(offersResult.size == data.content.size)
     }
 
     @Test
@@ -391,7 +391,7 @@ class OfferSearchServiceTest {
 
         val searchResult = offerSearchCrudRepository.findByOwner(publicKey)
         assert(searchResult.size == 2)
-        assert(searchResult.filter { secondData.offerIds.indexOf(it.offerId) > -1 }.size == 2)
+        assert(searchResult.filter { secondData.content.indexOf(it.offerId) > -1 }.size == 2)
     }
 
     @Test(expected = NotFoundException::class)
