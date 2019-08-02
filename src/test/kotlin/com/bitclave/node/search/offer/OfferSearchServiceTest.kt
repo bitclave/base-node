@@ -59,6 +59,8 @@ import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.test.annotation.DirtiesContext
@@ -292,8 +294,8 @@ class OfferSearchServiceTest {
 
     @Test
     fun `should be create QuerySearchRequest`() {
-//        val list: Page<Long> = PageImpl(arrayListOf<Long>(1, 2, 3), searchPageRequest, 1)
-        var data = OffersWithCountersResponse()
+        val list: Page<Long> = PageImpl(arrayListOf<Long>(1, 2, 3), searchPageRequest, 1)
+        val data = OffersWithCountersResponse(emptyMap(), list)
 
         val searchRequestWithRtSearch = searchRequestService.putSearchRequest(
             0,
@@ -334,9 +336,8 @@ class OfferSearchServiceTest {
 
     @Test
     fun `should be create offersSearch items`() {
-//        val list: Page<Long> = PageImpl(arrayListOf<Long>(1, 2, 3), searchPageRequest, 1)
-        var data = OffersWithCountersResponse()
-        data.offerIds = arrayListOf<Long>(1, 2, 3)
+        val list: Page<Long> = PageImpl(arrayListOf<Long>(1, 2, 3), searchPageRequest, 1)
+        val data = OffersWithCountersResponse(emptyMap(), list)
 
         val searchRequestWithRtSearch = searchRequestService.putSearchRequest(
             0,
@@ -369,9 +370,9 @@ class OfferSearchServiceTest {
             strategy
         ).get()
 
-//        val firstList: Page<Long> = PageImpl(arrayListOf<Long>(1, 2, 3, 4, 5), searchPageRequest, 1)
-        val firstData = OffersWithCountersResponse()
-        firstData.offerIds = arrayListOf<Long>(1, 2, 3, 4, 5)
+        val firstList: Page<Long> = PageImpl(arrayListOf<Long>(1, 2, 3, 4, 5), searchPageRequest, 1)
+        val firstData = OffersWithCountersResponse(emptyMap(), firstList)
+
         Mockito.`when`(rtSearchRepository.getOffersIdByQuery("some data", searchPageRequest))
             .thenReturn(CompletableFuture.completedFuture(firstData))
 
@@ -379,9 +380,9 @@ class OfferSearchServiceTest {
             searchRequestWithRtSearch.id, publicKey, "some data", searchPageRequest, strategy
         ).get()
 
-//        val secondList: Page<Long> = PageImpl(arrayListOf<Long>(4, 5), searchPageRequest, 1)
-        val secondData = OffersWithCountersResponse()
-        secondData.offerIds = arrayListOf<Long>(4, 5)
+        val secondList: Page<Long> = PageImpl(arrayListOf<Long>(4, 5), searchPageRequest, 1)
+        val secondData = OffersWithCountersResponse(emptyMap(), secondList)
+
         Mockito.`when`(rtSearchRepository.getOffersIdByQuery("some data", searchPageRequest))
             .thenReturn(CompletableFuture.completedFuture(secondData))
         offerSearchService.createOfferSearchesByQuery(
