@@ -30,6 +30,7 @@ data class Offer(
     @ColumnDefault("0") val worth: String = BigDecimal.ZERO.toString(),
 
     @ElementCollection(fetch = FetchType.LAZY)
+    @Column(length = 512)
     val tags: Map<String, String> = HashMap(),
 
     @ElementCollection(fetch = FetchType.LAZY)
