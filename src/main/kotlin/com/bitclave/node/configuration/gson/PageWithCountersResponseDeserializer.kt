@@ -6,7 +6,6 @@ import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
 import com.google.gson.reflect.TypeToken
 import org.springframework.data.domain.Page
-import org.springframework.data.domain.PageImpl
 import java.lang.reflect.Type
 
 class PageWithCountersResponseDeserializer : JsonDeserializer<OffersWithCountersResponse> {
