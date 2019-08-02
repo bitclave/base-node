@@ -19,7 +19,8 @@ class PageWithCountersResponseDeserializer : JsonDeserializer<OffersWithCounters
         typeOfT: Type,
         context: JsonDeserializationContext
     ): OffersWithCountersResponse {
-        val page = context.deserialize<Page<Long>>(json, pageTokenType)
+//        val page = context.deserialize<Page<Long>>(json, pageTokenType)
+        val page = PageResponseDeserializer().deserialize(json, pageTokenType, context) as Page<Long>
         val response = json.asJsonObject
         val rawCounters = response.getAsJsonObject("counters")
         val counters = context.deserialize<Map<String, Map<String, Int>>>(rawCounters, mapTokenType)
