@@ -17,7 +17,7 @@ class PageWithCountersSerializer : JsonSerializer<EnrichedOffersWithCountersResp
         context: JsonSerializationContext
     ): JsonElement {
         val json = PageSerializer().serialize(src, typeOfSrc, context).asJsonObject
-        json.add("counters",  context.serialize(src.counters, tokenForCounters))
+        json.add("counters", context.serialize(src.counters, tokenForCounters))
         return json
     }
 }
