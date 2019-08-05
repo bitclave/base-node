@@ -222,11 +222,14 @@ class SearchRequestService(
                 Tag("owner", owner)
             )
 
+            val zipped = existingRequest.map { it.id }
+                .zip(createSearchRequests.map { it.id })
+
             val step4 = measureTimeMillis {
                 try {
                     offerSearchService.cloneOfferSearchOfSearchRequest(
                         owner,
-                        searchRequestIds.zip(createSearchRequests.map { it.id }),
+                        zipped,
                         strategy
                     ).get()
                 } catch (e: Throwable) {
