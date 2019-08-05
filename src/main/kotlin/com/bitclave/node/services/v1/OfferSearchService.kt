@@ -785,25 +785,9 @@ class OfferSearchService(
             var counters: Map<String, Map<String, Int>> = mapOf()
 
             val step4 = measureTimeMillis {
-                try {
-                    val searchedData = rtSearchRepository.getOffersIdByQuery(query, pageRequest, filters, mode).get()
-                    offerIds = searchedData.getPageableOfferIds()
-                    counters = searchedData.counters
-                } catch (e: Throwable) {
-                    logger.error("rt-search error: $e")
-
-                    if (e.cause is HttpServerErrorException &&
-                        (e.cause as HttpServerErrorException).rawStatusCode > 499
-                    ) {
-                        val pageable = PageRequest.of(0, 1)
-                        return@Supplier EnrichedOffersWithCountersResponse(
-                            PageImpl(emptyList<OfferSearchResultItem>(), pageable, 0),
-                            counters
-                        )
-                    } else {
-                        throw e
-                    }
-                }
+                val searchedData = rtSearchRepository.getOffersIdByQuery(query, pageRequest, filters, mode).get()
+                offerIds = searchedData.getPageableOfferIds()
+                counters = searchedData.counters
             }
             logger.debug { "step 4 -> getOffersIdByQuery(). ms: $step4" }
             appOpticsUtil.sendToAppOptics(
