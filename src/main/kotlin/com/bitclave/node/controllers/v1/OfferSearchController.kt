@@ -163,7 +163,10 @@ class OfferSearchController(
                 getStrategyType(strategy),
                 request?.data?.filters ?: emptyMap(),
                 mode
-            )
+            ).exceptionally { e ->
+                logger.error("Request: getOfferSearchesByQuery -> request: $request; error:$e")
+                throw e
+            }
         }
     }
 
