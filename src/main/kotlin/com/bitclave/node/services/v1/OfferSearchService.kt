@@ -1077,44 +1077,39 @@ class OfferSearchService(
         val step1 = measureTimeMillis {
             offerSearchRepository.changeStrategy(strategy).deleteAllByOfferId(offerId)
         }
-        logger.debug { "deleteByOfferId step 1 ->  ms: $step1" }
-        appOpticsUtil.sendToAppOptics(
-            "com.bitclave.node.services.v1.deleteByOfferId.step1",
-            (step1).toDouble(),
-            Tag("empty", "empty")
-        )
-
+        println("deleteByOfferId step 1 ->  ms: $step1")
+//        appOpticsUtil.sendToAppOptics(
+//            "com.bitclave.node.services.v1.deleteByOfferId.step1",
+//            (step1).toDouble(),
+//            Tag("empty", "empty")
+//        )
         var filteredStateIds: List<Long> = emptyList()
-
         val step2 = measureTimeMillis {
             filteredStateIds = offerInteractionRepository.changeStrategy(strategy)
                 .findByOfferId(offerId)
                 .filter { it.state == OfferAction.NONE || it.state == OfferAction.REJECT }
                 .map { it.id }
         }
-
-        logger.debug { "deleteByOfferId step 2 -> ms: $step2 filteredStateIds: ${filteredStateIds.size}" }
-        appOpticsUtil.sendToAppOptics(
-            "com.bitclave.node.services.v1.deleteByOfferId.step2",
-            (step2).toDouble(),
-            Tag("empty", "empty")
-        )
-
+        println("deleteByOfferId step 2 -> ms: $step2 filteredStateIds: ${filteredStateIds.size}")
+//        appOpticsUtil.sendToAppOptics(
+//            "com.bitclave.node.services.v1.deleteByOfferId.step2",
+//            (step2).toDouble(),
+//            Tag("empty", "empty")
+//        )
         val step3 = measureTimeMillis {
             offerInteractionRepository.changeStrategy(strategy).delete(filteredStateIds)
         }
-
-        logger.debug { "deleteByOfferId step 3 -> ms: $step3 filteredStateIds: ${filteredStateIds.size}" }
-        appOpticsUtil.sendToAppOptics(
-            "com.bitclave.node.services.v1.deleteByOfferId.step3",
-            (step3).toDouble(),
-            Tag("empty", "empty")
-        )
-        appOpticsUtil.sendToAppOptics(
-            "com.bitclave.node.services.v1.deleteByOfferId.total",
-            (step1 + step2 + step3).toDouble(),
-            Tag("empty", "empty")
-        )
+        println("deleteByOfferId step 3 -> ms: $step3 filteredStateIds: ${filteredStateIds.size}")
+//        appOpticsUtil.sendToAppOptics(
+//            "com.bitclave.node.services.v1.deleteByOfferId.step3",
+//            (step3).toDouble(),
+//            Tag("empty", "empty")
+//        )
+//        appOpticsUtil.sendToAppOptics(
+//            "com.bitclave.node.services.v1.deleteByOfferId.total",
+//            (step1 + step2 + step3).toDouble(),
+//            Tag("empty", "empty")
+//        )
     }
 
     fun deleteBySearchRequestId(searchRequestId: Long, owner: String, strategy: RepositoryStrategyType) {

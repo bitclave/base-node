@@ -18,6 +18,7 @@ import org.springframework.stereotype.Service
 import java.util.Date
 import java.util.concurrent.CompletableFuture
 import java.util.function.Supplier
+import kotlin.system.measureTimeMillis
 
 @Service
 @Qualifier("v1")
@@ -72,11 +73,27 @@ class OfferService(
                 offer.rules,
                 createdAt
             )
-            val processedOffer = offerRepository.changeStrategy(strategy).saveOffer(putOffer)
-            offerPriceRepository.changeStrategy(strategy).savePrices(processedOffer, offer.offerPrices)
+            var processedOffer = Offer()
+            val saveTiming = measureTimeMillis {
+                processedOffer = offerRepository.changeStrategy(strategy).saveOffer(putOffer)
+            }
+            println(" - save office $saveTiming")
 
-            offerSearchService.deleteByOfferId(id, strategy)
-            offerRepository.changeStrategy(strategy).findById(processedOffer.id)!!
+            val savePriceTiming = measureTimeMillis {
+                offerPriceRepository.changeStrategy(strategy).savePrices(processedOffer, offer.offerPrices)
+            }
+            println(" - save price $savePriceTiming")
+
+            val deleteByOfferIdTiming = measureTimeMillis {
+                offerSearchService.deleteByOfferId(id, strategy)
+            }
+            println(" - delete by OfferId $deleteByOfferIdTiming")
+
+            val findByIdTiming = measureTimeMillis {
+                processedOffer = offerRepository.changeStrategy(strategy).findById(processedOffer.id)!!
+            }
+            println(" - find OfferById $findByIdTiming")
+            processedOffer
         })
     }
 
