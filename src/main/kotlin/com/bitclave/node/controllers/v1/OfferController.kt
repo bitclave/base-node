@@ -87,12 +87,12 @@ class OfferController(
         return accountService
             .accountBySigMessage(request, getStrategyType(strategy))
             .thenCompose { account: Account ->
-                println("controller profiling SigMessage 1) ${(Date().time - start.time)}ms")
+                logger.debug("controller profiling SigMessage 1) ${(Date().time - start.time)}ms")
                 start = Date()
                 accountService.validateNonce(request, account)
             }
             .thenCompose {
-                println("controller profiling ValidateNonce 2) ${(Date().time - start.time)}ms")
+                logger.debug("controller profiling ValidateNonce 2) ${(Date().time - start.time)}ms")
                 start = Date()
                 if (request.pk != owner) {
                     throw BadArgumentException()
@@ -107,7 +107,7 @@ class OfferController(
                 CompletableFuture.completedFuture(result)
             }
             .thenCompose {
-                println("controller profiling SaveOffice 3) ${(Date().time - start.time)}ms")
+                logger.debug("controller profiling SaveOffice 3) ${(Date().time - start.time)}ms")
                 val status = if (it.id != id) HttpStatus.CREATED else HttpStatus.OK
                 CompletableFuture.completedFuture(ResponseEntity<Offer>(it, status))
             }.exceptionally { e ->

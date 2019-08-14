@@ -10,6 +10,7 @@ import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
 import com.bitclave.node.utils.runAsyncEx
 import com.bitclave.node.utils.supplyAsyncEx
+import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -28,6 +29,7 @@ class OfferService(
     private val offerRankRepository: RepositoryStrategy<OfferRankRepository>,
     private val offerSearchService: OfferSearchService
 ) {
+    private val logger = KotlinLogging.logger {}
 
     fun putOffer(
         id: Long,
@@ -77,22 +79,22 @@ class OfferService(
             val saveTiming = measureTimeMillis {
                 processedOffer = offerRepository.changeStrategy(strategy).saveOffer(putOffer)
             }
-            println(" - save office $saveTiming")
+            logger.debug(" - save office $saveTiming")
 
             val savePriceTiming = measureTimeMillis {
                 offerPriceRepository.changeStrategy(strategy).savePrices(processedOffer, offer.offerPrices)
             }
-            println(" - save price $savePriceTiming")
+            logger.debug(" - save price $savePriceTiming")
 
             val deleteByOfferIdTiming = measureTimeMillis {
                 offerSearchService.deleteByOfferId(id, strategy)
             }
-            println(" - delete by OfferId $deleteByOfferIdTiming")
+            logger.debug(" - delete by OfferId $deleteByOfferIdTiming")
 
             val findByIdTiming = measureTimeMillis {
                 processedOffer = offerRepository.changeStrategy(strategy).findById(processedOffer.id)!!
             }
-            println(" - find OfferById $findByIdTiming")
+            logger.debug(" - find OfferById $findByIdTiming")
             processedOffer
         })
     }
