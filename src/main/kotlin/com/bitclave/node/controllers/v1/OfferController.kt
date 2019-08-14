@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.util.Date
 import java.util.concurrent.CompletableFuture
 
 private val logger = KotlinLogging.logger {}
@@ -81,12 +82,18 @@ class OfferController(
         strategy: String?
     ): CompletableFuture<ResponseEntity<Offer>> {
 
+        var start = Date()
+
         return accountService
             .accountBySigMessage(request, getStrategyType(strategy))
             .thenCompose { account: Account ->
+                logger.debug("controller profiling SigMessage 1) ${(Date().time - start.time)}ms")
+                start = Date()
                 accountService.validateNonce(request, account)
             }
             .thenCompose {
+                logger.debug("controller profiling ValidateNonce 2) ${(Date().time - start.time)}ms")
+                start = Date()
                 if (request.pk != owner) {
                     throw BadArgumentException()
                 }
@@ -100,6 +107,7 @@ class OfferController(
                 CompletableFuture.completedFuture(result)
             }
             .thenCompose {
+                logger.debug("controller profiling SaveOffice 3) ${(Date().time - start.time)}ms")
                 val status = if (it.id != id) HttpStatus.CREATED else HttpStatus.OK
                 CompletableFuture.completedFuture(ResponseEntity<Offer>(it, status))
             }.exceptionally { e ->

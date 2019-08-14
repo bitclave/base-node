@@ -10,6 +10,7 @@ import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
 import com.bitclave.node.utils.runAsyncEx
 import com.bitclave.node.utils.supplyAsyncEx
+import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service
 import java.util.Date
 import java.util.concurrent.CompletableFuture
 import java.util.function.Supplier
+import kotlin.system.measureTimeMillis
 
 @Service
 @Qualifier("v1")
@@ -27,6 +29,7 @@ class OfferService(
     private val offerRankRepository: RepositoryStrategy<OfferRankRepository>,
     private val offerSearchService: OfferSearchService
 ) {
+    private val logger = KotlinLogging.logger {}
 
     fun putOffer(
         id: Long,
@@ -72,11 +75,27 @@ class OfferService(
                 offer.rules,
                 createdAt
             )
-            val processedOffer = offerRepository.changeStrategy(strategy).saveOffer(putOffer)
-            offerPriceRepository.changeStrategy(strategy).savePrices(processedOffer, offer.offerPrices)
+            var processedOffer = Offer()
+            val saveTiming = measureTimeMillis {
+                processedOffer = offerRepository.changeStrategy(strategy).saveOffer(putOffer)
+            }
+            logger.debug(" - save office $saveTiming")
 
-            offerSearchService.deleteByOfferId(id, strategy)
-            offerRepository.changeStrategy(strategy).findById(processedOffer.id)!!
+            val savePriceTiming = measureTimeMillis {
+                offerPriceRepository.changeStrategy(strategy).savePrices(processedOffer, offer.offerPrices)
+            }
+            logger.debug(" - save price $savePriceTiming")
+
+            val deleteByOfferIdTiming = measureTimeMillis {
+                offerSearchService.deleteByOfferId(id, strategy)
+            }
+            logger.debug(" - delete by OfferId $deleteByOfferIdTiming")
+
+            val findByIdTiming = measureTimeMillis {
+                processedOffer = offerRepository.changeStrategy(strategy).findById(processedOffer.id)!!
+            }
+            logger.debug(" - find OfferById $findByIdTiming")
+            processedOffer
         })
     }
 
