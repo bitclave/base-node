@@ -5,7 +5,7 @@ import com.bitclave.node.repository.models.services.HttpServiceCall
 import com.bitclave.node.utils.supplyAsyncEx
 import org.springframework.http.HttpEntity
 import org.springframework.http.ResponseEntity
-import org.springframework.web.client.HttpClientErrorException
+import org.springframework.web.client.HttpStatusCodeException
 import org.springframework.web.client.RestTemplate
 import java.util.concurrent.CompletableFuture
 import java.util.function.Supplier
@@ -32,12 +32,16 @@ class CallStrategyExecutorHttp(
                     Any::class.java,
                     request.queryParams
                 )
-            } catch (e: HttpClientErrorException) {
-                return@Supplier ResponseEntity<CheckedExceptionResponse>(
-                    CheckedExceptionResponse(e.message ?: "", e.statusText ?: "", e.responseBodyAsString ?: ""),
-                    e.responseHeaders,
-                    e.statusCode
-                )
+            } catch (e: Throwable) {
+                if (e is HttpStatusCodeException) {
+                    return@Supplier ResponseEntity(
+                        CheckedExceptionResponse(e.message ?: "", e.statusText ?: "", e.responseBodyAsString ?: ""),
+                        e.responseHeaders,
+                        e.statusCode
+                    )
+                }
+
+                throw e
             }
         })
     }
