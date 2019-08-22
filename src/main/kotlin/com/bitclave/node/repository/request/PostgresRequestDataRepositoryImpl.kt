@@ -40,7 +40,7 @@ class PostgresRequestDataRepositoryImpl(val repository: RequestDataCrudRepositor
     }
 
     override fun saveAll(requests: List<RequestData>): List<RequestData> {
-        return repository.save(requests).toList()
+        return repository.saveAll(requests).toList()
     }
 
     override fun deleteByFromAndTo(publicKey: String) {

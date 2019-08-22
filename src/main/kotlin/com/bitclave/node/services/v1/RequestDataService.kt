@@ -12,6 +12,7 @@ import com.bitclave.node.utils.supplyAsyncEx
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletableFuture.runAsync
 import java.util.function.Supplier
 
 @Service
@@ -44,7 +45,7 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
     }
 
     fun request(clientPk: String, data: List<RequestData>, strategy: RepositoryStrategyType): CompletableFuture<Void> {
-        return supplyAsyncEx(Supplier {
+        return runAsync(Runnable {
             this.checkRequestData(data)
             val toPk = data[0].toPk.toLowerCase()
 
@@ -73,7 +74,7 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
         strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
 
-        return supplyAsyncEx(Supplier {
+        return runAsync(Runnable {
             this.checkRequestData(data)
 
             data.forEach {
@@ -120,7 +121,7 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
 
             requestDataRepository.changeStrategy(strategy)
                 .saveAll(result)
-        }
+        })
     }
 
     fun revokeAccess(
