@@ -35,6 +35,7 @@ import com.bitclave.node.repository.search.offer.PostgresOfferSearchRepositoryIm
 import com.bitclave.node.repository.share.OfferShareCrudRepository
 import com.bitclave.node.repository.share.OfferShareRepositoryStrategy
 import com.bitclave.node.repository.share.PostgresOfferShareRepositoryImpl
+import com.bitclave.node.services.events.WsService
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferShareService
 import org.assertj.core.api.Assertions.assertThat
@@ -92,6 +93,9 @@ class OfferShareServiceTest {
     @Autowired
     private lateinit var entityManager: EntityManager
 
+    @Autowired
+    private lateinit var wsService: WsService
+
     private val accountClient: Account =
         Account("02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea")
     private val accountBusiness: Account =
@@ -130,7 +134,7 @@ class OfferShareServiceTest {
         val repositoryStrategy = AccountRepositoryStrategy(postgres, hybrid)
         val accountService = AccountService(repositoryStrategy)
         val postgresOfferRepository =
-            PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository, entityManager)
+            PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository, entityManager, wsService)
         val offerRepositoryStrategy = OfferRepositoryStrategy(postgresOfferRepository)
 
         val offerShareRepository = PostgresOfferShareRepositoryImpl(offerShareCrudRepository)

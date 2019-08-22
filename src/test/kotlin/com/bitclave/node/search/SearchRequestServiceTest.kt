@@ -28,6 +28,7 @@ import com.bitclave.node.repository.search.offer.OfferSearchRepositoryStrategy
 import com.bitclave.node.repository.search.offer.PostgresOfferSearchRepositoryImpl
 import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepository
 import com.bitclave.node.services.errors.AccessDeniedException
+import com.bitclave.node.services.events.WsService
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferSearchService
 import com.bitclave.node.services.v1.SearchRequestService
@@ -85,6 +86,9 @@ class SearchRequestServiceTest {
 
     @Autowired
     private lateinit var entityManager: EntityManager
+
+    @Autowired
+    private lateinit var wsService: WsService
 
     @Autowired
     private lateinit var appOpticsProperties: AppOpticsProperties
@@ -150,7 +154,8 @@ class SearchRequestServiceTest {
                 entityManager
             )
         val requestRepositoryStrategy = SearchRequestRepositoryStrategy(searchRequestRepository)
-        val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository, entityManager)
+        val offerRepository =
+            PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository, entityManager, wsService)
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
 
         val offerSearchRepository =

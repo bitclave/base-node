@@ -26,7 +26,7 @@ interface OfferCrudRepository : PagingAndSortingRepository<Offer, Long> {
 
     fun deleteByIdAndOwner(id: Long, owner: String): Long
 
-    fun deleteByOwner(owner: String): Int
+    fun deleteByOwner(owner: String): List<Offer>
 
     fun findByIdAndOwner(id: Long, owner: String): Offer?
 
