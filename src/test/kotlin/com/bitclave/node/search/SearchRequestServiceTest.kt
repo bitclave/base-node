@@ -1,5 +1,6 @@
 package com.bitclave.node.search
 
+import com.bitclave.node.configuration.properties.AppOpticsProperties
 import com.bitclave.node.configuration.properties.HybridProperties
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.Web3Provider
@@ -9,9 +10,9 @@ import com.bitclave.node.repository.account.HybridAccountRepositoryImpl
 import com.bitclave.node.repository.account.PostgresAccountRepositoryImpl
 import com.bitclave.node.repository.models.Account
 import com.bitclave.node.repository.models.Offer
-import com.bitclave.node.repository.models.OfferResultAction
 import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.repository.models.SearchRequest
+import com.bitclave.node.repository.models.controllers.OffersWithCountersResponse
 import com.bitclave.node.repository.offer.OfferCrudRepository
 import com.bitclave.node.repository.offer.OfferRepositoryStrategy
 import com.bitclave.node.repository.offer.PostgresOfferRepositoryImpl
@@ -19,10 +20,14 @@ import com.bitclave.node.repository.rtSearch.RtSearchRepositoryImpl
 import com.bitclave.node.repository.search.PostgresSearchRequestRepositoryImpl
 import com.bitclave.node.repository.search.SearchRequestCrudRepository
 import com.bitclave.node.repository.search.SearchRequestRepositoryStrategy
+import com.bitclave.node.repository.search.interaction.OfferInteractionCrudRepository
+import com.bitclave.node.repository.search.interaction.OfferInteractionRepositoryStrategy
+import com.bitclave.node.repository.search.interaction.PostgresOfferInteractionRepositoryImpl
 import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.repository.search.offer.OfferSearchRepositoryStrategy
 import com.bitclave.node.repository.search.offer.PostgresOfferSearchRepositoryImpl
 import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepository
+import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferSearchService
 import com.bitclave.node.services.v1.SearchRequestService
@@ -34,11 +39,14 @@ import org.junit.runner.RunWith
 import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
-import java.util.ArrayList
+import java.util.concurrent.CompletableFuture
+import javax.persistence.EntityManager
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
@@ -67,10 +75,19 @@ class SearchRequestServiceTest {
     protected lateinit var offerSearchService: OfferSearchService
 
     @Autowired
+    protected lateinit var offerInteractionCrudRepository: OfferInteractionCrudRepository
+
+    @Autowired
     protected lateinit var offerCrudRepository: OfferCrudRepository
 
     @Autowired
     protected lateinit var querySearchRequestCrudRepository: QuerySearchRequestCrudRepository
+
+    @Autowired
+    private lateinit var entityManager: EntityManager
+
+    @Autowired
+    private lateinit var appOpticsProperties: AppOpticsProperties
 
     protected val rtSearchRepository = Mockito.mock(RtSearchRepositoryImpl::class.java)
 
@@ -127,18 +144,22 @@ class SearchRequestServiceTest {
         val repositoryStrategy = AccountRepositoryStrategy(postgres, hybrid)
         val accountService = AccountService(repositoryStrategy)
         val searchRequestRepository =
-            PostgresSearchRequestRepositoryImpl(searchRequestCrudRepository, offerSearchCrudRepository)
+            PostgresSearchRequestRepositoryImpl(
+                searchRequestCrudRepository,
+                offerSearchCrudRepository,
+                entityManager
+            )
         val requestRepositoryStrategy = SearchRequestRepositoryStrategy(searchRequestRepository)
-        val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
+        val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository, entityManager)
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
 
         val offerSearchRepository =
-            PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository, searchRequestRepository)
+            PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository)
         val offerSearchRepositoryStrategy = OfferSearchRepositoryStrategy(offerSearchRepository)
 
-        searchRequestService = SearchRequestService(
-            requestRepositoryStrategy
-        )
+        val offerSearchStateRepository =
+            PostgresOfferInteractionRepositoryImpl(offerInteractionCrudRepository, entityManager)
+        val offerSearchStateRepositoryStrategy = OfferInteractionRepositoryStrategy(offerSearchStateRepository)
 
         offerSearchService = OfferSearchService(
             requestRepositoryStrategy,
@@ -146,7 +167,16 @@ class SearchRequestServiceTest {
             offerSearchRepositoryStrategy,
             querySearchRequestCrudRepository,
             rtSearchRepository,
-            gson
+            offerSearchStateRepositoryStrategy,
+            gson,
+            appOpticsProperties
+        )
+
+        searchRequestService = SearchRequestService(
+            requestRepositoryStrategy,
+            querySearchRequestCrudRepository,
+            offerSearchService,
+            appOpticsProperties
         )
 
         strategy = RepositoryStrategyType.POSTGRES
@@ -175,6 +205,121 @@ class SearchRequestServiceTest {
         assertThat(result.tags).isEqualTo(searchRequest.tags)
         assertThat(result.createdAt.time > searchRequest.createdAt.time)
         assertThat(result.updatedAt.time > searchRequest.updatedAt.time)
+    }
+
+    @Test
+    fun `should be create few new search requests`() {
+        val result = searchRequestService.putSearchRequests(
+            account.publicKey,
+            listOf(searchRequest, searchRequest),
+            strategy
+        ).get()
+
+        assert(result.size == 2)
+
+        result.forEach { item ->
+            assert(item.id >= 1L)
+            assertThat(item.owner).isEqualTo(account.publicKey)
+            assertThat(item.tags).isEqualTo(searchRequest.tags)
+            assertThat(item.createdAt.time > searchRequest.createdAt.time)
+            assertThat(item.updatedAt.time > searchRequest.updatedAt.time)
+        }
+    }
+
+    @Test
+    fun `should be update few new search requests`() {
+        `should be create few new search requests`()
+
+        val existed = searchRequestService.getPageableRequests(PageRequest.of(0, 1000), strategy).get()
+        assert(existed.content.size == 2)
+        val updatedTags = mapOf("test" to "true")
+        val forUpdate = existed.map { it.copy(tags = updatedTags) }.content
+
+        val result = searchRequestService.putSearchRequests(
+            account.publicKey,
+            forUpdate,
+            strategy
+        ).get()
+
+        assert(result.size == 2)
+        val originGrouped = existed.content.groupBy { it.id }
+
+        result.forEach { item ->
+            assert(originGrouped.contains(item.id))
+            assertThat(item.owner).isEqualTo(account.publicKey)
+            assertThat(item.tags).isEqualTo(updatedTags)
+            assertThat(item.createdAt.time == originGrouped[item.id]?.get(0)?.createdAt?.time ?: -1)
+            assertThat(item.updatedAt.time > originGrouped[item.id]?.get(0)?.updatedAt?.time ?: -1)
+        }
+    }
+
+    @Test(expected = AccessDeniedException::class)
+    fun `should be throw error when try update search requests with diff owner`() {
+        val foreingSearchRequest = SearchRequest(
+            0,
+            account.publicKey.reversed(),
+            mapOf("car" to "true", "color" to "red")
+        )
+
+        val mySR = searchRequestService.putSearchRequests(
+            account.publicKey,
+            listOf(searchRequest),
+            strategy
+        ).get()[0]
+
+        val frSR = searchRequestService.putSearchRequests(
+            account.publicKey.reversed(),
+            listOf(foreingSearchRequest),
+            strategy
+        ).get()[0]
+
+        try {
+            searchRequestService.putSearchRequests(
+                account.publicKey,
+                listOf(mySR, frSR),
+                strategy
+            ).get()
+        } catch (e: Throwable) {
+            throw e.cause!!
+        }
+    }
+
+    @Test
+    fun `should delete existed search request by owner`() {
+        val searchPageRequest = PageRequest.of(0, 20)
+
+        val list: Page<Long> = PageImpl(arrayListOf<Long>(1, 2, 3), searchPageRequest, 1)
+        val data = OffersWithCountersResponse(emptyMap(), list)
+
+        val searchRequestWithRtSearch = searchRequestService.putSearchRequest(
+            0,
+            publicKey,
+            SearchRequest(0, publicKey, mapOf("rtSearch" to "true")),
+            strategy
+        ).get()
+
+        val searchQueryText = "some data"
+        Mockito.`when`(rtSearchRepository.getOffersIdByQuery(searchQueryText, searchPageRequest))
+            .thenReturn(CompletableFuture.completedFuture(data))
+
+        val offersResult = offerSearchService.createOfferSearchesByQuery(
+            searchRequestWithRtSearch.id, publicKey, searchQueryText, searchPageRequest, strategy
+        ).get()
+
+        var queryRequestsByOwner = querySearchRequestCrudRepository
+            .findAllByOwner(publicKey)
+        val existedSearchRequest = searchRequestCrudRepository.findById(searchRequestWithRtSearch.id)
+
+        assertThat(existedSearchRequest)
+        assertThat(queryRequestsByOwner.size == 1)
+        assertThat(queryRequestsByOwner[0].query).isEqualTo(searchQueryText)
+        assertThat(offersResult.size == list.size)
+
+        searchRequestService.deleteQuerySearchRequest(publicKey).get()
+
+        queryRequestsByOwner = querySearchRequestCrudRepository
+            .findAllByOwner(publicKey)
+        assertThat(queryRequestsByOwner.isEmpty())
     }
 
     @Test
@@ -289,10 +434,7 @@ class SearchRequestServiceTest {
                 0,
                 result1.owner,
                 result1.id,
-                createdOffer1.id,
-                OfferResultAction.NONE,
-                "",
-                ArrayList()
+                createdOffer1.id
             ),
             strategy
         ).get()
@@ -302,10 +444,7 @@ class SearchRequestServiceTest {
                 0,
                 result1.owner,
                 result1.id,
-                createdOffer2.id,
-                OfferResultAction.NONE,
-                "",
-                ArrayList()
+                createdOffer2.id
             ),
             strategy
         ).get()
@@ -317,21 +456,20 @@ class SearchRequestServiceTest {
                 0,
                 result2.owner,
                 result2.id,
-                createdOffer1.id,
-                OfferResultAction.NONE,
-                "",
-                ArrayList()
+                createdOffer1.id
             ),
             strategy
         ).get()
 
-        val clonedRequest =
-            searchRequestService.cloneSearchRequestWithOfferSearches(account.publicKey, result1, strategy).get()
+        val clonedRequest = searchRequestService
+            .cloneSearchRequestWithOfferSearches(account.publicKey, listOf(result1.id), strategy)
+            .get()
 
-        assertThat(clonedRequest).isEqualToIgnoringGivenFields(searchRequest, *ignoredFields)
+        assertThat(clonedRequest.size == 1)
+        assertThat(clonedRequest[0]).isEqualToIgnoringGivenFields(searchRequest, *ignoredFields)
 
         val savedListResult =
-            searchRequestService.getSearchRequests(clonedRequest.id, account.publicKey, strategy).get()
+            searchRequestService.getSearchRequests(clonedRequest[0].id, account.publicKey, strategy).get()
         assertThat(savedListResult.size).isEqualTo(1)
 
         val offerSearches = offerSearchService.getOffersResult(strategy, result1.id)
@@ -339,15 +477,12 @@ class SearchRequestServiceTest {
             .content
 
         assertThat(offerSearches.size).isEqualTo(2)
-        assert(offerSearches[0].offerSearch.state != offerSearches[1].offerSearch.state)
 
-        val clonedOfferSearches = offerSearchService.getOffersResult(strategy, clonedRequest.id)
+        val clonedOfferSearches = offerSearchService.getOffersResult(strategy, clonedRequest[0].id)
             .get()
             .content
 
         assertThat(clonedOfferSearches.size).isEqualTo(2)
-        assert(clonedOfferSearches[0].offerSearch.state == OfferResultAction.NONE)
-        assert(clonedOfferSearches[1].offerSearch.state == OfferResultAction.NONE)
     }
 
     @Test
@@ -357,12 +492,12 @@ class SearchRequestServiceTest {
         `should be create new search request`()
         `should be create new search request`()
 
-        val firstPage = searchRequestService.getPageableRequests(PageRequest(0, 2), strategy).get()
+        val firstPage = searchRequestService.getPageableRequests(PageRequest.of(0, 2), strategy).get()
         assertThat(firstPage.size).isEqualTo(2)
         assert(firstPage.first().id == 1L)
         assert(firstPage.last().id == 2L)
 
-        val secondPage = searchRequestService.getPageableRequests(PageRequest(1, 2), strategy).get()
+        val secondPage = searchRequestService.getPageableRequests(PageRequest.of(1, 2), strategy).get()
         assertThat(secondPage.size).isEqualTo(2)
         assert(secondPage.first().id == 3L)
         assert(secondPage.last().id == 4L)
@@ -410,5 +545,25 @@ class SearchRequestServiceTest {
 
         result = searchRequestService.getRequestByOwnerAndTag(account.publicKey, "notexist", strategy).get()
         assertThat(result.size).isEqualTo(0)
+    }
+
+    @Test
+    fun `should return search requests with the same tags`() {
+        searchRequestService.putSearchRequest(
+            0,
+            account.publicKey,
+            searchRequest,
+            strategy
+        ).get()
+
+        searchRequestService.putSearchRequest(
+            0,
+            account.publicKey,
+            searchRequest3,
+            strategy
+        ).get()
+
+        val result = searchRequestService.getSearchRequestWithSameTags(strategy).get()
+        assertThat(result.size).isEqualTo(2)
     }
 }

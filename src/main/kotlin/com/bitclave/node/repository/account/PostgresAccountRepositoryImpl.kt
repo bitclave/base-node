@@ -3,6 +3,8 @@ package com.bitclave.node.repository.account
 import com.bitclave.node.repository.models.Account
 import com.bitclave.node.services.errors.DataNotSavedException
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Slice
 import org.springframework.stereotype.Component
 import java.util.Date
 
@@ -21,6 +23,8 @@ class PostgresAccountRepositoryImpl(val repository: AccountCrudRepository) : Acc
     override fun findByPublicKey(publicKey: String): Account? {
         return repository.findByPublicKey(publicKey)
     }
+
+    override fun findAll(pageable: Pageable): Slice<Account> = repository.findAllBy(pageable)
 
     override fun findByPublicKey(publicKeys: List<String>): List<Account> {
         return repository.findAllByPublicKeyIn(publicKeys)

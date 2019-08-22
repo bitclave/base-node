@@ -1,1 +1,1 @@
-web: java -jar build/libs/base-node.jar
+web: java $JAVA_TOOL_OPTIONS -jar build/libs/base-node.jar

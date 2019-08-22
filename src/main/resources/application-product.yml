@@ -6,20 +6,12 @@ spring:
   datasource:
     driverClassName: org.postgresql.Driver
     platform: postgres
-    url: ${JDBC_DATABASE_URL}
+    url: ${JDBC_DATABASE_URL}?reWriteBatchedInserts=true
     username: ${JDBC_DATABASE_USERNAME}
     password: ${JDBC_DATABASE_PASSWORD}
 
 rtsearch:
   url: ${RT_SEARCH_URL}
-
-flyway:
-  enabled: false
-  baseline-on-migrate: true
-  url: ${JDBC_DATABASE_URL}
-  user: ${JDBC_DATABASE_USERNAME}
-  password: ${JDBC_DATABASE_PASSWORD}
-  locations: db/migration
 
 hybrid:
   nodeUrl: https://ropsten.infura.io/
@@ -30,3 +22,6 @@ hybrid:
       address: ${DNS_CONTRACT_ADDRESS}
       gasPrice: ${ETHEREUM_GAS_PRICE}
       gasLimit: ${ETHEREUM_GAS_LIMIT}
+
+appoptics:
+  serviceKey: ${APPOPTICS_SERVICE_KEY}

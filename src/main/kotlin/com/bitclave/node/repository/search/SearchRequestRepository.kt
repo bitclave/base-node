@@ -3,14 +3,19 @@ package com.bitclave.node.repository.search
 import com.bitclave.node.repository.models.SearchRequest
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Slice
 
 interface SearchRequestRepository {
 
-    fun saveSearchRequest(request: SearchRequest): SearchRequest
+    fun save(request: SearchRequest): SearchRequest
 
-    fun deleteSearchRequest(id: Long, owner: String): Long
+    fun save(request: List<SearchRequest>): List<SearchRequest>
 
-    fun deleteSearchRequests(owner: String): Long
+    fun deleteByIdAndOwner(id: Long, owner: String): Long
+
+    fun deleteByOwner(owner: String): Int
+
+    fun deleteByIdIn(ids: List<Long>): Int
 
     fun findById(id: Long): SearchRequest?
 
@@ -22,11 +27,15 @@ interface SearchRequestRepository {
 
     fun findAll(): List<SearchRequest>
 
-    fun cloneSearchRequestWithOfferSearches(request: SearchRequest): SearchRequest
-
     fun findAll(pageable: Pageable): Page<SearchRequest>
+
+    fun findAllSlice(pageable: Pageable): Slice<SearchRequest>
+
+    fun findByOwnerInSlice(owners: List<String>, pageable: Pageable): Slice<SearchRequest>
 
     fun getTotalCount(): Long
 
     fun getRequestByOwnerAndTag(owner: String, tagKey: String): List<SearchRequest>
+
+    fun getSearchRequestWithSameTags(): List<SearchRequest>
 }

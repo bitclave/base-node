@@ -20,7 +20,7 @@ data class Offer(
     @GeneratedValue(strategy = GenerationType.TABLE) @Id val id: Long = 0,
     @Column(length = 256) val owner: String = "",
 
-    @OneToMany(mappedBy = "offer", cascade = [CascadeType.REMOVE], fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "offer", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
     val offerPrices: List<OfferPrice> = emptyList(),
 
     @Column(length = 512) val description: String = "",
@@ -29,15 +29,26 @@ data class Offer(
 
     @ColumnDefault("0") val worth: String = BigDecimal.ZERO.toString(),
 
-    @ElementCollection(fetch = FetchType.EAGER) val tags: Map<String, String> = HashMap(),
-    @ElementCollection(fetch = FetchType.EAGER) val compare: Map<String, String> = HashMap(),
-    @ElementCollection(fetch = FetchType.EAGER) val rules: Map<String, CompareAction> = HashMap(),
+    @ElementCollection(fetch = FetchType.LAZY)
+    @Column(length = 512)
+    val tags: Map<String, String> = HashMap(),
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    val compare: Map<String, String> = HashMap(),
+
+    @ElementCollection(fetch = FetchType.LAZY)
+    val rules: Map<String, CompareAction> = HashMap(),
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     val createdAt: Date = Date(),
+
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     val updatedAt: Date = Date()
 ) {
+
+    enum class OfferType {
+        PRODUCT,
+    }
 
     enum class CompareAction(
         val value: String

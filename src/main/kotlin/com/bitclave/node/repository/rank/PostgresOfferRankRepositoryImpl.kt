@@ -2,6 +2,7 @@ package com.bitclave.node.repository.rank
 
 import com.bitclave.node.repository.models.OfferRank
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
 
 @Component
@@ -9,7 +10,8 @@ import org.springframework.stereotype.Component
 class PostgresOfferRankRepositoryImpl(
     val repository: OfferRankCrudRepository
 ) : OfferRankRepository {
-    override fun findByOfferIdAndRankerId(offerId: Long, rankerId: Long): OfferRank? {
+
+    override fun findByOfferIdAndRankerId(offerId: Long, rankerId: String): OfferRank? {
         return repository.findByOfferIdAndRankerId(offerId, rankerId)
     }
 
@@ -22,6 +24,11 @@ class PostgresOfferRankRepositoryImpl(
     }
 
     override fun findById(id: Long): OfferRank? {
-        return repository.findById(id)
+        return repository.findByIdOrNull(id)
+    }
+
+    override fun deleteByOfferIdIn(offerIds: List<Long>): Int {
+        if (offerIds.isEmpty()) return 0
+        return repository.deleteByOfferIdIn(offerIds)
     }
 }

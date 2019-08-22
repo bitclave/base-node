@@ -1,12 +1,15 @@
 package com.bitclave.node.configuration.gson
 
 import com.bitclave.node.repository.models.SignedRequest
+import com.bitclave.node.repository.models.controllers.EnrichedOffersWithCountersResponse
+import com.bitclave.node.repository.models.controllers.OffersWithCountersResponse
 import com.bitclave.node.repository.models.services.ServiceCall
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.Slice
 import org.springframework.http.converter.json.GsonHttpMessageConverter
 import springfox.documentation.spring.web.json.Json
 
@@ -18,6 +21,9 @@ class GsonConfig {
             .registerTypeAdapter(ServiceCall::class.java, ServiceCallDeserializer())
             .registerTypeAdapter(Page::class.java, PageResponseDeserializer())
             .registerTypeAdapter(Page::class.java, PageSerializer())
+            .registerTypeAdapter(OffersWithCountersResponse::class.java, PageWithCountersResponseDeserializer())
+            .registerTypeAdapter(EnrichedOffersWithCountersResponse::class.java, PageWithCountersSerializer())
+            .registerTypeAdapter(Slice::class.java, SliceSerializer())
             .registerTypeAdapter(SignedRequest::class.java, SignedRequestDeserializer())
             .addSerializationExclusionStrategy(AnnotationExcludeStrategy())
             .addDeserializationExclusionStrategy(SuperclassExclusionStrategy())

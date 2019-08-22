@@ -57,15 +57,57 @@ class PageableController(
 
         if (page == null || size == null) {
             return offerService.getPageableOffers(
-                PageRequest(0, 20), getStrategyType(strategy)
+                PageRequest.of(0, 20), getStrategyType(strategy)
             ).exceptionally { e ->
                 logger.error("Request: getPageableOffers/$page/$size raised $e")
                 throw e
             }
         }
 
-        return offerService.getPageableOffers(PageRequest(page, size), getStrategyType(strategy)).exceptionally { e ->
-            logger.error("Request: getPageableOffers/$page/$size raised $e")
+        return offerService.getPageableOffers(PageRequest.of(page, size), getStrategyType(strategy))
+            .exceptionally { e ->
+                logger.error("Request: getPageableOffers/$page/$size raised $e")
+                throw e
+            }
+    }
+
+    @ApiOperation(
+        "Page through already created offers by excluding products", response = Offer::class, responseContainer = "Page"
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(code = 200, message = "Success", response = Page::class)
+        ]
+    )
+    @RequestMapping(value = ["offers/matcher"], method = [RequestMethod.GET], params = ["page", "size"])
+    fun getPageableOffersForMatcher(
+        @ApiParam("Optional page number to retrieve a particular page. If not specified this API retrieves first page.")
+        @RequestParam("page")
+        page: Int?,
+
+        @ApiParam("Optional page size to include number of offers in a page. Defaults to 20.")
+        @RequestParam("size")
+        size: Int?,
+
+        @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
+    ): CompletableFuture<Page<Offer>> {
+
+        if (page == null || size == null) {
+            return offerService.getPageableOffersForMatcher(
+                PageRequest.of(0, 20), getStrategyType(strategy)
+            ).exceptionally { e ->
+                logger.error("Request: getPageableOffersForMatcher/$page/$size raised $e")
+                throw e
+            }
+        }
+
+        return offerService.getPageableOffersForMatcher(
+            PageRequest.of(page, size),
+            getStrategyType(strategy)
+        ).exceptionally { e ->
+            logger.error("Request: getPageableOffersForMatcher/$page/$size raised $e")
             throw e
         }
     }
@@ -96,7 +138,7 @@ class PageableController(
 
         if (page == null || size == null) {
             return searchRequestService.getPageableRequests(
-                PageRequest(0, 20), getStrategyType(strategy)
+                PageRequest.of(0, 20), getStrategyType(strategy)
             ).exceptionally { e ->
                 logger.error("Request: getPageableSearchRequests/$page/$size raised $e")
                 throw e
@@ -104,7 +146,7 @@ class PageableController(
         }
 
         return searchRequestService.getPageableRequests(
-            PageRequest(page, size), getStrategyType(strategy)
+            PageRequest.of(page, size), getStrategyType(strategy)
         ).exceptionally { e ->
             logger.error("Request: getPageableSearchRequests/$page/$size raised $e")
             throw e
@@ -137,7 +179,7 @@ class PageableController(
 
         if (page == null || size == null) {
             return offerSearchService.getPageableOfferSearches(
-                PageRequest(0, 20), getStrategyType(strategy)
+                PageRequest.of(0, 20), getStrategyType(strategy)
             ).exceptionally { e ->
                 logger.error("Request: getPageableOfferSearch/$page/$size raised $e")
                 throw e
@@ -145,7 +187,7 @@ class PageableController(
         }
 
         return offerSearchService.getPageableOfferSearches(
-            PageRequest(page, size), getStrategyType(strategy)
+            PageRequest.of(page, size), getStrategyType(strategy)
         ).exceptionally { e ->
             logger.error("Request: getPageableOfferSearch/$page/$size raised $e")
             throw e

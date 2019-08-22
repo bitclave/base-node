@@ -1,5 +1,6 @@
 package com.bitclave.node.offer
 
+import com.bitclave.node.configuration.properties.AppOpticsProperties
 import com.bitclave.node.configuration.properties.HybridProperties
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.Web3Provider
@@ -18,13 +19,29 @@ import com.bitclave.node.repository.price.OfferPriceCrudRepository
 import com.bitclave.node.repository.price.OfferPriceRepositoryStrategy
 import com.bitclave.node.repository.price.PostgresOfferPriceRepositoryImpl
 import com.bitclave.node.repository.priceRule.OfferPriceRulesCrudRepository
+import com.bitclave.node.repository.rank.OfferRankCrudRepository
+import com.bitclave.node.repository.rank.OfferRankRepositoryStrategy
+import com.bitclave.node.repository.rank.PostgresOfferRankRepositoryImpl
+import com.bitclave.node.repository.rtSearch.RtSearchRepositoryImpl
+import com.bitclave.node.repository.search.PostgresSearchRequestRepositoryImpl
+import com.bitclave.node.repository.search.SearchRequestCrudRepository
+import com.bitclave.node.repository.search.SearchRequestRepositoryStrategy
+import com.bitclave.node.repository.search.interaction.OfferInteractionCrudRepository
+import com.bitclave.node.repository.search.interaction.OfferInteractionRepositoryStrategy
+import com.bitclave.node.repository.search.interaction.PostgresOfferInteractionRepositoryImpl
 import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
+import com.bitclave.node.repository.search.offer.OfferSearchRepositoryStrategy
+import com.bitclave.node.repository.search.offer.PostgresOfferSearchRepositoryImpl
+import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepository
 import com.bitclave.node.services.v1.AccountService
+import com.bitclave.node.services.v1.OfferSearchService
 import com.bitclave.node.services.v1.OfferService
+import com.google.gson.Gson
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.Mockito
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.data.domain.PageRequest
@@ -32,6 +49,7 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import java.math.BigDecimal
+import javax.persistence.EntityManager
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
@@ -59,6 +77,29 @@ class OfferServiceTest {
 
     @Autowired
     protected lateinit var offerSearchCrudRepository: OfferSearchCrudRepository
+
+    @Autowired
+    protected lateinit var querySearchRequestCrudRepository: QuerySearchRequestCrudRepository
+
+    @Autowired
+    protected lateinit var offerRankCrudRepository: OfferRankCrudRepository
+
+    protected val rtSearchRepository = Mockito.mock(RtSearchRepositoryImpl::class.java)
+
+    @Autowired
+    protected lateinit var offerInteractionCrudRepository: OfferInteractionCrudRepository
+
+    @Autowired
+    protected lateinit var searchRequestCrudRepository: SearchRequestCrudRepository
+
+    @Autowired
+    private lateinit var gson: Gson
+
+    @Autowired
+    private lateinit var appOpticsProperties: AppOpticsProperties
+
+    @Autowired
+    private lateinit var entityManager: EntityManager
 
     private val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
 
@@ -132,14 +173,50 @@ class OfferServiceTest {
         val repositoryStrategy = AccountRepositoryStrategy(postgres, hybrid)
         val accountService = AccountService(repositoryStrategy)
 
-        val postgresOfferRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
+        val postgresOfferRepository =
+            PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository, entityManager)
         val offerServiceStrategy = OfferRepositoryStrategy(postgresOfferRepository)
 
         val postgresOfferPriceRepository =
             PostgresOfferPriceRepositoryImpl(offerPriceCrudRepository, offerPriceRulesCrudRepository)
         val offerPriceServiceStrategy = OfferPriceRepositoryStrategy(postgresOfferPriceRepository)
 
-        offerService = OfferService(offerServiceStrategy, offerPriceServiceStrategy)
+        val searchRequestRepository =
+            PostgresSearchRequestRepositoryImpl(
+                searchRequestCrudRepository,
+                offerSearchCrudRepository,
+                entityManager
+            )
+        val requestRepositoryStrategy = SearchRequestRepositoryStrategy(searchRequestRepository)
+
+        val offerSearchRepository =
+            PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository)
+        val offerSearchRepositoryStrategy = OfferSearchRepositoryStrategy(offerSearchRepository)
+
+        val offerInteractionRepository =
+            PostgresOfferInteractionRepositoryImpl(offerInteractionCrudRepository, entityManager)
+        val offerInteractionRepositoryStrategy = OfferInteractionRepositoryStrategy(offerInteractionRepository)
+
+        val offerRankStateRepository = PostgresOfferRankRepositoryImpl(offerRankCrudRepository)
+        val offerRankRepositoryStrategy = OfferRankRepositoryStrategy(offerRankStateRepository)
+
+        val offerSearchService = OfferSearchService(
+            requestRepositoryStrategy,
+            offerServiceStrategy,
+            offerSearchRepositoryStrategy,
+            querySearchRequestCrudRepository,
+            rtSearchRepository,
+            offerInteractionRepositoryStrategy,
+            gson,
+            appOpticsProperties
+        )
+
+        offerService = OfferService(
+            offerServiceStrategy,
+            offerPriceServiceStrategy,
+            offerRankRepositoryStrategy,
+            offerSearchService
+        )
 
         strategy = RepositoryStrategyType.POSTGRES
         accountService.registrationClient(account, strategy)
@@ -316,12 +393,12 @@ class OfferServiceTest {
         `should be create new offer`()
         `should be create new offer`()
 
-        val firstPage = offerService.getPageableOffers(PageRequest(0, 2), strategy).get()
+        val firstPage = offerService.getPageableOffers(PageRequest.of(0, 2), strategy).get()
         assertThat(firstPage.size).isEqualTo(2)
         assert(firstPage.first().id == 1L)
         assert(firstPage.last().id == 2L)
 
-        val secondPage = offerService.getPageableOffers(PageRequest(1, 2), strategy).get()
+        val secondPage = offerService.getPageableOffers(PageRequest.of(1, 2), strategy).get()
         assertThat(secondPage.size).isEqualTo(2)
         assert(secondPage.first().id == 3L)
         assert(secondPage.last().id == 4L)
@@ -348,5 +425,23 @@ class OfferServiceTest {
 
         result = offerService.getOfferByOwnerAndTag(account.publicKey, "age", strategy).get()
         assertThat(result.size).isEqualTo(0)
+    }
+
+    @Test
+    fun `should return all offers except products by page for matcher`() {
+        `should be create new offer`()
+        `should be create new offer`()
+        `should be create new offer`()
+        `should be create new offer`()
+
+        val firstPage = offerService.getPageableOffersForMatcher(PageRequest.of(0, 2), strategy).get()
+        assertThat(firstPage.size).isEqualTo(2)
+        assert(firstPage.first().id == 1L)
+        assert(firstPage.last().id == 2L)
+
+        val secondPage = offerService.getPageableOffersForMatcher(PageRequest.of(1, 2), strategy).get()
+        assertThat(secondPage.size).isEqualTo(2)
+        assert(secondPage.first().id == 3L)
+        assert(secondPage.last().id == 4L)
     }
 }

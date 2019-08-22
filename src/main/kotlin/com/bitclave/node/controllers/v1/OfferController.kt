@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
+import java.util.Date
 import java.util.concurrent.CompletableFuture
 
 private val logger = KotlinLogging.logger {}
@@ -81,12 +82,18 @@ class OfferController(
         strategy: String?
     ): CompletableFuture<ResponseEntity<Offer>> {
 
+        var start = Date()
+
         return accountService
             .accountBySigMessage(request, getStrategyType(strategy))
             .thenCompose { account: Account ->
+                logger.debug("controller profiling SigMessage 1) ${(Date().time - start.time)}ms")
+                start = Date()
                 accountService.validateNonce(request, account)
             }
             .thenCompose {
+                logger.debug("controller profiling ValidateNonce 2) ${(Date().time - start.time)}ms")
+                start = Date()
                 if (request.pk != owner) {
                     throw BadArgumentException()
                 }
@@ -100,10 +107,83 @@ class OfferController(
                 CompletableFuture.completedFuture(result)
             }
             .thenCompose {
+                logger.debug("controller profiling SaveOffice 3) ${(Date().time - start.time)}ms")
                 val status = if (it.id != id) HttpStatus.CREATED else HttpStatus.OK
                 CompletableFuture.completedFuture(ResponseEntity<Offer>(it, status))
             }.exceptionally { e ->
                 logger.error("Request: putOffer/$request raised $e")
+                throw e
+            }
+    }
+
+    /**
+     * Update offer in the system without deleting all matched offerSearch since offer categories are not changed.
+     * The API will verify that the request is cryptographically signed by the owner of the public key.
+     * @param request is {@link SignedRequest} where client sends {@link Offer} and
+     * signature of the message.
+     *
+     * @return {@link Offer}, Http status - 200.
+     *
+     * @exception {@link BadArgumentException} - 400
+     *              {@link AccessDeniedException} - 403
+     *              {@link DataNotSaved} - 500
+     */
+
+    @ApiOperation(
+        "Update offer in the system without deleting all matched offerSearch since offer categories are not" +
+            " changed.\n The API will verify that the request is cryptographically signed by the owner of the public" +
+            "key.",
+        response = Offer::class
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(code = 200, message = "Updated", response = Offer::class),
+            ApiResponse(code = 400, message = "BadArgumentException"),
+            ApiResponse(code = 403, message = "AccessDeniedException"),
+            ApiResponse(code = 500, message = "DataNotSaved")
+        ]
+    )
+    @RequestMapping(method = [RequestMethod.PUT], value = ["/shallow/{id}"])
+    fun shallowUpdateOffer(
+        @ApiParam("public key owner of offer")
+        @PathVariable(value = "owner")
+        owner: String,
+
+        @ApiParam("Optional id of already created a offer. Use for update offer")
+        @PathVariable(value = "id")
+        id: Long,
+
+        @ApiParam("where client sends Offer and signature of the message.", required = true)
+        @RequestBody
+        request: SignedRequest<Offer>,
+
+        @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
+    ): CompletableFuture<ResponseEntity<Offer>> {
+
+        return accountService
+            .accountBySigMessage(request, getStrategyType(strategy))
+            .thenCompose { account: Account ->
+                accountService.validateNonce(request, account)
+            }
+            .thenCompose {
+                if (request.pk != owner) {
+                    throw BadArgumentException()
+                }
+                val result = offerService.shallowUpdateOffer(
+                    id,
+                    owner,
+                    request.data!!,
+                    getStrategyType(strategy)
+                ).get()
+                accountService.incrementNonce(it, getStrategyType(strategy)).get()
+                CompletableFuture.completedFuture(result)
+            }
+            .thenCompose {
+                CompletableFuture.completedFuture(ResponseEntity<Offer>(it, HttpStatus.OK))
+            }.exceptionally { e ->
+                logger.error("Request: shallowUpdateOffer/$request raised $e")
                 throw e
             }
     }
@@ -237,19 +317,19 @@ class OfferController(
         if (page == null || size == null) {
             return offerService.getPageableOffersByOwner(
                 owner,
-                PageRequest(0, 20), getStrategyType(strategy)
+                PageRequest.of(0, 20), getStrategyType(strategy)
             ).exceptionally { e ->
-                logger.error("Request: getPageableOffers/$page/$size raised $e")
+                logger.error("Request: getPageableOffersByOwner/$page/$size raised $e")
                 throw e
             }
         }
 
         return offerService.getPageableOffersByOwner(
             owner,
-            PageRequest(page, size),
+            PageRequest.of(page, size),
             getStrategyType(strategy)
         ).exceptionally { e ->
-            logger.error("Request: getPageableOffers/$page/$size raised $e")
+            logger.error("Request: getPageableOffersByOwner/$page/$size raised $e")
             throw e
         }
     }

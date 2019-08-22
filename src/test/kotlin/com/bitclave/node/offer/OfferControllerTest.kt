@@ -146,6 +146,16 @@ class OfferControllerTest {
     }
 
     @Test
+    fun `shallow update offer`() {
+        this.mvc.perform(
+            put("/$version/client/$publicKey/offer/shallow/1/")
+                .content(requestOffer.toJsonString())
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
+    }
+
+    @Test
     fun `delete offer`() {
         this.mvc.perform(
             delete("/$version/client/$publicKey/offer/1/")
@@ -180,6 +190,16 @@ class OfferControllerTest {
     fun `get offers by page`() {
         this.mvc.perform(
             MockMvcRequestBuilders.get("/$version/offers?page=0&size=2")
+                .headers(httpHeaders)
+        )
+            .andExpect(MockMvcResultMatchers.status().isOk)
+            .andReturn()
+    }
+
+    @Test
+    fun `get offers by page for matcher`() {
+        this.mvc.perform(
+            MockMvcRequestBuilders.get("/$version/offers/matcher?page=0&size=2")
                 .headers(httpHeaders)
         )
             .andExpect(MockMvcResultMatchers.status().isOk)

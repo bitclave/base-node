@@ -16,14 +16,6 @@ spring:
     username: postgres1
     password: bitclave1
 
-flyway:
-  enabled: false
-  baseline-on-migrate: true
-  url: jdbc:h2:mem:db;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
-  user: postgres1
-  password: bitclave1
-  locations: db/migration
-
 hybrid:
   nodeUrl: http://localhost:9545/
   ownerPrivateKey: '0x2bdd21761a483f71054e14f5b827213567971c676928d9a1808cbfa4b7501200'
@@ -33,3 +25,6 @@ hybrid:
       address: '0x0f5ea0a652e851678ebf77b69484bfcd31f9459b'
       gasPrice: '8000000'
       gasLimit: '8000000'
+
+appoptics:
+  serviceKey: '068296ccbd2d57b6913b79e6505d51c0f0a435562026a0820f6aa0c33c838cf2'

@@ -28,6 +28,8 @@ class PostgresFileRepositoryImpl(
         return 0
     }
 
+    override fun deleteByPublicKey(publicKey: String): Long = repository.deleteByPublicKey(publicKey)
+
     override fun findByPublicKey(publicKey: String): List<UploadedFile> {
         return repository.findByPublicKey(publicKey)
     }

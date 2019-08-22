@@ -1,5 +1,7 @@
 package com.bitclave.node.repository.models
 
+import org.springframework.format.annotation.DateTimeFormat
+import java.util.Date
 import javax.persistence.Column
 import javax.persistence.Entity
 import javax.persistence.GeneratedValue
@@ -17,5 +19,9 @@ data class QuerySearchRequest(
     val owner: String = "",
 
     @Column(length = 256)
-    val query: String = ""
+    val query: String = "",
+
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    @Column(columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    val createdAt: Date = Date()
 )

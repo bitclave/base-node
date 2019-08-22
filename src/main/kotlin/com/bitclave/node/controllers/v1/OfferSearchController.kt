@@ -2,11 +2,14 @@ package com.bitclave.node.controllers.v1
 
 import com.bitclave.node.controllers.AbstractController
 import com.bitclave.node.repository.models.Account
-import com.bitclave.node.repository.models.OfferResultAction
+import com.bitclave.node.repository.models.OfferAction
+import com.bitclave.node.repository.models.OfferInteraction
 import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.repository.models.OfferSearchResultItem
 import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.models.SignedRequest
+import com.bitclave.node.repository.models.controllers.EnrichedOffersWithCountersResponse
+import com.bitclave.node.repository.models.controllers.OfferSearchByQueryParameters
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferSearchService
 import io.swagger.annotations.ApiOperation
@@ -40,6 +43,46 @@ class OfferSearchController(
 ) : AbstractController() {
 
     /**
+     * Return suggestion by title of Offer.
+     *
+     * @return {@link List<String>}, Http status - 200.
+     *
+     */
+    @ApiOperation(
+        "get suggestion by title of Offer",
+        response = List::class
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(code = 200, message = "Success", response = List::class)
+        ]
+    )
+    @RequestMapping(method = [RequestMethod.GET], value = ["/query/suggest"])
+    @ResponseStatus(HttpStatus.OK)
+    fun suggestionByQuery(
+        @ApiParam("sends full text search query string")
+        @RequestParam(value = "q")
+        query: String,
+
+        @ApiParam("Optional size to include number of suggestion items. Defaults to 10.")
+        @RequestParam("s", defaultValue = "10", required = false)
+        size: Int,
+
+        @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
+    ): CompletableFuture<List<String>> {
+
+        val decodedQuery = URLDecoder.decode(query, "UTF-8")
+
+        return this.offerSearchService.getSuggestion(decodedQuery, size)
+            .exceptionally { e ->
+                logger.error("Request: suggestionByQuery -> request: $query; error:$e")
+                throw e
+            }
+    }
+
+    /**
      * Creates new offerSearches, based on the query full text search.
      * The API will verify that the request is cryptographically signed by the owner of the public key.
      * @param request is {@link SignedRequest} where client sends {@link SearchRequest} and
@@ -71,6 +114,7 @@ class OfferSearchController(
         @ApiParam("sends full text search query string")
         @RequestParam(value = "q")
         query: String,
+
         @ApiParam("Optional page number to retrieve a particular page. If not specified this API retrieves first page.")
         @RequestParam("page", defaultValue = "0", required = false)
         page: Int,
@@ -78,37 +122,52 @@ class OfferSearchController(
         @ApiParam("Optional page size to include number of offerSearch items in a page. Defaults to 20.")
         @RequestParam("size", defaultValue = "20", required = false)
         size: Int,
+
+        @ApiParam("mode of interests list must or prefer")
+        @RequestParam(value = "mode", defaultValue = "", required = false)
+        mode: String,
+
         @ApiParam(
             "where client already existed search request id (who has rtSearch tag)" +
-                " and signature of the message.", required = true
+                " and signature of the message.", required = false
         )
         @RequestBody
-        request: SignedRequest<Long>,
+        request: SignedRequest<OfferSearchByQueryParameters>?,
 
         @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
         @RequestHeader("Strategy", required = false)
         strategy: String?
-    ): CompletableFuture<Page<OfferSearchResultItem>> {
+    ): CompletableFuture<EnrichedOffersWithCountersResponse> {
+        val decodedQuery = URLDecoder.decode(query, "UTF-8")
 
-        return accountService.accountBySigMessage(request, getStrategyType(strategy))
-            .thenCompose { account: Account -> accountService.validateNonce(request, account) }
-            .thenCompose {
-                val decodedQuery = URLDecoder.decode(query, "UTF-8")
-                val result = offerSearchService.createOfferSearchesByQuery(
-                    request.data!!,
-                    it.publicKey,
-                    decodedQuery,
-                    PageRequest(page, size),
-                    getStrategyType(strategy)
-                ).get()
-
-                accountService.incrementNonce(it, getStrategyType(strategy)).get()
-
-                CompletableFuture.completedFuture(result)
-            }.exceptionally { e ->
-                logger.error("Request: createOfferSearchesByQuery -> request: $request; error:$e")
+        if (request?.hasSignature() == true) {
+            return accountService.accountBySigMessage(request, getStrategyType(strategy))
+                .thenCompose {
+                    offerSearchService.createOfferSearchesByQuery(
+                        request.data!!.searchRequestId,
+                        it.publicKey,
+                        decodedQuery,
+                        PageRequest.of(page, size),
+                        getStrategyType(strategy),
+                        request.data.filters,
+                        mode
+                    )
+                }.exceptionally { e ->
+                    logger.error("Request: createOfferSearchesByQuery -> request: $request; error:$e")
+                    throw e
+                }
+        } else {
+            return offerSearchService.getOfferSearchesByQuery(
+                decodedQuery,
+                PageRequest.of(page, size),
+                getStrategyType(strategy),
+                request?.data?.filters ?: emptyMap(),
+                mode
+            ).exceptionally { e ->
+                logger.error("Request: getOfferSearchesByQuery -> request: $request; error:$e")
                 throw e
             }
+        }
     }
 
     /**
@@ -153,7 +212,7 @@ class OfferSearchController(
             getStrategyType(strategy),
             searchRequestId,
             offerSearchId,
-            PageRequest(page, size)
+            PageRequest.of(page, size)
         ).exceptionally { e ->
             logger.error("Request: getResult /$searchRequestId/$offerSearchId raised $e")
             throw e
@@ -191,7 +250,7 @@ class OfferSearchController(
 
         @ApiParam("query by state")
         @RequestParam(value = "state", required = false, defaultValue = "")
-        state: List<OfferResultAction>,
+        state: List<OfferAction>,
 
         @ApiParam("Optional page number to retrieve a particular page. If not specified this API retrieves first page.")
         @RequestParam("page", defaultValue = "0", required = false)
@@ -205,6 +264,10 @@ class OfferSearchController(
         @RequestParam("sort", defaultValue = "rank", required = false)
         sort: String,
 
+        @ApiParam("Optional. if true when return list of interactions by offerIds and owner")
+        @RequestParam("interaction", defaultValue = "0", required = false)
+        interaction: Boolean,
+
         @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
         @RequestHeader("Strategy", required = false)
         strategy: String?
@@ -216,7 +279,8 @@ class OfferSearchController(
             unique,
             searchIds,
             state,
-            PageRequest(page, size, Sort(sort))
+            PageRequest.of(page, size, Sort.by(sort)),
+            interaction
         ).exceptionally { e ->
             logger.error("Request: getResultByOwner/$owner raised $e")
             throw e
@@ -318,7 +382,7 @@ class OfferSearchController(
      *
      */
     @ApiOperation("Add event")
-    @ApiResponses(value = [ApiResponse(code = 201, message = "Added")])
+    @ApiResponses(value = [ApiResponse(code = 200, message = "Added")])
     @RequestMapping(method = [RequestMethod.PATCH], value = ["/result/event/{id}"])
     @ResponseStatus(HttpStatus.OK)
     fun addEvent(
@@ -344,6 +408,35 @@ class OfferSearchController(
             }
     }
 
+    @ApiOperation("get states of interactions with offers")
+    @ApiResponses(value = [ApiResponse(code = 200, message = "Success")])
+    @RequestMapping(method = [RequestMethod.GET], value = ["/result/interaction"])
+    @ResponseStatus(HttpStatus.OK)
+    fun getInteractions(
+        @ApiParam("owner of interaction", required = true)
+        @RequestParam("owner", required = true, defaultValue = "")
+        owner: String,
+
+        @ApiParam("get interaction by state. use single param query states or offers", required = false)
+        @RequestParam("states", required = false, defaultValue = "")
+        states: List<OfferAction>,
+
+        @ApiParam("get interaction by offers. use single param query states or offers", required = false)
+        @RequestParam("offers", required = false, defaultValue = "")
+        offers: List<Long>,
+
+        @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
+    ): CompletableFuture<List<OfferInteraction>> {
+
+        return offerSearchService.getInteractions(owner, states, offers, getStrategyType(strategy))
+            .exceptionally { e ->
+                logger.error("Request: getInteractions: $owner, $states, $offers  raised $e")
+                throw e
+            }
+    }
+
     /**
      * Complain to Offer or search result item.
      */
@@ -355,7 +448,7 @@ class OfferSearchController(
         @PathVariable(value = "id")
         searchResultId: Long,
 
-        @ApiParam("where client sends searchResult id and signature of the message.", required = true)
+        @ApiParam("where client sends save id and signature of the message.", required = true)
         @RequestBody
         request: SignedRequest<Long>,
 
@@ -385,7 +478,7 @@ class OfferSearchController(
         @PathVariable(value = "id")
         searchResultId: Long,
 
-        @ApiParam("where client sends searchResult id and signature of the message.", required = true)
+        @ApiParam("where client sends save id and signature of the message.", required = true)
         @RequestBody
         request: SignedRequest<Long>,
 
@@ -415,7 +508,7 @@ class OfferSearchController(
         @PathVariable(value = "id")
         searchResultId: Long,
 
-        @ApiParam("where client sends searchResult id and signature of the message.", required = true)
+        @ApiParam("where client sends save id and signature of the message.", required = true)
         @RequestBody
         request: SignedRequest<Long>,
 
@@ -445,7 +538,7 @@ class OfferSearchController(
         @PathVariable(value = "id")
         searchResultId: Long,
 
-        @ApiParam("where client sends searchResult id and signature of the message.", required = true)
+        @ApiParam("where client sends save id and signature of the message.", required = true)
         @RequestBody
         request: SignedRequest<Long>,
 
@@ -472,7 +565,7 @@ class OfferSearchController(
         @PathVariable(value = "id")
         searchResultId: Long,
 
-        @ApiParam("where client sends searchResult id and signature of the message.", required = true)
+        @ApiParam("where client sends save id and signature of the message.", required = true)
         @RequestBody
         request: SignedRequest<Long>,
 
@@ -541,8 +634,8 @@ class OfferSearchController(
                 }
 
                 val result = offerSearchService.cloneOfferSearchOfSearchRequest(
-                    id,
-                    request.data!!,
+                    owner,
+                    listOf(Pair(id, request.data!!.id)),
                     getStrategyType(strategy)
                 ).get()
 

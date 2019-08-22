@@ -3,6 +3,7 @@ package com.bitclave.node.repository.offer
 import com.bitclave.node.repository.models.Offer
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Slice
 
 interface OfferRepository {
 
@@ -10,11 +11,23 @@ interface OfferRepository {
 
     fun deleteOffer(id: Long, owner: String): Long
 
-    fun deleteOffers(owner: String): Long
+    fun deleteOffers(owner: String): Int
+
+    fun findIdsByOwner(owner: String): List<Long>
 
     fun findByOwner(owner: String): List<Offer>
 
     fun findByOwner(owner: String, pageable: Pageable): Page<Offer>
+
+    fun getAllOffersExceptProducts(pageable: Pageable): Page<Offer>
+
+    fun getAllOffersSlice(
+        pageable: Pageable,
+        syncCompare: Boolean,
+        syncRules: Boolean,
+        syncPrices: Boolean,
+        exceptType: Offer.OfferType?
+    ): Slice<Offer>
 
     fun findByIds(ids: List<Long>, pageable: Pageable): Page<Offer>
 

@@ -8,6 +8,8 @@ import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.solidity.generated.AccountContract
 import com.bitclave.node.solidity.generated.NameServiceContract
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.data.domain.Pageable
+import org.springframework.data.domain.Slice
 import org.springframework.stereotype.Component
 import java.math.BigInteger
 import java.util.Date
@@ -61,6 +63,10 @@ class HybridAccountRepositoryImpl(
             return Account(publicKey, nonce.toLong())
         }
         return null
+    }
+
+    override fun findAll(pageable: Pageable): Slice<Account> {
+        throw BadArgumentException("This method is not implemented for hybrid")
     }
 
     override fun findByPublicKey(publicKeys: List<String>): List<Account> {

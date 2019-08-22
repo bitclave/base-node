@@ -2,10 +2,10 @@ package com.bitclave.node.search.offer
 
 import com.bitclave.node.extensions.toJsonString
 import com.bitclave.node.repository.RepositoryStrategyType
-import com.bitclave.node.repository.models.OfferResultAction
 import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.repository.models.SearchRequest
 import com.bitclave.node.repository.models.SignedRequest
+import com.bitclave.node.repository.models.controllers.OfferSearchByQueryParameters
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -21,7 +21,6 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import java.util.ArrayList
 import java.util.Date
 
 @ActiveProfiles("test")
@@ -40,6 +39,7 @@ class OfferSearchControllerTest {
     protected lateinit var offerSearchIdRequest: SignedRequest<Long>
     protected lateinit var offerEventRequest: SignedRequest<String>
     protected lateinit var requestSearch: SignedRequest<SearchRequest>
+    protected lateinit var cloneRequestSearch: SignedRequest<SearchRequest>
     private var httpHeaders: HttpHeaders = HttpHeaders()
 
     private val offerSearchModel = OfferSearch(
@@ -47,9 +47,6 @@ class OfferSearchControllerTest {
         publicKey,
         1L,
         1L,
-        OfferResultAction.NONE,
-        "",
-        ArrayList(),
         Date(1550561756503)
     )
 
@@ -69,6 +66,8 @@ class OfferSearchControllerTest {
 
         requestSearch = SignedRequest(searchRequest, publicKey)
 
+        cloneRequestSearch = SignedRequest(searchRequest, publicKey)
+
         httpHeaders.set("Accept", "application/json")
         httpHeaders.set("Content-Type", "application/json")
         httpHeaders.set("Strategy", RepositoryStrategyType.POSTGRES.name)
@@ -76,9 +75,15 @@ class OfferSearchControllerTest {
 
     @Test
     fun `create offerSearches request by query string`() {
+        val content = SignedRequest(
+            OfferSearchByQueryParameters(
+                1L,
+                mapOf("interests" to listOf("interest_personal_vault", "interest_paid_surveys"))
+            ), publicKey
+        )
         this.mvc.perform(
             post("/$version/search/query/")
-                .content(offerSearchIdRequest.toJsonString())
+                .content(content.toJsonString())
                 .param("q", "some query string")
                 .headers(httpHeaders)
         )
@@ -190,14 +195,69 @@ class OfferSearchControllerTest {
     }
 
     @Test
+    fun `get offer search list by owner, searchIds, state, unique, page, size, interaction`() {
+        this.mvc.perform(
+            get("/$version/search/result/user")
+                .param("owner", publicKey)
+                .param("searchIds", "1,2")
+                .param("state", "EVALUATE,ACCEPT")
+                .param("unique", "true")
+                .param("page", "0")
+                .param("size", "20")
+                .param("interaction", "0")
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
+    }
+
+    @Test
+    fun `get interactions by owner`() {
+        this.mvc.perform(
+            get("/$version/search/result/interaction")
+                .param("owner", publicKey)
+                .headers(httpHeaders)
+        ).andExpect(status().isOk)
+    }
+
+    @Test
+    fun `get interactions by owner and states`() {
+        this.mvc.perform(
+            get("/$version/search/result/interaction")
+                .param("owner", publicKey)
+                .param("states", "COMPLAIN,REJECT")
+                .headers(httpHeaders)
+        ).andExpect(status().isOk)
+    }
+
+    @Test
+    fun `get interactions by owner and offers`() {
+        this.mvc.perform(
+            get("/$version/search/result/interaction")
+                .param("owner", publicKey)
+                .param("offers", "1,2")
+                .headers(httpHeaders)
+        ).andExpect(status().isOk)
+    }
+
+    @Test
+    fun `get interactions by owner, states and offers`() {
+        this.mvc.perform(
+            get("/$version/search/result/interaction")
+                .param("owner", publicKey)
+                .param("states", "COMPLAIN,REJECT")
+                .param("offers", "1,2")
+                .headers(httpHeaders)
+        ).andExpect(status().isOk)
+    }
+
+    @Test
     fun `get error with wrong state value`() {
         this.mvc.perform(
             get("/$version/search/result/user")
                 .param("owner", publicKey)
                 .param("state", "SOME_VALUE")
                 .headers(httpHeaders)
-        )
-            .andExpect(status().isBadRequest)
+        ).andExpect(status().isBadRequest)
     }
 
     @Test
@@ -206,8 +266,7 @@ class OfferSearchControllerTest {
             patch("/$version/search/result/event/1")
                 .content(offerEventRequest.toJsonString())
                 .headers(httpHeaders)
-        )
-            .andExpect(status().isOk)
+        ).andExpect(status().isOk)
     }
 
     @Test
@@ -216,8 +275,7 @@ class OfferSearchControllerTest {
             patch("/$version/search/result/1")
                 .content(offerSearchIdRequest.toJsonString())
                 .headers(httpHeaders)
-        )
-            .andExpect(status().isOk)
+        ).andExpect(status().isOk)
     }
 
     @Test
@@ -226,8 +284,7 @@ class OfferSearchControllerTest {
             post("/$version/search/result/")
                 .content(offerSearchRequest.toJsonString())
                 .headers(httpHeaders)
-        )
-            .andExpect(status().isCreated)
+        ).andExpect(status().isCreated)
     }
 
     @Test
@@ -238,8 +295,7 @@ class OfferSearchControllerTest {
             post("/$version/search/result/")
                 .content(modelWithoutUpdateAt)
                 .headers(httpHeaders)
-        )
-            .andExpect(status().isCreated)
+        ).andExpect(status().isCreated)
     }
 
     @Test
@@ -247,17 +303,15 @@ class OfferSearchControllerTest {
         this.mvc.perform(
             get("/$version/search/results?page=0&size=2")
                 .headers(httpHeaders)
-        )
-            .andExpect(status().isOk)
+        ).andExpect(status().isOk)
     }
 
     @Test
     fun `clone offer search of search request`() {
         this.mvc.perform(
             put("/$version/search/result/$publicKey/1")
-                .content(requestSearch.toJsonString())
+                .content(cloneRequestSearch.toJsonString())
                 .headers(httpHeaders)
-        )
-            .andExpect(status().isOk)
+        ).andExpect(status().isOk)
     }
 }

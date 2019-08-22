@@ -9,9 +9,10 @@ import com.bitclave.node.repository.account.HybridAccountRepositoryImpl
 import com.bitclave.node.repository.account.PostgresAccountRepositoryImpl
 import com.bitclave.node.repository.models.Account
 import com.bitclave.node.repository.models.Offer
+import com.bitclave.node.repository.models.OfferAction
+import com.bitclave.node.repository.models.OfferInteraction
 import com.bitclave.node.repository.models.OfferPrice
 import com.bitclave.node.repository.models.OfferPriceRules
-import com.bitclave.node.repository.models.OfferResultAction
 import com.bitclave.node.repository.models.OfferSearch
 import com.bitclave.node.repository.models.OfferShareData
 import com.bitclave.node.repository.models.SearchRequest
@@ -25,6 +26,9 @@ import com.bitclave.node.repository.priceRule.OfferPriceRulesCrudRepository
 import com.bitclave.node.repository.search.PostgresSearchRequestRepositoryImpl
 import com.bitclave.node.repository.search.SearchRequestCrudRepository
 import com.bitclave.node.repository.search.SearchRequestRepositoryStrategy
+import com.bitclave.node.repository.search.interaction.OfferInteractionCrudRepository
+import com.bitclave.node.repository.search.interaction.OfferInteractionRepositoryStrategy
+import com.bitclave.node.repository.search.interaction.PostgresOfferInteractionRepositoryImpl
 import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.repository.search.offer.OfferSearchRepositoryStrategy
 import com.bitclave.node.repository.search.offer.PostgresOfferSearchRepositoryImpl
@@ -43,7 +47,7 @@ import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.junit4.SpringRunner
 import java.math.BigDecimal
-import java.util.ArrayList
+import javax.persistence.EntityManager
 
 @ActiveProfiles("test")
 @RunWith(SpringRunner::class)
@@ -82,6 +86,12 @@ class OfferShareServiceTest {
     @Autowired
     protected lateinit var offerSearchCrudRepository: OfferSearchCrudRepository
 
+    @Autowired
+    protected lateinit var offerInteractionCrudRepository: OfferInteractionCrudRepository
+
+    @Autowired
+    private lateinit var entityManager: EntityManager
+
     private val accountClient: Account =
         Account("02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea")
     private val accountBusiness: Account =
@@ -119,19 +129,27 @@ class OfferShareServiceTest {
         val hybrid = HybridAccountRepositoryImpl(web3Provider, hybridProperties)
         val repositoryStrategy = AccountRepositoryStrategy(postgres, hybrid)
         val accountService = AccountService(repositoryStrategy)
-        val postgresOfferRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository)
+        val postgresOfferRepository =
+            PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository, entityManager)
         val offerRepositoryStrategy = OfferRepositoryStrategy(postgresOfferRepository)
 
         val offerShareRepository = PostgresOfferShareRepositoryImpl(offerShareCrudRepository)
         val shareRepositoryStrategy = OfferShareRepositoryStrategy(offerShareRepository)
 
         val searchRequestRepository =
-            PostgresSearchRequestRepositoryImpl(searchRequestCrudRepository, offerSearchCrudRepository)
+            PostgresSearchRequestRepositoryImpl(
+                searchRequestCrudRepository,
+                offerSearchCrudRepository,
+                entityManager
+            )
         val searchRequestRepositoryStrategy = SearchRequestRepositoryStrategy(searchRequestRepository)
 
-        val offerSearchRepository =
-            PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository, searchRequestRepository)
+        val offerSearchRepository = PostgresOfferSearchRepositoryImpl(offerSearchCrudRepository)
         val offerSearchRepositoryStrategy = OfferSearchRepositoryStrategy(offerSearchRepository)
+
+        val offerSearchStateRepository =
+            PostgresOfferInteractionRepositoryImpl(offerInteractionCrudRepository, entityManager)
+        val offerSearchStateRepositoryStrategy = OfferInteractionRepositoryStrategy(offerSearchStateRepository)
 
         val offerPriceRepository =
             PostgresOfferPriceRepositoryImpl(offerPriceCrudRepository, offerPriceRuleCrudRepository)
@@ -141,7 +159,8 @@ class OfferShareServiceTest {
             shareRepositoryStrategy,
             offerRepositoryStrategy,
             offerSearchRepositoryStrategy,
-            searchRequestRepositoryStrategy
+            searchRequestRepositoryStrategy,
+            offerSearchStateRepositoryStrategy
         )
 
         strategy = RepositoryStrategyType.POSTGRES
@@ -158,21 +177,26 @@ class OfferShareServiceTest {
 
         val searchRequest = searchRequestRepositoryStrategy
             .changeStrategy(strategy)
-            .saveSearchRequest(SearchRequest(0, accountClient.publicKey, emptyMap()))
+            .save(SearchRequest(0, accountClient.publicKey, emptyMap()))
 
         offerSearchRepositoryStrategy
             .changeStrategy(strategy)
-            .saveSearchResult(
+            .save(
                 OfferSearch(
                     0,
                     searchRequest.owner,
                     searchRequest.id,
-                    1,
-                    OfferResultAction.ACCEPT,
-                    "",
-                    ArrayList()
+                    1
                 )
             )
+        offerSearchStateRepository.repository.save(
+            OfferInteraction(
+                0,
+                searchRequest.owner,
+                1,
+                OfferAction.ACCEPT
+            )
+        )
     }
 
     @Test

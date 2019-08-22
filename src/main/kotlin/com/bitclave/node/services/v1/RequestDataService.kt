@@ -7,9 +7,12 @@ import com.bitclave.node.repository.models.RequestDataTree
 import com.bitclave.node.repository.request.RequestDataRepository
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.utils.KeyPairUtils
+import com.bitclave.node.utils.runAsyncEx
+import com.bitclave.node.utils.supplyAsyncEx
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
+import java.util.function.Supplier
 
 @Service
 @Qualifier("v1")
@@ -21,7 +24,7 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
         toPk: String? = null
     ): CompletableFuture<List<RequestData>> {
 
-        return CompletableFuture.supplyAsync {
+        return supplyAsyncEx(Supplier {
             val result: List<RequestData> =
                 if (fromPk == null && toPk != null) {
                     requestDataRepository.changeStrategy(strategy)
@@ -37,11 +40,11 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
                 }
 
             result
-        }
+        })
     }
 
     fun request(clientPk: String, data: List<RequestData>, strategy: RepositoryStrategyType): CompletableFuture<Void> {
-        return CompletableFuture.runAsync {
+        return supplyAsyncEx(Supplier {
             this.checkRequestData(data)
             val toPk = data[0].toPk.toLowerCase()
 
@@ -61,7 +64,7 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
 
             requestDataRepository.changeStrategy(strategy)
                 .saveAll(result)
-        }
+        })
     }
 
     fun grantAccess(
@@ -70,7 +73,7 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
         strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
 
-        return CompletableFuture.runAsync {
+        return supplyAsyncEx(Supplier {
             this.checkRequestData(data)
 
             data.forEach {
@@ -159,11 +162,9 @@ class RequestDataService(private val requestDataRepository: RepositoryStrategy<R
         publicKey: String,
         strategy: RepositoryStrategyType
     ): CompletableFuture<Void> {
-
-        return CompletableFuture.runAsync {
-            requestDataRepository.changeStrategy(strategy)
-                .deleteByFromAndTo(publicKey)
-        }
+        return runAsyncEx(Runnable {
+            requestDataRepository.changeStrategy(strategy).deleteByFromAndTo(publicKey)
+        })
     }
 
     private fun acceptedDataForPk(

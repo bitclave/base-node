@@ -2,11 +2,13 @@ package com.bitclave.node.services.v1.services
 
 import com.bitclave.node.repository.models.services.CheckedExceptionResponse
 import com.bitclave.node.repository.models.services.HttpServiceCall
+import com.bitclave.node.utils.supplyAsyncEx
 import org.springframework.http.HttpEntity
 import org.springframework.http.ResponseEntity
-import org.springframework.web.client.HttpClientErrorException
+import org.springframework.web.client.HttpStatusCodeException
 import org.springframework.web.client.RestTemplate
 import java.util.concurrent.CompletableFuture
+import java.util.function.Supplier
 
 class CallStrategyExecutorHttp(
     private val restTemplate: RestTemplate
@@ -14,7 +16,7 @@ class CallStrategyExecutorHttp(
 
     override fun execute(endPointUrl: String, request: HttpServiceCall): CompletableFuture<ResponseEntity<*>?> {
 
-        return CompletableFuture.supplyAsync {
+        return supplyAsyncEx(Supplier {
             val entity = HttpEntity<Any>(request.body, request.headers)
             val url = StringBuilder(endPointUrl).append(request.path)
 
@@ -24,19 +26,23 @@ class CallStrategyExecutorHttp(
             }
 
             try {
-                return@supplyAsync restTemplate.exchange(
+                return@Supplier restTemplate.exchange(
                     url.toString(),
                     request.httpMethod, entity,
                     Any::class.java,
                     request.queryParams
                 )
-            } catch (e: HttpClientErrorException) {
-                return@supplyAsync ResponseEntity<CheckedExceptionResponse>(
-                    CheckedExceptionResponse(e.message ?: "", e.statusText ?: "", e.responseBodyAsString ?: ""),
-                    e.responseHeaders,
-                    e.statusCode
-                )
+            } catch (e: Throwable) {
+                if (e is HttpStatusCodeException) {
+                    return@Supplier ResponseEntity(
+                        CheckedExceptionResponse(e.message ?: "", e.statusText ?: "", e.responseBodyAsString ?: ""),
+                        e.responseHeaders,
+                        e.statusCode
+                    )
+                }
+
+                throw e
             }
-        }
+        })
     }
 }
