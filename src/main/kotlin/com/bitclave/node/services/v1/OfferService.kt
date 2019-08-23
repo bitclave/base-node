@@ -105,8 +105,13 @@ class OfferService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<List<Long>> {
         return supplyAsyncEx(Supplier {
-            val result = offers.map { putOffer(it.id, owner, it, strategy).get().id}
-            return@Supplier result
+            offers.map {
+                try {
+                    putOffer(it.id, owner, it, strategy).get().id
+                } catch(err: Throwable) {
+                    return@map 0L
+                }
+            }
         })
     }
 
