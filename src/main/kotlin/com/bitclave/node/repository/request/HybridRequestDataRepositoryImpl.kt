@@ -1,8 +1,8 @@
 package com.bitclave.node.repository.request
 
 import com.bitclave.node.configuration.properties.HybridProperties
-import com.bitclave.node.extensions.ecPoint
 import com.bitclave.node.extensions.compressedString
+import com.bitclave.node.extensions.ecPoint
 import com.bitclave.node.extensions.hex
 import com.bitclave.node.extensions.sha3
 import com.bitclave.node.repository.Web3Provider
@@ -95,34 +95,16 @@ class HybridRequestDataRepositoryImpl(
     override fun getByFromAndTo(
         from: String,
         to: String
-    ): RequestData? {
+    ): List<RequestData> {
+        throw NotImplementedError()
+    }
 
-        val ecPointFrom = ecPoint(from)
-        val ecPointTo = ecPoint(to)
+    override fun getByFromAndToAndRequestData(from: String, to: String, requestData: String): RequestData? {
+        throw NotImplementedError()
+    }
 
-        val count = contract.getByFromAndToCount(
-            ecPointFrom.affineX,
-            ecPointTo.affineX
-        )
-            .send()
-            .toLong()
-
-        if (count == 0.toLong()) {
-            return null
-        }
-
-        val requestId = contract.getByFromAndTo(
-            ecPointFrom.affineX,
-            ecPointTo.affineX,
-            0.toBigInteger()
-        )
-            .send()
-
-        if (requestId == 0.toBigInteger()) {
-            return null
-        }
-
-        return tupleToRequestData(contract.findById(requestId).send())
+    override fun getByRequestDataAndRootPk(requestData: String, rootPk: String): List<RequestData> {
+        throw NotImplementedError()
     }
 
     override fun findById(id: Long): RequestData? {
@@ -162,11 +144,19 @@ class HybridRequestDataRepositoryImpl(
         return request
     }
 
+    override fun saveAll(requests: List<RequestData>): List<RequestData> {
+        requests.forEach {
+            this.updateData(it)
+        }
+
+        return requests.toList()
+    }
+
     override fun deleteByFromAndTo(publicKey: String) {
         val ecPoint = ecPoint(publicKey)
 
         val toCount = contract.getByToCount(ecPoint.affineX).send().toLong()
-        (0..(toCount - 1))
+        (0 until toCount)
             .map {
                 contract.getByTo(
                     ecPoint.affineX,
@@ -178,7 +168,7 @@ class HybridRequestDataRepositoryImpl(
             }
 
         val fromCount = contract.getByFromCount(ecPoint.affineX).send().toLong()
-        (0..(fromCount - 1))
+        (0 until fromCount)
             .map {
                 contract.getByFrom(
                     ecPoint.affineX,
@@ -188,6 +178,10 @@ class HybridRequestDataRepositoryImpl(
             .map {
                 contract.deleteById(it).send()
             }
+    }
+
+    override fun deleteByIds(ids: List<Long>) {
+        throw NotImplementedError()
     }
 
     private fun tupleToRequestData(

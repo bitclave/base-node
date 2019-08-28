@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component
 @Component
 @Qualifier("postgres")
 class PostgresRequestDataRepositoryImpl(val repository: RequestDataCrudRepository) :
-        RequestDataRepository {
+    RequestDataRepository {
 
     override fun getByFrom(from: String): List<RequestData> {
         return repository.findByFromPk(from)
@@ -19,8 +19,16 @@ class PostgresRequestDataRepositoryImpl(val repository: RequestDataCrudRepositor
         return repository.findByToPk(to)
     }
 
-    override fun getByFromAndTo(from: String, to: String): RequestData? {
+    override fun getByFromAndTo(from: String, to: String): List<RequestData> {
         return repository.findByFromPkAndToPk(from, to)
+    }
+
+    override fun getByFromAndToAndRequestData(from: String, to: String, requestData: String): RequestData? {
+        return repository.findByFromPkAndToPkAndRequestData(from, to, requestData)
+    }
+
+    override fun getByRequestDataAndRootPk(requestData: String, rootPk: String): List<RequestData> {
+        return repository.findByRequestDataAndRootPk(requestData, rootPk)
     }
 
     override fun findById(id: Long): RequestData? {
@@ -31,8 +39,16 @@ class PostgresRequestDataRepositoryImpl(val repository: RequestDataCrudRepositor
         return repository.save(request) ?: throw DataNotSavedException()
     }
 
+    override fun saveAll(requests: List<RequestData>): List<RequestData> {
+        return repository.saveAll(requests).toList()
+    }
+
     override fun deleteByFromAndTo(publicKey: String) {
         repository.deleteAll(repository.findByFromPk(publicKey))
         repository.deleteAll(repository.findByToPk(publicKey))
+    }
+
+    override fun deleteByIds(ids: List<Long>) {
+        repository.deleteByIdIn(ids)
     }
 }
