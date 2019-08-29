@@ -51,6 +51,9 @@ spec:
             steps {
                 sh 'echo hello'
                 container('base-node-builder') {
+                    sh "node --version"
+                    sh "npm --version"
+                    sh "java -version"
                     sh "npm install -g ganache-cli"
                     sh "./start-ganache.sh > /dev/null &"
                     sh "sleep 5"
