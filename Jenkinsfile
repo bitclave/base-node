@@ -59,7 +59,7 @@ spec:
                     sh 'echo $PATH'
                     sh "npm install ganache-cli"
                     sh "ls -l ./node_modules/.bin/ganache-cli"
-                    sh 'export PATH=$PATH:./node_modules/.bin/ganache-cli && echo $PATH && ./start-ganache.sh > /dev/null &'
+                    sh 'export PATH=$PATH:./node_modules/.bin/ganache-cli && echo $PATH && source ./start-ganache.sh > /dev/null &'
                     sh "sleep 5"
 
                 }
@@ -78,7 +78,10 @@ spec:
                     sh './gradlew build --exclude-task test' 
                     sh "ls -l build/libs/base-node.jar"
                 }
+
+                sh 'chown -R jenkins build'
                 stash includes: 'build/libs/base-node.jar', name: 'base-node.jar'
+                sh 'chown -R jenkins build'
 
                 // sh 'printenv | grep -i branch'
                 // sh 'echo ${IMAGE_TAG}'
@@ -95,6 +98,8 @@ spec:
                 sh 'echo here1'
                 sh 'whoami'
                 sh 'ls -l'
+                sh 'ls -l build'
+                sh "ls -l build/libs/base-node.jar"
                 unstash 'base-node.jar'
                 sh 'echo here2'
                 sh "ls -l"
