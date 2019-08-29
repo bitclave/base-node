@@ -59,7 +59,8 @@ spec:
                     sh 'echo $PATH'
                     sh "npm install ganache-cli"
                     sh "ls -l ./node_modules/.bin/ganache-cli"
-                    sh 'export PATH=$PATH:./node_modules/.bin/ganache-cli && echo $PATH && source ./start-ganache.sh > /dev/null &'
+                    // sh 'export PATH=$PATH:./node_modules/.bin/ganache-cli && echo $PATH && source ./start-ganache.sh > /dev/null &'
+                    sh 'export PATH=$PATH:./node_modules/.bin/ganache-cli && echo $PATH && source ganache-cli --version > /dev/null &'
                     sh "sleep 5"
 
                 }
@@ -75,8 +76,11 @@ spec:
         stage('Build') { 
             steps {
                 container('base-node-builder') {
-                    sh './gradlew build --exclude-task test' 
-                    sh 'chown -R jenkins build'
+                    sh "ls -l"
+                    sh "ls -l build"
+                    sh "ls -l build/libs"
+                    sh "ls -l build/libs/base-node.jar"
+                    // sh './gradlew build --exclude-task test' 
                     sh 'from container'
                     sh "ls -l build/libs/base-node.jar"
                 }
