@@ -88,7 +88,7 @@ spec:
                     sh "ls -l build/libs/base-node.jar"
                 }
 
-                sh 'after container'
+                sh 'echo after container'
                 sh "ls -l build/libs/base-node.jar"
                 stash includes: 'build/libs/base-node.jar', name: 'base-node.jar'
 
