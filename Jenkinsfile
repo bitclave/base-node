@@ -76,12 +76,14 @@ spec:
             steps {
                 container('base-node-builder') {
                     sh './gradlew build --exclude-task test' 
+                    sh 'chown -R jenkins build'
+                    sh 'from container'
                     sh "ls -l build/libs/base-node.jar"
                 }
 
-                sh 'chown -R jenkins build'
+                sh 'after container'
+                sh "ls -l build/libs/base-node.jar"
                 stash includes: 'build/libs/base-node.jar', name: 'base-node.jar'
-                sh 'chown -R jenkins build'
 
                 // sh 'printenv | grep -i branch'
                 // sh 'echo ${IMAGE_TAG}'
