@@ -68,16 +68,23 @@ spec:
                 }
             }
         }
-
-        // stage('Build Container') {
-        //     steps {
-        //         sh 'printenv | grep -i branch'
-        //         sh 'echo ${IMAGE_TAG}'
-        //         container('gcloud') {
-        //         sh "PYTHONUNBUFFERED=1 gcloud builds submit -t ${IMAGE_TAG} ."
-        //         }
-        //     }
-        // }
+        stage('Build') { 
+            steps {
+                container('base-node-builder') {
+                    sh './gradlew build -x test' 
+                }
+            }
+        }
+         
+        stage('Build Container') {
+            steps {
+                sh 'printenv | grep -i branch'
+                sh 'echo ${IMAGE_TAG}'
+                container('gcloud') {
+                sh "PYTHONUNBUFFERED=1 gcloud builds submit -t ${IMAGE_TAG} ."
+                }
+            }
+        }
 
         // stage('Deploy Production') {
         // // Production branch
