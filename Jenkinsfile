@@ -115,6 +115,9 @@ spec:
                 sh "ls -l build/libs/base-node.jar"
 
                 container('gcloud') {
+                    sh 'echo here3'
+                    sh "ls -l"
+                    sh "ls -l build/libs/base-node.jar"
                     sh "PYTHONUNBUFFERED=1 gcloud builds submit -t ${IMAGE_TAG} ."
                 }
             }
