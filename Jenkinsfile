@@ -59,7 +59,7 @@ spec:
                     sh 'echo $PATH'
                     sh "npm install ganache-cli"
                     sh "ls -l ./node_modules/.bin/ganache-cli"
-                    sh 'export PATH=$PATH:./node_modules/.bin/ganache-cli && ./start-ganache.sh > /dev/null &'
+                    sh 'export PATH=$PATH:./node_modules/.bin/ganache-cli && echo $PATH && ./start-ganache.sh > /dev/null &'
                     sh "sleep 5"
 
                 }
@@ -79,6 +79,7 @@ spec:
                     sh "ls -l build/libs/base-node.jar"
                 }
                 stash includes: 'build/libs/base-node.jar', name: 'base-node.jar'
+
                 // sh 'printenv | grep -i branch'
                 // sh 'echo ${IMAGE_TAG}'
                 // container('gcloud') {
@@ -92,6 +93,8 @@ spec:
                 sh 'printenv | grep -i branch'
                 sh 'echo ${IMAGE_TAG}'
                 sh 'echo here1'
+                sh 'whoami'
+                sh 'ls -l'
                 unstash 'base-node.jar'
                 sh 'echo here2'
                 sh "ls -l"
