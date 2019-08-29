@@ -43,9 +43,9 @@ spec:
         IMAGE_TAG = "gcr.io/bitclave-jenkins-ci/${APP_NAME}:${env.BRANCH_NAME}.${env.BUILD_NUMBER}"
         JENKINS_CRED = "bitclave-jenkins-ci"
     }
-    // triggers {
-    //     upstream(upstreamProjects: 'base-client-js/develop', threshold: hudson.model.Result.SUCCESS)
-    // }
+    triggers {
+        upstream(upstreamProjects: 'base-node-builder/master', threshold: hudson.model.Result.SUCCESS)
+    }
     stages {
         stage('Install') { 
             steps {
