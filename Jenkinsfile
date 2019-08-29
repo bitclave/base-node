@@ -54,6 +54,7 @@ spec:
                     sh "node --version"
                     sh "npm --version"
                     sh "java -version"
+                    sh "./gradlew -v"
                     sh "npm install -g ganache-cli"
                     sh "./start-ganache.sh > /dev/null &"
                     sh "sleep 5"
@@ -71,7 +72,11 @@ spec:
         stage('Build') { 
             steps {
                 container('base-node-builder') {
-                    sh './gradlew build -x test' 
+                    sh './gradlew build --exclude-task test' 
+                    sh "ls -l"
+                    sh "ls -l build"
+                    sh "ls -l build/libs"
+                    sh "ls -l build/libs/base-node.jar"
                 }
             }
         }
