@@ -56,8 +56,10 @@ spec:
                     sh "java -version"
                     sh "./gradlew -v"
                     sh 'export PATH=$PATH:./node_modules/.bin/ganache-cli'
+                    sh 'setenv PATH $PATH:./node_modules/.bin/ganache-cli'
                     sh 'echo $PATH'
                     sh "npm install ganache-cli"
+                    sh "ls -l ./node_modules/.bin/ganache-cli"
                     sh "./start-ganache.sh > /dev/null &"
                     sh "sleep 5"
 
@@ -90,7 +92,9 @@ spec:
             steps {
                 sh 'printenv | grep -i branch'
                 sh 'echo ${IMAGE_TAG}'
+                sh 'echo here1'
                 unstash 'base-node.jar'
+                sh 'echo here2'
                 sh "ls -l"
                 sh "ls -l build/libs/base-node.jar"
 
