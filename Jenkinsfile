@@ -90,7 +90,7 @@ spec:
 
                 sh 'echo after container'
                 sh "ls -l build/libs/base-node.jar"
-                stash includes: 'build/libs/base-node.jar', name: 'base-node.jar'
+                // stash includes: 'build/libs/base-node.jar', name: 'base-node.jar'
 
                 // sh 'printenv | grep -i branch'
                 // sh 'echo ${IMAGE_TAG}'
@@ -109,7 +109,7 @@ spec:
                 sh 'ls -l'
                 sh 'ls -l build'
                 sh "ls -l build/libs/base-node.jar"
-                unstash 'base-node.jar'
+                // unstash 'base-node.jar'
                 sh 'echo here2'
                 sh "ls -l"
                 sh "ls -l build/libs/base-node.jar"
