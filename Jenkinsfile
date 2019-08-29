@@ -113,8 +113,9 @@ spec:
                 sh 'echo here2'
                 sh "ls -l"
                 sh "ls -l build/libs/base-node.jar"
-
-                sh "echo bbb > build/libs/base-node.jar1"
+                sh "cp -rf build build1"
+                sh "ls -l"
+                sh "echo bbb > build1/libs/base-node.jar1"
 
                 container('gcloud') {
                     sh 'echo here3'
