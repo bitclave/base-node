@@ -13,8 +13,8 @@ spec:
   # Use service account that can deploy to all namespaces
   serviceAccountName: cd-jenkins
   containers:
-  - name: nodejs
-    image: node:10-alpine
+  - name: base-node-builder
+    image: gcr.io/bitclave-jenkins-ci/base-node-builder
     command:
     - cat
     tty: true
@@ -47,31 +47,35 @@ spec:
     //     upstream(upstreamProjects: 'base-client-js/develop', threshold: hudson.model.Result.SUCCESS)
     // }
     stages {
-        // stage('Build') { 
+        stage('Install') { 
+            steps {
+                sh 'echo hello'
+                container('base-node-builder') {
+                    sh "npm install -g ganache-cli"
+                    sh "./start-ganache.sh > /dev/null &"
+                    sh "sleep 5"
+
+                }
+            }
+        }
+        stage('Test') { 
+            steps {
+                container('base-node-builder') {
+                    sh './gradlew check --stacktrace' 
+                }
+            }
+        }
+
+        // stage('Build Container') {
         //     steps {
-        //         sh 'echo hello'
-        //         container('nodejs') {
-        //             sh "npm install"
-        //         }
-        //     }
-        // }
-        // stage('Test') { 
-        //     steps {
-        //         container('nodejs') {
-        //             sh './jenkins/scripts/test.sh' 
+        //         sh 'printenv | grep -i branch'
+        //         sh 'echo ${IMAGE_TAG}'
+        //         container('gcloud') {
+        //         sh "PYTHONUNBUFFERED=1 gcloud builds submit -t ${IMAGE_TAG} ."
         //         }
         //     }
         // }
 
-        stage('Build Container') {
-            steps {
-                sh 'printenv | grep -i branch'
-                sh 'echo ${IMAGE_TAG}'
-                container('gcloud') {
-                sh "PYTHONUNBUFFERED=1 gcloud builds submit -t ${IMAGE_TAG} ."
-                }
-            }
-        }
         // stage('Deploy Production') {
         // // Production branch
         // steps{
