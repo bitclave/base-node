@@ -85,6 +85,8 @@ spec:
                     sh "ls -l build/libs/base-node.jar"
                     // sh './gradlew build --exclude-task test' 
                     // strange workaround for some permission issus with gcloud container
+                    // for some reason files generated in container are not uploaded
+                    // need to copy the files to make the owner "jenkins" user
                     sh 'cp build/libs/base-node.jar .'
                     sh 'rm -rf build'
                 }
@@ -103,11 +105,6 @@ spec:
             steps {
                 sh 'printenv | grep -i branch'
                 sh 'echo ${IMAGE_TAG}'
-                sh 'echo here1'
-                sh 'whoami'
-                sh 'ls -l'
-                sh 'ls -l build'
-                sh "ls -l build/libs/base-node.jar"
                 // unstash 'base-node.jar'
                 sh 'echo here2'
                 sh "ls -l"
