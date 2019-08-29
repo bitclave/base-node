@@ -32,6 +32,11 @@ class PostgresOfferRepositoryImpl(
         return syncElementCollections(offer)!!
     }
 
+    override fun saveAll(offers: List<Offer>): List<Offer> {
+        val result = repository.saveAll(offers).toList()
+        return syncElementCollections(result)
+    }
+
     override fun deleteOffer(id: Long, owner: String): Long {
         val count = repository.deleteByIdAndOwner(id, owner)
         if (count > 0) {
