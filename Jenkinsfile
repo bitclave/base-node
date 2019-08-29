@@ -55,7 +55,7 @@ spec:
                     sh "npm --version"
                     sh "java -version"
                     sh "./gradlew -v"
-                    sh "npm install -g ganache-cli"
+                    sh "npm install ganache-cli"
                     sh "./start-ganache.sh > /dev/null &"
                     sh "sleep 5"
 
@@ -78,18 +78,23 @@ spec:
                     sh "ls -l build/libs"
                     sh "ls -l build/libs/base-node.jar"
                 }
-            }
-        }
-         
-        stage('Build Container') {
-            steps {
                 sh 'printenv | grep -i branch'
                 sh 'echo ${IMAGE_TAG}'
                 container('gcloud') {
-                sh "PYTHONUNBUFFERED=1 gcloud builds submit -t ${IMAGE_TAG} ."
+                    sh "PYTHONUNBUFFERED=1 gcloud builds submit -t ${IMAGE_TAG} ."
                 }
             }
         }
+         
+        // stage('Build Container') {
+        //     steps {
+        //         sh 'printenv | grep -i branch'
+        //         sh 'echo ${IMAGE_TAG}'
+        //         container('gcloud') {
+        //         sh "PYTHONUNBUFFERED=1 gcloud builds submit -t ${IMAGE_TAG} ."
+        //         }
+        //     }
+        // }
 
         // stage('Deploy Production') {
         // // Production branch
