@@ -84,12 +84,11 @@ spec:
                     sh "ls -l build/libs"
                     sh "ls -l build/libs/base-node.jar"
                     // sh './gradlew build --exclude-task test' 
-                    sh 'echo from container'
-                    sh "ls -l build/libs/base-node.jar"
+                    // strange workaround for some permission issus with gcloud container
+                    sh 'cp build/libs/base-node.jar .'
+                    sh 'rm -rf build'
                 }
 
-                sh 'echo after container'
-                sh "ls -l build/libs/base-node.jar"
                 // stash includes: 'build/libs/base-node.jar', name: 'base-node.jar'
 
                 // sh 'printenv | grep -i branch'
@@ -112,16 +111,14 @@ spec:
                 // unstash 'base-node.jar'
                 sh 'echo here2'
                 sh "ls -l"
-                sh "ls -l build/libs/base-node.jar"
-                sh "cp -rf build build1"
+                sh "mkdir -p build/libs"
+                sh "cp base-node.jar build/libs"
                 sh "ls -l"
-                sh "echo bbb > build1/libs/base-node.jar1"
 
                 container('gcloud') {
                     sh 'echo here3'
                     sh "ls -l"
                     sh "ls -l build/libs/base-node.jar"
-                    sh "ls -l build1/libs/base-node.jar1"
                     sh "PYTHONUNBUFFERED=1 gcloud builds submit -t ${IMAGE_TAG} ."
                 }
             }
