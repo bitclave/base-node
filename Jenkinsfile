@@ -66,7 +66,7 @@ spec:
         //         }
         //     }
         // }
-        
+
         // stage('Test') { 
         //     steps {
         //         container('base-node-builder') {
@@ -84,7 +84,7 @@ spec:
                     sh "ls -l build/libs"
                     sh "ls -l build/libs/base-node.jar"
                     // sh './gradlew build --exclude-task test' 
-                    sh 'from container'
+                    sh 'echo from container'
                     sh "ls -l build/libs/base-node.jar"
                 }
 
