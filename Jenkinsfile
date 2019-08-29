@@ -56,11 +56,10 @@ spec:
                     sh "java -version"
                     sh "./gradlew -v"
                     sh 'export PATH=$PATH:./node_modules/.bin/ganache-cli'
-                    sh 'setenv PATH $PATH:./node_modules/.bin/ganache-cli'
                     sh 'echo $PATH'
                     sh "npm install ganache-cli"
                     sh "ls -l ./node_modules/.bin/ganache-cli"
-                    sh "./start-ganache.sh > /dev/null &"
+                    sh 'export PATH=$PATH:./node_modules/.bin/ganache-cli && ./start-ganache.sh > /dev/null &'
                     sh "sleep 5"
 
                 }
