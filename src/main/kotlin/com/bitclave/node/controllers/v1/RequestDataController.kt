@@ -79,7 +79,7 @@ class RequestDataController(
         strategy: String?
     ): CompletableFuture<List<RequestData>> {
 
-        return requestDataService.getRequestByStatus(fromPk, toPk, getStrategyType(strategy)).exceptionally { e ->
+        return requestDataService.getRequestByParams(getStrategyType(strategy), fromPk, toPk).exceptionally { e ->
             logger.error("Request: getRequestByState/$fromPk/$toPk raised $e")
             throw e
         }
@@ -99,7 +99,7 @@ class RequestDataController(
     @ApiOperation("Create request for get private client data.", response = Long::class)
     @ApiResponses(
         value = [
-            ApiResponse(code = 201, message = "Created", response = Long::class),
+            ApiResponse(code = 201, message = "Created"),
             ApiResponse(code = 400, message = "BadArgumentException"),
             ApiResponse(code = 403, message = "AccessDeniedException"),
             ApiResponse(code = 404, message = "NotFoundException"),
@@ -109,14 +109,14 @@ class RequestDataController(
     @RequestMapping(method = [RequestMethod.POST], value = ["request/"])
     @ResponseStatus(HttpStatus.CREATED)
     fun request(
-        @ApiParam("info of request for privacy client data", required = true)
+        @ApiParam("info of requests for privacy client data", required = true)
         @RequestBody
-        request: SignedRequest<RequestData>,
+        request: SignedRequest<List<RequestData>>,
 
         @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
         @RequestHeader("Strategy", required = false)
         strategy: String?
-    ): CompletableFuture<Long> {
+    ): CompletableFuture<Void> {
 
         return accountService.accountBySigMessage(request, getStrategyType(strategy))
             .thenCompose { account: Account -> accountService.validateNonce(request, account) }
@@ -140,17 +140,15 @@ class RequestDataController(
      * Grant access for get private client data.
      * @param request info of request for privacy client data
      *
-     * @return id of created request.
-     *
      * @exception {@link BadArgumentException} - 400
      *              {@link AccessDeniedException} - 403
      *              {@link NotFoundException} - 404
      *              {@link DataNotSaved} - 500
      */
-    @ApiOperation("Grant access for get private client data.", response = Long::class)
+    @ApiOperation("Grant access for get private client data.")
     @ApiResponses(
         value = [
-            ApiResponse(code = 201, message = "Created", response = Long::class),
+            ApiResponse(code = 201, message = "Created"),
             ApiResponse(code = 400, message = "BadArgumentException"),
             ApiResponse(code = 403, message = "AccessDeniedException"),
             ApiResponse(code = 404, message = "NotFoundException"),
@@ -162,12 +160,12 @@ class RequestDataController(
     fun grantAccess(
         @ApiParam("info of request for privacy client data", required = true)
         @RequestBody
-        request: SignedRequest<RequestData>,
+        request: SignedRequest<List<RequestData>>,
 
         @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
         @RequestHeader("Strategy", required = false)
         strategy: String?
-    ): CompletableFuture<Long> {
+    ): CompletableFuture<Void> {
 
         return accountService
             .accountBySigMessage(request, getStrategyType(strategy))
@@ -184,6 +182,56 @@ class RequestDataController(
                 CompletableFuture.completedFuture(result)
             }.exceptionally { e ->
                 logger.error("Request: grantAccess/$request raised $e")
+                throw e
+            }
+    }
+
+    /**
+     * revoke access for private client data.
+     * @param request info of request for privacy client data
+     *
+     * @exception {@link BadArgumentException} - 400
+     *              {@link AccessDeniedException} - 403
+     *              {@link NotFoundException} - 404
+     *              {@link DataNotSaved} - 500
+     */
+    @ApiOperation("Grant access for get private client data.")
+    @ApiResponses(
+        value = [
+            ApiResponse(code = 200, message = "OK"),
+            ApiResponse(code = 400, message = "BadArgumentException"),
+            ApiResponse(code = 403, message = "AccessDeniedException"),
+            ApiResponse(code = 404, message = "NotFoundException"),
+            ApiResponse(code = 500, message = "DataNotSaved")
+        ]
+    )
+    @RequestMapping(method = [RequestMethod.DELETE], value = ["grant/request/"])
+    @ResponseStatus(HttpStatus.OK)
+    fun revokeAccess(
+        @ApiParam("info of request for privacy client data", required = true)
+        @RequestBody
+        request: SignedRequest<List<RequestData>>,
+
+        @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
+    ): CompletableFuture<Void> {
+
+        return accountService
+            .accountBySigMessage(request, getStrategyType(strategy))
+            .thenCompose { account: Account -> accountService.validateNonce(request, account) }
+            .thenCompose { account: Account ->
+                val result = requestDataService.revokeAccess(
+                    account.publicKey,
+                    request.data!!,
+                    getStrategyType(strategy)
+                ).get()
+
+                accountService.incrementNonce(account, getStrategyType(strategy)).get()
+
+                CompletableFuture.completedFuture(result)
+            }.exceptionally { e ->
+                logger.error("Request: revokeAccess/$request raised $e")
                 throw e
             }
     }
