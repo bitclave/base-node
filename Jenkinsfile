@@ -109,7 +109,7 @@ spec:
                 sh 'echo here2'
                 sh "ls -l"
                 sh "mkdir -p build/libs"
-                sh "cp base-node.jar build/libsbase-node.jar1"
+                sh "cp base-node.jar build/libs/base-node.jar1"
                 sh "ls -l"
 
                 container('gcloud') {
