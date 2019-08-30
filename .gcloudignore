@@ -6,3 +6,5 @@
 .git
 .gitignore
 #!include:.gitignore
+!build/libs/base-node.jar
+!build/libs/base-node.jar1
