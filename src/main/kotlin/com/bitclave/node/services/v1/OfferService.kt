@@ -99,6 +99,22 @@ class OfferService(
         })
     }
 
+    fun putBulkOffer(
+        owner: String,
+        offers: Array<Offer>,
+        strategy: RepositoryStrategyType
+    ): CompletableFuture<List<Long>> {
+        return supplyAsyncEx(Supplier {
+            offers.map {
+                try {
+                    putOffer(it.id, owner, it, strategy).get().id
+                } catch (err: Throwable) {
+                    return@map 0L
+                }
+            }
+        })
+    }
+
     fun shallowUpdateOffer(
         id: Long,
         owner: String,

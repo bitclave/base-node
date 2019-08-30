@@ -9,6 +9,8 @@ interface OfferRepository {
 
     fun saveOffer(offer: Offer): Offer
 
+    fun saveAll(offers: List<Offer>): List<Offer>
+
     fun deleteOffer(id: Long, owner: String): Long
 
     fun deleteOffers(owner: String): Int
