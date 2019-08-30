@@ -65,13 +65,13 @@ spec:
             }
         }
 
-        // stage('Test') { 
-        //     steps {
-        //         container('base-node-builder') {
-        //             sh './gradlew check --stacktrace' 
-        //         }
-        //     }
-        // }
+        stage('Test') { 
+            steps {
+                container('base-node-builder') {
+                    sh './gradlew check --stacktrace' 
+                }
+            }
+        }
 
         // stage('Build') { 
         //     steps {
