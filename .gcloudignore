@@ -5,6 +5,5 @@
 # files from your .gitignore file, remove the corresponding line below:
 .git
 .gitignore
-#!include:.gitignore
 !build/libs/base-node.jar
 !build/libs/base-node.jar1
