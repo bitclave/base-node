@@ -80,24 +80,9 @@ spec:
                     sh "ls -l"
                     sh "mkdir -p build/libs"
                     sh "echo aaa > build/libs/base-node.jar"
-                    sh "ls -l build"
-                    sh "ls -l build/libs"
-                    sh "ls -l build/libs/base-node.jar"
                     // sh './gradlew build --exclude-task test' 
-                    // strange workaround for some permission issus with gcloud container
-                    // for some reason files generated in container are not uploaded
-                    // need to copy the files to make the owner "jenkins" user
                     sh 'cp build/libs/base-node.jar .'
-                    sh 'rm -rf build'
                 }
-
-                // stash includes: 'build/libs/base-node.jar', name: 'base-node.jar'
-
-                // sh 'printenv | grep -i branch'
-                // sh 'echo ${IMAGE_TAG}'
-                // container('gcloud') {
-                //     sh "PYTHONUNBUFFERED=1 gcloud builds submit -t ${IMAGE_TAG} ."
-                // }
             }
         }
          
@@ -105,18 +90,10 @@ spec:
             steps {
                 sh 'printenv | grep -i branch'
                 sh 'echo ${IMAGE_TAG}'
-                // unstash 'base-node.jar'
-                sh 'echo here2'
-                sh "ls -l"
-                sh "mkdir -p build/libs"
-                sh "cp base-node.jar build/libs/base-node.jar1"
-                sh "cp base-node.jar build/libs/base-node.jar"
                 sh "ls -l"
 
                 container('gcloud') {
-                    sh 'echo here3'
                     sh "ls -l"
-                    sh "ls -l build/libs/base-node.jar1"
                     sh "PYTHONUNBUFFERED=1 gcloud builds submit -t ${IMAGE_TAG} ."
                 }
             }

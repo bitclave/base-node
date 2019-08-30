@@ -1,10 +1,6 @@
-!build/libs/base-node.jar
-!build/libs/base-node.jar1
-/build/
 .gcloudignore
 # If you would like to upload your .git directory, .gitignore file or
 # files from your .gitignore file, remove the corresponding line below:
 .git
 .gitignore
-!build/libs/base-node.jar
-!build/libs/base-node.jar1
+#!include:.gitignore
