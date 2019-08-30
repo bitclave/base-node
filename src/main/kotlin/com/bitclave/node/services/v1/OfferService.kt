@@ -108,7 +108,7 @@ class OfferService(
             offers.map {
                 try {
                     putOffer(it.id, owner, it, strategy).get().id
-                } catch(err: Throwable) {
+                } catch (err: Throwable) {
                     return@map 0L
                 }
             }
@@ -276,4 +276,3 @@ class OfferService(
         })
     }
 }
-
