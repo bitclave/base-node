@@ -73,32 +73,32 @@ spec:
             }
         }
 
-        // stage('Build') { 
-        //     steps {
-        //         container('base-node-builder') {
-        //             sh "ls -l"
-        //             sh "mkdir -p build/libs"
-        //             // sh "echo aaa > build/libs/base-node.jar"
-        //             sh './gradlew build --exclude-task test' 
-        //             // this is required since we need to upload base-node.jar to the cloud for build but
-        //             // build directory is excluded from the upload by .gcloadignore file
-        //             sh 'cp build/libs/base-node.jar .'
-        //         }
-        //     }
-        // }
+        stage('Build JAR') { 
+            steps {
+                container('base-node-builder') {
+                    sh "ls -l"
+                    sh "mkdir -p build/libs"
+                    // sh "echo aaa > build/libs/base-node.jar"
+                    sh './gradlew build --exclude-task test' 
+                    // this is required since we need to upload base-node.jar to the cloud for build but
+                    // build directory is excluded from the upload by .gcloadignore file
+                    sh 'cp build/libs/base-node.jar .'
+                }
+            }
+        }
          
-        // stage('Build Container') {
-        //     steps {
-        //         sh 'printenv | grep -i branch'
-        //         sh 'echo ${IMAGE_TAG}'
-        //         sh "ls -l"
+        stage('Build Container') {
+            steps {
+                sh 'printenv | grep -i branch'
+                sh 'echo ${IMAGE_TAG}'
+                sh "ls -l"
 
-        //         container('gcloud') {
-        //             sh "ls -l"
-        //             sh "PYTHONUNBUFFERED=1 gcloud builds submit -t ${IMAGE_TAG} ."
-        //         }
-        //     }
-        // }
+                container('gcloud') {
+                    sh "ls -l"
+                    sh "PYTHONUNBUFFERED=1 gcloud builds submit -t ${IMAGE_TAG} ."
+                }
+            }
+        }
 
         // stage('Deploy Production') {
         // // Production branch
