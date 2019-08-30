@@ -10,7 +10,7 @@ import com.bitclave.node.repository.account.PostgresAccountRepositoryImpl
 import com.bitclave.node.repository.file.FileCrudRepository
 import com.bitclave.node.repository.file.FileRepositoryStrategy
 import com.bitclave.node.repository.file.PostgresFileRepositoryImpl
-import com.bitclave.node.repository.models.Account
+import com.bitclave.node.repository.entities.Account
 import com.bitclave.node.services.errors.NotFoundException
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.FileService

@@ -1,4 +1,4 @@
-package com.bitclave.node.repository.models
+package com.bitclave.node.repository.entities
 
 import com.bitclave.node.configuration.gson.Exclude
 import org.hibernate.annotations.ColumnDefault

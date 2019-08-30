@@ -3,7 +3,7 @@ package com.bitclave.node.services.v1
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.file.FileRepository
-import com.bitclave.node.repository.models.UploadedFile
+import com.bitclave.node.repository.entities.UploadedFile
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
 import com.bitclave.node.utils.supplyAsyncEx

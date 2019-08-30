@@ -1,4 +1,4 @@
-package com.bitclave.node.repository.models
+package com.bitclave.node.models
 
 data class RequestDataTree(
     val id: Long,

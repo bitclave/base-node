@@ -1,16 +1,16 @@
 package com.bitclave.node.services
 
 import com.bitclave.node.configuration.properties.HybridProperties
+import com.bitclave.node.models.services.HttpServiceCall
+import com.bitclave.node.models.services.ServiceCallType
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.Web3Provider
 import com.bitclave.node.repository.account.AccountCrudRepository
 import com.bitclave.node.repository.account.AccountRepositoryStrategy
 import com.bitclave.node.repository.account.HybridAccountRepositoryImpl
 import com.bitclave.node.repository.account.PostgresAccountRepositoryImpl
-import com.bitclave.node.repository.models.Account
-import com.bitclave.node.repository.models.services.ExternalService
-import com.bitclave.node.repository.models.services.HttpServiceCall
-import com.bitclave.node.repository.models.services.ServiceCallType
+import com.bitclave.node.repository.entities.Account
+import com.bitclave.node.repository.entities.ExternalService
 import com.bitclave.node.repository.services.ExternalServicesCrudRepository
 import com.bitclave.node.repository.services.ExternalServicesRepositoryStrategy
 import com.bitclave.node.repository.services.PostgresExternalServicesRepositoryImpl

@@ -1,4 +1,4 @@
-package com.bitclave.node.repository.models.controllers
+package com.bitclave.node.models.controllers
 
 data class OfferSearchByQueryParameters(
     val searchRequestId: Long,

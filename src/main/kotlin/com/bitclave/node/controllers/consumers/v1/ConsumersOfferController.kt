@@ -1,7 +1,7 @@
 package com.bitclave.node.controllers.consumers.v1
 
 import com.bitclave.node.controllers.AbstractController
-import com.bitclave.node.repository.models.Offer
+import com.bitclave.node.repository.entities.Offer
 import com.bitclave.node.services.v1.OfferService
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam

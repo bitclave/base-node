@@ -1,6 +1,6 @@
 package com.bitclave.node.repository.file
 
-import com.bitclave.node.repository.models.UploadedFile
+import com.bitclave.node.repository.entities.UploadedFile
 
 interface FileRepository {
 

@@ -1,4 +1,4 @@
-package com.bitclave.node.repository.models
+package com.bitclave.node.repository.entities
 
 import org.hibernate.annotations.ColumnDefault
 import org.springframework.format.annotation.DateTimeFormat

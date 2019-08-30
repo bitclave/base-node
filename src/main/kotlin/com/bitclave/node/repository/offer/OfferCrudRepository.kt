@@ -1,6 +1,6 @@
 package com.bitclave.node.repository.offer
 
-import com.bitclave.node.repository.models.Offer
+import com.bitclave.node.repository.entities.Offer
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice

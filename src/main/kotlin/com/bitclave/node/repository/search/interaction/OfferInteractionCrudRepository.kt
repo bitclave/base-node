@@ -1,7 +1,7 @@
 package com.bitclave.node.repository.search.interaction
 
-import com.bitclave.node.repository.models.OfferAction
-import com.bitclave.node.repository.models.OfferInteraction
+import com.bitclave.node.repository.entities.OfferAction
+import com.bitclave.node.repository.entities.OfferInteraction
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.PagingAndSortingRepository

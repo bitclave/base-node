@@ -1,7 +1,7 @@
 package com.bitclave.node.repository.search.offer
 
-import com.bitclave.node.repository.models.OfferAction
-import com.bitclave.node.repository.models.OfferSearch
+import com.bitclave.node.repository.entities.OfferAction
+import com.bitclave.node.repository.entities.OfferSearch
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice

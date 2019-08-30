@@ -1,6 +1,6 @@
 package com.bitclave.node.repository.data
 
-import com.bitclave.node.repository.models.ClientData
+import com.bitclave.node.repository.entities.ClientData
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional

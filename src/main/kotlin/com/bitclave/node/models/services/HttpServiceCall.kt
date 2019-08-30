@@ -1,4 +1,4 @@
-package com.bitclave.node.repository.models.services
+package com.bitclave.node.models.services
 
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpMethod

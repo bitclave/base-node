@@ -1,4 +1,4 @@
-package com.bitclave.node.repository.models
+package com.bitclave.node.repository.entities
 
 import java.math.BigDecimal
 import javax.persistence.Column

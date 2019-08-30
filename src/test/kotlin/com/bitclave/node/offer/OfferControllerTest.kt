@@ -2,10 +2,10 @@ package com.bitclave.node.offer
 
 import com.bitclave.node.extensions.toJsonString
 import com.bitclave.node.repository.RepositoryStrategyType
-import com.bitclave.node.repository.models.Offer
-import com.bitclave.node.repository.models.OfferPrice
-import com.bitclave.node.repository.models.OfferPriceRules
-import com.bitclave.node.repository.models.SignedRequest
+import com.bitclave.node.repository.entities.Offer
+import com.bitclave.node.repository.entities.OfferPrice
+import com.bitclave.node.repository.entities.OfferPriceRules
+import com.bitclave.node.models.SignedRequest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith

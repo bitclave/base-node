@@ -1,6 +1,6 @@
 package com.bitclave.node.extensions
 
-import com.bitclave.node.repository.models.SignedRequest
+import com.bitclave.node.models.SignedRequest
 import com.bitclave.node.utils.supplyAsyncEx
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder

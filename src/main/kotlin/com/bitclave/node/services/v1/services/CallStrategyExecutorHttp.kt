@@ -1,7 +1,7 @@
 package com.bitclave.node.services.v1.services
 
-import com.bitclave.node.repository.models.services.CheckedExceptionResponse
-import com.bitclave.node.repository.models.services.HttpServiceCall
+import com.bitclave.node.models.services.CheckedExceptionResponse
+import com.bitclave.node.models.services.HttpServiceCall
 import com.bitclave.node.utils.supplyAsyncEx
 import org.springframework.http.HttpEntity
 import org.springframework.http.ResponseEntity

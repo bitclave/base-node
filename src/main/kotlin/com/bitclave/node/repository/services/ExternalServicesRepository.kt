@@ -1,6 +1,6 @@
 package com.bitclave.node.repository.services
 
-import com.bitclave.node.repository.models.services.ExternalService
+import com.bitclave.node.repository.entities.ExternalService
 
 interface ExternalServicesRepository {
 
