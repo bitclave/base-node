@@ -79,8 +79,10 @@ spec:
                 container('base-node-builder') {
                     sh "ls -l"
                     sh "mkdir -p build/libs"
-                    sh "echo aaa > build/libs/base-node.jar"
-                    // sh './gradlew build --exclude-task test' 
+                    // sh "echo aaa > build/libs/base-node.jar"
+                    sh './gradlew build --exclude-task test' 
+                    // this is required since we need to upload base-node.jar to the cloud for build but
+                    // build directory is excluded from the upload by .gcloadignore file
                     sh 'cp build/libs/base-node.jar .'
                 }
             }
