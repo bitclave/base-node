@@ -76,8 +76,8 @@ spec:
         stage('Build JAR') { 
             steps {
                 container('base-node-builder') {
-                    sh "ls -l"
-                    sh "mkdir -p build/libs"
+                    // sh "ls -l"
+                    // sh "mkdir -p build/libs"
                     // sh "echo aaa > build/libs/base-node.jar"
                     sh './gradlew build --exclude-task test' 
                     // this is required since we need to upload base-node.jar to the cloud for build but
@@ -91,7 +91,6 @@ spec:
             steps {
                 sh 'printenv | grep -i branch'
                 sh 'echo ${IMAGE_TAG}'
-                sh "ls -l"
 
                 container('gcloud') {
                     sh "ls -l"
