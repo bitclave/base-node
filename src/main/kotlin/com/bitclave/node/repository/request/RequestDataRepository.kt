@@ -14,6 +14,14 @@ interface RequestDataRepository {
 
     fun getByRequestDataAndRootPk(requestData: String, rootPk: String): List<RequestData>
 
+    fun getByFromAndToAndKeys(to: String, from: List<String>, keys: List<String>): List<RequestData>
+
+    fun getReshareByClientsAndKeysAndRootPk(
+        clientsPk: List<String>,
+        keys: List<String>,
+        rootPk: String
+    ): List<RequestData>
+
     fun findById(id: Long): RequestData?
 
     fun updateData(request: RequestData): RequestData

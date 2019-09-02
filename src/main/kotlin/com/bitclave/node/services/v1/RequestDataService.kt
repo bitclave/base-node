@@ -1,9 +1,11 @@
 package com.bitclave.node.services.v1
 
+import com.bitclave.node.models.InputGraphData
+import com.bitclave.node.models.OutputGraphData
+import com.bitclave.node.models.RequestDataTree
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.entities.RequestData
-import com.bitclave.node.models.RequestDataTree
 import com.bitclave.node.repository.request.RequestDataRepository
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.utils.KeyPairUtils
@@ -18,6 +20,28 @@ import java.util.function.Supplier
 @Service
 @Qualifier("v1")
 class RequestDataService(private val requestDataRepository: RepositoryStrategy<RequestDataRepository>) {
+
+    fun generateBfsGraph(
+        request: InputGraphData,
+        strategy: RepositoryStrategyType
+    ): CompletableFuture<OutputGraphData> {
+        return supplyAsyncEx(Supplier {
+            val result = OutputGraphData(request.clients.toSet())
+            val clients = request.clients
+            val keys = request.fields.toList()
+            val repository = requestDataRepository.changeStrategy(strategy)
+
+            for (client in clients) {
+                val exclude = clients.toMutableList() - client
+                val rootShare = repository.getByFromAndToAndKeys(client, exclude, keys)
+                val reshare = repository.getReshareByClientsAndKeysAndRootPk(exclude, keys, client)
+
+                (rootShare + reshare).forEach { result.addLink(it) }
+            }
+
+            result.copy(links = result.links.distinct().toMutableList())
+        })
+    }
 
     fun getRequestByParams(
         strategy: RepositoryStrategyType,

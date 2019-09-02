@@ -107,6 +107,18 @@ class HybridRequestDataRepositoryImpl(
         throw NotImplementedError()
     }
 
+    override fun getByFromAndToAndKeys(to: String, from: List<String>, keys: List<String>): List<RequestData> {
+        throw NotImplementedError()
+    }
+
+    override fun getReshareByClientsAndKeysAndRootPk(
+        clientsPk: List<String>,
+        keys: List<String>,
+        rootPk: String
+    ): List<RequestData> {
+        throw NotImplementedError()
+    }
+
     override fun findById(id: Long): RequestData? {
         return tupleToRequestData(contract.findById(id.toBigInteger()).send())
     }
