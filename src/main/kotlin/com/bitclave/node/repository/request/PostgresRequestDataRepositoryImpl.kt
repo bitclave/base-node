@@ -31,6 +31,24 @@ class PostgresRequestDataRepositoryImpl(val repository: RequestDataCrudRepositor
         return repository.findByRequestDataAndRootPk(requestData, rootPk)
     }
 
+    override fun getByFromAndToAndKeys(to: String, from: List<String>, keys: List<String>): List<RequestData> {
+        return if (keys.isEmpty())
+            repository.getByFromAndTo(to, from)
+        else
+            repository.getByFromAndToAndKeys(to, from, keys)
+    }
+
+    override fun getReshareByClientsAndKeysAndRootPk(
+        clientsPk: List<String>,
+        keys: List<String>,
+        rootPk: String
+    ): List<RequestData> {
+        return if (keys.isEmpty())
+            repository.getReshareByClientsAndRootPk(clientsPk, rootPk)
+        else
+            repository.getReshareByClientsAndKeysAndRootPk(clientsPk, keys, rootPk)
+    }
+
     override fun findById(id: Long): RequestData? {
         return repository.findByIdOrNull(id)
     }
