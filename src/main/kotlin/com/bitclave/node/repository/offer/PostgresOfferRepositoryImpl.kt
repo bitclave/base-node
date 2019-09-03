@@ -1,8 +1,8 @@
 package com.bitclave.node.repository.offer
 
-import com.bitclave.node.repository.models.Offer
-import com.bitclave.node.repository.models.OfferPrice
-import com.bitclave.node.repository.models.OfferPriceRules
+import com.bitclave.node.repository.entities.Offer
+import com.bitclave.node.repository.entities.OfferPrice
+import com.bitclave.node.repository.entities.OfferPriceRules
 import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.services.errors.DataNotSavedException
 import com.bitclave.node.services.events.OfferEvent

@@ -2,9 +2,9 @@ package com.bitclave.node.services.v1
 
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
-import com.bitclave.node.repository.models.OfferAction
-import com.bitclave.node.repository.models.OfferInteraction
-import com.bitclave.node.repository.models.OfferShareData
+import com.bitclave.node.repository.entities.OfferAction
+import com.bitclave.node.repository.entities.OfferInteraction
+import com.bitclave.node.repository.entities.OfferShareData
 import com.bitclave.node.repository.offer.OfferRepository
 import com.bitclave.node.repository.search.SearchRequestRepository
 import com.bitclave.node.repository.search.interaction.OfferInteractionRepository

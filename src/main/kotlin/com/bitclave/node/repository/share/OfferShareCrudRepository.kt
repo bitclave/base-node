@@ -1,6 +1,6 @@
 package com.bitclave.node.repository.share
 
-import com.bitclave.node.repository.models.OfferShareData
+import com.bitclave.node.repository.entities.OfferShareData
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional

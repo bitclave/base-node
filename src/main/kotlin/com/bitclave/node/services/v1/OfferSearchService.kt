@@ -4,14 +4,14 @@ import com.appoptics.metrics.client.Tag
 import com.bitclave.node.configuration.properties.AppOpticsProperties
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
-import com.bitclave.node.repository.models.Offer
-import com.bitclave.node.repository.models.OfferAction
-import com.bitclave.node.repository.models.OfferInteraction
-import com.bitclave.node.repository.models.OfferInteractionId
-import com.bitclave.node.repository.models.OfferSearch
-import com.bitclave.node.repository.models.OfferSearchResultItem
-import com.bitclave.node.repository.models.QuerySearchRequest
-import com.bitclave.node.repository.models.controllers.EnrichedOffersWithCountersResponse
+import com.bitclave.node.repository.entities.Offer
+import com.bitclave.node.repository.entities.OfferAction
+import com.bitclave.node.repository.entities.OfferInteraction
+import com.bitclave.node.models.OfferInteractionId
+import com.bitclave.node.repository.entities.OfferSearch
+import com.bitclave.node.models.OfferSearchResultItem
+import com.bitclave.node.repository.entities.QuerySearchRequest
+import com.bitclave.node.models.controllers.EnrichedOffersWithCountersResponse
 import com.bitclave.node.repository.offer.OfferRepository
 import com.bitclave.node.repository.rtSearch.RtSearchRepository
 import com.bitclave.node.repository.search.SearchRequestRepository
@@ -830,7 +830,10 @@ class OfferSearchService(
                     .findByOfferIdInAndOwnerIn(uniqueOfferIds, uniqueOwners)
                     .groupBy { OfferInteractionId(it.offerId, it.owner) }
 
-                val stateForSave = offerSearches.filter { states[OfferInteractionId(it.offerId, it.owner)] == null }
+                val stateForSave = offerSearches.filter { states[OfferInteractionId(
+                    it.offerId,
+                    it.owner
+                )] == null }
                     .map { OfferInteraction(0, it.owner, it.offerId) }
 
                 offerInteractionRepository

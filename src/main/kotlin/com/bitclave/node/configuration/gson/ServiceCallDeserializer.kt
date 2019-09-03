@@ -1,8 +1,8 @@
 package com.bitclave.node.configuration.gson
 
-import com.bitclave.node.repository.models.services.HttpServiceCall
-import com.bitclave.node.repository.models.services.ServiceCall
-import com.bitclave.node.repository.models.services.ServiceCallType
+import com.bitclave.node.models.services.HttpServiceCall
+import com.bitclave.node.models.services.ServiceCall
+import com.bitclave.node.models.services.ServiceCallType
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement

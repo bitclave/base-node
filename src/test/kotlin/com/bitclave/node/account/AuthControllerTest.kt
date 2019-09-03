@@ -2,8 +2,8 @@ package com.bitclave.node.account
 
 import com.bitclave.node.extensions.toJsonString
 import com.bitclave.node.repository.RepositoryStrategyType
-import com.bitclave.node.repository.models.Account
-import com.bitclave.node.repository.models.SignedRequest
+import com.bitclave.node.repository.entities.Account
+import com.bitclave.node.models.SignedRequest
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith

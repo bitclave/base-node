@@ -6,7 +6,7 @@ import com.bitclave.node.extensions.ecPoint
 import com.bitclave.node.extensions.hex
 import com.bitclave.node.extensions.sha3
 import com.bitclave.node.repository.Web3Provider
-import com.bitclave.node.repository.models.RequestData
+import com.bitclave.node.repository.entities.RequestData
 import com.bitclave.node.solidity.generated.NameServiceContract
 import com.bitclave.node.solidity.generated.RequestDataContract
 import mu.KotlinLogging

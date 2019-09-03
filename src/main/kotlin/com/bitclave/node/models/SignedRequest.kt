@@ -1,4 +1,4 @@
-package com.bitclave.node.repository.models
+package com.bitclave.node.models
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken

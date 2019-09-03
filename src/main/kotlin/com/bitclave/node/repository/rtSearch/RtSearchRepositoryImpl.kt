@@ -1,7 +1,7 @@
 package com.bitclave.node.repository.rtSearch
 
 import com.bitclave.node.configuration.properties.RtSearchProperties
-import com.bitclave.node.repository.models.controllers.OffersWithCountersResponse
+import com.bitclave.node.models.controllers.OffersWithCountersResponse
 import com.bitclave.node.utils.supplyAsyncEx
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.core.ParameterizedTypeReference

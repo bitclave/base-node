@@ -2,8 +2,8 @@ package com.bitclave.node.services.v1
 
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
-import com.bitclave.node.repository.models.RequestData
-import com.bitclave.node.repository.models.RequestDataTree
+import com.bitclave.node.repository.entities.RequestData
+import com.bitclave.node.models.RequestDataTree
 import com.bitclave.node.repository.request.RequestDataRepository
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.utils.KeyPairUtils

@@ -1,6 +1,6 @@
 package com.bitclave.node.repository.request
 
-import com.bitclave.node.repository.models.RequestData
+import com.bitclave.node.repository.entities.RequestData
 
 interface RequestDataRepository {
 

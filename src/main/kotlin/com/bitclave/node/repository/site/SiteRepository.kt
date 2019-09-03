@@ -1,6 +1,6 @@
 package com.bitclave.node.repository.site
 
-import com.bitclave.node.repository.models.Site
+import com.bitclave.node.repository.entities.Site
 
 interface SiteRepository {
 

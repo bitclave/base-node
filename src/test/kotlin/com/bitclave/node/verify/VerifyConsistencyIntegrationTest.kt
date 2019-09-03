@@ -1,7 +1,7 @@
 package com.bitclave.node.verify
 
 import com.bitclave.node.repository.RepositoryStrategyType
-import com.bitclave.node.repository.models.SignedRequest
+import com.bitclave.node.models.SignedRequest
 import junit.framework.TestCase.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Before

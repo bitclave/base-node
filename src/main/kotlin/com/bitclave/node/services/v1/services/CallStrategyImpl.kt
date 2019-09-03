@@ -1,7 +1,7 @@
 package com.bitclave.node.services.v1.services
 
-import com.bitclave.node.repository.models.services.ServiceCall
-import com.bitclave.node.repository.models.services.ServiceCallType
+import com.bitclave.node.models.services.ServiceCall
+import com.bitclave.node.models.services.ServiceCallType
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate

@@ -4,7 +4,7 @@ import com.appoptics.metrics.client.Tag
 import com.bitclave.node.configuration.properties.AppOpticsProperties
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
-import com.bitclave.node.repository.models.SearchRequest
+import com.bitclave.node.repository.entities.SearchRequest
 import com.bitclave.node.repository.search.SearchRequestRepository
 import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepository
 import com.bitclave.node.services.errors.AccessDeniedException

@@ -8,11 +8,11 @@ import com.bitclave.node.repository.account.AccountCrudRepository
 import com.bitclave.node.repository.account.AccountRepositoryStrategy
 import com.bitclave.node.repository.account.HybridAccountRepositoryImpl
 import com.bitclave.node.repository.account.PostgresAccountRepositoryImpl
-import com.bitclave.node.repository.models.Account
-import com.bitclave.node.repository.models.Offer
-import com.bitclave.node.repository.models.OfferSearch
-import com.bitclave.node.repository.models.SearchRequest
-import com.bitclave.node.repository.models.controllers.OffersWithCountersResponse
+import com.bitclave.node.repository.entities.Account
+import com.bitclave.node.repository.entities.Offer
+import com.bitclave.node.repository.entities.OfferSearch
+import com.bitclave.node.repository.entities.SearchRequest
+import com.bitclave.node.models.controllers.OffersWithCountersResponse
 import com.bitclave.node.repository.offer.OfferCrudRepository
 import com.bitclave.node.repository.offer.OfferRepositoryStrategy
 import com.bitclave.node.repository.offer.PostgresOfferRepositoryImpl

@@ -1,4 +1,4 @@
-package com.bitclave.node.repository.models
+package com.bitclave.node.repository.entities
 
 import javax.persistence.Column
 import javax.persistence.Entity

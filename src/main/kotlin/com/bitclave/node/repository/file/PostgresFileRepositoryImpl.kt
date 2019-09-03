@@ -1,6 +1,6 @@
 package com.bitclave.node.repository.file
 
-import com.bitclave.node.repository.models.UploadedFile
+import com.bitclave.node.repository.entities.UploadedFile
 import com.bitclave.node.services.errors.DataNotSavedException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component

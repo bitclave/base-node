@@ -1,7 +1,7 @@
 package com.bitclave.node.repository.search.interaction
 
-import com.bitclave.node.repository.models.OfferAction
-import com.bitclave.node.repository.models.OfferInteraction
+import com.bitclave.node.repository.entities.OfferAction
+import com.bitclave.node.repository.entities.OfferInteraction
 
 interface OfferInteractionRepository {
 

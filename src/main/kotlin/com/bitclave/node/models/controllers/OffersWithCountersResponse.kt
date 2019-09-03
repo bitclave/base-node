@@ -1,4 +1,4 @@
-package com.bitclave.node.repository.models.controllers
+package com.bitclave.node.models.controllers
 
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl

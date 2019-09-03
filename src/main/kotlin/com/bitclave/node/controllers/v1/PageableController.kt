@@ -1,9 +1,9 @@
 package com.bitclave.node.controllers.v1
 
 import com.bitclave.node.controllers.AbstractController
-import com.bitclave.node.repository.models.Offer
-import com.bitclave.node.repository.models.OfferSearch
-import com.bitclave.node.repository.models.SearchRequest
+import com.bitclave.node.repository.entities.Offer
+import com.bitclave.node.repository.entities.OfferSearch
+import com.bitclave.node.repository.entities.SearchRequest
 import com.bitclave.node.services.v1.OfferSearchService
 import com.bitclave.node.services.v1.OfferService
 import com.bitclave.node.services.v1.SearchRequestService

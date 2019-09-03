@@ -1,6 +1,6 @@
 package com.bitclave.node.repository.share
 
-import com.bitclave.node.repository.models.OfferShareData
+import com.bitclave.node.repository.entities.OfferShareData
 
 interface OfferShareRepository {
 

@@ -1,6 +1,6 @@
 package com.bitclave.node.repository.rank
 
-import com.bitclave.node.repository.models.OfferRank
+import com.bitclave.node.repository.entities.OfferRank
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.PagingAndSortingRepository

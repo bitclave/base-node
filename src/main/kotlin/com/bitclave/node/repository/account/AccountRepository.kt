@@ -1,6 +1,6 @@
 package com.bitclave.node.repository.account
 
-import com.bitclave.node.repository.models.Account
+import com.bitclave.node.repository.entities.Account
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
 import java.util.Date
