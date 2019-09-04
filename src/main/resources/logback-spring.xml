@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-    <property name="LOGS" value="./logs" />
-    <springProperty scope="context" name="elasticUrl" source="elastic.url"/>
+    <property name="LOGS" value="./logs"/>
+    <springProperty scope="context" name="logstash" source="logstash.endpoint"/>
 
     <appender name="Console"
               class="ch.qos.logback.core.ConsoleAppender">
@@ -33,57 +33,28 @@
         </rollingPolicy>
     </appender>
 
-    <appender name="Elastic" class="com.internetitem.logback.elasticsearch.ElasticsearchAppender">
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>ERROR</level>
-        </filter>
-        <url>${elasticUrl}/_bulk</url>
-        <index>base-node-log</index>
-        <type>log</type>
-        <authentication class="com.internetitem.logback.elasticsearch.config.BasicAuthentication" />
-        <errorLoggerName>es-error-logger</errorLoggerName>
-        <properties>
-            <property>
-                <name>categoryName</name>
-                <value>base-node</value>
-            </property>
-            <property>
-                <name>level</name>
-                <value>%level</value>
-            </property>
-            <property>
-                <name>stacktrace</name>
-                <value>%ex</value>
-            </property>
-            <property>
-                <name>logger-class</name>
-                <value>%logger</value>
-            </property>
-        </properties>
-        <headers>
-            <header>
-                <name>Content-Type</name>
-                <value>application/json</value>
-            </header>
-        </headers>
+    <appender name="stash" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
+        <destination>${logstash}</destination>
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="com.bitclave.node.configuration.LogbackLayout"/>
+        </encoder>
     </appender>
 
-    <logger name="es-error-logger" level="INFO" additivity="false">
-        <appender-ref ref="Console" />
-        <appender-ref ref="RollingFile" />
-    </logger>
+    <root level="all">
+        <appender-ref ref="stash"/>
+    </root>
 
     <!-- LOG everything at INFO level -->
     <root level="info">
-        <appender-ref ref="RollingFile" />
-        <appender-ref ref="Console" />
-        <appender-ref ref="Elastic" />
+        <appender-ref ref="RollingFile"/>
+        <appender-ref ref="Console"/>
+        <appender-ref ref="stash"/>
     </root>
 
     <logger name="org.hibernate" level="ERROR">
-        <appender-ref ref="RollingFile" />
-        <appender-ref ref="Console" />
-        <appender-ref ref="Elastic" />
+        <appender-ref ref="RollingFile"/>
+        <appender-ref ref="Console"/>
+        <appender-ref ref="stash"/>
     </logger>
 
 </configuration>
