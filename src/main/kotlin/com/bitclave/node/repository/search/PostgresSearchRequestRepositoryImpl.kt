@@ -1,6 +1,6 @@
 package com.bitclave.node.repository.search
 
-import com.bitclave.node.repository.models.SearchRequest
+import com.bitclave.node.repository.entities.SearchRequest
 import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.services.errors.DataNotSavedException
 import org.springframework.beans.factory.annotation.Qualifier

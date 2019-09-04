@@ -1,9 +1,11 @@
 package com.bitclave.node.controllers.v1
 
 import com.bitclave.node.controllers.AbstractController
-import com.bitclave.node.repository.models.Account
-import com.bitclave.node.repository.models.RequestData
-import com.bitclave.node.repository.models.SignedRequest
+import com.bitclave.node.models.InputGraphData
+import com.bitclave.node.models.OutputGraphData
+import com.bitclave.node.models.SignedRequest
+import com.bitclave.node.repository.entities.Account
+import com.bitclave.node.repository.entities.RequestData
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.RequestDataService
 import io.swagger.annotations.ApiOperation
@@ -30,6 +32,27 @@ class RequestDataController(
     @Qualifier("v1") private val accountService: AccountService,
     @Qualifier("v1") private val requestDataService: RequestDataService
 ) : AbstractController() {
+
+    @ApiOperation("generate BFS graph of re-shared data", response = OutputGraphData::class)
+    @ApiResponses(value = [ApiResponse(code = 200, message = "Success")])
+    @RequestMapping(method = [RequestMethod.POST], value = ["request/graph"])
+    @ResponseStatus(HttpStatus.OK)
+    fun getRequestsGraph(
+        @ApiParam("info of clients and data fields", required = true)
+        @RequestBody
+        request: InputGraphData,
+
+        @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
+    ): CompletableFuture<OutputGraphData> {
+        return requestDataService
+            .generateBfsGraph(request, getStrategyType(strategy))
+            .exceptionally { e ->
+                logger.error("Request: request/$request raised $e")
+                throw e
+            }
+    }
 
     /**
      * Returns a list of outstanding data access requests,

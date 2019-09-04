@@ -1,6 +1,6 @@
 package com.bitclave.node.repository.request
 
-import com.bitclave.node.repository.models.RequestData
+import com.bitclave.node.repository.entities.RequestData
 import com.bitclave.node.services.errors.DataNotSavedException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.repository.findByIdOrNull
@@ -29,6 +29,24 @@ class PostgresRequestDataRepositoryImpl(val repository: RequestDataCrudRepositor
 
     override fun getByRequestDataAndRootPk(requestData: String, rootPk: String): List<RequestData> {
         return repository.findByRequestDataAndRootPk(requestData, rootPk)
+    }
+
+    override fun getByFromAndToAndKeys(to: String, from: List<String>, keys: List<String>): List<RequestData> {
+        return if (keys.isEmpty())
+            repository.getByFromAndTo(to, from)
+        else
+            repository.getByFromAndToAndKeys(to, from, keys)
+    }
+
+    override fun getReshareByClientsAndKeysAndRootPk(
+        clientsPk: List<String>,
+        keys: List<String>,
+        rootPk: String
+    ): List<RequestData> {
+        return if (keys.isEmpty())
+            repository.getReshareByClientsAndRootPk(clientsPk, rootPk)
+        else
+            repository.getReshareByClientsAndKeysAndRootPk(clientsPk, keys, rootPk)
     }
 
     override fun findById(id: Long): RequestData? {

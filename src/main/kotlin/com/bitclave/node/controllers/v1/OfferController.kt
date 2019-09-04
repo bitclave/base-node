@@ -1,9 +1,9 @@
 package com.bitclave.node.controllers.v1
 
 import com.bitclave.node.controllers.AbstractController
-import com.bitclave.node.repository.models.Account
-import com.bitclave.node.repository.models.Offer
-import com.bitclave.node.repository.models.SignedRequest
+import com.bitclave.node.repository.entities.Account
+import com.bitclave.node.repository.entities.Offer
+import com.bitclave.node.models.SignedRequest
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferService
@@ -395,5 +395,73 @@ class OfferController(
             logger.error("Request: getOffersByOwnerAndTag/$owner/$tag raised $e")
             throw e
         }
+    }
+    /**
+     * It creates new offers or update the offers in the system, based on the bulk offers.
+     * The API will verify that the request is cryptographically signed by the owner of the public key.
+     * @param request is {@link SignedRequest} where client sends {@link Offer} and
+     * signature of the message.
+     *
+     * @return {@link Offer[]]}, Http status - 200/201.
+     *
+     * @exception {@link BadArgumentException} - 400
+     *              {@link AccessDeniedException} - 403
+     *              {@link DataNotSaved} - 500
+     */
+
+    @ApiOperation(
+        "Creates or updates offers in the system, based on the bulk.\n" +
+            "The API will verify that the request is cryptographically signed by the owner of the public key.",
+        response = Offer::class
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(code = 200, message = "Updated", response = Offer::class),
+            ApiResponse(code = 201, message = "Created", response = Offer::class),
+            ApiResponse(code = 400, message = "BadArgumentException"),
+            ApiResponse(code = 403, message = "AccessDeniedException"),
+            ApiResponse(code = 500, message = "DataNotSaved")
+        ]
+    )
+    @RequestMapping(method = [RequestMethod.PUT], value = ["/bulk"])
+    fun putBulkOffers(
+        @ApiParam("public key owner of offer")
+        @PathVariable(value = "owner")
+        owner: String,
+
+        @ApiParam("where client sends Offer and signature of the message.", required = true)
+        @RequestBody
+        request: SignedRequest<Array<Offer>>,
+
+        @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
+    ): CompletableFuture<ResponseEntity<List<Long>>> {
+        var start = Date()
+        return accountService
+            .accountBySigMessage(request, getStrategyType(strategy))
+            .thenCompose { account: Account ->
+                logger.debug("bulk controller profiling SigMessage 1) ${(Date().time - start.time)}ms")
+                start = Date()
+                accountService.validateNonce(request, account)
+            }
+            .thenCompose {
+                logger.debug("controller profiling ValidateNonce 2) ${(Date().time - start.time)}ms")
+                start = Date()
+                if (request.pk != owner) {
+                    throw BadArgumentException()
+                }
+                val result = offerService.putBulkOffer(
+                    owner,
+                    request.data!!,
+                    getStrategyType(strategy)
+                ).get()
+                accountService.incrementNonce(it, getStrategyType(strategy)).get()
+                CompletableFuture.completedFuture(ResponseEntity<List<Long>>(result, HttpStatus.OK))
+            }
+            .exceptionally { e ->
+                logger.error("Request: putOffer/$request raised $e")
+                throw e
+            }
     }
 }

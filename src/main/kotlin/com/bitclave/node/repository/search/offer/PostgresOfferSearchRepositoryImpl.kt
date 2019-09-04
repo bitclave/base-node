@@ -1,7 +1,7 @@
 package com.bitclave.node.repository.search.offer
 
-import com.bitclave.node.repository.models.OfferAction
-import com.bitclave.node.repository.models.OfferSearch
+import com.bitclave.node.repository.entities.OfferAction
+import com.bitclave.node.repository.entities.OfferSearch
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page

@@ -2,10 +2,10 @@ package com.bitclave.node.search.offer
 
 import com.bitclave.node.extensions.toJsonString
 import com.bitclave.node.repository.RepositoryStrategyType
-import com.bitclave.node.repository.models.OfferSearch
-import com.bitclave.node.repository.models.SearchRequest
-import com.bitclave.node.repository.models.SignedRequest
-import com.bitclave.node.repository.models.controllers.OfferSearchByQueryParameters
+import com.bitclave.node.repository.entities.OfferSearch
+import com.bitclave.node.repository.entities.SearchRequest
+import com.bitclave.node.models.SignedRequest
+import com.bitclave.node.models.controllers.OfferSearchByQueryParameters
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith

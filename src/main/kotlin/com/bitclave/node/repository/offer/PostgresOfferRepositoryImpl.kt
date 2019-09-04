@@ -1,10 +1,12 @@
 package com.bitclave.node.repository.offer
 
-import com.bitclave.node.repository.models.Offer
-import com.bitclave.node.repository.models.OfferPrice
-import com.bitclave.node.repository.models.OfferPriceRules
+import com.bitclave.node.repository.entities.Offer
+import com.bitclave.node.repository.entities.OfferPrice
+import com.bitclave.node.repository.entities.OfferPriceRules
 import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.services.errors.DataNotSavedException
+import com.bitclave.node.services.events.OfferEvent
+import com.bitclave.node.services.events.WsService
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
@@ -24,12 +26,24 @@ import kotlin.system.measureTimeMillis
 class PostgresOfferRepositoryImpl(
     val repository: OfferCrudRepository,
     val offerSearchRepository: OfferSearchCrudRepository,
-    val entityManager: EntityManager
+    val entityManager: EntityManager,
+    val wsService: WsService
 ) : OfferRepository {
 
     override fun saveOffer(offer: Offer): Offer {
         repository.save(offer) ?: throw DataNotSavedException()
-        return syncElementCollections(offer)!!
+
+        val result = syncElementCollections(offer)!!
+        val event = if (offer.id > 0) OfferEvent.OnUpdate else OfferEvent.OnCreate
+
+        wsService.sendEvent(event, result)
+
+        return result
+    }
+
+    override fun saveAll(offers: List<Offer>): List<Offer> {
+        val result = repository.saveAll(offers).toList()
+        return syncElementCollections(result)
     }
 
     override fun deleteOffer(id: Long, owner: String): Long {
@@ -39,6 +53,8 @@ class PostgresOfferRepositoryImpl(
 
             offerSearchRepository.deleteAll(relatedOfferSearches)
 
+            wsService.sendEvent(OfferEvent.OnDelete, id)
+
             return id
         }
 
@@ -46,7 +62,12 @@ class PostgresOfferRepositoryImpl(
     }
 
     override fun deleteOffers(owner: String): Int {
-        return repository.deleteByOwner(owner)
+        val deletedOffers = repository.deleteByOwner(owner)
+        deletedOffers.forEach {
+            wsService.sendEvent(OfferEvent.OnDelete, it.id)
+        }
+
+        return deletedOffers.size
     }
 
     override fun findIdsByOwner(owner: String): List<Long> = repository.findIdsByOwner(owner).map { it.toLong() }

@@ -1,10 +1,10 @@
 package com.bitclave.node.controllers.v1
 
 import com.bitclave.node.controllers.AbstractController
-import com.bitclave.node.repository.models.SignedRequest
-import com.bitclave.node.repository.models.services.ExternalService
-import com.bitclave.node.repository.models.services.ServiceCall
-import com.bitclave.node.repository.models.services.ServiceResponse
+import com.bitclave.node.models.SignedRequest
+import com.bitclave.node.models.services.ServiceCall
+import com.bitclave.node.models.services.ServiceResponse
+import com.bitclave.node.repository.entities.ExternalService
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.services.ExternalServicesService
 import io.swagger.annotations.ApiOperation

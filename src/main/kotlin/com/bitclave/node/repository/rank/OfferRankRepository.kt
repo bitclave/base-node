@@ -1,6 +1,6 @@
 package com.bitclave.node.repository.rank
 
-import com.bitclave.node.repository.models.OfferRank
+import com.bitclave.node.repository.entities.OfferRank
 
 interface OfferRankRepository {
 

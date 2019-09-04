@@ -1,6 +1,6 @@
 package com.bitclave.node.repository.offer
 
-import com.bitclave.node.repository.models.Offer
+import com.bitclave.node.repository.entities.Offer
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
@@ -26,7 +26,7 @@ interface OfferCrudRepository : PagingAndSortingRepository<Offer, Long> {
 
     fun deleteByIdAndOwner(id: Long, owner: String): Long
 
-    fun deleteByOwner(owner: String): Int
+    fun deleteByOwner(owner: String): List<Offer>
 
     fun findByIdAndOwner(id: Long, owner: String): Offer?
 

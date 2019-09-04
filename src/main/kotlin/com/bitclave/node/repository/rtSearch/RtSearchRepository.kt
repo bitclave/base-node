@@ -1,6 +1,6 @@
 package com.bitclave.node.repository.rtSearch
 
-import com.bitclave.node.repository.models.controllers.OffersWithCountersResponse
+import com.bitclave.node.models.controllers.OffersWithCountersResponse
 import org.springframework.data.domain.PageRequest
 import java.util.concurrent.CompletableFuture
 

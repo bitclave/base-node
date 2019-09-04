@@ -6,7 +6,7 @@ import com.bitclave.node.extensions.ecPoint
 import com.bitclave.node.extensions.hex
 import com.bitclave.node.extensions.sha3
 import com.bitclave.node.repository.Web3Provider
-import com.bitclave.node.repository.models.RequestData
+import com.bitclave.node.repository.entities.RequestData
 import com.bitclave.node.solidity.generated.NameServiceContract
 import com.bitclave.node.solidity.generated.RequestDataContract
 import mu.KotlinLogging
@@ -104,6 +104,18 @@ class HybridRequestDataRepositoryImpl(
     }
 
     override fun getByRequestDataAndRootPk(requestData: String, rootPk: String): List<RequestData> {
+        throw NotImplementedError()
+    }
+
+    override fun getByFromAndToAndKeys(to: String, from: List<String>, keys: List<String>): List<RequestData> {
+        throw NotImplementedError()
+    }
+
+    override fun getReshareByClientsAndKeysAndRootPk(
+        clientsPk: List<String>,
+        keys: List<String>,
+        rootPk: String
+    ): List<RequestData> {
         throw NotImplementedError()
     }
 

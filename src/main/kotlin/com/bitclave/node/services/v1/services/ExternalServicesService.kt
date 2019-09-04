@@ -1,10 +1,10 @@
 package com.bitclave.node.services.v1.services
 
+import com.bitclave.node.models.services.ServiceCall
+import com.bitclave.node.models.services.ServiceResponse
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
-import com.bitclave.node.repository.models.services.ExternalService
-import com.bitclave.node.repository.models.services.ServiceCall
-import com.bitclave.node.repository.models.services.ServiceResponse
+import com.bitclave.node.repository.entities.ExternalService
 import com.bitclave.node.repository.services.ExternalServicesRepository
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.utils.supplyAsyncEx

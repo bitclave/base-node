@@ -1,6 +1,6 @@
 package com.bitclave.node.repository.request
 
-import com.bitclave.node.repository.models.RequestData
+import com.bitclave.node.repository.entities.RequestData
 
 interface RequestDataRepository {
 
@@ -13,6 +13,14 @@ interface RequestDataRepository {
     fun getByFromAndToAndRequestData(from: String, to: String, requestData: String): RequestData?
 
     fun getByRequestDataAndRootPk(requestData: String, rootPk: String): List<RequestData>
+
+    fun getByFromAndToAndKeys(to: String, from: List<String>, keys: List<String>): List<RequestData>
+
+    fun getReshareByClientsAndKeysAndRootPk(
+        clientsPk: List<String>,
+        keys: List<String>,
+        rootPk: String
+    ): List<RequestData>
 
     fun findById(id: Long): RequestData?
 

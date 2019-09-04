@@ -112,9 +112,11 @@ dependencies {
     compile 'org.postgresql:postgresql:42.2.5'
 
     compile 'javax.xml.bind:jaxb-api:2.3.0'
-    
+
     compile 'net.logstash.logback:logstash-logback-encoder:6.1'
-    
+
+    compile("org.springframework.boot:spring-boot-starter-websocket")
+
     // https://mvnrepository.com/artifact/com.appoptics.metrics/appoptics-api-java
     compile group: 'com.appoptics.metrics', name: 'appoptics-api-java', version: '1.0.5'
 

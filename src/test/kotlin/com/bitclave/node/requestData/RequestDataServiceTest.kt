@@ -3,7 +3,7 @@ package com.bitclave.node.requestData
 import com.bitclave.node.configuration.properties.HybridProperties
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.Web3Provider
-import com.bitclave.node.repository.models.RequestData
+import com.bitclave.node.repository.entities.RequestData
 import com.bitclave.node.repository.request.HybridRequestDataRepositoryImpl
 import com.bitclave.node.repository.request.PostgresRequestDataRepositoryImpl
 import com.bitclave.node.repository.request.RequestDataCrudRepository

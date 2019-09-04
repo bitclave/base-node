@@ -2,7 +2,7 @@ package com.bitclave.node.services.v1
 
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
-import com.bitclave.node.repository.models.Offer
+import com.bitclave.node.repository.entities.Offer
 import com.bitclave.node.repository.offer.OfferRepository
 import com.bitclave.node.repository.price.OfferPriceRepository
 import com.bitclave.node.repository.rank.OfferRankRepository
@@ -96,6 +96,22 @@ class OfferService(
             }
             logger.debug(" - find OfferById $findByIdTiming")
             processedOffer
+        })
+    }
+
+    fun putBulkOffer(
+        owner: String,
+        offers: Array<Offer>,
+        strategy: RepositoryStrategyType
+    ): CompletableFuture<List<Long>> {
+        return supplyAsyncEx(Supplier {
+            offers.map {
+                try {
+                    putOffer(it.id, owner, it, strategy).get().id
+                } catch (err: Throwable) {
+                    return@map 0L
+                }
+            }
         })
     }
 

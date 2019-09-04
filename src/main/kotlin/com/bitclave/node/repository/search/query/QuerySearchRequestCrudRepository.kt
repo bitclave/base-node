@@ -1,6 +1,6 @@
 package com.bitclave.node.repository.search.query
 
-import com.bitclave.node.repository.models.QuerySearchRequest
+import com.bitclave.node.repository.entities.QuerySearchRequest
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Repository
 import javax.transaction.Transactional

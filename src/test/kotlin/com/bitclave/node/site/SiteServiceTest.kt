@@ -7,8 +7,8 @@ import com.bitclave.node.repository.account.AccountCrudRepository
 import com.bitclave.node.repository.account.AccountRepositoryStrategy
 import com.bitclave.node.repository.account.HybridAccountRepositoryImpl
 import com.bitclave.node.repository.account.PostgresAccountRepositoryImpl
-import com.bitclave.node.repository.models.Account
-import com.bitclave.node.repository.models.Site
+import com.bitclave.node.repository.entities.Account
+import com.bitclave.node.repository.entities.Site
 import com.bitclave.node.repository.site.PostgresSiteRepositoryImpl
 import com.bitclave.node.repository.site.SiteCrudRepository
 import com.bitclave.node.repository.site.SiteRepositoryStrategy

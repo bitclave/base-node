@@ -1,8 +1,8 @@
 package com.bitclave.node.repository.price
 
-import com.bitclave.node.repository.models.Offer
-import com.bitclave.node.repository.models.OfferPrice
-import com.bitclave.node.repository.models.OfferPriceRules
+import com.bitclave.node.repository.entities.Offer
+import com.bitclave.node.repository.entities.OfferPrice
+import com.bitclave.node.repository.entities.OfferPriceRules
 import com.bitclave.node.repository.priceRule.OfferPriceRulesCrudRepository
 import com.bitclave.node.services.errors.DataNotSavedException
 import org.springframework.beans.factory.annotation.Qualifier

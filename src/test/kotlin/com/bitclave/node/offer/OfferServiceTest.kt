@@ -8,10 +8,10 @@ import com.bitclave.node.repository.account.AccountCrudRepository
 import com.bitclave.node.repository.account.AccountRepositoryStrategy
 import com.bitclave.node.repository.account.HybridAccountRepositoryImpl
 import com.bitclave.node.repository.account.PostgresAccountRepositoryImpl
-import com.bitclave.node.repository.models.Account
-import com.bitclave.node.repository.models.Offer
-import com.bitclave.node.repository.models.OfferPrice
-import com.bitclave.node.repository.models.OfferPriceRules
+import com.bitclave.node.repository.entities.Account
+import com.bitclave.node.repository.entities.Offer
+import com.bitclave.node.repository.entities.OfferPrice
+import com.bitclave.node.repository.entities.OfferPriceRules
 import com.bitclave.node.repository.offer.OfferCrudRepository
 import com.bitclave.node.repository.offer.OfferRepositoryStrategy
 import com.bitclave.node.repository.offer.PostgresOfferRepositoryImpl
@@ -33,6 +33,7 @@ import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.repository.search.offer.OfferSearchRepositoryStrategy
 import com.bitclave.node.repository.search.offer.PostgresOfferSearchRepositoryImpl
 import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepository
+import com.bitclave.node.services.events.WsService
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferSearchService
 import com.bitclave.node.services.v1.OfferService
@@ -100,6 +101,9 @@ class OfferServiceTest {
 
     @Autowired
     private lateinit var entityManager: EntityManager
+
+    @Autowired
+    private lateinit var wsService: WsService
 
     private val publicKey = "02710f15e674fbbb328272ea7de191715275c7a814a6d18a59dd41f3ef4535d9ea"
 
@@ -174,7 +178,7 @@ class OfferServiceTest {
         val accountService = AccountService(repositoryStrategy)
 
         val postgresOfferRepository =
-            PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository, entityManager)
+            PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository, entityManager, wsService)
         val offerServiceStrategy = OfferRepositoryStrategy(postgresOfferRepository)
 
         val postgresOfferPriceRepository =

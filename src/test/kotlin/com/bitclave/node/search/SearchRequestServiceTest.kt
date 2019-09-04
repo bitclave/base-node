@@ -8,11 +8,11 @@ import com.bitclave.node.repository.account.AccountCrudRepository
 import com.bitclave.node.repository.account.AccountRepositoryStrategy
 import com.bitclave.node.repository.account.HybridAccountRepositoryImpl
 import com.bitclave.node.repository.account.PostgresAccountRepositoryImpl
-import com.bitclave.node.repository.models.Account
-import com.bitclave.node.repository.models.Offer
-import com.bitclave.node.repository.models.OfferSearch
-import com.bitclave.node.repository.models.SearchRequest
-import com.bitclave.node.repository.models.controllers.OffersWithCountersResponse
+import com.bitclave.node.repository.entities.Account
+import com.bitclave.node.repository.entities.Offer
+import com.bitclave.node.repository.entities.OfferSearch
+import com.bitclave.node.repository.entities.SearchRequest
+import com.bitclave.node.models.controllers.OffersWithCountersResponse
 import com.bitclave.node.repository.offer.OfferCrudRepository
 import com.bitclave.node.repository.offer.OfferRepositoryStrategy
 import com.bitclave.node.repository.offer.PostgresOfferRepositoryImpl
@@ -28,6 +28,7 @@ import com.bitclave.node.repository.search.offer.OfferSearchRepositoryStrategy
 import com.bitclave.node.repository.search.offer.PostgresOfferSearchRepositoryImpl
 import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepository
 import com.bitclave.node.services.errors.AccessDeniedException
+import com.bitclave.node.services.events.WsService
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferSearchService
 import com.bitclave.node.services.v1.SearchRequestService
@@ -85,6 +86,9 @@ class SearchRequestServiceTest {
 
     @Autowired
     private lateinit var entityManager: EntityManager
+
+    @Autowired
+    private lateinit var wsService: WsService
 
     @Autowired
     private lateinit var appOpticsProperties: AppOpticsProperties
@@ -150,7 +154,8 @@ class SearchRequestServiceTest {
                 entityManager
             )
         val requestRepositoryStrategy = SearchRequestRepositoryStrategy(searchRequestRepository)
-        val offerRepository = PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository, entityManager)
+        val offerRepository =
+            PostgresOfferRepositoryImpl(offerCrudRepository, offerSearchCrudRepository, entityManager, wsService)
         val offerRepositoryStrategy = OfferRepositoryStrategy(offerRepository)
 
         val offerSearchRepository =

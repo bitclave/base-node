@@ -1,6 +1,6 @@
 package com.bitclave.node.configuration.gson
 
-import com.bitclave.node.repository.models.controllers.EnrichedOffersWithCountersResponse
+import com.bitclave.node.models.controllers.EnrichedOffersWithCountersResponse
 import com.google.gson.JsonElement
 import com.google.gson.JsonSerializationContext
 import com.google.gson.JsonSerializer
