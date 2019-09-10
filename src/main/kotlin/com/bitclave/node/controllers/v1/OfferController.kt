@@ -441,12 +441,12 @@ class OfferController(
         return accountService
             .accountBySigMessage(request, getStrategyType(strategy))
             .thenCompose { account: Account ->
-                logger.debug("bulk controller profiling SigMessage 1) ${(Date().time - start.time)}ms")
+                // logger.debug("bulk controller profiling SigMessage 1) ${(Date().time - start.time)}ms")
                 start = Date()
                 accountService.validateNonce(request, account)
             }
             .thenCompose {
-                logger.debug("controller profiling ValidateNonce 2) ${(Date().time - start.time)}ms")
+                // logger.debug("controller profiling ValidateNonce 2) ${(Date().time - start.time)}ms")
                 start = Date()
                 if (request.pk != owner) {
                     throw BadArgumentException()
