@@ -217,7 +217,7 @@ class PostgresOfferRepositoryImpl(
             }
         }
 
-        println("syncElementCollections get raw result objects: $step1")
+        // println("syncElementCollections get raw result objects: $step1")
 
         var mappedTags = emptyMap<Long, List<Array<Any>>>()
         var mappedCompare = emptyMap<Long, List<Array<Any>>>()
@@ -232,7 +232,7 @@ class PostgresOfferRepositoryImpl(
             mappedPrices = (queryResultPrices).groupBy { it.originalOfferId }
             priceIds = queryResultPrices.map { it.id }.distinct()
         }
-        println("syncElementCollections mapping ids: $step2")
+        // println("syncElementCollections mapping ids: $step2")
 
         return mergeOfferWithMaps(offers, mappedTags, mappedCompare, mappedRules, mappedPrices, priceIds)
     }
@@ -266,7 +266,7 @@ class PostgresOfferRepositoryImpl(
             }
         }
 
-        println("syncElementCollections merge result: $mergeResult")
+        // println("syncElementCollections merge result: $mergeResult")
 
         return result
     }
@@ -288,7 +288,7 @@ class PostgresOfferRepositoryImpl(
                 )
                 .resultList as List<OfferPriceRules>).groupBy { it.originalOfferPriceId }
         }
-        println("syncElementCollections syncPriceRules: $loadPrices")
+        // println("syncElementCollections syncPriceRules: $loadPrices")
 
         return result
     }

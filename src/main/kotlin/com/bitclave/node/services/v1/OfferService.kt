@@ -79,22 +79,22 @@ class OfferService(
             val saveTiming = measureTimeMillis {
                 processedOffer = offerRepository.changeStrategy(strategy).saveOffer(putOffer)
             }
-            logger.debug(" - save office $saveTiming")
+            // logger.debug(" - save office $saveTiming")
 
             val savePriceTiming = measureTimeMillis {
                 offerPriceRepository.changeStrategy(strategy).savePrices(processedOffer, offer.offerPrices)
             }
-            logger.debug(" - save price $savePriceTiming")
+            // logger.debug(" - save price $savePriceTiming")
 
             val deleteByOfferIdTiming = measureTimeMillis {
                 offerSearchService.deleteByOfferId(id, strategy)
             }
-            logger.debug(" - delete by OfferId $deleteByOfferIdTiming")
+            // logger.debug(" - delete by OfferId $deleteByOfferIdTiming")
 
             val findByIdTiming = measureTimeMillis {
                 processedOffer = offerRepository.changeStrategy(strategy).findById(processedOffer.id)!!
             }
-            logger.debug(" - find OfferById $findByIdTiming")
+            // logger.debug(" - find OfferById $findByIdTiming")
             processedOffer
         })
     }
