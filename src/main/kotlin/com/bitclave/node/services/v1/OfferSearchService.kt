@@ -1080,7 +1080,7 @@ class OfferSearchService(
         val step1 = measureTimeMillis {
             offerSearchRepository.changeStrategy(strategy).deleteAllByOfferId(offerId)
         }
-        logger.debug("deleteByOfferId step 1 ->  ms: $step1")
+        // logger.debug("deleteByOfferId step 1 ->  ms: $step1")
 //        appOpticsUtil.sendToAppOptics(
 //            "com.bitclave.node.services.v1.deleteByOfferId.step1",
 //            (step1).toDouble(),
@@ -1093,7 +1093,7 @@ class OfferSearchService(
                 .filter { it.state == OfferAction.NONE || it.state == OfferAction.REJECT }
                 .map { it.id }
         }
-        logger.debug("deleteByOfferId step 2 -> ms: $step2 filteredStateIds: ${filteredStateIds.size}")
+        // logger.debug("deleteByOfferId step 2 -> ms: $step2 filteredStateIds: ${filteredStateIds.size}")
 //        appOpticsUtil.sendToAppOptics(
 //            "com.bitclave.node.services.v1.deleteByOfferId.step2",
 //            (step2).toDouble(),
@@ -1102,7 +1102,7 @@ class OfferSearchService(
         val step3 = measureTimeMillis {
             offerInteractionRepository.changeStrategy(strategy).delete(filteredStateIds)
         }
-        logger.debug("deleteByOfferId step 3 -> ms: $step3 filteredStateIds: ${filteredStateIds.size}")
+        // logger.debug("deleteByOfferId step 3 -> ms: $step3 filteredStateIds: ${filteredStateIds.size}")
 //        appOpticsUtil.sendToAppOptics(
 //            "com.bitclave.node.services.v1.deleteByOfferId.step3",
 //            (step3).toDouble(),
