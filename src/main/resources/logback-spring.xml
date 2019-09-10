@@ -33,28 +33,28 @@
         </rollingPolicy>
     </appender>
 
-    <appender name="stash" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
-        <destination>${logstash}</destination>
-        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
-            <layout class="com.bitclave.node.configuration.LogbackLayout"/>
-        </encoder>
-    </appender>
+    <!--<appender name="stash" class="net.logstash.logback.appender.LogstashTcpSocketAppender">-->
+        <!--<destination>${logstash}</destination>-->
+        <!--<encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">-->
+            <!--<layout class="com.bitclave.node.configuration.LogbackLayout"/>-->
+        <!--</encoder>-->
+    <!--</appender>-->
 
     <root level="all">
-        <appender-ref ref="stash"/>
+        <!--<appender-ref ref="stash"/>-->
     </root>
 
     <!-- LOG everything at INFO level -->
     <root level="info">
         <appender-ref ref="RollingFile"/>
         <appender-ref ref="Console"/>
-        <appender-ref ref="stash"/>
+        <!--<appender-ref ref="stash"/>-->
     </root>
 
     <logger name="org.hibernate" level="ERROR">
         <appender-ref ref="RollingFile"/>
         <appender-ref ref="Console"/>
-        <appender-ref ref="stash"/>
+        <!--<appender-ref ref="stash"/>-->
     </logger>
 
 </configuration>
