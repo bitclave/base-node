@@ -36,7 +36,7 @@ class PostgresOfferRepositoryImpl(
         val result = syncElementCollections(offer)!!
         val event = if (offer.id > 0) OfferEvent.OnUpdate else OfferEvent.OnCreate
 
-        // wsService.sendEvent(event, result)
+        wsService.sendEvent(event, result)
 
         return result
     }
