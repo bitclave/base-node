@@ -10,7 +10,7 @@ import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepositor
 import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
-// import com.bitclave.node.utils.AppOpticsUtil
+import com.bitclave.node.utils.AppOpticsUtil
 import com.bitclave.node.utils.runAsyncEx
 import com.bitclave.node.utils.supplyAsyncEx
 import mu.KotlinLogging
