@@ -1,6 +1,6 @@
 package com.bitclave.node.services.v1
 
-import com.appoptics.metrics.client.Tag
+// import com.appoptics.metrics.client.Tag
 import com.bitclave.node.configuration.properties.AppOpticsProperties
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
@@ -10,7 +10,7 @@ import com.bitclave.node.repository.search.query.QuerySearchRequestCrudRepositor
 import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
-import com.bitclave.node.utils.AppOpticsUtil
+// import com.bitclave.node.utils.AppOpticsUtil
 import com.bitclave.node.utils.runAsyncEx
 import com.bitclave.node.utils.supplyAsyncEx
 import mu.KotlinLogging
