@@ -144,12 +144,12 @@ class OfferSearchService(
                         repository.findByOwner(owner, pageRequest.sort)
                 }
             }
-            logger.debug { "1 step) get data from DB ms: $step1" }
-            appOpticsUtil.sendToAppOptics(
-                "com.bitclave.node.services.v1.getOffersAndOfferSearchesByParams.step1",
-                (step1).toDouble(),
-                Tag("owner", owner)
-            )
+            // logger.debug { "1 step) get data from DB ms: $step1" }
+            // appOpticsUtil.sendToAppOptics(
+            //     "com.bitclave.node.services.v1.getOffersAndOfferSearchesByParams.step1",
+            //     (step1).toDouble(),
+            //     Tag("owner", owner)
+            // )
 
             var filteredByUnique = listOf<OfferSearch>()
             val step2 = measureTimeMillis {
@@ -162,12 +162,12 @@ class OfferSearchService(
                     offerSearches
                 }
             }
-            logger.debug { "2 step) filtering by unique ms: $step2" }
-            appOpticsUtil.sendToAppOptics(
-                "com.bitclave.node.services.v1.getOffersAndOfferSearchesByParams.step2",
-                (step2).toDouble(),
-                Tag("owner", owner)
-            )
+            // logger.debug { "2 step) filtering by unique ms: $step2" }
+            // appOpticsUtil.sendToAppOptics(
+            //     "com.bitclave.node.services.v1.getOffersAndOfferSearchesByParams.step2",
+            //     (step2).toDouble(),
+            //     Tag("owner", owner)
+            // )
 
             var subItems = listOf<OfferSearch>()
             val step3 = measureTimeMillis {
@@ -176,12 +176,12 @@ class OfferSearchService(
                     min((pageRequest.pageNumber + 1) * pageRequest.pageSize, filteredByUnique.size)
                 )
             }
-            logger.debug { "3 step) subItems ms: $step3" }
-            appOpticsUtil.sendToAppOptics(
-                "com.bitclave.node.services.v1.getOffersAndOfferSearchesByParams.step3",
-                (step3).toDouble(),
-                Tag("owner", owner)
-            )
+            // logger.debug { "3 step) subItems ms: $step3" }
+            // appOpticsUtil.sendToAppOptics(
+            //     "com.bitclave.node.services.v1.getOffersAndOfferSearchesByParams.step3",
+            //     (step3).toDouble(),
+            //     Tag("owner", owner)
+            // )
 
             var content = listOf<OfferSearchResultItem>()
             val step4 = measureTimeMillis {
@@ -192,30 +192,30 @@ class OfferSearchService(
                     interaction
                 )
             }
-            logger.debug { "4 step) content ms: $step4" }
-            appOpticsUtil.sendToAppOptics(
-                "com.bitclave.node.services.v1.getOffersAndOfferSearchesByParams.step4",
-                (step4).toDouble(),
-                Tag("owner", owner)
-            )
+            // logger.debug { "4 step) content ms: $step4" }
+            // appOpticsUtil.sendToAppOptics(
+            //     "com.bitclave.node.services.v1.getOffersAndOfferSearchesByParams.step4",
+            //     (step4).toDouble(),
+            //     Tag("owner", owner)
+            // )
 
             var pageImpl = PageImpl(listOf<OfferSearchResultItem>())
             val step5 = measureTimeMillis {
                 val pageable = PageRequest.of(pageRequest.pageNumber, pageRequest.pageSize)
                 pageImpl = PageImpl(content, pageable, filteredByUnique.size.toLong())
             }
-            logger.debug { "5 step) content ms: $step5" }
-            appOpticsUtil.sendToAppOptics(
-                "com.bitclave.node.services.v1.getOffersAndOfferSearchesByParams.step5",
-                (step5).toDouble(),
-                Tag("owner", owner)
-            )
-            logger.debug { "total) ms: ${step1 + step2 + step3 + step4 + step5}" }
-            appOpticsUtil.sendToAppOptics(
-                "com.bitclave.node.services.v1.getOffersAndOfferSearchesByParams.total",
-                (step1 + step2 + step3 + step4 + step5).toDouble(),
-                Tag("owner", owner)
-            )
+            // logger.debug { "5 step) content ms: $step5" }
+            // appOpticsUtil.sendToAppOptics(
+            //     "com.bitclave.node.services.v1.getOffersAndOfferSearchesByParams.step5",
+            //     (step5).toDouble(),
+            //     Tag("owner", owner)
+            // )
+            // logger.debug { "total) ms: ${step1 + step2 + step3 + step4 + step5}" }
+            // appOpticsUtil.sendToAppOptics(
+            //     "com.bitclave.node.services.v1.getOffersAndOfferSearchesByParams.total",
+            //     (step1 + step2 + step3 + step4 + step5).toDouble(),
+            //     Tag("owner", owner)
+            // )
             pageImpl as Page<OfferSearchResultItem>
         })
     }
@@ -609,12 +609,12 @@ class OfferSearchService(
                     }
                 }
             }
-            logger.debug { "clone offer search step1: $step1" }
-            appOpticsUtil.sendToAppOptics(
-                "com.bitclave.node.services.v1.cloneOfferSearchOfSearchRequest.step1",
-                (step1).toDouble(),
-                Tag("owner", owner)
-            )
+            // logger.debug { "clone offer search step1: $step1" }
+            // appOpticsUtil.sendToAppOptics(
+            //     "com.bitclave.node.services.v1.cloneOfferSearchOfSearchRequest.step1",
+            //     (step1).toDouble(),
+            //     Tag("owner", owner)
+            // )
 
             var allOfferSearches = emptyList<OfferSearch>()
             val repository = offerSearchRepository.changeStrategy(strategy)
@@ -622,12 +622,12 @@ class OfferSearchService(
             val step2 = measureTimeMillis {
                 allOfferSearches = repository.findBySearchRequestIdIn(searchRequestsIds.distinct())
             }
-            logger.debug { "clone offer search step2: $step2" }
-            appOpticsUtil.sendToAppOptics(
-                "com.bitclave.node.services.v1.cloneOfferSearchOfSearchRequest.step2",
-                (step2).toDouble(),
-                Tag("owner", owner)
-            )
+            // logger.debug { "clone offer search step2: $step2" }
+            // appOpticsUtil.sendToAppOptics(
+            //     "com.bitclave.node.services.v1.cloneOfferSearchOfSearchRequest.step2",
+            //     (step2).toDouble(),
+            //     Tag("owner", owner)
+            // )
 
             var result = emptyList<OfferSearch>()
 
@@ -645,12 +645,12 @@ class OfferSearchService(
                     filterExcludeExist
                 }.flatten()
             }
-            logger.debug { "clone offer search step3: $step3" }
-            appOpticsUtil.sendToAppOptics(
-                "com.bitclave.node.services.v1.cloneOfferSearchOfSearchRequest.step3",
-                (step3).toDouble(),
-                Tag("owner", owner)
-            )
+            // logger.debug { "clone offer search step3: $step3" }
+            // appOpticsUtil.sendToAppOptics(
+            //     "com.bitclave.node.services.v1.cloneOfferSearchOfSearchRequest.step3",
+            //     (step3).toDouble(),
+            //     Tag("owner", owner)
+            // )
 
             var interactions = emptyList<OfferInteraction>()
 
@@ -663,38 +663,38 @@ class OfferSearchService(
                 val notExistedOffersInInteractions = offerIds.filter { !existedOffersInInteractions.contains(it) }
                 interactions = notExistedOffersInInteractions.map { OfferInteraction(0, owner, it) }
             }
-            logger.debug { "clone offer search step4: $step4" }
-            appOpticsUtil.sendToAppOptics(
-                "com.bitclave.node.services.v1.cloneOfferSearchOfSearchRequest.step4",
-                (step4).toDouble(),
-                Tag("owner", owner)
-            )
+            // logger.debug { "clone offer search step4: $step4" }
+            // appOpticsUtil.sendToAppOptics(
+            //     "com.bitclave.node.services.v1.cloneOfferSearchOfSearchRequest.step4",
+            //     (step4).toDouble(),
+            //     Tag("owner", owner)
+            // )
 
             val step5 = measureTimeMillis {
                 offerInteractionRepository.changeStrategy(strategy).save(interactions)
             }
-            logger.debug { "clone offer search step5: $step5, count ${interactions.size}" }
-            appOpticsUtil.sendToAppOptics(
-                "com.bitclave.node.services.v1.cloneOfferSearchOfSearchRequest.step5",
-                (step5).toDouble(),
-                Tag("owner", owner)
-            )
+            // logger.debug { "clone offer search step5: $step5, count ${interactions.size}" }
+            // appOpticsUtil.sendToAppOptics(
+            //     "com.bitclave.node.services.v1.cloneOfferSearchOfSearchRequest.step5",
+            //     (step5).toDouble(),
+            //     Tag("owner", owner)
+            // )
 
             var savedResult = emptyList<OfferSearch>()
             val step6 = measureTimeMillis {
                 savedResult = repository.save(result)
             }
-            logger.debug { "clone offer search step6: $step6, count ${result.size}" }
-            appOpticsUtil.sendToAppOptics(
-                "com.bitclave.node.services.v1.cloneOfferSearchOfSearchRequest.step6",
-                (step6).toDouble(),
-                Tag("owner", owner)
-            )
-            appOpticsUtil.sendToAppOptics(
-                "com.bitclave.node.services.v1.cloneOfferSearchOfSearchRequest.total",
-                (step1 + step2 + step3 + step4 + step5 + step6).toDouble(),
-                Tag("owner", owner)
-            )
+            // logger.debug { "clone offer search step6: $step6, count ${result.size}" }
+            // appOpticsUtil.sendToAppOptics(
+            //     "com.bitclave.node.services.v1.cloneOfferSearchOfSearchRequest.step6",
+            //     (step6).toDouble(),
+            //     Tag("owner", owner)
+            // )
+            // appOpticsUtil.sendToAppOptics(
+            //     "com.bitclave.node.services.v1.cloneOfferSearchOfSearchRequest.total",
+            //     (step1 + step2 + step3 + step4 + step5 + step6).toDouble(),
+            //     Tag("owner", owner)
+            // )
 
             savedResult
         })
@@ -748,24 +748,24 @@ class OfferSearchService(
                     .changeStrategy(strategyType)
                     .save(searchRequest.copy(updatedAt = Date()))
             }
-            logger.debug { "step 1 -> save(). ms: $step1" }
-            appOpticsUtil.sendToAppOptics(
-                "com.bitclave.node.services.v1.createOfferSearchesByQuery.step1",
-                (step1).toDouble(),
-                Tag("owner", owner)
-            )
+            // logger.debug { "step 1 -> save(). ms: $step1" }
+            // appOpticsUtil.sendToAppOptics(
+            //     "com.bitclave.node.services.v1.createOfferSearchesByQuery.step1",
+            //     (step1).toDouble(),
+            //     Tag("owner", owner)
+            // )
 
             val querySearchRequest = QuerySearchRequest(0, owner, query)
 
             val step2 = measureTimeMillis {
                 querySearchRequestCrudRepository.save(querySearchRequest)
             }
-            logger.debug { "step 2 -> querySearchRequestCrudRepository.save(). ms: $step2" }
-            appOpticsUtil.sendToAppOptics(
-                "com.bitclave.node.services.v1.createOfferSearchesByQuery.step2",
-                (step2).toDouble(),
-                Tag("owner", owner)
-            )
+            // logger.debug { "step 2 -> querySearchRequestCrudRepository.save(). ms: $step2" }
+            // appOpticsUtil.sendToAppOptics(
+            //     "com.bitclave.node.services.v1.createOfferSearchesByQuery.step2",
+            //     (step2).toDouble(),
+            //     Tag("owner", owner)
+            // )
 
             var existedOfferSearches: List<OfferSearch> = emptyList()
 
@@ -774,12 +774,12 @@ class OfferSearchService(
                     .changeStrategy(strategyType)
                     .findBySearchRequestId(searchRequestId)
             }
-            logger.debug { "step 3 -> findBySearchRequestId(). ms: $step3" }
-            appOpticsUtil.sendToAppOptics(
-                "com.bitclave.node.services.v1.createOfferSearchesByQuery.step3",
-                (step3).toDouble(),
-                Tag("owner", owner)
-            )
+            // logger.debug { "step 3 -> findBySearchRequestId(). ms: $step3" }
+            // appOpticsUtil.sendToAppOptics(
+            //     "com.bitclave.node.services.v1.createOfferSearchesByQuery.step3",
+            //     (step3).toDouble(),
+            //     Tag("owner", owner)
+            // )
 
             var offerIds: Page<Long> = PageImpl(emptyList<Long>(), PageRequest.of(0, 1), 0)
             var counters: Map<String, Map<String, Int>> = mapOf()
@@ -789,12 +789,12 @@ class OfferSearchService(
                 offerIds = searchedData.getPageableOfferIds()
                 counters = searchedData.counters
             }
-            logger.debug { "step 4 -> getOffersIdByQuery(). ms: $step4" }
-            appOpticsUtil.sendToAppOptics(
-                "com.bitclave.node.services.v1.createOfferSearchesByQuery.step4",
-                (step4).toDouble(),
-                Tag("owner", owner)
-            )
+            // logger.debug { "step 4 -> getOffersIdByQuery(). ms: $step4" }
+            // appOpticsUtil.sendToAppOptics(
+            //     "com.bitclave.node.services.v1.createOfferSearchesByQuery.step4",
+            //     (step4).toDouble(),
+            //     Tag("owner", owner)
+            // )
 
             var offerSearches: List<OfferSearch> = emptyList()
             val step5 = measureTimeMillis {
@@ -810,12 +810,12 @@ class OfferSearchService(
                     OfferSearch(0, owner, searchRequest.id, it)
                 }
             }
-            logger.debug { "step 5 -> merge offerSearches. ms: $step5" }
-            appOpticsUtil.sendToAppOptics(
-                "com.bitclave.node.services.v1.createOfferSearchesByQuery.step5",
-                (step5).toDouble(),
-                Tag("owner", owner)
-            )
+            // logger.debug { "step 5 -> merge offerSearches. ms: $step5" }
+            // appOpticsUtil.sendToAppOptics(
+            //     "com.bitclave.node.services.v1.createOfferSearchesByQuery.step5",
+            //     (step5).toDouble(),
+            //     Tag("owner", owner)
+            // )
 
             val step6 = measureTimeMillis {
                 offerSearchRepository
@@ -840,12 +840,12 @@ class OfferSearchService(
                     .changeStrategy(strategyType)
                     .save(stateForSave)
             }
-            logger.debug { "step 6 -> save(). ms: $step6" }
-            appOpticsUtil.sendToAppOptics(
-                "com.bitclave.node.services.v1.createOfferSearchesByQuery.step6",
-                (step6).toDouble(),
-                Tag("owner", owner)
-            )
+            // logger.debug { "step 6 -> save(). ms: $step6" }
+            // appOpticsUtil.sendToAppOptics(
+            //     "com.bitclave.node.services.v1.createOfferSearchesByQuery.step6",
+            //     (step6).toDouble(),
+            //     Tag("owner", owner)
+            // )
 
             var offerSearchResult: List<OfferSearch> = emptyList()
 
@@ -856,12 +856,12 @@ class OfferSearchService(
                         offerIds.indexOf(a.offerId) - offerIds.indexOf(b.offerId)
                     })
             }
-            logger.debug { "step 7 -> findBySearchRequestIdAndOfferIds(). ms: $step7" }
-            appOpticsUtil.sendToAppOptics(
-                "com.bitclave.node.services.v1.createOfferSearchesByQuery.step7",
-                (step7).toDouble(),
-                Tag("owner", owner)
-            )
+            // logger.debug { "step 7 -> findBySearchRequestIdAndOfferIds(). ms: $step7" }
+            // appOpticsUtil.sendToAppOptics(
+            //     "com.bitclave.node.services.v1.createOfferSearchesByQuery.step7",
+            //     (step7).toDouble(),
+            //     Tag("owner", owner)
+            // )
 
             var result: Page<OfferSearchResultItem> =
                 PageImpl(emptyList<OfferSearchResultItem>(), PageRequest.of(0, 1), 0)
@@ -877,17 +877,17 @@ class OfferSearchService(
 
                 result = PageImpl(resultItems, pageable, offerIds.totalElements)
             }
-            logger.debug { "step 8 -> findBySearchRequestIdAndOfferIds(). ms: $step8" }
-            appOpticsUtil.sendToAppOptics(
-                "com.bitclave.node.services.v1.createOfferSearchesByQuery.step8",
-                (step8).toDouble(),
-                Tag("owner", owner)
-            )
-            appOpticsUtil.sendToAppOptics(
-                "com.bitclave.node.services.v1.createOfferSearchesByQuery.total",
-                (step1 + step2 + step3 + step4 + step5 + step6 + step7 + step8).toDouble(),
-                Tag("owner", owner)
-            )
+            // logger.debug { "step 8 -> findBySearchRequestIdAndOfferIds(). ms: $step8" }
+            // appOpticsUtil.sendToAppOptics(
+            //     "com.bitclave.node.services.v1.createOfferSearchesByQuery.step8",
+            //     (step8).toDouble(),
+            //     Tag("owner", owner)
+            // )
+            // appOpticsUtil.sendToAppOptics(
+            //     "com.bitclave.node.services.v1.createOfferSearchesByQuery.total",
+            //     (step1 + step2 + step3 + step4 + step5 + step6 + step7 + step8).toDouble(),
+            //     Tag("owner", owner)
+            // )
 
             val data = EnrichedOffersWithCountersResponse(result, counters)
             data
@@ -983,12 +983,12 @@ class OfferSearchService(
                 .map { it.offerId }
                 .distinct()
         }
-        logger.debug { "3.1 step) offer Ids ms: $step31" }
-        appOpticsUtil.sendToAppOptics(
-            "com.bitclave.node.services.v1.offerSearchListToResult.step3.1",
-            (step31).toDouble(),
-            Tag("empty", "empty")
-        )
+        // logger.debug { "3.1 step) offer Ids ms: $step31" }
+        // appOpticsUtil.sendToAppOptics(
+        //     "com.bitclave.node.services.v1.offerSearchListToResult.step3.1",
+        //     (step31).toDouble(),
+        //     Tag("empty", "empty")
+        // )
 
         var offers = mapOf<Long, List<Offer>>()
         val step32 = measureTimeMillis {
@@ -997,40 +997,40 @@ class OfferSearchService(
             val step321 = measureTimeMillis {
                 ones = offersRepository.findByIds(offerIds)
             }
-            logger.debug { "3.2.1 step) findByIds ms: $step321" }
-            appOpticsUtil.sendToAppOptics(
-                "com.bitclave.node.services.v1.offerSearchListToResult.step3.2.1",
-                (step321).toDouble(),
-                Tag("empty", "empty")
-            )
+            // logger.debug { "3.2.1 step) findByIds ms: $step321" }
+            // appOpticsUtil.sendToAppOptics(
+            //     "com.bitclave.node.services.v1.offerSearchListToResult.step3.2.1",
+            //     (step321).toDouble(),
+            //     Tag("empty", "empty")
+            // )
 
             val step322 = measureTimeMillis {
                 offers = ones.groupBy { it.id }
             }
-            logger.debug { "3.2.2 step)  groupBy ms: $step322" }
-            appOpticsUtil.sendToAppOptics(
-                "com.bitclave.node.services.v1.offerSearchListToResult.step3.2.2",
-                (step322).toDouble(),
-                Tag("empty", "empty")
-            )
+            // logger.debug { "3.2.2 step)  groupBy ms: $step322" }
+            // appOpticsUtil.sendToAppOptics(
+            //     "com.bitclave.node.services.v1.offerSearchListToResult.step3.2.2",
+            //     (step322).toDouble(),
+            //     Tag("empty", "empty")
+            // )
         }
-        logger.debug { "3.2 step) ids is ${offerIds.size} offer MAP<Long, List<Offer>> ms: $step32" }
-        appOpticsUtil.sendToAppOptics(
-            "com.bitclave.node.services.v1.offerSearchListToResult.step3.2",
-            (step32).toDouble(),
-            Tag("empty", "empty")
-        )
+        // logger.debug { "3.2 step) ids is ${offerIds.size} offer MAP<Long, List<Offer>> ms: $step32" }
+        // appOpticsUtil.sendToAppOptics(
+        //     "com.bitclave.node.services.v1.offerSearchListToResult.step3.2",
+        //     (step32).toDouble(),
+        //     Tag("empty", "empty")
+        // )
 
         var withExistedOffers = listOf<OfferSearch>()
         val step33 = measureTimeMillis {
             withExistedOffers = offerSearch.filter { offers.containsKey(it.offerId) }
         }
-        logger.debug { "3.3 step) offerSearch with existed offers ms: $step33" }
-        appOpticsUtil.sendToAppOptics(
-            "com.bitclave.node.services.v1.offerSearchListToResult.step3.3",
-            (step33).toDouble(),
-            Tag("empty", "empty")
-        )
+        // logger.debug { "3.3 step) offerSearch with existed offers ms: $step33" }
+        // appOpticsUtil.sendToAppOptics(
+        //     "com.bitclave.node.services.v1.offerSearchListToResult.step3.3",
+        //     (step33).toDouble(),
+        //     Tag("empty", "empty")
+        // )
 
         val states = mutableMapOf<Long, List<OfferInteraction>>()
 
@@ -1051,17 +1051,17 @@ class OfferSearchService(
                 )
             }
         }
-        logger.debug { "3.4 step) final result ms: $step34" }
-        appOpticsUtil.sendToAppOptics(
-            "com.bitclave.node.services.v1.offerSearchListToResult.step3.4",
-            (step34).toDouble(),
-            Tag("empty", "empty")
-        )
-        appOpticsUtil.sendToAppOptics(
-            "com.bitclave.node.services.v1.offerSearchListToResult.total",
-            (step31 + step32 + step33 + step34).toDouble(),
-            Tag("empty", "empty")
-        )
+        // logger.debug { "3.4 step) final result ms: $step34" }
+        // appOpticsUtil.sendToAppOptics(
+        //     "com.bitclave.node.services.v1.offerSearchListToResult.step3.4",
+        //     (step34).toDouble(),
+        //     Tag("empty", "empty")
+        // )
+        // appOpticsUtil.sendToAppOptics(
+        //     "com.bitclave.node.services.v1.offerSearchListToResult.total",
+        //     (step31 + step32 + step33 + step34).toDouble(),
+        //     Tag("empty", "empty")
+        // )
 
         return result
     }

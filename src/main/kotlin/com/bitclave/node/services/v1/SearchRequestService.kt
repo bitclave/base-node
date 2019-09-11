@@ -182,12 +182,12 @@ class SearchRequestService(
                     .changeStrategy(strategy)
                     .findById(searchRequestIds)
             }
-            logger.debug { "clone search request step1: $step1" }
-            appOpticsUtil.sendToAppOptics(
-                "com.bitclave.node.services.v1.cloneSearchRequestWithOfferSearches.step1",
-                (step1).toDouble(),
-                Tag("owner", owner)
-            )
+            // logger.debug { "clone search request step1: $step1" }
+            // appOpticsUtil.sendToAppOptics(
+            //     "com.bitclave.node.services.v1.cloneSearchRequestWithOfferSearches.step1",
+            //     (step1).toDouble(),
+            //     Tag("owner", owner)
+            // )
 
             var preparedRequests = emptyList<SearchRequest>()
 
@@ -200,12 +200,12 @@ class SearchRequestService(
 
                 preparedRequests = existingRequest.map { SearchRequest(0, owner, it.tags.toMap()) }
             }
-            logger.debug { "clone search request step2: $step2" }
-            appOpticsUtil.sendToAppOptics(
-                "com.bitclave.node.services.v1.cloneSearchRequestWithOfferSearches.step2",
-                (step2).toDouble(),
-                Tag("owner", owner)
-            )
+            // logger.debug { "clone search request step2: $step2" }
+            // appOpticsUtil.sendToAppOptics(
+            //     "com.bitclave.node.services.v1.cloneSearchRequestWithOfferSearches.step2",
+            //     (step2).toDouble(),
+            //     Tag("owner", owner)
+            // )
 
             var createSearchRequests = emptyList<SearchRequest>()
 
@@ -215,12 +215,12 @@ class SearchRequestService(
                     .save(preparedRequests)
             }
 
-            logger.debug { "clone search request step3: $step3" }
-            appOpticsUtil.sendToAppOptics(
-                "com.bitclave.node.services.v1.cloneSearchRequestWithOfferSearches.step3",
-                (step3).toDouble(),
-                Tag("owner", owner)
-            )
+            // logger.debug { "clone search request step3: $step3" }
+            // appOpticsUtil.sendToAppOptics(
+            //     "com.bitclave.node.services.v1.cloneSearchRequestWithOfferSearches.step3",
+            //     (step3).toDouble(),
+            //     Tag("owner", owner)
+            // )
 
             val zipped = existingRequest.map { it.id }
                 .zip(createSearchRequests.map { it.id })
@@ -239,17 +239,17 @@ class SearchRequestService(
                     throw e
                 }
             }
-            logger.debug { "clone search request step4 (full clone offer search): $step4" }
-            appOpticsUtil.sendToAppOptics(
-                "com.bitclave.node.services.v1.cloneSearchRequestWithOfferSearches.step4",
-                (step4).toDouble(),
-                Tag("owner", owner)
-            )
-            appOpticsUtil.sendToAppOptics(
-                "com.bitclave.node.services.v1.cloneSearchRequestWithOfferSearches.total",
-                (step1 + step2 + step3 + step4).toDouble(),
-                Tag("owner", owner)
-            )
+            // logger.debug { "clone search request step4 (full clone offer search): $step4" }
+            // appOpticsUtil.sendToAppOptics(
+            //     "com.bitclave.node.services.v1.cloneSearchRequestWithOfferSearches.step4",
+            //     (step4).toDouble(),
+            //     Tag("owner", owner)
+            // )
+            // appOpticsUtil.sendToAppOptics(
+            //     "com.bitclave.node.services.v1.cloneSearchRequestWithOfferSearches.total",
+            //     (step1 + step2 + step3 + step4).toDouble(),
+            //     Tag("owner", owner)
+            // )
             createSearchRequests
         })
     }
