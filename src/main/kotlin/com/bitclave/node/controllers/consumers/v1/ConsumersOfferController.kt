@@ -11,6 +11,7 @@ import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Slice
+import org.springframework.data.domain.Sort
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
@@ -66,7 +67,7 @@ class ConsumersOfferController(
     ): CompletableFuture<Slice<Offer>> {
 
         return offerService.getConsumersOffers(
-            PageRequest.of(page, size),
+            PageRequest.of(page, size, Sort.by("createdAt")),
             fields.contains(OfferFields.COMPARE),
             fields.contains(OfferFields.RULE),
             fields.contains(OfferFields.PRICE),
