@@ -52,9 +52,8 @@ interface OfferInteractionCrudRepository : PagingAndSortingRepository<OfferInter
         value = """
             SELECT i FROM OfferInteraction i
             JOIN FETCH i.events
-            WHERE i.id NOT IN
-            ( SELECT oi.id FROM OfferInteraction oi, OfferSearch os
-            WHERE os.offerId = oi.offerId AND os.owner = oi.owner)
+            LEFT JOIN OfferInteraction oi on i.offerId = oi.offerId AND i.owner = oi.owner
+            WHERE oi.id is null
         """
     )
     fun getDanglingOfferInteractions(): List<OfferInteraction>
