@@ -67,7 +67,7 @@ class ConsumersOfferController(
     ): CompletableFuture<Slice<Offer>> {
 
         return offerService.getConsumersOffers(
-            PageRequest.of(page, size, Sort.by("createdAt")),
+            PageRequest.of(page, size, Sort.by("created_at")),
             fields.contains(OfferFields.COMPARE),
             fields.contains(OfferFields.RULE),
             fields.contains(OfferFields.PRICE),
