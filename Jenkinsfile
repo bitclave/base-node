@@ -32,20 +32,20 @@ spec:
         }
     }
     environment {
-        // CI = 'true' 
-        // PROJECT = "bitclave-jenkins-ci"
+        // CI = 'true'
         PROJECT = "bitclave-base"
         APP_NAME = "base-node"
-        FE_SVC_NAME = "${APP_NAME}-frontend"
+        FE_SVC_NAME = "${APP_NAME}-service"
         CLUSTER = "base-first"
         CLUSTER_ZONE = "us-central1-f"
-        BRANCH_NAME = "develop"
-        IMAGE_TAG = "gcr.io/bitclave-jenkins-ci/${APP_NAME}:${env.BRANCH_NAME}.${env.BUILD_NUMBER}"
+        IMAGE_TAG = "gcr.io/bitclave-jenkins-ci/${APP_NAME}"
         JENKINS_CRED = "bitclave-jenkins-ci"
     }
+
     triggers {
         upstream(upstreamProjects: 'base-node-builder/master', threshold: hudson.model.Result.SUCCESS)
     }
+
     stages {
         stage('Install') {
             steps {
