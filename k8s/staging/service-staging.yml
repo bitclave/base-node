@@ -35,7 +35,7 @@ spec:
               cpu: "100m"
           env:
             - name: PROFILE
-              value: "product"
+              value: "gke"
 
             - name: WALLET_CONTRACT_ADDRESS
               value: "0x56c38d117f92ed0501a9f7ee39abf9089988b6e0"
