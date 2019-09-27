@@ -66,13 +66,8 @@ class ConsumersOfferController(
         strategy: String?
     ): CompletableFuture<Slice<Offer>> {
 
-        val pageData = if (exceptType != null) {
-            PageRequest.of(page, size)
-        } else {
-            PageRequest.of(page, size, Sort.by("createdAt"))
-        }
         return offerService.getConsumersOffers(
-            pageData,
+            PageRequest.of(page, size, Sort.by("createdAt")),
             fields.contains(OfferFields.COMPARE),
             fields.contains(OfferFields.RULE),
             fields.contains(OfferFields.PRICE),
