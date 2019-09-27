@@ -19,7 +19,6 @@ private fun convertOrders(pageable: Pageable, fromCamelToSnake: Boolean): Pageab
             Sort.Order.asc(prop)
         else
             Sort.Order.desc(prop)
-
     }.collect(Collectors.toList())
 
     return PageRequest.of(pageable.pageNumber, pageable.pageSize, Sort.by(orders))
