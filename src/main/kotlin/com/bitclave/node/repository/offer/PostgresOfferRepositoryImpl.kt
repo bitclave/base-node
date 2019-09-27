@@ -1,5 +1,7 @@
 package com.bitclave.node.repository.offer
 
+import com.bitclave.node.extensions.changeOrderFieldsToCamelCase
+import com.bitclave.node.extensions.changeOrderFieldsToSnakeCase
 import com.bitclave.node.repository.entities.Offer
 import com.bitclave.node.repository.entities.OfferPrice
 import com.bitclave.node.repository.entities.OfferPriceRules
@@ -131,8 +133,9 @@ class PostgresOfferRepositoryImpl(
         exceptType: Offer.OfferType?
     ): Slice<Offer> {
         val slice = when (exceptType) {
-            Offer.OfferType.PRODUCT -> repository.getAllOffersExceptProductsSlice(pageable)
-            else -> repository.getAllOffersBy(pageable)
+            Offer.OfferType.PRODUCT ->
+                repository.getAllOffersExceptProductsSlice(pageable.changeOrderFieldsToSnakeCase())
+            else -> repository.getAllOffersBy(pageable.changeOrderFieldsToCamelCase())
         }
 
         return syncElementCollections(
