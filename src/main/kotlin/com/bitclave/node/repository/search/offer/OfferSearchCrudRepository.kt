@@ -399,8 +399,8 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     @Query(
         value = """
-            SELECT * FROM offer_search WHERE owner NOT IN
-            ( SELECT public_key FROM account)
+            SELECT offer_search.* FROM offer_search left outer join account on owner = public_key
+            WHERE account.public_key is null
         """,
         nativeQuery = true
     )

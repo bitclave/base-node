@@ -320,7 +320,7 @@ class VerifyConsistencyController(
      */
     @ApiOperation(
         "Returns the SearchRequests with the same tags",
-        response = OfferInteraction::class, responseContainer = "List"
+        response = SearchRequest::class, responseContainer = "List"
     )
     @ApiResponses(
         value = [
@@ -342,7 +342,42 @@ class VerifyConsistencyController(
         return searchRequestService.getSearchRequestWithSameTags(
             getStrategyType(strategy)
         ).exceptionally { e ->
-            logger.error("Request: getDanglingOfferInteractions raised $e")
+            logger.error("Request: getSearchRequestWithSameTags raised $e")
+            throw e
+        }
+    }
+
+    /**
+     * Returns the SearchRequests without owner
+     *
+     * @return {@link List<SearchRequest>}, Http status - 200.
+     *
+     */
+    @ApiOperation(
+        "Returns the SearchRequests without owner",
+        response = SearchRequest::class, responseContainer = "List"
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(code = 200, message = "Success", response = List::class)
+        ]
+    )
+    @RequestMapping(method = [RequestMethod.GET], value = ["/searchrequest/noowner"])
+    fun getSearchRequestWithoutOwner(
+
+        @ApiParam(
+            "change repository strategy",
+            allowableValues = "POSTGRES, HYBRID",
+            required = false
+        )
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
+    ): CompletableFuture<List<SearchRequest>> {
+
+        return searchRequestService.getSearchRequestWithoutOwner(
+            getStrategyType(strategy)
+        ).exceptionally { e ->
+            logger.error("Request: getSearchRequestWithoutOwner raised $e")
             throw e
         }
     }

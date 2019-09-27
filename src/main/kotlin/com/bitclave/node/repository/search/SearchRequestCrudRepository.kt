@@ -80,4 +80,13 @@ interface SearchRequestCrudRepository : PagingAndSortingRepository<SearchRequest
         nativeQuery = true
     )
     fun getSearchRequestWithSameTags(): List<SearchRequest>
+
+    @Query(
+        value = """
+            SELECT search_request.* FROM search_request left outer join account on owner = public_key
+            WHERE account.public_key is null
+        """,
+        nativeQuery = true
+    )
+    fun findAllWithoutOwner(): List<SearchRequest>
 }

@@ -571,4 +571,17 @@ class SearchRequestServiceTest {
         val result = searchRequestService.getSearchRequestWithSameTags(strategy).get()
         assertThat(result.size).isEqualTo(2)
     }
+
+    @Test
+    fun `should return search requests without owner`() {
+        searchRequestService.putSearchRequest(
+            0,
+            "0x0",
+            searchRequest,
+            strategy
+        ).get()
+
+        val result = searchRequestService.getSearchRequestWithoutOwner(strategy).get()
+        assertThat(result.size).isEqualTo(1)
+    }
 }

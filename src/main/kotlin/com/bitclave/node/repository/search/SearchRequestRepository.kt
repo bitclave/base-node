@@ -38,4 +38,6 @@ interface SearchRequestRepository {
     fun getRequestByOwnerAndTag(owner: String, tagKey: String): List<SearchRequest>
 
     fun getSearchRequestWithSameTags(): List<SearchRequest>
+
+    fun findAllWithoutOwner(): List<SearchRequest>
 }
