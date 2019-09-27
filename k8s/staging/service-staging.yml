@@ -34,6 +34,9 @@ spec:
               memory: "500Mi"
               cpu: "100m"
           env:
+            - name: PORT
+              value: "8080"
+
             - name: PROFILE
               value: "gke"
 
