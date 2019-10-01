@@ -107,7 +107,7 @@ class OfferController(
                 CompletableFuture.completedFuture(result)
             }
             .thenCompose {
-                logger.debug("controller profiling SaveOffice 3) ${(Date().time - start.time)}ms")
+                logger.debug("controller profiling SaveOffer 3) ${(Date().time - start.time)}ms")
                 val status = if (it.id != id) HttpStatus.CREATED else HttpStatus.OK
                 CompletableFuture.completedFuture(ResponseEntity<Offer>(it, status))
             }.exceptionally { e ->
@@ -451,7 +451,7 @@ class OfferController(
                 if (request.pk != owner) {
                     throw BadArgumentException()
                 }
-                val result = offerService.putBulkOffer(
+                val result = offerService.putBulkAdvanced(
                     owner,
                     request.data!!,
                     getStrategyType(strategy)
