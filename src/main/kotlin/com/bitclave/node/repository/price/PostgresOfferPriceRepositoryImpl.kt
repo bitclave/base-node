@@ -14,7 +14,7 @@ class PostgresOfferPriceRepositoryImpl(
     val repository: OfferPriceCrudRepository,
     val rulesRepository: OfferPriceRulesCrudRepository
 ) : OfferPriceRepository {
-    override fun saveAllPrices(prices: List<OfferPrice>): MutableIterable<OfferPrice> {
+    override fun saveAllPrices(prices: List<OfferPrice>): List<OfferPrice> {
         val savedPrices = repository.saveAll(prices)
 
         val rules = savedPrices.mapIndexed { index, offerPrice ->
@@ -27,7 +27,7 @@ class PostgresOfferPriceRepositoryImpl(
 
         rulesRepository.saveAll(rules)
 
-        return savedPrices
+        return savedPrices.toList()
     }
 
     override fun savePrices(offer: Offer, prices: List<OfferPrice>): List<OfferPrice> {

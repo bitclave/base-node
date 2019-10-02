@@ -126,15 +126,10 @@ class OfferService(
             val existedOffers = existedOffersByIds.map { it.id to it }.toMap()
 
             val readyForSaveOffers = offers.map {
-                var createdAt = Date()
-                var id = it.id
-                if (id != 0L) {
-                    if(existedOffers.containsKey(id)){
-                        createdAt = existedOffers[id]?.createdAt ?: Date()
-                    } else {
-                        id = 0L
-                    }
-                }
+
+                val id = if (existedOffers.containsKey(it.id)) it.id else 0
+                val createdAt = if (id != 0L) existedOffers[id]?.createdAt ?: Date() else Date()
+
                 Offer(
                     id,
                     owner,
@@ -160,9 +155,9 @@ class OfferService(
             }.flatten()
             offerPriceRepository.changeStrategy(strategy).saveAllPrices(prices)
 
-            readyForSaveOffers.filter { it.id != 0L}.forEach {
-                offerSearchService.deleteByOfferId(it.id, strategy)
-            }
+            val offersIdsForCleanupOfferSearches = readyForSaveOffers.filter { it.id != 0L }.map { it.id }
+            offerSearchService.deleteByOfferIds(offersIdsForCleanupOfferSearches, strategy)
+
             result.map { it.id }
         })
     }
