@@ -147,7 +147,7 @@ class OfferService(
             val result = offerRepository.changeStrategy(strategy).saveAll(readyForSaveOffers)
 
             val prices = result.mapIndexed { index, offer ->
-                readyForSaveOffers[index].offerPrices.map{ offerPrice ->
+                readyForSaveOffers[index].offerPrices.map { offerPrice ->
                     val price = offerPrice.copy()
                     price.offer = offer
                     price
