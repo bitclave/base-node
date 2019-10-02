@@ -122,14 +122,21 @@ class OfferService(
     ): CompletableFuture<List<Long>> {
         return supplyAsyncEx(Supplier {
             val updatedOfferIds = offers.filter { it.id != 0L }.map { it.id }
+            val existedOffersByIds = offerRepository.changeStrategy(strategy).findByIds(updatedOfferIds)
+            val existedOffers = existedOffersByIds.map { it.id to it }.toMap()
 
-            val existedOffers = offerRepository.changeStrategy(strategy).findByIds(updatedOfferIds)
-
-            var index = 0
             val readyForSaveOffers = offers.map {
-                val createdAt = if (it.id != 0L) existedOffers[index++].createdAt else Date()
+                var createdAt = Date()
+                var id = it.id
+                if (id != 0L) {
+                    if(existedOffers.containsKey(id)){
+                        createdAt = existedOffers[id]?.createdAt ?: Date()
+                    } else {
+                        id = 0L
+                    }
+                }
                 Offer(
-                    it.id,
+                    id,
                     owner,
                     it.offerPrices,
                     it.description,
@@ -145,16 +152,16 @@ class OfferService(
             val result = offerRepository.changeStrategy(strategy).saveAll(readyForSaveOffers)
 
             val prices = result.mapIndexed { index, offer ->
-                val copiedPrices = offers[index].copy().offerPrices
-                copiedPrices.forEach { it.offer = offer }
-                copiedPrices
-            }.flatten()
-
-            offerPriceRepository.changeStrategy(strategy).saveAllPrices(prices)
-            result.forEachIndexed { i, offer ->
-                if (offers[i].id != 0L) {
-                    offerSearchService.deleteByOfferId(offer.id, strategy)
+                readyForSaveOffers[index].offerPrices.map{ offerPrice ->
+                    val price = offerPrice.copy()
+                    price.offer = offer
+                    price
                 }
+            }.flatten()
+            offerPriceRepository.changeStrategy(strategy).saveAllPrices(prices)
+
+            readyForSaveOffers.filter { it.id != 0L}.forEach {
+                offerSearchService.deleteByOfferId(it.id, strategy)
             }
             result.map { it.id }
         })
