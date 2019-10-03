@@ -38,6 +38,7 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         """
     )
     fun deleteAllByOfferIds(ids: List<Long>): Int
+
     @Modifying
     @Query(
         value = """

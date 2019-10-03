@@ -26,6 +26,7 @@ class PostgresOfferSearchRepositoryImpl(
         if (ids.isEmpty()) return 0
         return repository.deleteAllByOfferIds(ids)
     }
+
     override fun deleteAllBySearchRequestIdIn(ids: List<Long>): Int {
         if (ids.isEmpty()) return 0
         return repository.deleteAllBySearchRequestIdIn(ids)

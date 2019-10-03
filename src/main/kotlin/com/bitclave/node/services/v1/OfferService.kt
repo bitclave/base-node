@@ -124,7 +124,6 @@ class OfferService(
             val updatedOfferIds = offers.filter { it.id != 0L }.map { it.id }
             val existedOffersByIds = offerRepository.changeStrategy(strategy).findByIds(updatedOfferIds)
             val existedOffers = existedOffersByIds.map { it.id to it }.toMap()
-
             val readyForSaveOffers = offers.map {
 
                 val id = if (existedOffers.containsKey(it.id)) it.id else 0

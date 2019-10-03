@@ -1075,6 +1075,7 @@ class OfferSearchService(
             offerInteractionRepository.changeStrategy(strategyType).deleteAllByOwner(owner)
         })
     }
+
     fun deleteByOfferIds(ids: List<Long>, strategy: RepositoryStrategyType) {
         offerSearchRepository.changeStrategy(strategy).deleteAllByOfferIds(ids)
         val filteredStateIds = ids.map { offerId ->
