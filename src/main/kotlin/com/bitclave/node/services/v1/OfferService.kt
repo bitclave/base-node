@@ -115,6 +115,51 @@ class OfferService(
         })
     }
 
+    fun putBulkAdvanced(
+        owner: String,
+        offers: Array<Offer>,
+        strategy: RepositoryStrategyType
+    ): CompletableFuture<List<Long>> {
+        return supplyAsyncEx(Supplier {
+            val updatedOfferIds = offers.filter { it.id != 0L }.map { it.id }
+            val existedOffersByIds = offerRepository.changeStrategy(strategy).findByIds(updatedOfferIds)
+            val existedOffers = existedOffersByIds.map { it.id to it }.toMap()
+            val readyForSaveOffers = offers.map {
+
+                val id = if (existedOffers.containsKey(it.id)) it.id else 0
+                val createdAt = if (id != 0L) existedOffers[id]?.createdAt ?: Date() else Date()
+
+                Offer(
+                    id,
+                    owner,
+                    it.offerPrices,
+                    it.description,
+                    it.title,
+                    it.imageUrl,
+                    it.worth,
+                    it.tags,
+                    it.compare,
+                    it.rules,
+                    createdAt
+                )
+            }
+            val result = offerRepository.changeStrategy(strategy).saveAll(readyForSaveOffers)
+
+            val prices = result.mapIndexed { index, offer ->
+                readyForSaveOffers[index].offerPrices.map { offerPrice ->
+                    val price = offerPrice.copy()
+                    price.offer = offer
+                    price
+                }
+            }.flatten()
+            offerPriceRepository.changeStrategy(strategy).saveAllPrices(prices)
+
+            val offersIdsForCleanupOfferSearches = readyForSaveOffers.filter { it.id != 0L }.map { it.id }
+            offerSearchService.deleteByOfferIds(offersIdsForCleanupOfferSearches, strategy)
+
+            result.map { it.id }
+        })
+    }
     fun shallowUpdateOffer(
         id: Long,
         owner: String,
