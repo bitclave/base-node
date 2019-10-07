@@ -59,4 +59,15 @@ interface OfferCrudRepository : PagingAndSortingRepository<Offer, Long> {
     fun getAllOffersExceptProductsSlice(pageable: Pageable): Slice<Offer>
 
     fun getAllOffersBy(pageable: Pageable): Slice<Offer>
+
+    @Query(
+        value = """
+            SELECT o.* FROM offer o
+            left outer join account a on
+            a.public_key = o.owner
+            where a.public_key is null
+        """,
+        nativeQuery = true
+    )
+    fun findAllWithoutOwner(): List<Offer>
 }

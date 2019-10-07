@@ -381,8 +381,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     @Query(
         value = """
-            SELECT * FROM offer_search WHERE offer_id NOT IN
-            ( SELECT id FROM offer o)
+            SELECT os.* FROM offer_search os
+            left outer join offer o on
+            os.offer_id = o.id
+            where o.id is null
         """,
         nativeQuery = true
     )
@@ -390,8 +392,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     @Query(
         value = """
-            SELECT * FROM offer_search WHERE search_request_id NOT IN
-            ( SELECT id FROM search_request)
+            SELECT os.* FROM offer_search os
+            left outer join search_request sr on
+            os.search_request_id = sr.id
+            where sr.id is null
         """,
         nativeQuery = true
     )
@@ -399,8 +403,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     @Query(
         value = """
-            SELECT offer_search.* FROM offer_search left outer join account on owner = public_key
-            WHERE account.public_key is null
+            SELECT os.* FROM offer_search os
+            left outer join account a on
+            a.public_key = os.owner
+            where a.public_key is null
         """,
         nativeQuery = true
     )
@@ -408,9 +414,9 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
 
     @Query(
         value = """
-            SELECT oo.* FROM offer_search oo
+            SELECT os.* FROM offer_search os
             left outer join offer_interaction oi on
-            oo.offer_id = oi.offer_id AND oo.owner = oi.owner
+            os.offer_id = oi.offer_id AND os.owner = oi.owner
             where oi.id is NULL
         """,
         nativeQuery = true

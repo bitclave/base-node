@@ -146,6 +146,10 @@ class PostgresOfferRepositoryImpl(
         )
     }
 
+    override fun findAllWithoutOwner(): List<Offer> {
+        return repository.findAllWithoutOwner()
+    }
+
     private fun syncElementCollections(offer: Offer?): Offer? {
         return if (offer == null) null else syncElementCollections(listOf(offer))[0]
     }
