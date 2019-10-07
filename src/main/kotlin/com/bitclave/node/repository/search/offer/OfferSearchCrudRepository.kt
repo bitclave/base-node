@@ -34,6 +34,14 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     @Modifying
     @Query(
         value = """
+            DELETE FROM OfferSearch os WHERE os.offerId IN ?1
+        """
+    )
+    fun deleteAllByOfferIds(ids: List<Long>): Int
+
+    @Modifying
+    @Query(
+        value = """
             DELETE FROM OfferSearch os WHERE os.owner = ?1
         """
     )

@@ -17,6 +17,8 @@ interface OfferSearchRepository {
 
     fun deleteAllByOfferId(id: Long): Int
 
+    fun deleteAllByOfferIds(ids: List<Long>): Int
+
     fun save(list: List<OfferSearch>): List<OfferSearch>
 
     fun save(item: OfferSearch): OfferSearch
