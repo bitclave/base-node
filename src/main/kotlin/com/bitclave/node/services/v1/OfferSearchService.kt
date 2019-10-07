@@ -1077,13 +1077,15 @@ class OfferSearchService(
     }
 
     fun deleteByOfferIds(ids: List<Long>, strategy: RepositoryStrategyType) {
+
         offerSearchRepository.changeStrategy(strategy).deleteAllByOfferIds(ids)
-        val filteredStateIds = ids.map { offerId ->
-            offerInteractionRepository.changeStrategy(strategy)
-                .findByOfferId(offerId)
-                .filter { it.state == OfferAction.NONE || it.state == OfferAction.REJECT }
-                .map { it.id }
-        }.flatten()
+
+        val filteredStateIds = offerInteractionRepository
+            .changeStrategy(strategy)
+            .findByOfferIdIn(ids)
+            .filter { it.state == OfferAction.NONE || it.state == OfferAction.REJECT }
+            .map { it.id }
+
         offerInteractionRepository.changeStrategy(strategy).delete(filteredStateIds)
     }
 

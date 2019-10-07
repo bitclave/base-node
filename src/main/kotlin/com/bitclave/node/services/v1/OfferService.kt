@@ -127,7 +127,7 @@ class OfferService(
             val readyForSaveOffers = offers.map {
 
                 val id = if (existedOffers.containsKey(it.id)) it.id else 0
-                val createdAt = if (id != 0L) existedOffers[id]?.createdAt ?: Date() else Date()
+                val createdAt = if (id != 0L) existedOffers[id]!!.createdAt else Date()
 
                 Offer(
                     id,
