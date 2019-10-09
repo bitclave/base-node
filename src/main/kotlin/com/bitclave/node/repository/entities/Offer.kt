@@ -13,6 +13,7 @@ import javax.persistence.FetchType
 import javax.persistence.GeneratedValue
 import javax.persistence.GenerationType
 import javax.persistence.Id
+import javax.persistence.MapKeyColumn
 import javax.persistence.OneToMany
 
 @Entity
@@ -30,6 +31,7 @@ data class Offer(
     @ColumnDefault("0") val worth: String = BigDecimal.ZERO.toString(),
 
     @ElementCollection(fetch = FetchType.LAZY)
+    @MapKeyColumn(length = 256)
     @Column(length = 512)
     val tags: Map<String, String> = HashMap(),
 
