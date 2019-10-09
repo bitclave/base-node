@@ -28,7 +28,7 @@ spec:
     spec:
       containers:
         - name: service
-          image: gcr.io/bitclave-jenkins-ci/base-node
+          image: gcr.io/bitclave-jenkins-ci/base-node:latest
           resources:
             limits:
               memory: "500Mi"
