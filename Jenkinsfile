@@ -14,7 +14,7 @@ spec:
   serviceAccountName: cd-jenkins
   containers:
   - name: base-node-builder
-    image: gcr.io/bitclave-jenkins-ci/base-node-builder
+    image: gcr.io/bitclave-jenkins-ci/base-node-builder:latest
     command:
     - cat
     tty: true
