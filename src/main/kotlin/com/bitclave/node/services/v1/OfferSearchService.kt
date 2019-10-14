@@ -510,7 +510,7 @@ class OfferSearchService(
         strategy: RepositoryStrategyType,
         type: Int
     ): CompletableFuture<List<OfferSearch>> {
-        //fixme need to use enum or @IntDef annotation for 'type'
+        // fixme need to use enum or @IntDef annotation for 'type'
         return supplyAsyncEx(Supplier {
             when (type) {
                 0 -> {
