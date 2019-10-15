@@ -17,7 +17,12 @@ apiVersion: extensions/v1beta1
 metadata:
   name: base-node-staging
 spec:
-  replicas:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 2
   template:
     metadata:
       name: base-node-service
@@ -63,11 +68,13 @@ spec:
                 name: secret-staging-base-node
 
           imagePullPolicy: Always
-          # readinessProbe:
-          #   httpGet:
-          #     path: /healthz
-          #     port: 80
-          # command: ["sh", "-c", "app -frontend=true -backend-service=http://gceme-backend:8080 -port=80"]
           ports:
             - name: api
               containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /v1/account/count
+              port: 8080
+            initialDelaySeconds: 20
+            periodSeconds: 5
+            successThreshold: 3
