@@ -107,12 +107,14 @@ spec:
                 container('kubectl') {
                     // Change deployed image in production to the one we just built
                     sh("gcloud config get-value account")
+                    sh("sed -i.bak 's#gcr.io/bitclave-jenkins-ci/base-node:id-to-replace#${IMAGE_TAG}#' ./k8s/staging/service-staging.yml")
+
                     step([$class: 'KubernetesEngineBuilder', namespace: 'staging', projectId: env.PROJECT, clusterName: env.CLUSTER, zone: env.CLUSTER_ZONE, manifestPattern: 'k8s/services', credentialsId: env.JENKINS_CRED, verifyDeployments: false])
                     step([$class: 'KubernetesEngineBuilder', namespace: 'staging', projectId: env.PROJECT, clusterName: env.CLUSTER, zone: env.CLUSTER_ZONE, manifestPattern: 'k8s/staging', credentialsId: env.JENKINS_CRED, verifyDeployments: false])
                     sleep 10 // seconds
                     sh("gcloud container clusters get-credentials base-first --zone us-central1-f --project bitclave-base")
                     sh("echo `kubectl --namespace=staging get service/${FE_SVC_NAME} -o jsonpath='{.status.loadBalancer.ingress[0].ip}'`")
-                    sh("kubectl --namespace=staging set image deployment/base-node-staging service=${IMAGE_TAG}")
+                    // sh("kubectl --namespace=staging set image deployment/base-node-staging service=${IMAGE_TAG}")
                 }
             }
         }

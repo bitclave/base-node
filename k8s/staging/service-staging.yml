@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
         - name: service
-          image: gcr.io/bitclave-jenkins-ci/base-node:latest
+          image: gcr.io/bitclave-jenkins-ci/base-node:id-to-replace
           resources:
             limits:
               memory: "500Mi"
