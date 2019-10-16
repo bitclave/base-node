@@ -73,8 +73,8 @@ spec:
               containerPort: 8080
           readinessProbe:
             httpGet:
-              path: /v1/account/count
+              path: /health-check
               port: 8080
-            initialDelaySeconds: 20
-            periodSeconds: 5
+            initialDelaySeconds: 40
+            periodSeconds: 10
             successThreshold: 3
