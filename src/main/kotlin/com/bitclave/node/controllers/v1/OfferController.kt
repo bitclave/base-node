@@ -437,7 +437,7 @@ class OfferController(
         @RequestHeader("Strategy", required = false)
         strategy: String?
     ): CompletableFuture<ResponseEntity<List<Long>>> {
-        var start = Date()
+        var start: Date
         return accountService
             .accountBySigMessage(request, getStrategyType(strategy))
             .thenCompose { account: Account ->
@@ -456,6 +456,7 @@ class OfferController(
                     request.data!!,
                     getStrategyType(strategy)
                 ).get()
+                logger.debug("controller profiling BullAdvanced 2) ${(Date().time - start.time)}ms")
                 accountService.incrementNonce(it, getStrategyType(strategy)).get()
                 CompletableFuture.completedFuture(ResponseEntity<List<Long>>(result, HttpStatus.OK))
             }
