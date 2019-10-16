@@ -75,6 +75,6 @@ spec:
             httpGet:
               path: /health-check
               port: 8080
-            initialDelaySeconds: 40
+            initialDelaySeconds: 480
             periodSeconds: 10
             successThreshold: 3
