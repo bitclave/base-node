@@ -451,7 +451,7 @@ class OfferController(
                 if (request.pk != owner) {
                     throw BadArgumentException()
                 }
-                val result = offerService.putBulkOffer(
+                val result = offerService.putBulkAdvanced(
                     owner,
                     request.data!!,
                     getStrategyType(strategy)
