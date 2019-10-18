@@ -122,7 +122,13 @@ class OfferService(
     ): CompletableFuture<List<Long>> {
         return supplyAsyncEx(Supplier {
             val updatedOfferIds = offers.filter { it.id != 0L }.map { it.id }
-            val existedOffersByIds = offerRepository.changeStrategy(strategy).findByIds(updatedOfferIds)
+
+            var existedOffersByIds: List<Offer> = listOf()
+            val findByIdsTiming = measureTimeMillis {
+                existedOffersByIds = offerRepository.changeStrategy(strategy).findByIds(updatedOfferIds)
+            }
+            logger.debug(" - find by ids timing $findByIdsTiming")
+
             val existedOffers = existedOffersByIds.map { it.id to it }.toMap()
             val readyForSaveOffers = offers.map {
 
@@ -143,7 +149,12 @@ class OfferService(
                     createdAt
                 )
             }
-            val result = offerRepository.changeStrategy(strategy).saveAll(readyForSaveOffers)
+
+            var result: List<Offer> = listOf()
+            val saveAllTiming = measureTimeMillis {
+                result = offerRepository.changeStrategy(strategy).saveAll(readyForSaveOffers)
+            }
+            logger.debug(" - save all timing $saveAllTiming")
 
             val prices = result.mapIndexed { index, offer ->
                 readyForSaveOffers[index].offerPrices.map { offerPrice ->
@@ -152,10 +163,17 @@ class OfferService(
                     price
                 }
             }.flatten()
-            offerPriceRepository.changeStrategy(strategy).saveAllPrices(prices)
+
+            val saveAllPricesTiming = measureTimeMillis {
+                offerPriceRepository.changeStrategy(strategy).saveAllPrices(prices)
+            }
+            logger.debug(" - save all prices timing $saveAllPricesTiming")
 
             val offersIdsForCleanupOfferSearches = readyForSaveOffers.filter { it.id != 0L }.map { it.id }
-            offerSearchService.deleteByOfferIds(offersIdsForCleanupOfferSearches, strategy)
+            val deleteOfferSearchTiming = measureTimeMillis {
+                offerSearchService.deleteByOfferIds(offersIdsForCleanupOfferSearches, strategy)
+            }
+            logger.debug(" - delete all offer searches by offerId timing $deleteOfferSearchTiming")
 
             result.map { it.id }
         })
