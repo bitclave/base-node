@@ -3,11 +3,11 @@ package com.bitclave.node.controllers.consumers.v1
 import com.bitclave.node.controllers.AbstractController
 import com.bitclave.node.repository.entities.Account
 import com.bitclave.node.services.v1.AccountService
+import com.bitclave.node.utils.Logger
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
-import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Slice
@@ -24,8 +24,6 @@ import java.util.concurrent.CompletableFuture
 class ConsumersAccountController(
     @Qualifier("v1") private val accountService: AccountService
 ) : AbstractController() {
-
-    private val logger = KotlinLogging.logger {}
 
     @ApiOperation(
         "Page through accounts",
@@ -57,7 +55,7 @@ class ConsumersAccountController(
             getStrategyType(strategy)
         )
             .exceptionally { e ->
-                logger.error("Request: getConsumersAccounts/$page/$size raised $e")
+                Logger.error("Request: getConsumersAccounts/$page/$size raised", e)
                 throw e
             }
     }

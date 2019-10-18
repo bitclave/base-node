@@ -1,16 +1,16 @@
 package com.bitclave.node.controllers.v1
 
 import com.bitclave.node.controllers.AbstractController
-import com.bitclave.node.services.v1.AccountService
+import com.bitclave.node.models.SignedRequest
 import com.bitclave.node.repository.entities.Account
 import com.bitclave.node.repository.entities.OfferRank
-import com.bitclave.node.models.SignedRequest
+import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferRankService
+import com.bitclave.node.utils.Logger
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
-import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
@@ -18,10 +18,7 @@ import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
-
 import java.util.concurrent.CompletableFuture
-
-private val logger = KotlinLogging.logger {}
 
 @RestController
 @RequestMapping("/v1/offerRank")
@@ -59,7 +56,7 @@ class OfferRankController(
                 val offerRank = request.data
                 offerRankService.createOfferRank(getStrategyType(strategy), offerRank!!)
             }.exceptionally { e ->
-                logger.error("Request: saveSiteInformation/$request raised $e")
+                Logger.error("Request: saveSiteInformation/$request raised", e)
                 throw e
             }
     }
@@ -118,7 +115,7 @@ class OfferRankController(
         return offerRankService
             .getOfferRanksByOfferId(getStrategyType(strategy), offerId)
             .exceptionally { e ->
-                logger.error("Request: getOfferRanks by ooferId /$offerId raised $e")
+                Logger.error("Request: getOfferRanks by ooferId /$offerId raised", e)
                 throw e
             }
     }

@@ -1,17 +1,17 @@
 package com.bitclave.node.controllers.v1
 
 import com.bitclave.node.controllers.AbstractController
+import com.bitclave.node.models.SignedRequest
 import com.bitclave.node.repository.entities.Account
 import com.bitclave.node.repository.entities.SearchRequest
-import com.bitclave.node.models.SignedRequest
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.SearchRequestService
+import com.bitclave.node.utils.Logger
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
-import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.PathVariable
@@ -22,8 +22,6 @@ import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import java.util.concurrent.CompletableFuture
-
-private val logger = KotlinLogging.logger {}
 
 @RestController
 @RequestMapping("/v1/client/{owner}/search/request/")
@@ -94,7 +92,7 @@ class SearchRequestController(
 
                 CompletableFuture.completedFuture(result)
             }.exceptionally { e ->
-                logger.error("Request: putSearchRequest/$id/$owner/$request raised $e")
+                Logger.error("Request: putSearchRequest/$id/$owner/$request raised", e)
                 throw e
             }
     }
@@ -163,7 +161,7 @@ class SearchRequestController(
 
                 CompletableFuture.completedFuture(result)
             }.exceptionally { e ->
-                logger.error("Request: deleteSearchRequest/$id/$owner/$request raised $e")
+                Logger.error("Request: deleteSearchRequest/$id/$owner/$request raised", e)
                 throw e
             }
     }
@@ -200,7 +198,7 @@ class SearchRequestController(
 
         return searchRequestService.getSearchRequests(id ?: 0, owner, getStrategyType(strategy))
             .exceptionally { e ->
-                logger.error("Request: getSearchRequests/$owner/$id raised $e")
+                Logger.error("Request: getSearchRequests/$owner/$id raised", e)
                 throw e
             }
     }
@@ -263,7 +261,7 @@ class SearchRequestController(
 
                 CompletableFuture.completedFuture(result[0])
             }.exceptionally { e ->
-                logger.error("Request: cloneSearchRequest/$owner/$request raised $e")
+                Logger.error("Request: cloneSearchRequest/$owner/$request raised", e)
                 throw e
             }
     }
@@ -292,7 +290,7 @@ class SearchRequestController(
     ): CompletableFuture<Long> {
 
         return searchRequestService.getSearchRequestTotalCount(getStrategyType(strategy)).exceptionally { e ->
-            logger.error("Request: getSearchRequestTotalCount raised $e")
+            Logger.error("Request: getSearchRequestTotalCount raised", e)
             throw e
         }
     }
@@ -328,7 +326,7 @@ class SearchRequestController(
     ): CompletableFuture<List<SearchRequest>> {
 
         return searchRequestService.getRequestByOwnerAndTag(owner, tag, getStrategyType(strategy)).exceptionally { e ->
-            logger.error("Request: getRequestsByOwnerAndTag/$owner/$tag raised $e")
+            Logger.error("Request: getRequestsByOwnerAndTag/$owner/$tag raised", e)
             throw e
         }
     }

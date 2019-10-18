@@ -8,11 +8,11 @@ import com.bitclave.node.repository.entities.Account
 import com.bitclave.node.repository.entities.RequestData
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.RequestDataService
+import com.bitclave.node.utils.Logger
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
-import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.RequestBody
@@ -23,8 +23,6 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import java.util.concurrent.CompletableFuture
-
-private val logger = KotlinLogging.logger {}
 
 @RestController
 @RequestMapping("/v1/data/")
@@ -49,7 +47,7 @@ class RequestDataController(
         return requestDataService
             .generateBfsGraph(request, getStrategyType(strategy))
             .exceptionally { e ->
-                logger.error("Request: request/$request raised $e")
+                Logger.error("Request: request/$request raised", e)
                 throw e
             }
     }
@@ -103,7 +101,7 @@ class RequestDataController(
     ): CompletableFuture<List<RequestData>> {
 
         return requestDataService.getRequestByParams(getStrategyType(strategy), fromPk, toPk).exceptionally { e ->
-            logger.error("Request: getRequestByState/$fromPk/$toPk raised $e")
+            Logger.error("Request: getRequestByState/$fromPk/$toPk raised", e)
             throw e
         }
     }
@@ -154,7 +152,7 @@ class RequestDataController(
 
                 CompletableFuture.completedFuture(result)
             }.exceptionally { e ->
-                logger.error("Request: request/$request raised $e")
+                Logger.error("Request: request/$request raised", e)
                 throw e
             }
     }
@@ -204,7 +202,7 @@ class RequestDataController(
 
                 CompletableFuture.completedFuture(result)
             }.exceptionally { e ->
-                logger.error("Request: grantAccess/$request raised $e")
+                Logger.error("Request: grantAccess/$request raised", e)
                 throw e
             }
     }
@@ -254,7 +252,7 @@ class RequestDataController(
 
                 CompletableFuture.completedFuture(result)
             }.exceptionally { e ->
-                logger.error("Request: revokeAccess/$request raised $e")
+                Logger.error("Request: revokeAccess/$request raised", e)
                 throw e
             }
     }
