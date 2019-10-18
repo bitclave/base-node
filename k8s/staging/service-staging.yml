@@ -33,7 +33,7 @@ spec:
     spec:
       containers:
         - name: service
-          image: gcr.io/bitclave-jenkins-ci/base-node:latest
+          image: gcr.io/bitclave-jenkins-ci/base-node:id-to-replace
           resources:
             limits:
               memory: "500Mi"
@@ -73,8 +73,8 @@ spec:
               containerPort: 8080
           readinessProbe:
             httpGet:
-              path: /v1/account/count
+              path: /health-check
               port: 8080
-            initialDelaySeconds: 20
-            periodSeconds: 5
+            initialDelaySeconds: 480
+            periodSeconds: 10
             successThreshold: 3
