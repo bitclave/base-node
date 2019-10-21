@@ -121,22 +121,9 @@ class OfferService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<List<Long>> {
         return supplyAsyncEx(Supplier {
-            val updatedOfferIds = offers.filter { it.id != 0L }.map { it.id }
-
-            var existedOffersByIds: List<Offer> = listOf()
-            val findByIdsTiming = measureTimeMillis {
-                existedOffersByIds = offerRepository.changeStrategy(strategy).findByIds(updatedOfferIds)
-            }
-            logger.debug(" - find by ids timing $findByIdsTiming")
-
-            val existedOffers = existedOffersByIds.map { it.id to it }.toMap()
             val readyForSaveOffers = offers.map {
-
-                val id = if (existedOffers.containsKey(it.id)) it.id else 0
-                val createdAt = if (id != 0L) existedOffers[id]?.createdAt ?: Date() else Date()
-
                 Offer(
-                    id,
+                    it.id,
                     owner,
                     it.offerPrices,
                     it.description,
@@ -146,7 +133,7 @@ class OfferService(
                     it.tags,
                     it.compare,
                     it.rules,
-                    createdAt
+                    it.createdAt
                 )
             }
 
@@ -154,7 +141,7 @@ class OfferService(
             val saveAllTiming = measureTimeMillis {
                 result = offerRepository.changeStrategy(strategy).saveAll(readyForSaveOffers)
             }
-            logger.debug(" - save all timing $saveAllTiming")
+            println(" - save all timing $saveAllTiming")
 
             val prices = result.mapIndexed { index, offer ->
                 readyForSaveOffers[index].offerPrices.map { offerPrice ->
@@ -167,13 +154,15 @@ class OfferService(
             val saveAllPricesTiming = measureTimeMillis {
                 offerPriceRepository.changeStrategy(strategy).saveAllPrices(prices)
             }
-            logger.debug(" - save all prices timing $saveAllPricesTiming")
+            println(" - save all prices timing $saveAllPricesTiming")
 
-            val offersIdsForCleanupOfferSearches = readyForSaveOffers.filter { it.id != 0L }.map { it.id }
+            val offersIdsForCleanupOfferSearches = offers.filter { it.id != 0L }.map { it.id }
             val deleteOfferSearchTiming = measureTimeMillis {
-                offerSearchService.deleteByOfferIds(offersIdsForCleanupOfferSearches, strategy)
+                if (offersIdsForCleanupOfferSearches.isNotEmpty()) {
+                    offerSearchService.deleteByOfferIds(offersIdsForCleanupOfferSearches, strategy)
+                }
             }
-            logger.debug(" - delete all offer searches by offerId timing $deleteOfferSearchTiming")
+            println(" - delete all offer searches by offerId timing $deleteOfferSearchTiming")
 
             result.map { it.id }
         })
