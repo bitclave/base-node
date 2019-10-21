@@ -7,7 +7,7 @@
 
     <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
         <layout class="ch.qos.logback.classic.PatternLayout">
-            <pattern>base-node %black(%d{ISO8601}) %highlight(%-5level) %thread %5p %logger %m%n%throwable</pattern>
+            <pattern>base-node %d{ISO8601} %level %thread %logger %m%n%throwable</pattern>
         </layout>
     </appender>
 
