@@ -1,16 +1,16 @@
 package com.bitclave.node.controllers.v2
 
 import com.bitclave.node.controllers.AbstractController
+import com.bitclave.node.models.SignedRequest
 import com.bitclave.node.repository.entities.Account
 import com.bitclave.node.repository.entities.OfferSearch
-import com.bitclave.node.models.SignedRequest
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferSearchService
+import com.bitclave.node.utils.Logger
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
-import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
@@ -19,8 +19,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
 import java.util.concurrent.CompletableFuture
-
-private val logger = KotlinLogging.logger {}
 
 @RestController
 @RequestMapping("/v2/search")
@@ -87,7 +85,7 @@ class OfferSearchControllerV2(
 
                 CompletableFuture.completedFuture(result)
             }.exceptionally { e ->
-                logger.error("Request: cloneOfferSearchOfSearchRequest/$request raised $e")
+                Logger.error("Request: cloneOfferSearchOfSearchRequest/$request raised", e)
                 throw e
             }
     }

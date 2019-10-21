@@ -1,19 +1,19 @@
 package com.bitclave.node.controllers.dev
 
 import com.bitclave.node.controllers.AbstractController
+import com.bitclave.node.models.SignedRequest
 import com.bitclave.node.repository.entities.Account
 import com.bitclave.node.repository.entities.OfferInteraction
 import com.bitclave.node.repository.entities.OfferSearch
 import com.bitclave.node.repository.entities.SearchRequest
-import com.bitclave.node.models.SignedRequest
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferSearchService
 import com.bitclave.node.services.v1.SearchRequestService
+import com.bitclave.node.utils.Logger
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
-import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
@@ -23,8 +23,6 @@ import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RestController
 import java.util.Date
 import java.util.concurrent.CompletableFuture
-
-private val logger = KotlinLogging.logger {}
 
 @RestController
 @RequestMapping("/dev/verify")
@@ -71,7 +69,7 @@ class VerifyConsistencyController(
                     request.data!!
                 )
             }.exceptionally { e ->
-                logger.error("Request: $request raised $e")
+                Logger.error("Request: $request raised", e)
                 throw e
             }
     }
@@ -113,7 +111,7 @@ class VerifyConsistencyController(
                     request.data!!
                 )
             }.exceptionally { e ->
-                logger.error("Request: $request raised $e")
+                Logger.error("Request: $request raised", e)
                 throw e
             }
     }
@@ -155,7 +153,7 @@ class VerifyConsistencyController(
                     Date(request.data!!)
                 )
             }.exceptionally { e ->
-                logger.error("Request: getAllAccounts raised $e")
+                Logger.error("Request: getAllAccounts raised", e)
                 throw e
             }
     }
@@ -185,7 +183,8 @@ class VerifyConsistencyController(
                 "2: no owner * " +
                 "3: no offerInteraction",
             allowableValues = "0, 1, 2, 3",
-            required = true)
+            required = true
+        )
         @PathVariable(value = "type")
         type: Int,
 
@@ -202,7 +201,7 @@ class VerifyConsistencyController(
             getStrategyType(strategy),
             type
         ).exceptionally { e ->
-            logger.error("Request: getDanglingOfferSearchesBySearchRequest raised $e")
+            Logger.error("Request: getDanglingOfferSearchesBySearchRequest raised", e)
             throw e
         }
     }
@@ -236,7 +235,7 @@ class VerifyConsistencyController(
 
         return offerSearchService.getDiffOfferSearches(getStrategyType(strategy))
             .exceptionally { e ->
-                logger.error("Request: getDiffOfferSearches raised $e")
+                Logger.error("Request: getDiffOfferSearches raised", e)
                 throw e
             }
     }
@@ -271,7 +270,7 @@ class VerifyConsistencyController(
         return offerSearchService.getDanglingOfferInteractions(
             getStrategyType(strategy)
         ).exceptionally { e ->
-            logger.error("Request: getDanglingOfferInteractions raised $e")
+            Logger.error("Request: getDanglingOfferInteractions raised", e)
             throw e
         }
     }
@@ -307,7 +306,7 @@ class VerifyConsistencyController(
         return offerSearchService.fixDanglingOfferSearchesByCreatingInteractions(
             getStrategyType(strategy)
         ).exceptionally { e ->
-            logger.error("Request: fixDanglingOfferInteractions raised $e")
+            Logger.error("Request: fixDanglingOfferInteractions raised", e)
             throw e
         }
     }
@@ -342,7 +341,7 @@ class VerifyConsistencyController(
         return searchRequestService.getSearchRequestWithSameTags(
             getStrategyType(strategy)
         ).exceptionally { e ->
-            logger.error("Request: getDanglingOfferInteractions raised $e")
+            Logger.error("Request: getDanglingOfferInteractions raised", e)
             throw e
         }
     }

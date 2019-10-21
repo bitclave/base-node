@@ -2,7 +2,8 @@ package com.bitclave.node.repository.search.offer
 
 import com.bitclave.node.repository.entities.OfferAction
 import com.bitclave.node.repository.entities.OfferSearch
-import mu.KotlinLogging
+import com.bitclave.node.utils.Logger
+import com.bitclave.node.utils.LoggerType
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
@@ -17,8 +18,6 @@ import kotlin.system.measureTimeMillis
 class PostgresOfferSearchRepositoryImpl(
     val repository: OfferSearchCrudRepository
 ) : OfferSearchRepository {
-
-    private val logger = KotlinLogging.logger {}
 
     override fun deleteAllBySearchRequestId(id: Long): Int = repository.deleteAllBySearchRequestId(id)
 
@@ -126,7 +125,10 @@ class PostgresOfferSearchRepositoryImpl(
                 val timeMs = measureTimeMillis {
                     result = repository.getOfferSearchByOwnerAndSearchRequestIdInSortByRank(owner, searchRequestIds)
                 }
-                logger.debug { " findAllByOwnerAndSearchRequestIdIn, sort ByRank ms: $timeMs, size: ${result.size}" }
+                Logger.debug(
+                    " findAllByOwnerAndSearchRequestIdIn, sort ByRank ms: $timeMs, size: ${result.size}",
+                    LoggerType.PROFILING
+                )
             }
 
             Sort.by(Sort.Direction.ASC, "updatedAt") -> {
@@ -134,14 +136,14 @@ class PostgresOfferSearchRepositoryImpl(
                     result = repository
                         .getOfferSearchByOwnerAndSearchRequestIdInSortByUpdatedAt(owner, searchRequestIds)
                 }
-                logger.debug { " findAllByOwnerAndSearchRequestIdIn, sort by UpdateAt ms: $timeMs" }
+                Logger.debug(" findAllByOwnerAndSearchRequestIdIn, sort by UpdateAt ms: $timeMs", LoggerType.PROFILING)
             }
             Sort.by(Sort.Direction.ASC, "price") -> {
                 val timeMs = measureTimeMillis {
                     result = repository
                         .getOfferSearchByOwnerAndSearchRequestIdInAndSortByOfferPriceWorth(owner, searchRequestIds)
                 }
-                logger.debug { " findAllByOwnerAndSearchRequestIdIn, sort by cashback ms: $timeMs" }
+                Logger.debug(" findAllByOwnerAndSearchRequestIdIn, sort by cashback ms: $timeMs", LoggerType.PROFILING)
             }
             Sort.by(Sort.Direction.ASC, "cashback") -> {
                 result = repository.getOfferSearchByOwnerAndSearchRequestIdInAndSortByCashback(owner, searchRequestIds)
@@ -151,7 +153,7 @@ class PostgresOfferSearchRepositoryImpl(
                 val timeMs = measureTimeMillis {
                     result = repository.findAllByOwnerAndSearchRequestIdIn(owner, searchRequestIds)
                 }
-                logger.debug { " findAllByOwnerAndSearchRequestIdIn, default sorting ms: $timeMs" }
+                Logger.debug(" findAllByOwnerAndSearchRequestIdIn, default sorting ms: $timeMs", LoggerType.PROFILING)
             }
         }
         return result

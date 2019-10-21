@@ -8,9 +8,10 @@ import com.bitclave.node.repository.price.OfferPriceRepository
 import com.bitclave.node.repository.rank.OfferRankRepository
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
+import com.bitclave.node.utils.Logger
+import com.bitclave.node.utils.LoggerType
 import com.bitclave.node.utils.runAsyncEx
 import com.bitclave.node.utils.supplyAsyncEx
-import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -29,8 +30,6 @@ class OfferService(
     private val offerRankRepository: RepositoryStrategy<OfferRankRepository>,
     private val offerSearchService: OfferSearchService
 ) {
-    private val logger = KotlinLogging.logger {}
-
     fun putOffer(
         id: Long,
         owner: String,
@@ -79,22 +78,23 @@ class OfferService(
             val saveTiming = measureTimeMillis {
                 processedOffer = offerRepository.changeStrategy(strategy).saveOffer(putOffer)
             }
-            // logger.debug(" - save office $saveTiming")
+            Logger.debug(" - save office $saveTiming", LoggerType.PROFILING)
 
             val savePriceTiming = measureTimeMillis {
                 offerPriceRepository.changeStrategy(strategy).savePrices(processedOffer, offer.offerPrices)
             }
-            // logger.debug(" - save price $savePriceTiming")
+            Logger.debug(" - save price $savePriceTiming", LoggerType.PROFILING)
 
             val deleteByOfferIdTiming = measureTimeMillis {
                 offerSearchService.deleteByOfferId(id, strategy)
             }
-            // logger.debug(" - delete by OfferId $deleteByOfferIdTiming")
+            Logger.debug(" - delete by OfferId $deleteByOfferIdTiming", LoggerType.PROFILING)
 
             val findByIdTiming = measureTimeMillis {
                 processedOffer = offerRepository.changeStrategy(strategy).findById(processedOffer.id)!!
             }
-            // logger.debug(" - find OfferById $findByIdTiming")
+            Logger.debug(" - find OfferById $findByIdTiming", LoggerType.PROFILING)
+
             processedOffer
         })
     }
@@ -160,6 +160,7 @@ class OfferService(
             result.map { it.id }
         })
     }
+
     fun shallowUpdateOffer(
         id: Long,
         owner: String,

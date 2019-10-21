@@ -1,16 +1,16 @@
 package com.bitclave.node.controllers.v2
 
 import com.bitclave.node.controllers.AbstractController
+import com.bitclave.node.models.SignedRequest
 import com.bitclave.node.repository.entities.Account
 import com.bitclave.node.repository.entities.SearchRequest
-import com.bitclave.node.models.SignedRequest
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.SearchRequestService
+import com.bitclave.node.utils.Logger
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
-import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.PathVariable
@@ -28,7 +28,6 @@ class SearchRequestControllerV2(
     @Qualifier("v1") private val accountService: AccountService,
     @Qualifier("v1") private val searchRequestService: SearchRequestService
 ) : AbstractController() {
-    private val logger = KotlinLogging.logger {}
 
     /**
      * Creates new or updates requests for search in the system, based on the provided information.
@@ -87,7 +86,7 @@ class SearchRequestControllerV2(
 
                 CompletableFuture.completedFuture(result)
             }.exceptionally { e ->
-                logger.error("Request: putSearchRequests:$request raised $e")
+                Logger.error("Request: putSearchRequests:$request raised", e)
                 throw e
             }
     }
@@ -150,7 +149,7 @@ class SearchRequestControllerV2(
 
                 CompletableFuture.completedFuture(result)
             }.exceptionally { e ->
-                logger.error("Request: cloneSearchRequest/$owner/$request raised $e")
+                Logger.error("Request: cloneSearchRequest/$owner/$request raised", e)
                 throw e
             }
     }

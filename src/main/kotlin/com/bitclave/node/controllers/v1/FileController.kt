@@ -1,19 +1,19 @@
 package com.bitclave.node.controllers.v1
 
 import com.bitclave.node.controllers.AbstractController
-import com.bitclave.node.repository.entities.Account
 import com.bitclave.node.models.SignedRequest
+import com.bitclave.node.repository.entities.Account
 import com.bitclave.node.repository.entities.UploadedFile
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.FileService
+import com.bitclave.node.utils.Logger
 import com.google.gson.Gson
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
-import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -28,8 +28,6 @@ import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.multipart.MultipartFile
 import java.util.concurrent.CompletableFuture
 import javax.annotation.Resource
-
-private val logger = KotlinLogging.logger {}
 
 @RestController
 @RequestMapping("/v1/file/{owner}")
@@ -111,7 +109,7 @@ class FileController(
                 val status = if (it.id != id) HttpStatus.CREATED else HttpStatus.OK
                 CompletableFuture.completedFuture(ResponseEntity<UploadedFile>(it, status))
             }.exceptionally { e ->
-                logger.error("Request: uploadFile $signature raised $e")
+                Logger.error("Request: uploadFile $signature raised", e)
                 throw e
             }
     }
@@ -177,7 +175,7 @@ class FileController(
 
                 CompletableFuture.completedFuture(result)
             }.exceptionally { e ->
-                logger.error("Request: $request raised $e")
+                Logger.error("Request: $request raised", e)
                 throw e
             }
     }
@@ -223,7 +221,7 @@ class FileController(
                         .body(it.data)
                 )
             }.exceptionally { e ->
-                logger.error("Request: downloadFile $owner $id raised $e")
+                Logger.error("Request: downloadFile $owner $id raised", e)
                 throw e
             }
     }

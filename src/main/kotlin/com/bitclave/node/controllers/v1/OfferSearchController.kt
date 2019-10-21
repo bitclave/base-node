@@ -1,22 +1,22 @@
 package com.bitclave.node.controllers.v1
 
 import com.bitclave.node.controllers.AbstractController
+import com.bitclave.node.models.OfferSearchResultItem
+import com.bitclave.node.models.SignedRequest
+import com.bitclave.node.models.controllers.EnrichedOffersWithCountersResponse
+import com.bitclave.node.models.controllers.OfferSearchByQueryParameters
 import com.bitclave.node.repository.entities.Account
 import com.bitclave.node.repository.entities.OfferAction
 import com.bitclave.node.repository.entities.OfferInteraction
 import com.bitclave.node.repository.entities.OfferSearch
-import com.bitclave.node.models.OfferSearchResultItem
 import com.bitclave.node.repository.entities.SearchRequest
-import com.bitclave.node.models.SignedRequest
-import com.bitclave.node.models.controllers.EnrichedOffersWithCountersResponse
-import com.bitclave.node.models.controllers.OfferSearchByQueryParameters
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferSearchService
+import com.bitclave.node.utils.Logger
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
-import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -32,8 +32,6 @@ import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import java.net.URLDecoder
 import java.util.concurrent.CompletableFuture
-
-private val logger = KotlinLogging.logger {}
 
 @RestController
 @RequestMapping("/v1/search")
@@ -77,7 +75,7 @@ class OfferSearchController(
 
         return this.offerSearchService.getSuggestion(decodedQuery, size)
             .exceptionally { e ->
-                logger.error("Request: suggestionByQuery -> request: $query; error:$e")
+                Logger.error("Request: suggestionByQuery -> request: $query", e)
                 throw e
             }
     }
@@ -153,7 +151,7 @@ class OfferSearchController(
                         mode
                     )
                 }.exceptionally { e ->
-                    logger.error("Request: createOfferSearchesByQuery -> request: $request; error:$e")
+                    Logger.error("Request: createOfferSearchesByQuery -> request: $request", e)
                     throw e
                 }
         } else {
@@ -164,7 +162,7 @@ class OfferSearchController(
                 request?.data?.filters ?: emptyMap(),
                 mode
             ).exceptionally { e ->
-                logger.error("Request: getOfferSearchesByQuery -> request: $request; error:$e")
+                Logger.error("Request: getOfferSearchesByQuery -> request: $request", e)
                 throw e
             }
         }
@@ -214,7 +212,7 @@ class OfferSearchController(
             offerSearchId,
             PageRequest.of(page, size)
         ).exceptionally { e ->
-            logger.error("Request: getResult /$searchRequestId/$offerSearchId raised $e")
+            Logger.error("Request: getResult /$searchRequestId/$offerSearchId raised", e)
             throw e
         }
     }
@@ -282,7 +280,7 @@ class OfferSearchController(
             PageRequest.of(page, size, Sort.by(sort)),
             interaction
         ).exceptionally { e ->
-            logger.error("Request: getResultByOwner/$owner raised $e")
+            Logger.error("Request: getResultByOwner/$owner raised", e)
             throw e
         }
     }
@@ -310,7 +308,7 @@ class OfferSearchController(
     ): CompletableFuture<Long> {
 
         return offerSearchService.getOfferSearchTotalCount(getStrategyType(strategy)).exceptionally { e ->
-            logger.error("Request: getOfferSearchTotalCount raised $e")
+            Logger.error("Request: getOfferSearchTotalCount raised", e)
             throw e
         }
     }
@@ -345,7 +343,7 @@ class OfferSearchController(
             searchRequestIds,
             getStrategyType(strategy)
         ).exceptionally { e ->
-            logger.error("Request: getOfferSearchCountBySearchRequest raised $e")
+            Logger.error("Request: getOfferSearchCountBySearchRequest raised", e)
             throw e
         }
     }
@@ -372,7 +370,7 @@ class OfferSearchController(
             .thenCompose {
                 offerSearchService.saveNewOfferSearch(request.data!!, getStrategyType(strategy))
             }.exceptionally { e ->
-                logger.error("Request: putOfferSearchItem/$request raised $e")
+                Logger.error("Request: putOfferSearchItem/$request raised", e)
                 throw e
             }
     }
@@ -403,7 +401,7 @@ class OfferSearchController(
             .thenCompose {
                 offerSearchService.addEventTo(event.data!!, searchResultId, getStrategyType(strategy))
             }.exceptionally { e ->
-                logger.error("Request: addEvent/$event raised $e")
+                Logger.error("Request: addEvent/$event raised", e)
                 throw e
             }
     }
@@ -432,7 +430,7 @@ class OfferSearchController(
 
         return offerSearchService.getInteractions(owner, states, offers, getStrategyType(strategy))
             .exceptionally { e ->
-                logger.error("Request: getInteractions: $owner, $states, $offers  raised $e")
+                Logger.error("Request: getInteractions: $owner, $states, $offers  raised", e)
                 throw e
             }
     }
@@ -462,7 +460,7 @@ class OfferSearchController(
                 offerSearchService.complain(request.data!!, it.publicKey, getStrategyType(strategy)).get()
                 accountService.incrementNonce(it, getStrategyType(strategy)).get()
             }.exceptionally { e ->
-                logger.error("Request: complain/$request raised $e")
+                Logger.error("Request: complain/$request raised", e)
                 throw e
             }
     }
@@ -492,7 +490,7 @@ class OfferSearchController(
                 offerSearchService.reject(request.data!!, it.publicKey, getStrategyType(strategy)).get()
                 accountService.incrementNonce(it, getStrategyType(strategy)).get()
             }.exceptionally { e ->
-                logger.error("Request: reject/$request raised $e")
+                Logger.error("Request: reject/$request raised", e)
                 throw e
             }
     }
@@ -522,7 +520,7 @@ class OfferSearchController(
                 offerSearchService.evaluate(request.data!!, it.publicKey, getStrategyType(strategy)).get()
                 accountService.incrementNonce(it, getStrategyType(strategy)).get()
             }.exceptionally { e ->
-                logger.error("Request: evaluate/$request raised $e")
+                Logger.error("Request: evaluate/$request raised", e)
                 throw e
             }
     }
@@ -552,7 +550,7 @@ class OfferSearchController(
                 offerSearchService.claimPurchase(request.data!!, it.publicKey, getStrategyType(strategy)).get()
                 accountService.incrementNonce(it, getStrategyType(strategy)).get()
             }.exceptionally { e ->
-                logger.error("Request: claimPurchase/$request raised $e")
+                Logger.error("Request: claimPurchase/$request raised", e)
                 throw e
             }
     }
@@ -579,7 +577,7 @@ class OfferSearchController(
                 offerSearchService.confirm(request.data!!, it.publicKey, getStrategyType(strategy)).get()
                 accountService.incrementNonce(it, getStrategyType(strategy)).get()
             }.exceptionally { e ->
-                logger.error("Request: confirm/$request raised $e")
+                Logger.error("Request: confirm/$request raised", e)
                 throw e
             }
     }
@@ -643,7 +641,7 @@ class OfferSearchController(
 
                 CompletableFuture.completedFuture(result)
             }.exceptionally { e ->
-                logger.error("Request: cloneOfferSearchOfSearchRequest/$request raised $e")
+                Logger.error("Request: cloneOfferSearchOfSearchRequest/$request raised", e)
                 throw e
             }
     }
