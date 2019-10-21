@@ -2,13 +2,13 @@
 <configuration>
 
     <springProperty scope="context" name="logstash" source="logstash.endpoint"/>
-    <springProperty scope="context" name="log.profiling" source="logger.profiling" defaultValue="OFF" />
+    <springProperty scope="context" name="log.profiling" source="logger.profiling" defaultValue="OFF"/>
     <springProperty scope="context" name="log.common" source="logger.common" defaultValue="DEBUG"/>
 
     <appender name="Console" class="ch.qos.logback.core.ConsoleAppender">
-        <layout class="ch.qos.logback.classic.PatternLayout">
-            <pattern>base-node %d{ISO8601} %level %thread %logger %m%n%throwable</pattern>
-        </layout>
+        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
+            <layout class="com.bitclave.node.configuration.LogbackDrainsLayout"/>
+        </encoder>
     </appender>
 
     <appender name="stash" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
@@ -24,8 +24,8 @@
     </root>
 
     <!-- see com/bitclave/node/utils/Logger.kt -->
-    <logger name="PROFILING" level="${log.profiling}" />
-    <logger name="COMMON" level="${log.common}" />
+    <logger name="PROFILING" level="${log.profiling}"/>
+    <logger name="COMMON" level="${log.common}"/>
 
     <logger name="org.hibernate" level="ERROR"/>
 
