@@ -437,7 +437,7 @@ class OfferController(
         @RequestHeader("Strategy", required = false)
         strategy: String?
     ): CompletableFuture<ResponseEntity<List<Long>>> {
-        var start: Date()
+        var start: Date = Date()
         return accountService
             .accountBySigMessage(request, getStrategyType(strategy))
             .thenCompose { account: Account ->
