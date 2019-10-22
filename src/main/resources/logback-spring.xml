@@ -11,15 +11,15 @@
         </encoder>
     </appender>
 
-    <appender name="stash" class="net.logstash.logback.appender.LogstashTcpSocketAppender">
-        <destination>${logstash}</destination>
-        <encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">
-            <layout class="com.bitclave.node.configuration.LogbackLayout"/>
-        </encoder>
-    </appender>
+    <!--<appender name="stash" class="net.logstash.logback.appender.LogstashTcpSocketAppender">-->
+        <!--<destination>${logstash}</destination>-->
+        <!--<encoder class="ch.qos.logback.core.encoder.LayoutWrappingEncoder">-->
+            <!--<layout class="com.bitclave.node.configuration.LogbackLayout"/>-->
+        <!--</encoder>-->
+    <!--</appender>-->
 
     <root level="INFO">
-        <appender-ref ref="stash"/>
+        <!--<appender-ref ref="stash"/>-->
         <appender-ref ref="Console"/>
     </root>
 
