@@ -1,5 +1,6 @@
 package com.bitclave.node.configuration
 
+import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.spi.ILoggingEvent
 import ch.qos.logback.core.LayoutBase
 import com.bitclave.node.configuration.gson.GsonConfig
@@ -38,9 +39,18 @@ class LogbackLayout : LayoutBase<ILoggingEvent>() {
     private val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ")
 
     override fun doLayout(event: ILoggingEvent): String {
+        var message = event.formattedMessage
+
+        if (event.level == Level.ERROR) {
+            val errorStackTrace =
+                event.throwableProxy.stackTraceElementProxyArray?.contentToString() ?: "[stacktrace undefined]"
+            message = message.plus("; stacktrace: ")
+            message = message.plus(errorStackTrace)
+        }
+
         val data = LogbackElasticData(
             "base-node",
-            event.formattedMessage,
+            message,
             dateFormat.format(Date(event.timeStamp)),
             LogbackElasticContextData(source = event.threadName, filename = event.loggerName),
             LogbackElasticLevelData(event.level.levelInt.toLong(), event.level.levelStr)
