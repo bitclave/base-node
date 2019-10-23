@@ -344,7 +344,7 @@ class VerifyConsistencyController(
         return searchRequestService.getSearchRequestWithSameTags(
             getStrategyType(strategy)
         ).exceptionally { e ->
-            logger.error("Request: getSearchRequestWithSameTags raised $e")
+            Logger.error("Request: getSearchRequestWithSameTags raised $e")
             throw e
         }
     }
@@ -379,7 +379,7 @@ class VerifyConsistencyController(
         return searchRequestService.getSearchRequestWithoutOwner(
             getStrategyType(strategy)
         ).exceptionally { e ->
-            logger.error("Request: getSearchRequestWithoutOwner raised $e")
+            Logger.error("Request: getSearchRequestWithoutOwner raised $e")
             throw e
         }
     }
@@ -414,7 +414,7 @@ class VerifyConsistencyController(
         return offerService.getOffersWithoutOwner(
             getStrategyType(strategy)
         ).exceptionally { e ->
-            logger.error("Request: getOfferWithoutOwner raised $e")
+            Logger.error("Request: getOfferWithoutOwner raised $e")
             throw e
         }
     }
