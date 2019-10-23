@@ -17,7 +17,7 @@ class LogbackDrainsLayout : LayoutBase<ILoggingEvent>() {
 
         if (event.level == Level.ERROR) {
             val errorStackTrace =
-                event.throwableProxy.stackTraceElementProxyArray?.contentToString() ?: "[stacktrace undefined]"
+                event.throwableProxy?.stackTraceElementProxyArray?.contentToString() ?: "[stacktrace undefined]"
             message = message.plus("; stacktrace: ")
             message = message.plus(errorStackTrace)
         }
