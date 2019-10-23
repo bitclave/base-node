@@ -206,6 +206,7 @@ class ExternalServicesServiceTest {
             assertThat(result.headers).isEqualTo(headers)
         } catch (e: Throwable) {
             Logger.error("in test: should be call GET request with headers", e)
+            throw e
         }
     }
 
