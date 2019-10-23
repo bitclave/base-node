@@ -448,4 +448,30 @@ class OfferServiceTest {
         assert(secondPage.first().id == 3L)
         assert(secondPage.last().id == 4L)
     }
+
+    @Test
+    fun `should return offers without owner`() {
+
+        `should be create new offer`()
+
+        val changedOffer = Offer(
+            34,
+            "dsdsdsdsd",
+            listOf(),
+            "is desc111",
+            "is title111",
+            "is image url111",
+            BigDecimal.ONE.toString(),
+            mapOf("color" to "red"),
+            mapOf("salary" to "1000"),
+            mapOf("salary" to Offer.CompareAction.MORE)
+        )
+
+        val created = offerService.putOffer(0, "dsdsdsdsd", changedOffer, strategy).get()
+
+        assert(created.id == 2L)
+
+        val result = offerService.getOffersWithoutOwner(strategy).get()
+        assertThat(result.size).isEqualTo(1)
+    }
 }

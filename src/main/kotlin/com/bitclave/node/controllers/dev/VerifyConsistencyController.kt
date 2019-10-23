@@ -6,8 +6,10 @@ import com.bitclave.node.repository.entities.Account
 import com.bitclave.node.repository.entities.OfferInteraction
 import com.bitclave.node.repository.entities.OfferSearch
 import com.bitclave.node.repository.entities.SearchRequest
+import com.bitclave.node.repository.entities.Offer
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferSearchService
+import com.bitclave.node.services.v1.OfferService
 import com.bitclave.node.services.v1.SearchRequestService
 import com.bitclave.node.utils.Logger
 import io.swagger.annotations.ApiOperation
@@ -29,7 +31,8 @@ import java.util.concurrent.CompletableFuture
 class VerifyConsistencyController(
     @Qualifier("v1") private val accountService: AccountService,
     @Qualifier("v1") private val offerSearchService: OfferSearchService,
-    @Qualifier("v1") private val searchRequestService: SearchRequestService
+    @Qualifier("v1") private val searchRequestService: SearchRequestService,
+    @Qualifier("v1") private val offerService: OfferService
 ) : AbstractController() {
 
     /**
@@ -319,7 +322,7 @@ class VerifyConsistencyController(
      */
     @ApiOperation(
         "Returns the SearchRequests with the same tags",
-        response = OfferInteraction::class, responseContainer = "List"
+        response = SearchRequest::class, responseContainer = "List"
     )
     @ApiResponses(
         value = [
@@ -341,7 +344,77 @@ class VerifyConsistencyController(
         return searchRequestService.getSearchRequestWithSameTags(
             getStrategyType(strategy)
         ).exceptionally { e ->
-            Logger.error("Request: getDanglingOfferInteractions raised", e)
+            logger.error("Request: getSearchRequestWithSameTags raised $e")
+            throw e
+        }
+    }
+
+    /**
+     * Returns the SearchRequests without owner
+     *
+     * @return {@link List<SearchRequest>}, Http status - 200.
+     *
+     */
+    @ApiOperation(
+        "Returns the SearchRequests without owner",
+        response = SearchRequest::class, responseContainer = "List"
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(code = 200, message = "Success", response = List::class)
+        ]
+    )
+    @RequestMapping(method = [RequestMethod.GET], value = ["/searchrequest/noowner"])
+    fun getSearchRequestWithoutOwner(
+
+        @ApiParam(
+            "change repository strategy",
+            allowableValues = "POSTGRES, HYBRID",
+            required = false
+        )
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
+    ): CompletableFuture<List<SearchRequest>> {
+
+        return searchRequestService.getSearchRequestWithoutOwner(
+            getStrategyType(strategy)
+        ).exceptionally { e ->
+            logger.error("Request: getSearchRequestWithoutOwner raised $e")
+            throw e
+        }
+    }
+
+    /**
+     * Returns the Offer without an owner
+     *
+     * @return {@link List<SearchRequest>}, Http status - 200.
+     *
+     */
+    @ApiOperation(
+        "Returns the Offer without an owner",
+        response = Offer::class, responseContainer = "List"
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(code = 200, message = "Success", response = List::class)
+        ]
+    )
+    @RequestMapping(method = [RequestMethod.GET], value = ["/offer/withoutowner"])
+    fun getOfferWithoutOwner(
+
+        @ApiParam(
+            "change repository strategy",
+            allowableValues = "POSTGRES, HYBRID",
+            required = false
+        )
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
+    ): CompletableFuture<List<Offer>> {
+
+        return offerService.getOffersWithoutOwner(
+            getStrategyType(strategy)
+        ).exceptionally { e ->
+            logger.error("Request: getOfferWithoutOwner raised $e")
             throw e
         }
     }

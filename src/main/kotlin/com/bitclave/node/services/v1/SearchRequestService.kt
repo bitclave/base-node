@@ -306,4 +306,12 @@ class SearchRequestService(
             repository.changeStrategy(strategy).getSearchRequestWithSameTags()
         })
     }
+
+    fun getSearchRequestWithoutOwner(
+        strategy: RepositoryStrategyType
+    ): CompletableFuture<List<SearchRequest>> {
+        return supplyAsyncEx(Supplier {
+            repository.changeStrategy(strategy).findAllWithoutOwner()
+        })
+    }
 }

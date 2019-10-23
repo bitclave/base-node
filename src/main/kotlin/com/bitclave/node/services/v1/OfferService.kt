@@ -328,4 +328,12 @@ class OfferService(
             offerRepository.changeStrategy(strategy).getOfferByOwnerAndTag(owner, tagKey)
         })
     }
+
+    fun getOffersWithoutOwner(
+        strategy: RepositoryStrategyType
+    ): CompletableFuture<List<Offer>> {
+        return supplyAsyncEx(Supplier {
+            offerRepository.changeStrategy(strategy).findAllWithoutOwner()
+        })
+    }
 }

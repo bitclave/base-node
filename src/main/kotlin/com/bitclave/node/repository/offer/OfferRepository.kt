@@ -46,4 +46,6 @@ interface OfferRepository {
     fun getTotalCount(): Long
 
     fun getOfferByOwnerAndTag(owner: String, tagKey: String): List<Offer>
+
+    fun findAllWithoutOwner(): List<Offer>
 }

@@ -117,4 +117,22 @@ class VerifyConsistencyControllerTest {
         )
             .andExpect(status().isOk)
     }
+
+    @Test
+    fun `get SearchRequest list without owner`() {
+        this.mvc.perform(
+            get("/dev/verify/searchrequest/noowner")
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
+    }
+
+    @Test
+    fun `get offers without owner`() {
+        this.mvc.perform(
+            get("/dev/verify/offer/withoutowner")
+                .headers(httpHeaders)
+        )
+            .andExpect(status().isOk)
+    }
 }
