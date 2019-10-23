@@ -18,6 +18,7 @@ import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.services.CallStrategy
 import com.bitclave.node.services.v1.services.CallStrategyImpl
 import com.bitclave.node.services.v1.services.ExternalServicesService
+import com.bitclave.node.utils.Logger
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Before
 import org.junit.Test
@@ -174,34 +175,38 @@ class ExternalServicesServiceTest {
     @Test
     fun `should be call GET request with headers`() {
 
-        val headers = HttpHeaders()
-        headers.contentType = MediaType.APPLICATION_JSON
-        headers.accept = arrayListOf(MediaType.APPLICATION_JSON)
+        try {
+            val headers = HttpHeaders()
+            headers.contentType = MediaType.APPLICATION_JSON
+            headers.accept = arrayListOf(MediaType.APPLICATION_JSON)
 
-        val entity = HttpEntity<Any>(null, headers)
+            val entity = HttpEntity<Any>(null, headers)
 
-        Mockito.`when`(
-            restTemplate.exchange(
-                ArgumentMatchers.eq("$endpoint/"),
-                ArgumentMatchers.eq(HttpMethod.GET),
-                ArgumentMatchers.eq(entity),
-                ArgumentMatchers.eq(Any::class.java),
-                ArgumentMatchers.eq(emptyMap<String, String>())
+            Mockito.`when`(
+                restTemplate.exchange(
+                    ArgumentMatchers.eq("$endpoint/"),
+                    ArgumentMatchers.eq(HttpMethod.GET),
+                    ArgumentMatchers.eq(entity),
+                    ArgumentMatchers.eq(Any::class.java),
+                    ArgumentMatchers.eq(emptyMap<String, String>())
+                )
+            ).thenReturn(ResponseEntity<Any>(headers, HttpStatus.ACCEPTED))
+
+            val serviceCall = HttpServiceCall(
+                publicKey,
+                ServiceCallType.HTTP,
+                HttpMethod.GET,
+                "/",
+                emptyMap(),
+                headers
             )
-        ).thenReturn(ResponseEntity<Any>(headers, HttpStatus.ACCEPTED))
 
-        val serviceCall = HttpServiceCall(
-            publicKey,
-            ServiceCallType.HTTP,
-            HttpMethod.GET,
-            "/",
-            emptyMap(),
-            headers
-        )
-
-        val result = externalServicesService.externalCall(serviceCall, strategy).get()
-        assert(result.status == HttpStatus.ACCEPTED.value())
-        assertThat(result.headers).isEqualTo(headers)
+            val result = externalServicesService.externalCall(serviceCall, strategy).get()
+            assert(result.status == HttpStatus.ACCEPTED.value())
+            assertThat(result.headers).isEqualTo(headers)
+        } catch (e: Throwable) {
+            Logger.error("in test: should be call GET request with headers", e)
+        }
     }
 
     @Test
