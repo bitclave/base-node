@@ -9,6 +9,8 @@ import com.bitclave.node.repository.search.offer.OfferSearchCrudRepository
 import com.bitclave.node.services.errors.DataNotSavedException
 import com.bitclave.node.services.events.OfferEvent
 import com.bitclave.node.services.events.WsService
+import com.bitclave.node.utils.Logger
+import com.bitclave.node.utils.LoggerType
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
@@ -224,7 +226,7 @@ class PostgresOfferRepositoryImpl(
             }
         }
 
-        // println("syncElementCollections get raw result objects: $step1")
+        Logger.debug("syncElementCollections get raw result objects: $step1", LoggerType.PROFILING)
 
         var mappedTags = emptyMap<Long, List<Array<Any>>>()
         var mappedCompare = emptyMap<Long, List<Array<Any>>>()
@@ -239,7 +241,7 @@ class PostgresOfferRepositoryImpl(
             mappedPrices = (queryResultPrices).groupBy { it.originalOfferId }
             priceIds = queryResultPrices.map { it.id }.distinct()
         }
-        // println("syncElementCollections mapping ids: $step2")
+        Logger.debug("syncElementCollections mapping ids: $step2", LoggerType.PROFILING)
 
         return mergeOfferWithMaps(offers, mappedTags, mappedCompare, mappedRules, mappedPrices, priceIds)
     }
@@ -273,7 +275,7 @@ class PostgresOfferRepositoryImpl(
             }
         }
 
-        // println("syncElementCollections merge result: $mergeResult")
+        Logger.debug("syncElementCollections merge result: $mergeResult", LoggerType.PROFILING)
 
         return result
     }
@@ -295,7 +297,7 @@ class PostgresOfferRepositoryImpl(
                 )
                 .resultList as List<OfferPriceRules>).groupBy { it.originalOfferPriceId }
         }
-        // println("syncElementCollections syncPriceRules: $loadPrices")
+        Logger.debug("syncElementCollections syncPriceRules: $loadPrices", LoggerType.PROFILING)
 
         return result
     }

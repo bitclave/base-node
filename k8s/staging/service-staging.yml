@@ -1,0 +1,80 @@
+# Copyright 2015 Google Inc. All rights reserved.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: base-node-staging
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 2
+  template:
+    metadata:
+      name: base-node-service
+      labels:
+        app: base-node
+        role: backend
+        env: staging
+    spec:
+      containers:
+        - name: service
+          image: gcr.io/bitclave-jenkins-ci/base-node:id-to-replace
+          resources:
+            limits:
+              memory: "500Mi"
+              cpu: "350m"
+          env:
+            - name: PORT
+              value: "8080"
+
+            - name: PROFILE
+              value: "gke"
+
+            - name: WALLET_CONTRACT_ADDRESS
+              value: "0x56c38d117f92ed0501a9f7ee39abf9089988b6e0"
+
+            - name: BASE_CONTRACT_ADDRESS
+              value: "0x9a297a3abaaa1ae4f2a77d9b2de4afbbe8b36d56"
+
+            - name: ACCOUNT_CONTRACT_ADDRESS
+              value: "0x56c38d117f92ed0501a9f7ee39abf9089988b6e0"
+
+            - name: DNS_CONTRACT_ADDRESS
+              value: "0x39e31ddecd716a8bf297d5d89b76d80514aed2c8"
+
+            - name: ETHEREUM_GAS_LIMIT
+              value: "4000000"
+
+            - name:  ETHEREUM_GAS_PRICE
+              value: "9000000"
+
+          envFrom:
+            - secretRef:
+                name: secret-staging-base-node
+
+          imagePullPolicy: Always
+          ports:
+            - name: api
+              containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /health-check
+              port: 8080
+            initialDelaySeconds: 480
+            periodSeconds: 10
+            successThreshold: 3

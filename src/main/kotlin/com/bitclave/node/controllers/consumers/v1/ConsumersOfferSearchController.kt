@@ -3,11 +3,11 @@ package com.bitclave.node.controllers.consumers.v1
 import com.bitclave.node.controllers.AbstractController
 import com.bitclave.node.repository.entities.OfferSearch
 import com.bitclave.node.services.v1.OfferSearchService
+import com.bitclave.node.utils.Logger
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
-import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Slice
@@ -25,7 +25,6 @@ import java.util.concurrent.CompletableFuture
 class ConsumersOfferSearchController(
     @Qualifier("v1") private val offerSearchService: OfferSearchService
 ) : AbstractController() {
-    private val logger = KotlinLogging.logger {}
 
     @ApiOperation(
         "Slice through already created offersearch results",
@@ -53,7 +52,7 @@ class ConsumersOfferSearchController(
         return offerSearchService.getConsumersOfferSearches(
             PageRequest.of(page, size, Sort.by(Sort.Order(Sort.Direction.ASC, "id"))), getStrategyType(strategy)
         ).exceptionally { e ->
-            logger.error("Request: getConsumersOfferSearch/$page/$size raised $e")
+            Logger.error("Request: getConsumersOfferSearch/$page/$size raised", e)
             throw e
         }
     }
@@ -92,7 +91,7 @@ class ConsumersOfferSearchController(
                 getStrategyType(strategy)
             )
             .exceptionally { e ->
-                logger.error("Request: getConsumersOfferSearchBySearchRequestIds/$page/$size/$ids raised $e")
+                Logger.error("Request: getConsumersOfferSearchBySearchRequestIds/$page/$size/$ids raised", e)
                 throw e
             }
     }

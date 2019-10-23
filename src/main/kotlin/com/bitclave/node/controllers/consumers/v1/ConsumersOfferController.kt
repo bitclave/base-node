@@ -3,11 +3,11 @@ package com.bitclave.node.controllers.consumers.v1
 import com.bitclave.node.controllers.AbstractController
 import com.bitclave.node.repository.entities.Offer
 import com.bitclave.node.services.v1.OfferService
+import com.bitclave.node.utils.Logger
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
-import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Slice
@@ -30,8 +30,6 @@ enum class OfferFields {
 class ConsumersOfferController(
     @Qualifier("v1") private val offerService: OfferService
 ) : AbstractController() {
-
-    private val logger = KotlinLogging.logger {}
 
     @ApiOperation(
         "Page through already created offers by excluding products",
@@ -74,7 +72,7 @@ class ConsumersOfferController(
             getStrategyType(strategy),
             exceptType
         ).exceptionally { e ->
-            logger.error("Request: getConsumersOffers/$page/$size raised $e")
+            Logger.error("Request: getConsumersOffers/$page/$size raised", e)
             throw e
         }
     }

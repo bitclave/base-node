@@ -3,11 +3,11 @@ package com.bitclave.node.controllers.consumers.v1
 import com.bitclave.node.controllers.AbstractController
 import com.bitclave.node.repository.entities.SearchRequest
 import com.bitclave.node.services.v1.SearchRequestService
+import com.bitclave.node.utils.Logger
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
-import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Slice
@@ -25,7 +25,6 @@ import java.util.concurrent.CompletableFuture
 class ConsumersSearchRequestController(
     @Qualifier("v1") private val searchRequestService: SearchRequestService
 ) : AbstractController() {
-    private val logger = KotlinLogging.logger {}
 
     @ApiOperation(
         "Page through already created search requests",
@@ -53,7 +52,7 @@ class ConsumersSearchRequestController(
         return searchRequestService.getRequestsSlice(
             PageRequest.of(page, size, Sort.by(Sort.Order(Sort.Direction.ASC, "id"))), getStrategyType(strategy)
         ).exceptionally { e ->
-            logger.error("Request: getConsumersSearchRequests/$page/$size raised $e")
+            Logger.error("Request: getConsumersSearchRequests/$page/$size raised", e)
             throw e
         }
     }
@@ -90,7 +89,7 @@ class ConsumersSearchRequestController(
             PageRequest.of(page, size, Sort.by(Sort.Order(Sort.Direction.ASC, "id"))),
             getStrategyType(strategy)
         ).exceptionally { e ->
-            logger.error("Request: getConsumersSearchRequestsByOwners/$page/$size/$owners raised $e")
+            Logger.error("Request: getConsumersSearchRequestsByOwners/$page/$size/$owners raised", e)
             throw e
         }
     }

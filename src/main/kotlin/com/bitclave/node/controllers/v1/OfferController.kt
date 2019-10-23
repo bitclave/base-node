@@ -1,17 +1,18 @@
 package com.bitclave.node.controllers.v1
 
 import com.bitclave.node.controllers.AbstractController
+import com.bitclave.node.models.SignedRequest
 import com.bitclave.node.repository.entities.Account
 import com.bitclave.node.repository.entities.Offer
-import com.bitclave.node.models.SignedRequest
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.v1.AccountService
 import com.bitclave.node.services.v1.OfferService
+import com.bitclave.node.utils.Logger
+import com.bitclave.node.utils.LoggerType
 import io.swagger.annotations.ApiOperation
 import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
-import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -26,8 +27,6 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import java.util.Date
 import java.util.concurrent.CompletableFuture
-
-private val logger = KotlinLogging.logger {}
 
 @RestController
 @RequestMapping("/v1/client/{owner}/offer")
@@ -87,12 +86,12 @@ class OfferController(
         return accountService
             .accountBySigMessage(request, getStrategyType(strategy))
             .thenCompose { account: Account ->
-                logger.debug("controller profiling SigMessage 1) ${(Date().time - start.time)}ms")
+                Logger.debug("controller profiling SigMessage 1) ${(Date().time - start.time)}ms")
                 start = Date()
                 accountService.validateNonce(request, account)
             }
             .thenCompose {
-                logger.debug("controller profiling ValidateNonce 2) ${(Date().time - start.time)}ms")
+                Logger.debug("controller profiling ValidateNonce 2) ${(Date().time - start.time)}ms")
                 start = Date()
                 if (request.pk != owner) {
                     throw BadArgumentException()
@@ -107,11 +106,11 @@ class OfferController(
                 CompletableFuture.completedFuture(result)
             }
             .thenCompose {
-                logger.debug("controller profiling SaveOffer 3) ${(Date().time - start.time)}ms")
+                Logger.debug("controller profiling SaveOffer 3) ${(Date().time - start.time)}ms")
                 val status = if (it.id != id) HttpStatus.CREATED else HttpStatus.OK
                 CompletableFuture.completedFuture(ResponseEntity<Offer>(it, status))
             }.exceptionally { e ->
-                logger.error("Request: putOffer/$request raised $e")
+                Logger.error("Request: putOffer/$request raised", e)
                 throw e
             }
     }
@@ -183,7 +182,7 @@ class OfferController(
             .thenCompose {
                 CompletableFuture.completedFuture(ResponseEntity<Offer>(it, HttpStatus.OK))
             }.exceptionally { e ->
-                logger.error("Request: shallowUpdateOffer/$request raised $e")
+                Logger.error("Request: shallowUpdateOffer/$request raised", e)
                 throw e
             }
     }
@@ -248,7 +247,7 @@ class OfferController(
 
                 CompletableFuture.completedFuture(result)
             }.exceptionally { e ->
-                logger.error("Request: deleteOffer/$request raised $e")
+                Logger.error("Request: deleteOffer/$request raised", e)
                 throw e
             }
     }
@@ -282,7 +281,7 @@ class OfferController(
     ): CompletableFuture<List<Offer>> {
 
         return offerService.getOffers(id ?: 0, owner, getStrategyType(strategy)).exceptionally { e ->
-            logger.error("Request: getOffer/$owner/$id raised $e")
+            Logger.error("Request: getOffer/$owner/$id raised", e)
             throw e
         }
     }
@@ -319,7 +318,7 @@ class OfferController(
                 owner,
                 PageRequest.of(0, 20), getStrategyType(strategy)
             ).exceptionally { e ->
-                logger.error("Request: getPageableOffersByOwner/$page/$size raised $e")
+                Logger.error("Request: getPageableOffersByOwner/$page/$size raised", e)
                 throw e
             }
         }
@@ -329,7 +328,7 @@ class OfferController(
             PageRequest.of(page, size),
             getStrategyType(strategy)
         ).exceptionally { e ->
-            logger.error("Request: getPageableOffersByOwner/$page/$size raised $e")
+            Logger.error("Request: getPageableOffersByOwner/$page/$size raised", e)
             throw e
         }
     }
@@ -358,7 +357,7 @@ class OfferController(
     ): CompletableFuture<Long> {
 
         return offerService.getOfferTotalCount(getStrategyType(strategy)).exceptionally { e ->
-            logger.error("Request: getOfferTotalCount raised $e")
+            Logger.error("Request: getOfferTotalCount raised", e)
             throw e
         }
     }
@@ -392,10 +391,11 @@ class OfferController(
     ): CompletableFuture<List<Offer>> {
 
         return offerService.getOfferByOwnerAndTag(owner, tag, getStrategyType(strategy)).exceptionally { e ->
-            logger.error("Request: getOffersByOwnerAndTag/$owner/$tag raised $e")
+            Logger.error("Request: getOffersByOwnerAndTag/$owner/$tag raised", e)
             throw e
         }
     }
+
     /**
      * It creates new offers or update the offers in the system, based on the bulk offers.
      * The API will verify that the request is cryptographically signed by the owner of the public key.
@@ -437,16 +437,22 @@ class OfferController(
         @RequestHeader("Strategy", required = false)
         strategy: String?
     ): CompletableFuture<ResponseEntity<List<Long>>> {
-        var start = Date()
+        var start: Date = Date()
         return accountService
             .accountBySigMessage(request, getStrategyType(strategy))
             .thenCompose { account: Account ->
-                // logger.debug("bulk controller profiling SigMessage 1) ${(Date().time - start.time)}ms")
+                Logger.debug(
+                    "bulk controller profiling SigMessage 1) ${(Date().time - start.time)}ms",
+                    LoggerType.PROFILING
+                )
                 start = Date()
                 accountService.validateNonce(request, account)
             }
             .thenCompose {
-                // logger.debug("controller profiling ValidateNonce 2) ${(Date().time - start.time)}ms")
+                Logger.debug(
+                    "controller profiling ValidateNonce 2) ${(Date().time - start.time)}ms",
+                    LoggerType.PROFILING
+                )
                 start = Date()
                 if (request.pk != owner) {
                     throw BadArgumentException()
@@ -456,11 +462,12 @@ class OfferController(
                     request.data!!,
                     getStrategyType(strategy)
                 ).get()
+                Logger.debug("controller profiling BullAdvanced 2) ${(Date().time - start.time)}ms")
                 accountService.incrementNonce(it, getStrategyType(strategy)).get()
                 CompletableFuture.completedFuture(ResponseEntity<List<Long>>(result, HttpStatus.OK))
             }
             .exceptionally { e ->
-                logger.error("Request: putOffer/$request raised $e")
+                Logger.error("Request: putOffer/$request raised", e)
                 throw e
             }
     }

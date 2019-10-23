@@ -2,16 +2,14 @@ package com.bitclave.node.configuration.gson
 
 import com.bitclave.node.models.SignedRequest
 import com.bitclave.node.services.errors.BadArgumentException
+import com.bitclave.node.utils.Logger
 import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
-import mu.KotlinLogging
 import java.lang.reflect.ParameterizedType
 import java.lang.reflect.Type
 
 class SignedRequestDeserializer : JsonDeserializer<SignedRequest<*>> {
-
-    val logger = KotlinLogging.logger { }
 
     override fun deserialize(
         json: JsonElement?,
@@ -48,7 +46,7 @@ class SignedRequestDeserializer : JsonDeserializer<SignedRequest<*>> {
                 return SignedRequest(data, pk, sig, nonce, rawData)
             }
         } catch (e: Throwable) {
-            logger.error("Signed Request: $e")
+            Logger.error("Signed Request", e)
         }
 
         throw BadArgumentException("Signed request wrong data!")

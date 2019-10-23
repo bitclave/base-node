@@ -1,18 +1,18 @@
 package com.bitclave.node.services.v1
 
 import com.bitclave.node.extensions.validateSig
+import com.bitclave.node.models.SignedRequest
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.account.AccountRepository
 import com.bitclave.node.repository.entities.Account
-import com.bitclave.node.models.SignedRequest
 import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.errors.AlreadyRegisteredException
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
+import com.bitclave.node.utils.Logger
 import com.bitclave.node.utils.runAsyncEx
 import com.bitclave.node.utils.supplyAsyncEx
-import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Slice
@@ -20,8 +20,6 @@ import org.springframework.stereotype.Service
 import java.util.Date
 import java.util.concurrent.CompletableFuture
 import java.util.function.Supplier
-
-private val logger = KotlinLogging.logger {}
 
 @Service
 @Qualifier("v1")
@@ -58,7 +56,7 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
                     account
                 }
         } catch (e: Exception) {
-            logger.error("Request: $request raised $e")
+            Logger.error("Request: $request raised", e)
             throw BadArgumentException(e.localizedMessage)
         }
     }

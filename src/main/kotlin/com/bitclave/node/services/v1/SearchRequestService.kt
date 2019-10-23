@@ -11,9 +11,10 @@ import com.bitclave.node.services.errors.AccessDeniedException
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
 import com.bitclave.node.utils.AppOpticsUtil
+import com.bitclave.node.utils.Logger
+import com.bitclave.node.utils.LoggerType
 import com.bitclave.node.utils.runAsyncEx
 import com.bitclave.node.utils.supplyAsyncEx
-import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -32,8 +33,6 @@ class SearchRequestService(
     private val offerSearchService: OfferSearchService,
     appOpticsProperties: AppOpticsProperties
 ) {
-
-    private val logger = KotlinLogging.logger {}
 
     private val appOpticsUtil = AppOpticsUtil(appOpticsProperties)
 
@@ -182,7 +181,7 @@ class SearchRequestService(
                     .changeStrategy(strategy)
                     .findById(searchRequestIds)
             }
-            // logger.debug { "clone search request step1: $step1" }
+            Logger.debug("clone search request step1: $step1", LoggerType.PROFILING)
             // appOpticsUtil.sendToAppOptics(
             //     "com.bitclave.node.services.v1.cloneSearchRequestWithOfferSearches.step1",
             //     (step1).toDouble(),
@@ -200,7 +199,7 @@ class SearchRequestService(
 
                 preparedRequests = existingRequest.map { SearchRequest(0, owner, it.tags.toMap()) }
             }
-            // logger.debug { "clone search request step2: $step2" }
+            Logger.debug("clone search request step2: $step2", LoggerType.PROFILING)
             // appOpticsUtil.sendToAppOptics(
             //     "com.bitclave.node.services.v1.cloneSearchRequestWithOfferSearches.step2",
             //     (step2).toDouble(),
@@ -215,7 +214,7 @@ class SearchRequestService(
                     .save(preparedRequests)
             }
 
-            // logger.debug { "clone search request step3: $step3" }
+            Logger.debug("clone search request step3: $step3", LoggerType.PROFILING)
             // appOpticsUtil.sendToAppOptics(
             //     "com.bitclave.node.services.v1.cloneSearchRequestWithOfferSearches.step3",
             //     (step3).toDouble(),
@@ -239,7 +238,7 @@ class SearchRequestService(
                     throw e
                 }
             }
-            // logger.debug { "clone search request step4 (full clone offer search): $step4" }
+            Logger.debug("clone search request step4 (full clone offer search): $step4", LoggerType.PROFILING)
             // appOpticsUtil.sendToAppOptics(
             //     "com.bitclave.node.services.v1.cloneSearchRequestWithOfferSearches.step4",
             //     (step4).toDouble(),

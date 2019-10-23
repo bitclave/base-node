@@ -1,0 +1,30 @@
+spring:
+  jpa:
+    hibernate:
+      ddlAuto: update
+
+  datasource:
+    driverClassName: org.postgresql.Driver
+    platform: postgres
+    url: ${JDBC_DATABASE_URL}?reWriteBatchedInserts=true&sslMode=require
+    username: ${JDBC_DATABASE_USERNAME}
+    password: ${JDBC_DATABASE_PASSWORD}
+
+logstash:
+  endpoint: ${LOGSTASH_ENDPOINT}
+
+rtsearch:
+  url: ${RT_SEARCH_URL}
+
+hybrid:
+  nodeUrl: https://ropsten.infura.io/
+  ownerPrivateKey: ${OWNER_PRIVATE_KEY}
+
+  contracts:
+    nameService:
+      address: ${DNS_CONTRACT_ADDRESS}
+      gasPrice: ${ETHEREUM_GAS_PRICE}
+      gasLimit: ${ETHEREUM_GAS_LIMIT}
+
+appoptics:
+  serviceKey: ${APPOPTICS_SERVICE_KEY}

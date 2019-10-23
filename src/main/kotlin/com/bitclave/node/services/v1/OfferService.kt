@@ -8,9 +8,10 @@ import com.bitclave.node.repository.price.OfferPriceRepository
 import com.bitclave.node.repository.rank.OfferRankRepository
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
+import com.bitclave.node.utils.Logger
+import com.bitclave.node.utils.LoggerType
 import com.bitclave.node.utils.runAsyncEx
 import com.bitclave.node.utils.supplyAsyncEx
-import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -29,8 +30,6 @@ class OfferService(
     private val offerRankRepository: RepositoryStrategy<OfferRankRepository>,
     private val offerSearchService: OfferSearchService
 ) {
-    private val logger = KotlinLogging.logger {}
-
     fun putOffer(
         id: Long,
         owner: String,
@@ -79,22 +78,23 @@ class OfferService(
             val saveTiming = measureTimeMillis {
                 processedOffer = offerRepository.changeStrategy(strategy).saveOffer(putOffer)
             }
-            // logger.debug(" - save office $saveTiming")
+            Logger.debug(" - save office $saveTiming", LoggerType.PROFILING)
 
             val savePriceTiming = measureTimeMillis {
                 offerPriceRepository.changeStrategy(strategy).savePrices(processedOffer, offer.offerPrices)
             }
-            // logger.debug(" - save price $savePriceTiming")
+            Logger.debug(" - save price $savePriceTiming", LoggerType.PROFILING)
 
             val deleteByOfferIdTiming = measureTimeMillis {
                 offerSearchService.deleteByOfferId(id, strategy)
             }
-            // logger.debug(" - delete by OfferId $deleteByOfferIdTiming")
+            Logger.debug(" - delete by OfferId $deleteByOfferIdTiming", LoggerType.PROFILING)
 
             val findByIdTiming = measureTimeMillis {
                 processedOffer = offerRepository.changeStrategy(strategy).findById(processedOffer.id)!!
             }
-            // logger.debug(" - find OfferById $findByIdTiming")
+            Logger.debug(" - find OfferById $findByIdTiming", LoggerType.PROFILING)
+
             processedOffer
         })
     }
@@ -121,16 +121,9 @@ class OfferService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<List<Long>> {
         return supplyAsyncEx(Supplier {
-            val updatedOfferIds = offers.filter { it.id != 0L }.map { it.id }
-            val existedOffersByIds = offerRepository.changeStrategy(strategy).findByIds(updatedOfferIds)
-            val existedOffers = existedOffersByIds.map { it.id to it }.toMap()
             val readyForSaveOffers = offers.map {
-
-                val id = if (existedOffers.containsKey(it.id)) it.id else 0
-                val createdAt = if (id != 0L) existedOffers[id]?.createdAt ?: Date() else Date()
-
                 Offer(
-                    id,
+                    it.id,
                     owner,
                     it.offerPrices,
                     it.description,
@@ -140,10 +133,15 @@ class OfferService(
                     it.tags,
                     it.compare,
                     it.rules,
-                    createdAt
+                    it.createdAt
                 )
             }
-            val result = offerRepository.changeStrategy(strategy).saveAll(readyForSaveOffers)
+
+            var result: List<Offer> = listOf()
+            val saveAllTiming = measureTimeMillis {
+                result = offerRepository.changeStrategy(strategy).saveAll(readyForSaveOffers)
+            }
+//            logger.debug(" - save all timing $saveAllTiming")
 
             val prices = result.mapIndexed { index, offer ->
                 readyForSaveOffers[index].offerPrices.map { offerPrice ->
@@ -152,14 +150,24 @@ class OfferService(
                     price
                 }
             }.flatten()
-            offerPriceRepository.changeStrategy(strategy).saveAllPrices(prices)
 
-            val offersIdsForCleanupOfferSearches = readyForSaveOffers.filter { it.id != 0L }.map { it.id }
-            offerSearchService.deleteByOfferIds(offersIdsForCleanupOfferSearches, strategy)
+            val saveAllPricesTiming = measureTimeMillis {
+                offerPriceRepository.changeStrategy(strategy).saveAllPrices(prices)
+            }
+//            logger.debug(" - save all prices timing $saveAllPricesTiming")
+
+            val offersIdsForCleanupOfferSearches = offers.filter { it.id != 0L }.map { it.id }
+            val deleteOfferSearchTiming = measureTimeMillis {
+                if (offersIdsForCleanupOfferSearches.isNotEmpty()) {
+                    offerSearchService.deleteByOfferIds(offersIdsForCleanupOfferSearches, strategy)
+                }
+            }
+//            logger.debug(" - delete all offer searches by offerId timing $deleteOfferSearchTiming")
 
             result.map { it.id }
         })
     }
+
     fun shallowUpdateOffer(
         id: Long,
         owner: String,
