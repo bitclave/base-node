@@ -37,7 +37,7 @@ spec:
           resources:
             limits:
               memory: "500Mi"
-              cpu: "350m"
+              cpu: "750m"
           env:
             - name: PORT
               value: "8080"
