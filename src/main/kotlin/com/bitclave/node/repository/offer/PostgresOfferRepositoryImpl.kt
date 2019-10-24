@@ -19,6 +19,7 @@ import org.springframework.data.domain.SliceImpl
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
 import java.math.BigInteger
+import java.text.SimpleDateFormat
 import java.util.HashMap
 import javax.persistence.EntityManager
 import kotlin.system.measureTimeMillis
@@ -29,7 +30,8 @@ class PostgresOfferRepositoryImpl(
     val repository: OfferCrudRepository,
     val offerSearchRepository: OfferSearchCrudRepository,
     val entityManager: EntityManager,
-    val wsService: WsService
+    val wsService: WsService,
+    val em: EntityManager
 ) : OfferRepository {
 
     override fun saveOffer(offer: Offer): Offer {
@@ -44,7 +46,28 @@ class PostgresOfferRepositoryImpl(
     }
 
     override fun saveAll(offers: List<Offer>): List<Offer> {
-        val result = repository.saveAll(offers).toList()
+        val session = em.unwrap(Session::class.java)
+        val insert = "INSERT INTO offer ( id, title, description, owner, image_url, worth, created_at, updated_at) VALUES "
+        val valueList = arrayListOf<String>()
+        offers.forEach {
+            val isoPattern = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+            val updatedAt = SimpleDateFormat(isoPattern).format(it.updatedAt)
+            val createdAt = SimpleDateFormat(isoPattern).format(it.createdAt)
+            valueList.add("(${it.id}, '${it.title}', '${it.description}', '${it.owner}', '${it.imageUrl}', '${it.worth}', '${createdAt}', '${updatedAt}')")
+        }
+        val query = insert + valueList.joinToString(", ")
+        val q = em.createNativeQuery(query)
+        val nativeQueryTiming = measureTimeMillis {
+            val intermediateResults = q.resultList
+        }
+        println(" - save all (native) timing $nativeQueryTiming")
+
+        var result: List<Offer> = listOf()
+        val springQueryTiming = measureTimeMillis {
+            result = repository.saveAll(offers).toList()
+        }
+        println(" - save all (spring) timing $springQueryTiming")
+
         return syncElementCollections(result)
     }
 
