@@ -38,6 +38,10 @@ spec:
             limits:
               memory: "500Mi"
               cpu: "200m"
+          envFrom:
+            - secretRef:
+                name: secret-staging-base-node
+
           env:
             - name: PORT
               value: "8080"
@@ -63,9 +67,8 @@ spec:
             - name:  ETHEREUM_GAS_PRICE
               value: "9000000"
 
-          envFrom:
-            - secretRef:
-                name: secret-staging-base-node
+            - name: RT_SEARCH_URL
+              value: https://staging-cluster.bitclave.com/rt-search
 
           imagePullPolicy: Always
           ports:
