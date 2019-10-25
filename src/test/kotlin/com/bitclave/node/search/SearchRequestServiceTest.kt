@@ -331,7 +331,7 @@ class SearchRequestServiceTest {
     fun `should update existed search request`() {
         `should be create new search request`()
 
-        var savedListResult = searchRequestService.getSearchRequests(1, account.publicKey, strategy).get()
+        var savedListResult = searchRequestService.getSearchRequests(18072150, account.publicKey, strategy).get()
         assertThat(savedListResult.size).isEqualTo(1)
         assertThat(savedListResult[0]).isEqualToIgnoringGivenFields(searchRequest, *ignoredFields)
 
@@ -342,7 +342,8 @@ class SearchRequestServiceTest {
             tags = mapOf("car" to "false", "color" to "blue")
         )
 
-        val result = searchRequestService.putSearchRequest(1, account.publicKey, updateSearchRequest, strategy).get()
+        val result = searchRequestService.putSearchRequest(existedRequest.id, account.publicKey, updateSearchRequest,
+            strategy).get()
 
         assert(result.id >= 1L)
         assertThat(result.owner).isEqualTo(account.publicKey)
@@ -350,7 +351,7 @@ class SearchRequestServiceTest {
         assertThat(result.createdAt).isEqualTo(updateSearchRequest.createdAt)
         assertThat(result.updatedAt.time > updateSearchRequest.updatedAt.time)
 
-        savedListResult = searchRequestService.getSearchRequests(1, account.publicKey, strategy).get()
+        savedListResult = searchRequestService.getSearchRequests(existedRequest.id, account.publicKey, strategy).get()
         assertThat(savedListResult.size).isEqualTo(1)
     }
 
@@ -358,15 +359,15 @@ class SearchRequestServiceTest {
     fun `should delete existed search request`() {
         `should be create new search request`()
 
-        var savedListResult = searchRequestService.getSearchRequests(1, account.publicKey, strategy).get()
+        var savedListResult = searchRequestService.getSearchRequests(18072150, account.publicKey, strategy).get()
         assertThat(savedListResult.size).isEqualTo(1)
         assertThat(savedListResult[0]).isEqualToIgnoringGivenFields(searchRequest, *ignoredFields)
 
-        val deletedId = searchRequestService.deleteSearchRequest(1, account.publicKey, strategy).get()
+        val deletedId = searchRequestService.deleteSearchRequest(18072150, account.publicKey, strategy).get()
 
         assert(deletedId == 1L)
 
-        savedListResult = searchRequestService.getSearchRequests(1, account.publicKey, strategy).get()
+        savedListResult = searchRequestService.getSearchRequests(18072150, account.publicKey, strategy).get()
         assertThat(savedListResult.size).isEqualTo(0)
     }
 
@@ -393,15 +394,15 @@ class SearchRequestServiceTest {
         `should be create new search request`()
         `should be create new search request`()
 
-        var result = searchRequestService.getSearchRequests(1, account.publicKey, strategy).get()
+        var result = searchRequestService.getSearchRequests(18072150, account.publicKey, strategy).get()
         assertThat(result.size).isEqualTo(1)
         assertThat(result[0]).isEqualToIgnoringGivenFields(searchRequest, *ignoredFields)
 
-        result = searchRequestService.getSearchRequests(2, account.publicKey, strategy).get()
+        result = searchRequestService.getSearchRequests(18072151, account.publicKey, strategy).get()
         assertThat(result.size).isEqualTo(1)
         assertThat(result[0]).isEqualToIgnoringGivenFields(searchRequest, *ignoredFields)
 
-        result = searchRequestService.getSearchRequests(3, account.publicKey, strategy).get()
+        result = searchRequestService.getSearchRequests(18072152, account.publicKey, strategy).get()
         assertThat(result.size).isEqualTo(0)
     }
 
@@ -412,8 +413,8 @@ class SearchRequestServiceTest {
 
         val result = searchRequestService.getSearchRequests(0, account.publicKey, strategy).get()
         assertThat(result.size).isEqualTo(2)
-        assert(result[0].id == 1L)
-        assert(result[1].id == 2L)
+        assert(result[0].id >= 1L)
+        assert(result[1].id == result[0].id + 1)
         assertThat(result[0]).isEqualToIgnoringGivenFields(searchRequest, *ignoredFields)
         assertThat(result[1]).isEqualToIgnoringGivenFields(searchRequest, *ignoredFields)
     }
@@ -454,7 +455,7 @@ class SearchRequestServiceTest {
             strategy
         ).get()
 
-        offerSearchService.complain(1L, createdOffer1.owner, strategy).get()
+        offerSearchService.complain(42798414, createdOffer1.owner, strategy).get()
 
         offerSearchService.saveNewOfferSearch(
             OfferSearch(
@@ -499,13 +500,13 @@ class SearchRequestServiceTest {
 
         val firstPage = searchRequestService.getPageableRequests(PageRequest.of(0, 2), strategy).get()
         assertThat(firstPage.size).isEqualTo(2)
-        assert(firstPage.first().id == 1L)
-        assert(firstPage.last().id == 2L)
+        assert(firstPage.first().id >= 1L)
+        assert(firstPage.last().id > firstPage.first().id)
 
         val secondPage = searchRequestService.getPageableRequests(PageRequest.of(1, 2), strategy).get()
         assertThat(secondPage.size).isEqualTo(2)
-        assert(secondPage.first().id == 3L)
-        assert(secondPage.last().id == 4L)
+        assert(secondPage.first().id > firstPage.last().id)
+        assert(secondPage.last().id > secondPage.first().id)
     }
 
     @Test

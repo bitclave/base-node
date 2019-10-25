@@ -262,10 +262,10 @@ class OfferServiceTest {
 
         val created = offerService.putOffer(0, account.publicKey, offer, strategy).get()
 
-        assert(created.id == 1L)
+        assert(created.id >= 1L)
         val updated = offerService.putOffer(created.id, account.publicKey, changedOffer, strategy).get()
 
-        assert(updated.id == 1L)
+        assert(updated.id == created.id)
         assertThat(updated.owner).isEqualTo(account.publicKey)
         assertThat(updated.id).isNotEqualTo(changedOffer.id)
         assertThat(updated.owner).isNotEqualTo(changedOffer.owner)
@@ -300,21 +300,21 @@ class OfferServiceTest {
 
         val created = offerService.putOffer(0, account.publicKey, oneOffer, strategy).get()
 
-        assert(created.id == 1L)
+        assert(created.id >= 1L)
 
         val updatedDescription = "updated"
         changedOffer = changedOffer.copy(offerPrices = created.offerPrices)
 
-        changedOffer.offerPrices.find { it.id == 1L }?.description = updatedDescription
+        changedOffer.offerPrices.find { it.id == 25766485L }?.description = updatedDescription
 
         val updated = offerService.putOffer(created.id, account.publicKey, changedOffer, strategy).get()
 
-        assert(updated.id == 1L)
+        assert(updated.id == created.id)
         assertThat(updated.owner).isEqualTo(account.publicKey)
         assertThat(updated.id).isNotEqualTo(changedOffer.id)
         assertThat(updated.owner).isNotEqualTo(changedOffer.owner)
 
-        assertThat(updated.offerPrices.find { it.id == 1L }!!.description).isEqualTo(updatedDescription)
+        assertThat(updated.offerPrices.find { it.id == 25766485L }!!.description).isEqualTo(updatedDescription)
 
         assertThat(updated.description).isEqualTo(changedOffer.description)
         assertThat(updated.title).isEqualTo(changedOffer.title)
@@ -330,15 +330,15 @@ class OfferServiceTest {
     fun `should delete existed offer`() {
         `should be create new offer`()
 
-        var savedListResult = offerService.getOffers(1, account.publicKey, strategy).get()
+        var savedListResult = offerService.getOffers(17239325, account.publicKey, strategy).get()
         assertThat(savedListResult.size).isEqualTo(1)
         assertThat(savedListResult[0]).isEqualToIgnoringGivenFields(offer, *ignoreFields)
 
-        val deletedId = offerService.deleteOffer(1, account.publicKey, strategy).get()
+        val deletedId = offerService.deleteOffer(17239325, account.publicKey, strategy).get()
 
-        assert(deletedId == 1L)
+        assert(deletedId == 17239325L)
 
-        savedListResult = offerService.getOffers(1, account.publicKey, strategy).get()
+        savedListResult = offerService.getOffers(17239325, account.publicKey, strategy).get()
         assertThat(savedListResult.size).isEqualTo(0)
     }
 
@@ -365,15 +365,15 @@ class OfferServiceTest {
         `should be create new offer`()
         `should be create new offer`()
 
-        var result = offerService.getOffers(1, account.publicKey, strategy).get()
+        var result = offerService.getOffers(17239325, account.publicKey, strategy).get()
         assertThat(result.size).isEqualTo(1)
         assertThat(result[0]).isEqualToIgnoringGivenFields(offer, *ignoreFields)
 
-        result = offerService.getOffers(2, account.publicKey, strategy).get()
+        result = offerService.getOffers(17239326, account.publicKey, strategy).get()
         assertThat(result.size).isEqualTo(1)
         assertThat(result[0]).isEqualToIgnoringGivenFields(offer, *ignoreFields)
 
-        result = offerService.getOffers(3, account.publicKey, strategy).get()
+        result = offerService.getOffers(17239327, account.publicKey, strategy).get()
         assertThat(result.size).isEqualTo(0)
     }
 
@@ -384,8 +384,8 @@ class OfferServiceTest {
 
         val result = offerService.getOffers(0, account.publicKey, strategy).get()
         assertThat(result.size).isEqualTo(2)
-        assert(result[0].id == 1L)
-        assert(result[1].id == 2L)
+        assert(result[0].id >= 1L)
+        assert(result[1].id > result[0].id)
         assertThat(result[0]).isEqualToIgnoringGivenFields(offer, *ignoreFields)
         assertThat(result[1]).isEqualToIgnoringGivenFields(offer, *ignoreFields)
     }
@@ -399,13 +399,13 @@ class OfferServiceTest {
 
         val firstPage = offerService.getPageableOffers(PageRequest.of(0, 2), strategy).get()
         assertThat(firstPage.size).isEqualTo(2)
-        assert(firstPage.first().id == 1L)
-        assert(firstPage.last().id == 2L)
+        assert(firstPage.first().id >= 1L)
+        assert(firstPage.last().id > firstPage.first().id)
 
         val secondPage = offerService.getPageableOffers(PageRequest.of(1, 2), strategy).get()
         assertThat(secondPage.size).isEqualTo(2)
-        assert(secondPage.first().id == 3L)
-        assert(secondPage.last().id == 4L)
+        assert(secondPage.first().id > firstPage.last().id)
+        assert(secondPage.last().id > secondPage.first().id)
     }
 
     @Test
@@ -440,13 +440,13 @@ class OfferServiceTest {
 
         val firstPage = offerService.getPageableOffersForMatcher(PageRequest.of(0, 2), strategy).get()
         assertThat(firstPage.size).isEqualTo(2)
-        assert(firstPage.first().id == 1L)
-        assert(firstPage.last().id == 2L)
+        assert(firstPage.first().id >= 1L)
+        assert(firstPage.last().id > firstPage.first().id)
 
         val secondPage = offerService.getPageableOffersForMatcher(PageRequest.of(1, 2), strategy).get()
         assertThat(secondPage.size).isEqualTo(2)
-        assert(secondPage.first().id == 3L)
-        assert(secondPage.last().id == 4L)
+        assert(secondPage.first().id > firstPage.last().id)
+        assert(secondPage.last().id > secondPage.first().id)
     }
 
     @Test
@@ -469,7 +469,7 @@ class OfferServiceTest {
 
         val created = offerService.putOffer(0, "dsdsdsdsd", changedOffer, strategy).get()
 
-        assert(created.id == 2L)
+        assert(created.id == 17239326L)
 
         val result = offerService.getOffersWithoutOwner(strategy).get()
         assertThat(result.size).isEqualTo(1)
