@@ -6,6 +6,8 @@ import com.bitclave.node.account.AuthControllerTest
 import com.bitclave.node.clientData.ClientProfileControllerTest
 import com.bitclave.node.clientData.ClientProfileServiceHybridTest
 import com.bitclave.node.clientData.ClientProfileServiceTest
+import com.bitclave.node.file.FileControllerTest
+import com.bitclave.node.file.FileServiceTest
 import com.bitclave.node.offer.OfferControllerTest
 import com.bitclave.node.offer.OfferServiceTest
 import com.bitclave.node.offerRank.OfferRankControllerTest
@@ -53,7 +55,9 @@ import org.junit.runners.Suite
         OfferSearchServiceTest::class,
         OfferShareControllerTest::class,
         OfferShareServiceTest::class,
-        OfferRankControllerTest::class
+        OfferRankControllerTest::class,
+        FileControllerTest::class,
+        FileServiceTest::class
     ]
 )
 class RunAllTests
