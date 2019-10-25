@@ -68,7 +68,7 @@ spec:
               value: "9000000"
 
             - name: RT_SEARCH_URL
-              value: https://staging-cluster.bitclave.com/rt-search
+              value: https://rt-search.base-gke-staging.com
 
           imagePullPolicy: Always
           ports:
