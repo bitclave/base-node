@@ -106,7 +106,7 @@ class RequestDataServiceTest {
     ) {
         Assertions.assertThat(request.fromPk).isEqualTo(alisa)
         Assertions.assertThat(request.toPk).isEqualTo(bob)
-        Assertions.assertThat(request.id).isEqualTo(1)
+        Assertions.assertThat(request.id).isGreaterThanOrEqualTo(1)
         Assertions.assertThat(request.requestData).isEqualTo(REQUEST_DATA)
         Assertions.assertThat(request.responseData).isEqualTo(responseData)
     }
@@ -166,7 +166,7 @@ class RequestDataServiceTest {
 
         Assertions.assertThat(resultRequest.fromPk).isEqualTo(bob)
         Assertions.assertThat(resultRequest.toPk).isEqualTo(alisa)
-        Assertions.assertThat(resultRequest.id).isEqualTo(1)
+        Assertions.assertThat(resultRequest.id).isGreaterThanOrEqualTo(1)
         Assertions.assertThat(resultRequest.rootPk).isEqualTo(alisa)
         Assertions.assertThat(resultRequest.requestData).isEqualTo("name_key")
         Assertions.assertThat(resultRequest.responseData).isEqualTo("Alisa")

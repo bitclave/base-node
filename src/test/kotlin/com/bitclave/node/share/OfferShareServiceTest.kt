@@ -190,14 +190,14 @@ class OfferShareServiceTest {
                     0,
                     searchRequest.owner,
                     searchRequest.id,
-                    1
+                    offer.id
                 )
             )
         offerSearchStateRepository.repository.save(
             OfferInteraction(
                 0,
                 searchRequest.owner,
-                1,
+                offer.id,
                 OfferAction.ACCEPT
             )
         )
@@ -208,7 +208,7 @@ class OfferShareServiceTest {
         val projectId = offerPrices[0].id
 
         val originShareData = OfferShareData(
-            1L,
+            42798414,
             accountBusiness.publicKey,
             accountClient.publicKey,
             SHARE_DATA_RESPONSE,
@@ -225,7 +225,7 @@ class OfferShareServiceTest {
         `should be create new share data`()
         offerShareService.acceptShareData(
             accountBusiness.publicKey,
-            1L,
+            42798414,
             BigDecimal("0.5"),
             strategy
         ).get()
@@ -243,7 +243,7 @@ class OfferShareServiceTest {
         assertThat(result.size == 1)
         val shareData = result[0]
         assertThat(!shareData.accepted)
-        assertThat(shareData.offerSearchId == 1L)
+        assertThat(shareData.offerSearchId >= 1L)
         assertThat(shareData.offerOwner == accountBusiness.publicKey)
         assertThat(shareData.clientId == accountClient.publicKey)
         assertThat(shareData.clientResponse == SHARE_DATA_RESPONSE)
@@ -255,7 +255,7 @@ class OfferShareServiceTest {
         `should be find created share data`()
         offerShareService.acceptShareData(
             accountBusiness.publicKey,
-            1,
+            42798414,
             BigDecimal("0.5"),
             strategy
         ).get()

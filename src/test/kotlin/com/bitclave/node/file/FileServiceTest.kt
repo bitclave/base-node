@@ -85,11 +85,11 @@ class FileServiceTest {
 
         val created = fileService.saveFile(testFile, account.publicKey, 0, strategy).get()
 
-        assert(created.id == 1L)
+        assert(created.id >= 1L)
 
         val updated = fileService.saveFile(updateFile, account.publicKey, created.id, strategy).get()
 
-        assert(updated.id == 1L)
+        assert(updated.id == created.id)
         assertThat(updated.publicKey).isEqualTo(account.publicKey)
         assertThat(updated.name).isEqualTo("filenameUpdated.txt")
         assertThat(updated.mimeType).isEqualTo("text/plain")
@@ -100,29 +100,29 @@ class FileServiceTest {
     fun `should delete existed file`() {
         `should be create new file`()
 
-        val savedResult = fileService.getFile(1, account.publicKey, strategy).get()
+        val savedResult = fileService.getFile(7112352, account.publicKey, strategy).get()
 
         assertThat(savedResult).isNotNull()
 
-        val deletedId = fileService.deleteFile(1, account.publicKey, strategy).get()
+        val deletedId = fileService.deleteFile(savedResult.id, account.publicKey, strategy).get()
 
-        assert(deletedId == 1L)
+        assert(deletedId == savedResult.id)
     }
 
     @Test(expected = NotFoundException::class)
     fun `should delete existed file and should throw exception with id and public key`() {
         `should be create new file`()
 
-        val savedResult = fileService.getFile(1, account.publicKey, strategy).get()
+        val savedResult = fileService.getFile(7112352, account.publicKey, strategy).get()
 
         assertThat(savedResult).isNotNull()
 
-        val deletedId = fileService.deleteFile(1, account.publicKey, strategy).get()
+        val deletedId = fileService.deleteFile(savedResult.id, account.publicKey, strategy).get()
 
-        assert(deletedId == 1L)
+        assert(deletedId == savedResult.id)
 
         try {
-            fileService.getFile(1, account.publicKey, strategy).get()
+            fileService.getFile(savedResult.id, account.publicKey, strategy).get()
         } catch (e: Throwable) {
             throw e.cause!!
         }
@@ -131,7 +131,7 @@ class FileServiceTest {
     @Test
     fun `should return file by id and owner`() {
         `should be create new file`()
-        val savedResult = fileService.getFile(1, account.publicKey, strategy).get()
+        val savedResult = fileService.getFile(7112352, account.publicKey, strategy).get()
 
         assertThat(savedResult).isNotNull()
     }

@@ -1,6 +1,8 @@
 package com.bitclave.node.repository.entities
 
 import org.hibernate.annotations.ColumnDefault
+import org.hibernate.annotations.GenericGenerator
+import org.hibernate.annotations.Parameter
 import org.springframework.format.annotation.DateTimeFormat
 import java.math.BigDecimal
 import java.util.Date
@@ -18,7 +20,18 @@ import javax.persistence.OneToMany
 
 @Entity
 data class Offer(
-    @GeneratedValue(strategy = GenerationType.TABLE) @Id val id: Long = 0,
+    @GenericGenerator(
+        name = "offer_seq",
+        strategy = "sequence",
+        parameters = [
+            Parameter(name = "sequence_name", value = "offer_id_seq"),
+            Parameter(name = "initial_value", value = "17239325"),
+            Parameter(name = "increment_size", value = "1")
+        ]
+    )
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "offer_seq")
+    @Id val id: Long = 0,
+
     @Column(length = 256) val owner: String = "",
 
     @OneToMany(mappedBy = "offer", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)

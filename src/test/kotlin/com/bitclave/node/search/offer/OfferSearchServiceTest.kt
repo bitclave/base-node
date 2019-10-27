@@ -477,8 +477,8 @@ class OfferSearchServiceTest {
             .content
 
         assert(result.size == 2)
-        assert(result[0].offerSearch.id == 1L)
-        assert(result[1].offerSearch.id == 2L)
+        assert(result[0].offerSearch.id >= 1L)
+        assert(result[1].offerSearch.id > result[0].offerSearch.id)
 
         result = offerSearchService.getOffersAndOfferSearchesByParams(
             strategy, publicKey, false, emptyList(), emptyList(), PageRequest.of(1, 2)
@@ -487,8 +487,8 @@ class OfferSearchServiceTest {
             .content
 
         assert(result.size == 2)
-        assert(result[0].offerSearch.id == 3L)
-        assert(result[1].offerSearch.id == 4L)
+        assert(result[0].offerSearch.id > 3L)
+        assert(result[1].offerSearch.id > result[0].offerSearch.id)
 
         result = offerSearchService.getOffersAndOfferSearchesByParams(
             strategy, publicKey, false, emptyList(), emptyList(), PageRequest.of(0, 20)
@@ -497,10 +497,10 @@ class OfferSearchServiceTest {
             .content
 
         assert(result.size == 4)
-        assert(result[0].offerSearch.id == 1L)
-        assert(result[1].offerSearch.id == 2L)
-        assert(result[2].offerSearch.id == 3L)
-        assert(result[3].offerSearch.id == 4L)
+        assert(result[0].offerSearch.id >= 1L)
+        assert(result[1].offerSearch.id > result[0].offerSearch.id)
+        assert(result[2].offerSearch.id > result[1].offerSearch.id)
+        assert(result[3].offerSearch.id > result[2].offerSearch.id)
 
         result = offerSearchService.getOffersAndOfferSearchesByParams(
             strategy, publicKey, false, emptyList(), emptyList(), PageRequest.of(5, 20)
@@ -656,7 +656,8 @@ class OfferSearchServiceTest {
         createOfferSearch(createdSearchRequest2, createdOffer1)
         createOfferSearch(createdSearchRequest2, createdOffer2)
 
-        val result = offerSearchService.getOfferSearchesByIds(strategy, mutableListOf(1L, 2L, 3L, 4L)).get()
+        val result = offerSearchService.getOfferSearchesByIds(strategy,
+            mutableListOf(42798414, 42798415, 42798416, 42798417)).get()
         assert(result.size == 4)
     }
 
@@ -664,7 +665,7 @@ class OfferSearchServiceTest {
     fun `should be add EVENT as serialized object into array`() {
         createOfferSearch(createdSearchRequest1, createdOffer1)
 
-        offerSearchService.addEventTo("bla bla bla", createdSearchRequest1.id, strategy).get()
+        offerSearchService.addEventTo("bla bla bla", 42798414, strategy).get()
 
         val state = offerInteractionRepositoryStrategy
             .changeStrategy(RepositoryStrategyType.POSTGRES)
@@ -678,12 +679,12 @@ class OfferSearchServiceTest {
     fun `should be create new offer search item and get result by clientId and offer search id`() {
         createOfferSearch(createdSearchRequest1, createdOffer1)
 
-        val result = offerSearchService.getOffersResult(strategy, 0, createdSearchRequest1.id)
+        val result = offerSearchService.getOffersResult(strategy, 0, 42798414)
             .get()
             .content
 
         assert(result.size == 1)
-        assert(result[0].offerSearch.id == createdSearchRequest1.id)
+        assert(result[0].offerSearch.id == 42798414L)
         assert(result[0].offer.id == createdOffer1.id)
         assert(result[0].offer.owner == businessPublicKey)
     }
@@ -692,13 +693,13 @@ class OfferSearchServiceTest {
     fun `client can complain to search item`() {
         `should be create new offer search item and get result by clientId and search request id`()
 
-        offerSearchService.complain(1L, publicKey, strategy).get()
+        offerSearchService.complain(42798414, publicKey, strategy).get()
 
         val result = offerSearchService.getOffersResult(strategy, createdSearchRequest1.id)
             .get()
             .content
 
-        val state = offerInteractionCrudRepository.findByOfferIdAndOwner(1L, createdSearchRequest1.owner)
+        val state = offerInteractionCrudRepository.findByOfferIdAndOwner(createdOffer1.id, createdSearchRequest1.owner)
 
         assert(result.isNotEmpty())
         assert(result[0].offerSearch.id >= 1L)
@@ -713,7 +714,8 @@ class OfferSearchServiceTest {
 
         val projectId = offerPrices[0].id
         val offerShareData =
-            OfferShareData(1L, businessPublicKey, publicKey, "response", BigDecimal.ZERO.toString(), true, projectId)
+            OfferShareData(42798414, businessPublicKey, publicKey, "response",
+                BigDecimal.ZERO.toString(), true, projectId)
 
         offerShareService.grantAccess(
             publicKey,
@@ -728,7 +730,7 @@ class OfferSearchServiceTest {
         val state =
             offerInteractionCrudRepository.findByOfferIdAndOwner(result[0].offer.id, createdSearchRequest1.owner)
         assert(result.size == 1)
-        assert(result[0].offerSearch.id == createdSearchRequest1.id)
+        assert(result[0].offerSearch.id == 42798414L)
         assert(state!!.state == OfferAction.ACCEPT)
         assert(result[0].offer.id == createdOffer1.id)
         assert(result[0].offer.owner == businessPublicKey)
@@ -941,13 +943,13 @@ class OfferSearchServiceTest {
 
         val firstPage = offerSearchService.getPageableOfferSearches(PageRequest.of(0, 2), strategy).get()
         assertThat(firstPage.size).isEqualTo(2)
-        assert(firstPage.first().id == 1L)
-        assert(firstPage.last().id == 2L)
+        assert(firstPage.first().id >= 1L)
+        assert(firstPage.last().id > firstPage.first().id)
 
         val secondPage = offerSearchService.getPageableOfferSearches(PageRequest.of(1, 2), strategy).get()
         assertThat(secondPage.size).isEqualTo(2)
-        assert(secondPage.first().id == 3L)
-        assert(secondPage.last().id == 4L)
+        assert(secondPage.first().id > firstPage.last().id)
+        assert(secondPage.last().id > secondPage.first().id)
     }
 
     @Test

@@ -1,5 +1,7 @@
 package com.bitclave.node.repository.entities
 
+import org.hibernate.annotations.GenericGenerator
+import org.hibernate.annotations.Parameter
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.Date
 import javax.persistence.Column
@@ -17,7 +19,17 @@ import javax.persistence.UniqueConstraint
     ]
 )
 data class OfferSearch(
-    @GeneratedValue(strategy = GenerationType.TABLE) @Id val id: Long = 0,
+    @GenericGenerator(
+        name = "offer_search_seq",
+        strategy = "sequence",
+        parameters = [
+            Parameter(name = "sequence_name", value = "offer_search_id_seq"),
+            Parameter(name = "initial_value", value = "42798414"),
+            Parameter(name = "increment_size", value = "1")
+        ]
+    )
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "offer_search_seq")
+    @Id val id: Long = 0,
 
     @Column(length = 256) var owner: String = "",
 

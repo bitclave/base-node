@@ -2,6 +2,8 @@ package com.bitclave.node.repository.entities
 
 import com.bitclave.node.configuration.gson.Exclude
 import org.hibernate.annotations.ColumnDefault
+import org.hibernate.annotations.GenericGenerator
+import org.hibernate.annotations.Parameter
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.Date
 import javax.persistence.Column
@@ -13,7 +15,17 @@ import javax.persistence.Lob
 
 @Entity
 data class UploadedFile(
-    @GeneratedValue(strategy = GenerationType.TABLE) @Id
+    @GenericGenerator(
+        name = "uploaded_file_seq",
+        strategy = "sequence",
+        parameters = [
+            Parameter(name = "sequence_name", value = "uploaded_file_id_seq"),
+            Parameter(name = "initial_value", value = "7112352"),
+            Parameter(name = "increment_size", value = "1")
+        ]
+    )
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "uploaded_file_seq")
+    @Id
     val id: Long = 0,
 
     val publicKey: String = "",

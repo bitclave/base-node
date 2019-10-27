@@ -1,5 +1,7 @@
 package com.bitclave.node.repository.entities
 
+import org.hibernate.annotations.GenericGenerator
+import org.hibernate.annotations.Parameter
 import org.springframework.format.annotation.DateTimeFormat
 import java.util.Date
 import javax.persistence.Column
@@ -30,7 +32,17 @@ enum class OfferAction {
     ]
 )
 data class OfferInteraction(
-    @GeneratedValue(strategy = GenerationType.TABLE) @Id val id: Long = 0,
+    @GenericGenerator(
+        name = "offer_interaction_seq",
+        strategy = "sequence",
+        parameters = [
+            Parameter(name = "sequence_name", value = "offer_interaction_id_seq"),
+            Parameter(name = "initial_value", value = "29020557"),
+            Parameter(name = "increment_size", value = "1")
+        ]
+    )
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "offer_interaction_seq")
+    @Id val id: Long = 0,
 
     @Column(length = 256) val owner: String = "",
 
