@@ -1158,7 +1158,9 @@ class OfferSearchService(
         offerInteractionRepository.changeStrategy(strategy).delete(filteredStateIds)
     }
 
-    fun getOfferInteractionsByOfferIdsAndOwners(offerIds: List<Long>, owners: List<String>,
+    fun getOfferInteractionsByOfferIdsAndOwners(
+        offerIds: List<Long>,
+        owners: List<String>,
         strategy: RepositoryStrategyType
     ): CompletableFuture<List<OfferInteraction>> {
         return supplyAsyncEx(Supplier {
