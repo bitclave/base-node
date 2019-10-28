@@ -2,6 +2,7 @@ package com.bitclave.node.controllers.dev
 
 import com.bitclave.node.controllers.AbstractController
 import com.bitclave.node.models.SignedRequest
+import com.bitclave.node.models.controllers.OfferIdsAndOwners
 import com.bitclave.node.repository.entities.Account
 import com.bitclave.node.repository.entities.OfferInteraction
 import com.bitclave.node.repository.entities.OfferSearch
@@ -94,7 +95,7 @@ class VerifyConsistencyController(
     )
     @RequestMapping(method = [RequestMethod.POST], value = ["/account/publickeys"])
     fun getAccountsByPublicKeys(
-        @ApiParam("ids of search requests", required = true)
+        @ApiParam("list of public keys", required = true)
         @RequestBody
         request: SignedRequest<List<String>>,
 
@@ -417,5 +418,49 @@ class VerifyConsistencyController(
             Logger.error("Request: getOfferWithoutOwner raised", e)
             throw e
         }
+    }
+
+    /**
+     * Returns the Offer Interactions by provieded owners and offer ids
+     *
+     * @return {@link List<OfferInteraction>}, Http status - 200.
+     *
+     */
+    @ApiOperation(
+        "Returns the Offer Interactions by provieded owners and offer ids",
+        response = OfferInteraction::class, responseContainer = "List"
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(code = 200, message = "Success", response = List::class)
+        ]
+    )
+    @RequestMapping(method = [RequestMethod.POST], value = ["/offerinteraction/list"])
+    fun getOfferInteractionsByOfferIdsAndOwners(
+        @ApiParam("ids of offers and public keys", required = true)
+        @RequestBody
+        request: SignedRequest<OfferIdsAndOwners>,
+
+        @ApiParam(
+            "change repository strategy",
+            allowableValues = "POSTGRES, HYBRID",
+            required = false
+        )
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
+    ): CompletableFuture<List<OfferInteraction>> {
+
+        return accountService
+            .accountBySigMessage(request, getStrategyType(strategy))
+            .thenCompose {
+                offerSearchService.getOfferInteractionsByOfferIdsAndOwners(
+                    request.data!!.offerIds,
+                    request.data!!.owners,
+                    getStrategyType(strategy)
+                )
+            }.exceptionally { e ->
+                Logger.error("Request: getOfferInteractionsByOfferIdsAndOwners raised", e)
+                throw e
+            }
     }
 }
