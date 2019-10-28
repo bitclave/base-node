@@ -18,6 +18,7 @@ import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 import java.math.BigInteger
 import java.text.SimpleDateFormat
 import java.util.HashMap
@@ -45,28 +46,36 @@ class PostgresOfferRepositoryImpl(
         return result
     }
 
+    @Transactional
     override fun saveAll(offers: List<Offer>): List<Offer> {
-        val session = em.unwrap(Session::class.java)
-        val insert = "INSERT INTO offer ( id, title, description, owner, image_url, worth, created_at, updated_at) VALUES "
-        val valueList = arrayListOf<String>()
+
+        val insertList = arrayListOf<String>()
+
         offers.forEach {
             val isoPattern = "yyyy-MM-dd'T'HH:mm:ss'Z'"
             val updatedAt = SimpleDateFormat(isoPattern).format(it.updatedAt)
             val createdAt = SimpleDateFormat(isoPattern).format(it.createdAt)
-            valueList.add("(${it.id}, '${it.title}', '${it.description}', '${it.owner}', '${it.imageUrl}', '${it.worth}', '${createdAt}', '${updatedAt}')")
+            if (it.id == 0L) {
+                 insertList.add("(nextval('offer_id_seq'), '${it.title}', '${it.description}', '${it.owner}', '${it.imageUrl}', '${it.worth}', '${createdAt}', '${updatedAt}')")
+            }
         }
-        val query = insert + valueList.joinToString(", ")
-        val q = em.createNativeQuery(query)
-        val nativeQueryTiming = measureTimeMillis {
-            val intermediateResults = q.resultList
+        if (insertList.isNotEmpty()){
+            // insert
+            val insert = "INSERT INTO offer (id, title, description, owner, image_url, worth, created_at, updated_at) VALUES \n"
+            val query = insert + insertList.joinToString(",\n") + "\n RETURNING id;"
+
+            val nativeQueryTiming = measureTimeMillis {
+                val result = em.createNativeQuery(query).resultList
+                println("result: $result")
+            }
+            println(" - save all (native) timing $nativeQueryTiming")
         }
-        println(" - save all (native) timing $nativeQueryTiming")
 
         var result: List<Offer> = listOf()
-        val springQueryTiming = measureTimeMillis {
-            result = repository.saveAll(offers).toList()
-        }
-        println(" - save all (spring) timing $springQueryTiming")
+//        val springQueryTiming = measureTimeMillis {
+//            result = repository.saveAll(offers).toList()
+//        }
+//        println(" - save all (spring) timing $springQueryTiming")
 
         return syncElementCollections(result)
     }
@@ -89,7 +98,7 @@ class PostgresOfferRepositoryImpl(
     override fun deleteOffers(owner: String): Int {
         val deletedOffers = repository.deleteByOwner(owner)
         deletedOffers.forEach {
-            wsService.sendEvent(OfferEvent.OnDelete, it.id)
+//            wsService.sendEvent(OfferEvent.OnDelete, it.id)
         }
 
         return deletedOffers.size

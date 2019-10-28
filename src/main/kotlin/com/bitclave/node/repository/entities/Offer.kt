@@ -15,10 +15,13 @@ import javax.persistence.GenerationType
 import javax.persistence.Id
 import javax.persistence.MapKeyColumn
 import javax.persistence.OneToMany
+import javax.persistence.SequenceGenerator
 
 @Entity
 data class Offer(
-    @GeneratedValue(strategy = GenerationType.TABLE) @Id val id: Long = 0,
+    @SequenceGenerator(name = "offer_seq", sequenceName = "offer_id_seq", allocationSize = 1, initialValue = 14417922)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "offer_seq")
+    @Id val id: Long = 0,
     @Column(length = 256) val owner: String = "",
 
     @OneToMany(mappedBy = "offer", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)

@@ -141,7 +141,7 @@ class OfferService(
             val saveAllTiming = measureTimeMillis {
                 result = offerRepository.changeStrategy(strategy).saveAll(readyForSaveOffers)
             }
-//            logger.debug(" - save all timing $saveAllTiming")
+            logger.debug(" - save all timing $saveAllTiming")
 
             val prices = result.mapIndexed { index, offer ->
                 readyForSaveOffers[index].offerPrices.map { offerPrice ->
