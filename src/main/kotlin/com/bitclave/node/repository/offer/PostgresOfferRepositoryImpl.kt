@@ -21,6 +21,7 @@ import org.springframework.data.domain.SliceImpl
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
 import java.math.BigInteger
+import java.text.SimpleDateFormat
 import java.util.HashMap
 import javax.persistence.EntityManager
 import kotlin.system.measureTimeMillis
@@ -31,7 +32,8 @@ class PostgresOfferRepositoryImpl(
     val repository: OfferCrudRepository,
     val offerSearchRepository: OfferSearchCrudRepository,
     val entityManager: EntityManager,
-    val wsService: WsService
+    val wsService: WsService,
+    val em: EntityManager
 ) : OfferRepository {
 
     override fun saveOffer(offer: Offer): Offer {
@@ -46,7 +48,61 @@ class PostgresOfferRepositoryImpl(
     }
 
     override fun saveAll(offers: List<Offer>): List<Offer> {
-        val result = repository.saveAll(offers).toList()
+        // native spring implementation
+        // val result = repository.saveAll(offers).toList()
+        // return syncElementCollections(result)
+
+        var result: List<Offer> = listOf()
+        val offersForInserting = offers.filter { it.id == 0L }
+
+        val insertedOffersValues = offersForInserting.map {
+            val isoPattern = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+            val updatedAt = SimpleDateFormat(isoPattern).format(it.updatedAt)
+            val createdAt = SimpleDateFormat(isoPattern).format(it.createdAt)
+            "(nextval('offer_id_seq')," +
+                " '${it.title}', '${it.description}', '${it.owner}', " +
+                "'${it.imageUrl}', '${it.worth}', '$createdAt', '$updatedAt')"
+        }
+        if (insertedOffersValues.isNotEmpty()) {
+            val springQueryTiming = measureTimeMillis {
+                // create offers
+                val insertOffers = "INSERT INTO offer " +
+                    "(id, title, description, owner, image_url, worth, created_at, updated_at) VALUES \n"
+                val insertOffersQuery = insertOffers + insertedOffersValues.joinToString(",\n") +
+                    "\n RETURNING id;"
+                val createdOfferIds: List<Long> = em.createNativeQuery(insertOffersQuery).resultList as List<Long>
+//                println("result: $createdOfferIds")
+
+                // create tags
+                val insertTags = "INSERT INTO offer_tags (offer_id, tags, tags_key) VALUES \n"
+                val insertedOfferTagsValues = offersForInserting.mapIndexed { index, offer ->
+                    offer.tags.map { "( ${createdOfferIds[index]}, '${it.value}', '${it.key}' )" }
+                }.flatten().joinToString(",\n")
+                val insertOfferTagsQuery = insertTags + insertedOfferTagsValues
+                em.createNativeQuery(insertOfferTagsQuery).executeUpdate()
+
+                // compare
+                val insertCompare = "INSERT INTO offer_compare (offer_id, compare, compare_key) VALUES \n"
+                val insertedOfferCompareValues = offersForInserting.mapIndexed { index, offer ->
+                    offer.compare.map { "( ${createdOfferIds[index]}, '${it.value}', '${it.key}' )" }
+                }.flatten().joinToString(",\n")
+                val insertOfferCompareQuery = insertCompare + insertedOfferCompareValues
+                em.createNativeQuery(insertOfferCompareQuery).executeUpdate()
+
+                // rules
+                val insertRules = "INSERT INTO offer_rules (offer_id, rules, rules_key) VALUES \n"
+                val insertedOfferRulesValues = offersForInserting.mapIndexed { index, offer ->
+                    offer.rules.map { "( ${createdOfferIds[index]}, ${it.value.ordinal}, '${it.key}' )" }
+                }.flatten().joinToString(",\n")
+                val insertOfferRulesQuery = insertRules + insertedOfferRulesValues
+                em.createNativeQuery(insertOfferRulesQuery).executeUpdate()
+
+                val ids = createdOfferIds.joinToString(", ")
+                val query = "SELECT * FROM offer WHERE offer.id IN ($ids)"
+                result = em.createNativeQuery(query, Offer::class.java).resultList as List<Offer>
+            }
+            println(" -- save all (native query) timing $springQueryTiming")
+        }
         return syncElementCollections(result)
     }
 
@@ -68,7 +124,7 @@ class PostgresOfferRepositoryImpl(
     override fun deleteOffers(owner: String): Int {
         val deletedOffers = repository.deleteByOwner(owner)
         deletedOffers.forEach {
-            wsService.sendEvent(OfferEvent.OnDelete, it.id)
+//            wsService.sendEvent(OfferEvent.OnDelete, it.id)
         }
 
         return deletedOffers.size
