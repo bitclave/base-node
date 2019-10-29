@@ -49,29 +49,54 @@ class PostgresOfferRepositoryImpl(
     @Transactional
     override fun saveAll(offers: List<Offer>): List<Offer> {
 
-        val insertList = arrayListOf<String>()
+        var result: List<Offer> = listOf()
+        val offersForInserting = offers.filter {it.id == 0L}
 
-        offers.forEach {
+        val insertedOffersValues = offersForInserting.map {
             val isoPattern = "yyyy-MM-dd'T'HH:mm:ss'Z'"
             val updatedAt = SimpleDateFormat(isoPattern).format(it.updatedAt)
             val createdAt = SimpleDateFormat(isoPattern).format(it.createdAt)
-            if (it.id == 0L) {
-                 insertList.add("(nextval('offer_id_seq'), '${it.title}', '${it.description}', '${it.owner}', '${it.imageUrl}', '${it.worth}', '${createdAt}', '${updatedAt}')")
-            }
+            "(nextval('offer_id_seq'), '${it.title}', '${it.description}', '${it.owner}', '${it.imageUrl}', '${it.worth}', '${createdAt}', '${updatedAt}')"
         }
-        if (insertList.isNotEmpty()){
-            // insert
-            val insert = "INSERT INTO offer (id, title, description, owner, image_url, worth, created_at, updated_at) VALUES \n"
-            val query = insert + insertList.joinToString(",\n") + "\n RETURNING id;"
+        if (insertedOffersValues.isNotEmpty()){
+            val springQueryTiming = measureTimeMillis {
+                // create offers
+                val insertOffers = "INSERT INTO offer (id, title, description, owner, image_url, worth, created_at, updated_at) VALUES \n"
+                val insertOffersQuery = insertOffers + insertedOffersValues.joinToString(",\n") + "\n RETURNING id;"
+                val createdOfferIds: List<Long> = em.createNativeQuery(insertOffersQuery).resultList as List<Long>
+//                println("result: $createdOfferIds")
 
-            val nativeQueryTiming = measureTimeMillis {
-                val result = em.createNativeQuery(query).resultList
-                println("result: $result")
+                // create tags
+                val insertTags = "INSERT INTO offer_tags (offer_id, tags, tags_key) VALUES \n"
+                val insertedOfferTagsValues = offersForInserting.mapIndexed { index, offer ->
+                    offer.tags.map { "( ${createdOfferIds[index]}, '${it.value}', '${it.key}' )" }
+                }.flatten().joinToString(",\n")
+                val insertOfferTagsQuery = insertTags + insertedOfferTagsValues
+                em.createNativeQuery(insertOfferTagsQuery).executeUpdate()
+
+                // compare
+                val insertCompare = "INSERT INTO offer_compare (offer_id, compare, compare_key) VALUES \n"
+                val insertedOfferCompareValues = offersForInserting.mapIndexed { index, offer ->
+                    offer.compare.map { "( ${createdOfferIds[index]}, '${it.value}', '${it.key}' )" }
+                }.flatten().joinToString(",\n")
+                val insertOfferCompareQuery = insertCompare + insertedOfferCompareValues
+                em.createNativeQuery(insertOfferCompareQuery).executeUpdate()
+
+                // rules
+                val insertRules = "INSERT INTO offer_rules (offer_id, rules, rules_key) VALUES \n"
+                val insertedOfferRulesValues = offersForInserting.mapIndexed { index, offer ->
+                    offer.rules.map { "( ${createdOfferIds[index]}, ${it.value.ordinal}, '${it.key}' )" }
+                }.flatten().joinToString(",\n")
+                val insertOfferRulesQuery = insertRules + insertedOfferRulesValues
+                em.createNativeQuery(insertOfferRulesQuery).executeUpdate()
+
+                val ids = createdOfferIds.joinToString(", ")
+                result = em.createNativeQuery("SELECT * FROM offer WHERE offer.id IN ($ids)", Offer::class.java).resultList as List<Offer>
             }
-            println(" - save all (native) timing $nativeQueryTiming")
+//            println(" -- save all (native query) timing $springQueryTiming")
         }
 
-        var result: List<Offer> = listOf()
+
 //        val springQueryTiming = measureTimeMillis {
 //            result = repository.saveAll(offers).toList()
 //        }
