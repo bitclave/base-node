@@ -24,6 +24,7 @@ import java.math.BigInteger
 import java.text.SimpleDateFormat
 import java.util.HashMap
 import javax.persistence.EntityManager
+import org.springframework.transaction.annotation.Transactional
 import kotlin.system.measureTimeMillis
 
 @Component
@@ -32,8 +33,7 @@ class PostgresOfferRepositoryImpl(
     val repository: OfferCrudRepository,
     val offerSearchRepository: OfferSearchCrudRepository,
     val entityManager: EntityManager,
-    val wsService: WsService,
-    val em: EntityManager
+    val wsService: WsService
 ) : OfferRepository {
 
     override fun saveOffer(offer: Offer): Offer {
@@ -46,21 +46,34 @@ class PostgresOfferRepositoryImpl(
 
         return result
     }
-
+    @Transactional
     override fun saveAll(offers: List<Offer>): List<Offer> {
         // native spring implementation
         // val result = repository.saveAll(offers).toList()
         // return syncElementCollections(result)
 
         var result: List<Offer> = listOf()
-        val offersForInserting = offers.filter { it.id == 0L }
+        // prepare for delete
+        val offerForDeletion = offers.filter { it.id != 0L }
+        if (offerForDeletion.isNotEmpty()) {
+            val ids = offerForDeletion.joinToString(", ")
+            var query = "DELETE FROM offer where offer.id IN ($ids)"
+            entityManager.createNativeQuery(query) .executeUpdate()
+            query = "DELETE FROM offer_tags where offer_tags.offer_id IN ($ids)"
+            entityManager.createNativeQuery(query).executeUpdate()
+            query = "DELETE FROM offer_compare where offer_compare.offer.id IN ($ids)"
+            entityManager.createNativeQuery(query).executeUpdate()
+            query = "DELETE FROM offer_rules where offer_rules.offer.id IN ($ids)"
+            entityManager.createNativeQuery(query).executeUpdate()
+        }
 
-        val insertedOffersValues = offersForInserting.map {
+        val insertedOffersValues = offers.map {
             val isoPattern = "yyyy-MM-dd'T'HH:mm:ss'Z'"
             val updatedAt = SimpleDateFormat(isoPattern).format(it.updatedAt)
             val createdAt = SimpleDateFormat(isoPattern).format(it.createdAt)
-            "(nextval('offer_id_seq')," +
-                " '${it.title}', '${it.description}', '${it.owner}', " +
+            val id = if (it.id == 0L) "(nextval('offer_id_seq')," else it.id.toString()
+
+            "$id, '${it.title}', '${it.description}', '${it.owner}', " +
                 "'${it.imageUrl}', '${it.worth}', '$createdAt', '$updatedAt')"
         }
         if (insertedOffersValues.isNotEmpty()) {
@@ -70,36 +83,41 @@ class PostgresOfferRepositoryImpl(
                     "(id, title, description, owner, image_url, worth, created_at, updated_at) VALUES \n"
                 val insertOffersQuery = insertOffers + insertedOffersValues.joinToString(",\n") +
                     "\n RETURNING id;"
-                val createdOfferIds: List<Long> = em.createNativeQuery(insertOffersQuery).resultList as List<Long>
-//                println("result: $createdOfferIds")
+
+                @Suppress("UNCHECKED_CAST")
+                val createdOfferIds: List<Long> = entityManager
+                    .createNativeQuery(insertOffersQuery)
+                    .resultList as List<Long>
+                println("result: $createdOfferIds")
 
                 // create tags
                 val insertTags = "INSERT INTO offer_tags (offer_id, tags, tags_key) VALUES \n"
-                val insertedOfferTagsValues = offersForInserting.mapIndexed { index, offer ->
+                val insertedOfferTagsValues = offers.mapIndexed { index, offer ->
                     offer.tags.map { "( ${createdOfferIds[index]}, '${it.value}', '${it.key}' )" }
                 }.flatten().joinToString(",\n")
                 val insertOfferTagsQuery = insertTags + insertedOfferTagsValues
-                em.createNativeQuery(insertOfferTagsQuery).executeUpdate()
+                entityManager.createNativeQuery(insertOfferTagsQuery).executeUpdate()
 
                 // compare
                 val insertCompare = "INSERT INTO offer_compare (offer_id, compare, compare_key) VALUES \n"
-                val insertedOfferCompareValues = offersForInserting.mapIndexed { index, offer ->
+                val insertedOfferCompareValues = offers.mapIndexed { index, offer ->
                     offer.compare.map { "( ${createdOfferIds[index]}, '${it.value}', '${it.key}' )" }
                 }.flatten().joinToString(",\n")
                 val insertOfferCompareQuery = insertCompare + insertedOfferCompareValues
-                em.createNativeQuery(insertOfferCompareQuery).executeUpdate()
+                entityManager.createNativeQuery(insertOfferCompareQuery).executeUpdate()
 
                 // rules
                 val insertRules = "INSERT INTO offer_rules (offer_id, rules, rules_key) VALUES \n"
-                val insertedOfferRulesValues = offersForInserting.mapIndexed { index, offer ->
+                val insertedOfferRulesValues = offers.mapIndexed { index, offer ->
                     offer.rules.map { "( ${createdOfferIds[index]}, ${it.value.ordinal}, '${it.key}' )" }
                 }.flatten().joinToString(",\n")
                 val insertOfferRulesQuery = insertRules + insertedOfferRulesValues
-                em.createNativeQuery(insertOfferRulesQuery).executeUpdate()
+                entityManager.createNativeQuery(insertOfferRulesQuery).executeUpdate()
 
                 val ids = createdOfferIds.joinToString(", ")
                 val query = "SELECT * FROM offer WHERE offer.id IN ($ids)"
-                result = em.createNativeQuery(query, Offer::class.java).resultList as List<Offer>
+                @Suppress("UNCHECKED_CAST")
+                result = entityManager.createNativeQuery(query, Offer::class.java).resultList as List<Offer>
             }
             println(" -- save all (native query) timing $springQueryTiming")
         }
