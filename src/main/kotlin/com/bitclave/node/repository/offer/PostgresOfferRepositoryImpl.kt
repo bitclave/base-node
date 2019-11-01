@@ -48,83 +48,71 @@ class PostgresOfferRepositoryImpl(
     }
     @Transactional
     override fun saveAll(offers: List<Offer>): List<Offer> {
-        // native spring implementation
-        // val result = repository.saveAll(offers).toList()
-        // return syncElementCollections(result)
 
         var result: List<Offer> = listOf()
-        // prepare for delete
-        val offerForDeletion = offers.filter { it.id != 0L }
-        if (offerForDeletion.isNotEmpty()) {
-            val ids = offerForDeletion.map { it.id }.joinToString(", ")
-
-            var query = "DELETE FROM offer_tags where offer_tags.offer_id IN ($ids)"
-            entityManager.createNativeQuery(query).executeUpdate()
-            query = "DELETE FROM offer_compare where offer_compare.offer_id IN ($ids)"
-            entityManager.createNativeQuery(query).executeUpdate()
-            query = "DELETE FROM offer_rules where offer_rules.offer_id IN ($ids)"
-            entityManager.createNativeQuery(query).executeUpdate()
-
-            // delete price rules
-            query = "SELECT id FROM offer_price WHERE offer_price.offer_id IN ($ids)"
-            @Suppress("UNCHECKED_CAST")
-            var offerPriceIdsForDeletion = entityManager.createNativeQuery(query).resultList as List<Long>
-            query = "SELECT id"
-
-            // delete price
-
-            query = "DELETE FROM offer where offer.id IN ($ids)"
-            entityManager.createNativeQuery(query).executeUpdate()
-        }
-
-        val insertedOffersValues = offers.map {
+        val values = offers.map {
             val isoPattern = "yyyy-MM-dd'T'HH:mm:ss'Z'"
             val updatedAt = SimpleDateFormat(isoPattern).format(it.updatedAt)
             val createdAt = SimpleDateFormat(isoPattern).format(it.createdAt)
-            val id = if (it.id == 0L) "(nextval('offer_id_seq')" else it.id.toString()
+            val id = if (it.id == 0L) "nextval('offer_id_seq')" else it.id.toString()
 
-            "$id, '${it.title}', '${it.description}', '${it.owner}', " +
+            "($id, '${it.title}', '${it.description}', '${it.owner}', " +
                 "'${it.imageUrl}', '${it.worth}', '$createdAt', '$updatedAt')"
         }
-        if (insertedOffersValues.isNotEmpty()) {
+        if (values.isNotEmpty()) {
             val springQueryTiming = measureTimeMillis {
                 // create offers
                 val insertOffers = "INSERT INTO offer " +
                     "(id, title, description, owner, image_url, worth, created_at, updated_at) VALUES \n"
-                val insertOffersQuery = insertOffers + insertedOffersValues.joinToString(",\n") +
-                    "\n RETURNING id;"
+                val insertOffersQuery = insertOffers + values.joinToString(",\n") +
+                    "\n ON CONFLICT (id) DO UPDATE SET\n" +
+                    "    title = EXCLUDED.title,\n" +
+                    "    description = EXCLUDED.description,\n" +
+                    "    owner = EXCLUDED.owner,\n" +
+                    "    image_url = EXCLUDED.image_url,\n" +
+                    "    worth = EXCLUDED.worth,\n" +
+                    "    updated_at = EXCLUDED.updated_at\n" +
+                    "RETURNING id;"
 
                 @Suppress("UNCHECKED_CAST")
-                val createdOfferIds: List<Long> = entityManager
+                val insertedOfferIds: List<Long> = entityManager
                     .createNativeQuery(insertOffersQuery)
                     .resultList as List<Long>
-                println("result: $createdOfferIds")
+                println("result: $insertedOfferIds")
 
-                // create tags
                 val insertTags = "INSERT INTO offer_tags (offer_id, tags, tags_key) VALUES \n"
                 val insertedOfferTagsValues = offers.mapIndexed { index, offer ->
-                    offer.tags.map { "( ${createdOfferIds[index]}, '${it.value}', '${it.key}' )" }
+                    offer.tags.map { "( ${insertedOfferIds[index]}, '${it.value}', '${it.key}' )" }
                 }.flatten().joinToString(",\n")
-                val insertOfferTagsQuery = insertTags + insertedOfferTagsValues
+                val ifConflictPartTagsQuery = "\nON CONFLICT ON CONSTRAINT offer_tags_pkey DO UPDATE SET\n" +
+                    "    tags_key = EXCLUDED.tags_key,\n" +
+                    "    tags = EXCLUDED.tags"
+                val insertOfferTagsQuery = insertTags + insertedOfferTagsValues + ifConflictPartTagsQuery
                 entityManager.createNativeQuery(insertOfferTagsQuery).executeUpdate()
 
-                // compare
                 val insertCompare = "INSERT INTO offer_compare (offer_id, compare, compare_key) VALUES \n"
                 val insertedOfferCompareValues = offers.mapIndexed { index, offer ->
-                    offer.compare.map { "( ${createdOfferIds[index]}, '${it.value}', '${it.key}' )" }
+                    offer.compare.map { "( ${insertedOfferIds[index]}, '${it.value}', '${it.key}' )" }
                 }.flatten().joinToString(",\n")
-                val insertOfferCompareQuery = insertCompare + insertedOfferCompareValues
-                entityManager.createNativeQuery(insertOfferCompareQuery).executeUpdate()
+                val ifConflictOfferCompare = "\n ON CONFLICT ON CONSTRAINT offer_compare_pkey " +
+                    "DO UPDATE SET\n" +
+                    "    compare = EXCLUDED.compare,\n" +
+                    "    compare_key = EXCLUDED.compare_key"
+                val offerCompareQuery = insertCompare + insertedOfferCompareValues + ifConflictOfferCompare
+                entityManager.createNativeQuery(offerCompareQuery).executeUpdate()
 
-                // rules
                 val insertRules = "INSERT INTO offer_rules (offer_id, rules, rules_key) VALUES \n"
                 val insertedOfferRulesValues = offers.mapIndexed { index, offer ->
-                    offer.rules.map { "( ${createdOfferIds[index]}, ${it.value.ordinal}, '${it.key}' )" }
+                    offer.rules.map { "( ${insertedOfferIds[index]}, ${it.value.ordinal}, '${it.key}' )" }
                 }.flatten().joinToString(",\n")
-                val insertOfferRulesQuery = insertRules + insertedOfferRulesValues
+                val ifConflictOfferRules = "\n ON CONFLICT ON CONSTRAINT offer_rules_pkey " +
+                    "DO UPDATE SET\n" +
+                    "    rules = EXCLUDED.rules,\n" +
+                    "    rules_key = EXCLUDED.rules_key"
+                val insertOfferRulesQuery = insertRules + insertedOfferRulesValues + ifConflictOfferRules
                 entityManager.createNativeQuery(insertOfferRulesQuery).executeUpdate()
 
-                val ids = createdOfferIds.joinToString(", ")
+                val ids = insertedOfferIds.joinToString(", ")
                 val query = "SELECT * FROM offer WHERE offer.id IN ($ids)"
                 @Suppress("UNCHECKED_CAST")
                 result = entityManager.createNativeQuery(query, Offer::class.java).resultList as List<Offer>
