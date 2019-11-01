@@ -56,14 +56,24 @@ class PostgresOfferRepositoryImpl(
         // prepare for delete
         val offerForDeletion = offers.filter { it.id != 0L }
         if (offerForDeletion.isNotEmpty()) {
-            val ids = offerForDeletion.joinToString(", ")
-            var query = "DELETE FROM offer where offer.id IN ($ids)"
-            entityManager.createNativeQuery(query) .executeUpdate()
-            query = "DELETE FROM offer_tags where offer_tags.offer_id IN ($ids)"
+            val ids = offerForDeletion.map { it.id }.joinToString(", ")
+
+            var query = "DELETE FROM offer_tags where offer_tags.offer_id IN ($ids)"
             entityManager.createNativeQuery(query).executeUpdate()
-            query = "DELETE FROM offer_compare where offer_compare.offer.id IN ($ids)"
+            query = "DELETE FROM offer_compare where offer_compare.offer_id IN ($ids)"
             entityManager.createNativeQuery(query).executeUpdate()
-            query = "DELETE FROM offer_rules where offer_rules.offer.id IN ($ids)"
+            query = "DELETE FROM offer_rules where offer_rules.offer_id IN ($ids)"
+            entityManager.createNativeQuery(query).executeUpdate()
+
+            // delete price rules
+            query = "SELECT id FROM offer_price WHERE offer_price.offer_id IN ($ids)"
+            @Suppress("UNCHECKED_CAST")
+            var offerPriceIdsForDeletion = entityManager.createNativeQuery(query).resultList as List<Long>
+            query = "SELECT id"
+
+            // delete price
+
+            query = "DELETE FROM offer where offer.id IN ($ids)"
             entityManager.createNativeQuery(query).executeUpdate()
         }
 
@@ -71,7 +81,7 @@ class PostgresOfferRepositoryImpl(
             val isoPattern = "yyyy-MM-dd'T'HH:mm:ss'Z'"
             val updatedAt = SimpleDateFormat(isoPattern).format(it.updatedAt)
             val createdAt = SimpleDateFormat(isoPattern).format(it.createdAt)
-            val id = if (it.id == 0L) "(nextval('offer_id_seq')," else it.id.toString()
+            val id = if (it.id == 0L) "(nextval('offer_id_seq')" else it.id.toString()
 
             "$id, '${it.title}', '${it.description}', '${it.owner}', " +
                 "'${it.imageUrl}', '${it.worth}', '$createdAt', '$updatedAt')"
