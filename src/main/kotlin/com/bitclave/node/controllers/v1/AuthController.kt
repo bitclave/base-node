@@ -153,6 +153,53 @@ class AuthController(
     }
 
     /**
+     * Verifies if the specified account already exists in the system.
+     * The API will verify that the request is cryptographically signed by
+     * the owner of the public key.
+     * @param request is {@link SignedRequest} where client sends {@link Account}
+     * and signature of the message.
+     *
+     * @return {Boolean}, true/false Http status - 200.
+     *
+     */
+    @ApiOperation(
+        "Verifies if the specified account already exists in the system..\n" +
+            "The API will verify that the request is cryptographically signed by " +
+            "the owner of the public key.", response = Boolean::class
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(code = 200, message = "Success", response = Boolean::class)
+        ]
+    )
+    @RequestMapping(method = [RequestMethod.POST], value = ["existed"])
+    fun isExistedAccount(
+        @ApiParam("where client sends Account and signature of the message.", required = true)
+        @RequestBody
+        request: SignedRequest<Account>,
+
+        @ApiParam(
+            "change repository strategy",
+            allowableValues = "POSTGRES, HYBRID",
+            required = false
+        )
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
+    ): CompletableFuture<Boolean> {
+
+        return accountService.checkSigMessage(request)
+            .thenApply { pk ->
+                if (pk != request.data?.publicKey) {
+                    return@thenApply false
+                }
+
+                accountService.existAccount(request.data!!, getStrategyType(strategy)).get()
+
+                true
+            }.exceptionally { false }
+    }
+
+    /**
      * Get count transactions by Account
      * @param publicKey is {@link String} where client sends {@link Account}
      * and signature of the message.
