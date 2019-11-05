@@ -153,6 +153,67 @@ class AuthController(
     }
 
     /**
+     * Creates a new user in the system or return existed, based on the provided information.
+     * The API will verify that the request is cryptographically signed by the owner of the public key.
+     * @param request is {@link SignedRequest} where client sends {@link Account} and
+     * signature of the message.
+     *
+     * @return {@link Account}, Http status - 201.
+     *
+     * @exception {@link BadArgumentException} - 400
+     *              {@link AccessDeniedException} - 403
+     *              {@link DataNotSaved} - 500
+     */
+
+    @ApiOperation(
+        "Creates a new user in the system or return existed, based on the provided information.\n" +
+            "The API will verify that the request is cryptographically signed by the owner of the public key.",
+        response = Account::class
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(code = 201, message = "Created", response = Account::class),
+            ApiResponse(code = 400, message = "BadArgumentException"),
+            ApiResponse(code = 403, message = "AccessDeniedException"),
+            ApiResponse(code = 500, message = "DataNotSaved")
+        ]
+    )
+    @RequestMapping(method = [RequestMethod.POST], value = ["lazy-registration"])
+    @ResponseStatus(value = HttpStatus.OK)
+    fun lazyRegistration(
+        @ApiParam("where client sends Account and signature of the message.", required = true)
+        @RequestBody
+        request: SignedRequest<Account>,
+
+        @ApiParam(
+            "change repository strategy",
+            allowableValues = "POSTGRES, HYBRID",
+            required = false
+        )
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
+    ): CompletableFuture<Account> {
+
+        return accountService.checkSigMessage(request)
+            .thenApply { pk ->
+                if (pk != request.data?.publicKey) {
+                    throw RuntimeException("Signature missmatch: content vs request  have different keys")
+                }
+                pk
+            }
+            .thenApply {
+                return@thenApply try {
+                    accountService.existAccount(request.data!!, getStrategyType(strategy)).get()
+                } catch (e: Throwable) {
+                    accountService.registrationClient(request.data!!, getStrategyType(strategy)).get()
+                }
+            }.exceptionally { e ->
+                Logger.error("Request: registration/$request raised", e)
+                throw e
+            }
+    }
+
+    /**
      * Get count transactions by Account
      * @param publicKey is {@link String} where client sends {@link Account}
      * and signature of the message.
