@@ -80,38 +80,46 @@ class PostgresOfferRepositoryImpl(
             val insertedOfferTagsValues = offers.mapIndexed { index, offer ->
                 offer.tags.map { "( ${insertedOfferIds[index]}, '${it.value}', '${it.key}' )" }
             }.flatten().joinToString(",\n")
-            val ifConflictPartTagsQuery = "\nON CONFLICT ON CONSTRAINT offer_tags_pkey DO UPDATE SET\n" +
-                "    tags_key = EXCLUDED.tags_key,\n" +
-                "    tags = EXCLUDED.tags"
-            val insertOfferTagsQuery = insertTags + insertedOfferTagsValues + ifConflictPartTagsQuery
-            entityManager.createNativeQuery(insertOfferTagsQuery).executeUpdate()
+            if (insertedOfferTagsValues.isNotEmpty()) {
+                val ifConflictPartTagsQuery = "\nON CONFLICT ON CONSTRAINT offer_tags_pkey DO UPDATE SET\n" +
+                    "    tags_key = EXCLUDED.tags_key,\n" +
+                    "    tags = EXCLUDED.tags"
+                val insertOfferTagsQuery = insertTags + insertedOfferTagsValues + ifConflictPartTagsQuery
+                entityManager.createNativeQuery(insertOfferTagsQuery).executeUpdate()
+            }
 
             val insertCompare = "INSERT INTO offer_compare (offer_id, compare, compare_key) VALUES \n"
             val insertedOfferCompareValues = offers.mapIndexed { index, offer ->
                 offer.compare.map { "( ${insertedOfferIds[index]}, '${it.value}', '${it.key}' )" }
             }.flatten().joinToString(",\n")
-            val ifConflictOfferCompare = "\n ON CONFLICT ON CONSTRAINT offer_compare_pkey " +
-                "DO UPDATE SET\n" +
-                "    compare = EXCLUDED.compare,\n" +
-                "    compare_key = EXCLUDED.compare_key"
-            val offerCompareQuery = insertCompare + insertedOfferCompareValues + ifConflictOfferCompare
-            entityManager.createNativeQuery(offerCompareQuery).executeUpdate()
+            if (insertedOfferCompareValues.isNotEmpty()) {
+                val ifConflictOfferCompare = "\n ON CONFLICT ON CONSTRAINT offer_compare_pkey " +
+                    "DO UPDATE SET\n" +
+                    "    compare = EXCLUDED.compare,\n" +
+                    "    compare_key = EXCLUDED.compare_key"
+                val offerCompareQuery = insertCompare + insertedOfferCompareValues + ifConflictOfferCompare
+                entityManager.createNativeQuery(offerCompareQuery).executeUpdate()
+            }
 
             val insertRules = "INSERT INTO offer_rules (offer_id, rules, rules_key) VALUES \n"
             val insertedOfferRulesValues = offers.mapIndexed { index, offer ->
                 offer.rules.map { "( ${insertedOfferIds[index]}, ${it.value.ordinal}, '${it.key}' )" }
             }.flatten().joinToString(",\n")
-            val ifConflictOfferRules = "\n ON CONFLICT ON CONSTRAINT offer_rules_pkey " +
-                "DO UPDATE SET\n" +
-                "    rules = EXCLUDED.rules,\n" +
-                "    rules_key = EXCLUDED.rules_key"
-            val insertOfferRulesQuery = insertRules + insertedOfferRulesValues + ifConflictOfferRules
-            entityManager.createNativeQuery(insertOfferRulesQuery).executeUpdate()
+            if (insertedOfferRulesValues.isNotEmpty()) {
+                val ifConflictOfferRules = "\n ON CONFLICT ON CONSTRAINT offer_rules_pkey " +
+                    "DO UPDATE SET\n" +
+                    "    rules = EXCLUDED.rules,\n" +
+                    "    rules_key = EXCLUDED.rules_key"
+                val insertOfferRulesQuery = insertRules + insertedOfferRulesValues + ifConflictOfferRules
+                entityManager.createNativeQuery(insertOfferRulesQuery).executeUpdate()
+            }
 
             val ids = insertedOfferIds.joinToString(", ")
             val query = "SELECT * FROM offer WHERE offer.id IN ($ids)"
             @Suppress("UNCHECKED_CAST")
-            result = entityManager.createNativeQuery(query, Offer::class.java).resultList as List<Offer>
+            val wrongSortedResult = entityManager.createNativeQuery(query, Offer::class.java).resultList as List<Offer>
+            val wrongSortedResultAsMap = wrongSortedResult.map { it.id to it}.toMap()
+            result = insertedOfferIds.map { wrongSortedResultAsMap[it] ?: error("was not find bt ids") }
         }
         return syncElementCollections(result)
     }
