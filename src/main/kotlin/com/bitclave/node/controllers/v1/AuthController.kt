@@ -153,27 +153,34 @@ class AuthController(
     }
 
     /**
-     * Verifies if the specified account already exists in the system.
-     * The API will verify that the request is cryptographically signed by
-     * the owner of the public key.
-     * @param request is {@link SignedRequest} where client sends {@link Account}
-     * and signature of the message.
+     * Creates a new user in the system or return existed, based on the provided information.
+     * The API will verify that the request is cryptographically signed by the owner of the public key.
+     * @param request is {@link SignedRequest} where client sends {@link Account} and
+     * signature of the message.
      *
-     * @return {Boolean}, true/false Http status - 200.
+     * @return {@link Account}, Http status - 201.
      *
+     * @exception {@link BadArgumentException} - 400
+     *              {@link AccessDeniedException} - 403
+     *              {@link DataNotSaved} - 500
      */
+
     @ApiOperation(
-        "Verifies if the specified account already exists in the system..\n" +
-            "The API will verify that the request is cryptographically signed by " +
-            "the owner of the public key.", response = Boolean::class
+        "Creates a new user in the system or return existed, based on the provided information.\n" +
+            "The API will verify that the request is cryptographically signed by the owner of the public key.",
+        response = Account::class
     )
     @ApiResponses(
         value = [
-            ApiResponse(code = 200, message = "Success", response = Boolean::class)
+            ApiResponse(code = 201, message = "Created", response = Account::class),
+            ApiResponse(code = 400, message = "BadArgumentException"),
+            ApiResponse(code = 403, message = "AccessDeniedException"),
+            ApiResponse(code = 500, message = "DataNotSaved")
         ]
     )
-    @RequestMapping(method = [RequestMethod.POST], value = ["existed"])
-    fun isExistedAccount(
+    @RequestMapping(method = [RequestMethod.POST], value = ["lazy-registration"])
+    @ResponseStatus(value = HttpStatus.OK)
+    fun lazyRegistration(
         @ApiParam("where client sends Account and signature of the message.", required = true)
         @RequestBody
         request: SignedRequest<Account>,
@@ -185,18 +192,25 @@ class AuthController(
         )
         @RequestHeader("Strategy", required = false)
         strategy: String?
-    ): CompletableFuture<Boolean> {
+    ): CompletableFuture<Account> {
 
         return accountService.checkSigMessage(request)
             .thenApply { pk ->
                 if (pk != request.data?.publicKey) {
-                    return@thenApply false
+                    throw RuntimeException("Signature missmatch: content vs request  have different keys")
                 }
-
-                accountService.existAccount(request.data!!, getStrategyType(strategy)).get()
-
-                true
-            }.exceptionally { false }
+                pk
+            }
+            .thenApply {
+                return@thenApply try {
+                    accountService.existAccount(request.data!!, getStrategyType(strategy)).get()
+                } catch (e: Throwable) {
+                    accountService.registrationClient(request.data!!, getStrategyType(strategy)).get()
+                }
+            }.exceptionally { e ->
+                Logger.error("Request: registration/$request raised", e)
+                throw e
+            }
     }
 
     /**

@@ -455,7 +455,7 @@ class VerifyConsistencyController(
             .thenCompose {
                 offerSearchService.getOfferInteractionsByOfferIdsAndOwners(
                     request.data!!.offerIds,
-                    request.data!!.owners,
+                    request.data.owners,
                     getStrategyType(strategy)
                 )
             }.exceptionally { e ->
