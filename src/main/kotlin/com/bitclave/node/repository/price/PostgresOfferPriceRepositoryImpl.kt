@@ -22,15 +22,15 @@ class PostgresOfferPriceRepositoryImpl(
     @Transactional
     override fun saveAllPrices(prices: List<OfferPrice>, offerIds: List<Long>): List<OfferPrice> {
 
-        val offerIdsIn = offerIds.joinToString(", ")
-        val checkQuery = "SELECT id FROM offer_price p WHERE p.offer_id in ($offerIdsIn)"
+//        val offerIdsIn = offerIds.joinToString(", ")
+//        val checkQuery = "SELECT id FROM offer_price p WHERE p.offer_id in ($offerIdsIn)"
 
-        @Suppress("UNCHECKED_CAST")
-        val formerIds = entityManager.createNativeQuery(checkQuery).resultList as List<Long>
-
-        if (formerIds.size > prices.size) {
-            throw RuntimeException("attempt to reduce prices in bulk of offer")
-        }
+//        @Suppress("UNCHECKED_CAST")
+//        val formerIds = entityManager.createNativeQuery(checkQuery).resultList as List<Long>
+//
+//        if (formerIds.size > prices.size) {
+//            throw RuntimeException("attempt to reduce prices in bulk of offer")
+//        }
 
         val savedPrices = repository.saveAll(prices)
 
