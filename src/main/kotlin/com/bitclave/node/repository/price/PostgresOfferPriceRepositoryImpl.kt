@@ -8,18 +8,16 @@ import com.bitclave.node.services.errors.DataNotSavedException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
-import javax.persistence.EntityManager
 
 @Component
 @Qualifier("postgres")
 class PostgresOfferPriceRepositoryImpl(
     val repository: OfferPriceCrudRepository,
-    val rulesRepository: OfferPriceRulesCrudRepository,
-    val entityManager: EntityManager
+    val rulesRepository: OfferPriceRulesCrudRepository
 ) : OfferPriceRepository {
 
     @Transactional
-    override fun saveAllPrices(prices: List<OfferPrice>, offerIds: List<Long>): List<OfferPrice> {
+    override fun saveAllPrices(prices: List<OfferPrice>): List<OfferPrice> {
 
         val savedPrices = repository.saveAll(prices)
 
