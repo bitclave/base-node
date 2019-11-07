@@ -111,9 +111,8 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
     fun existAccount(account: Account, strategy: RepositoryStrategyType): CompletableFuture<Account> {
         return supplyAsyncEx(Supplier {
             accountRepository.changeStrategy(strategy)
-                .findByPublicKey(account.publicKey) ?: throw NotFoundException(
-                "User with baseID ${account.publicKey} does not exist"
-            )
+                .findByPublicKey(account.publicKey)
+                ?: throw NotFoundException("User with baseID ${account.publicKey} does not exist")
         })
     }
 
