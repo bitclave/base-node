@@ -23,24 +23,14 @@ class PostgresOfferPriceRepositoryImpl(
     override fun saveAllPrices(prices: List<OfferPrice>, offerIds: List<Long>): List<OfferPrice> {
 
         val offerIdsIn = offerIds.joinToString(", ")
-//        val priceIds = prices.map { it.id }.joinToString(", ")
-
-//        val cleanUpQuery = "DELETE FROM offer_price_rules r\n" +
-//            "WHERE r.offer_price_id IN (\n" +
-//            "    select id from offer_price p\n" +
-//            "    where p.offer_id in ($offerIdsIn) AND p.id NOT IN  ($priceIds)\n" +
-//            ");" +
-//            "DELETE FROM offer_price p WHERE p.offer_id in ($offerIdsIn) AND p.id NOT IN ($priceIds)"
-//
-//        entityManager.createNativeQuery(cleanUpQuery).executeUpdate()
         val checkQuery = "SELECT id FROM offer_price p WHERE p.offer_id in ($offerIdsIn)"
+
         @Suppress("UNCHECKED_CAST")
         val formerIds = entityManager.createNativeQuery(checkQuery).resultList as List<Long>
 
         if (formerIds.size > prices.size) {
             throw RuntimeException("attempt to reduce prices in bulk of offer")
         }
-
 
         val savedPrices = repository.saveAll(prices)
 
