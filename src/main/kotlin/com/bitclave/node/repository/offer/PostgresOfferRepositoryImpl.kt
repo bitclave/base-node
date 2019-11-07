@@ -55,7 +55,10 @@ class PostgresOfferRepositoryImpl(
             val createdAt = SimpleDateFormat(isoPattern).format(it.createdAt)
             val id = if (it.id == 0L) "nextval('offer_id_seq')" else it.id.toString()
 
-            "($id, '${it.title}', '${it.description}', '${it.owner}', " +
+            "($id, " +
+                "'${it.title.replace("'", "''")}'," +
+                " '${it.description.replace("'", "''")}'," +
+                " '${it.owner.replace("'", "''")}', " +
                 "'${it.imageUrl}', '${it.worth}', '$createdAt', '$updatedAt')"
         }
         if (values.isNotEmpty()) {
@@ -84,7 +87,9 @@ class PostgresOfferRepositoryImpl(
 
             val insertTags = "INSERT INTO offer_tags (offer_id, tags, tags_key) VALUES \n"
             val insertedOfferTagsValues = offers.mapIndexed { index, offer ->
-                offer.tags.map { "( ${insertedOfferIds[index]}, '${it.value}', '${it.key}' )" }
+                offer.tags.map { "( ${insertedOfferIds[index]}, " +
+                    "'${it.value.replace("'", "''")}', " +
+                    "'${it.key.replace("'", "''")}' )" }
             }.flatten().joinToString(",\n")
             if (insertedOfferTagsValues.isNotEmpty()) {
                 val ifConflictPartTagsQuery = "\nON CONFLICT ON CONSTRAINT offer_tags_pkey DO UPDATE SET\n" +
@@ -101,7 +106,9 @@ class PostgresOfferRepositoryImpl(
 
             val insertCompare = "INSERT INTO offer_compare (offer_id, compare, compare_key) VALUES \n"
             val insertedOfferCompareValues = offers.mapIndexed { index, offer ->
-                offer.compare.map { "( ${insertedOfferIds[index]}, '${it.value}', '${it.key}' )" }
+                offer.compare.map { "( ${insertedOfferIds[index]}, " +
+                    "'${it.value.replace("'", "''")}', " +
+                    "'${it.key.replace("'", "''")}' )" }
             }.flatten().joinToString(",\n")
             if (insertedOfferCompareValues.isNotEmpty()) {
                 val ifConflictOfferCompare = "\n ON CONFLICT ON CONSTRAINT offer_compare_pkey " +
@@ -119,7 +126,8 @@ class PostgresOfferRepositoryImpl(
 
             val insertRules = "INSERT INTO offer_rules (offer_id, rules, rules_key) VALUES \n"
             val insertedOfferRulesValues = offers.mapIndexed { index, offer ->
-                offer.rules.map { "( ${insertedOfferIds[index]}, ${it.value.ordinal}, '${it.key}' )" }
+                offer.rules.map { "( ${insertedOfferIds[index]}, ${it.value.ordinal}, " +
+                    "'${it.key.replace("'", "''")}' )" }
             }.flatten().joinToString(",\n")
             if (insertedOfferRulesValues.isNotEmpty()) {
                 val ifConflictOfferRules = "\n ON CONFLICT ON CONSTRAINT offer_rules_pkey " +
