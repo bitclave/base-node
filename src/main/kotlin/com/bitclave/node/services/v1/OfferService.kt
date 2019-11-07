@@ -141,7 +141,7 @@ class OfferService(
             val saveAllTiming = measureTimeMillis {
                 result = offerRepository.changeStrategy(strategy).saveAll(readyForSaveOffers)
             }
-            Logger.debug(" - save all timing $saveAllTiming")
+//            Logger.debug(" - save all timing $saveAllTiming")
 
             val prices = result.mapIndexed { index, offer ->
                 readyForSaveOffers[index].offerPrices.map { offerPrice ->
@@ -155,7 +155,7 @@ class OfferService(
                 val ids = result.map { it.id }
                 offerPriceRepository.changeStrategy(strategy).saveAllPrices(prices, ids)
             }
-            Logger.debug(" - save all prices timing $saveAllPricesTiming")
+//            Logger.debug(" - save all prices timing $saveAllPricesTiming")
 
             val offersIdsForCleanupOfferSearches = offers.filter { it.id != 0L }.map { it.id }
             val deleteOfferSearchTiming = measureTimeMillis {
