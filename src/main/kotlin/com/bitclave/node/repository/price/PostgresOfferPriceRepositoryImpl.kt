@@ -7,14 +7,32 @@ import com.bitclave.node.repository.priceRule.OfferPriceRulesCrudRepository
 import com.bitclave.node.services.errors.DataNotSavedException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
+import javax.persistence.EntityManager
 
 @Component
 @Qualifier("postgres")
 class PostgresOfferPriceRepositoryImpl(
     val repository: OfferPriceCrudRepository,
-    val rulesRepository: OfferPriceRulesCrudRepository
+    val rulesRepository: OfferPriceRulesCrudRepository,
+    val entityManager: EntityManager
 ) : OfferPriceRepository {
-    override fun saveAllPrices(prices: List<OfferPrice>): List<OfferPrice> {
+
+    @Transactional
+    override fun saveAllPrices(prices: List<OfferPrice>, offerIds: List<Long>): List<OfferPrice> {
+
+        val offerIdsIn = offerIds.joinToString(", ")
+        val priceIds = prices.map { it.id }.joinToString(", ")
+
+        val cleanUpQuery = "DELETE FROM offer_price_rules r\n" +
+            "WHERE r.offer_price_id IN (\n" +
+            "    select id from offer_price p\n" +
+            "    where p.offer_id in ($offerIdsIn) AND p.id NOT IN  ($priceIds)\n" +
+            ");" +
+            "DELETE FROM offer_price p WHERE p.offer_id in ($offerIdsIn) AND p.id NOT IN ($priceIds)"
+
+        entityManager.createNativeQuery(cleanUpQuery).executeUpdate()
+
         val savedPrices = repository.saveAll(prices)
 
         val rules = savedPrices.mapIndexed { index, offerPrice ->

@@ -76,6 +76,12 @@ class PostgresOfferRepositoryImpl(
                 .createNativeQuery(insertOffersQuery)
                 .resultList as List<Long>
 
+            // cleanup tags for the all offers in the request
+            val offerInByIds = insertedOfferIds.joinToString(", ")
+            val cleanUpTagsQuery = "DELETE FROM offer_tags\n" +
+                "WHERE offer_tags.offer_id IN ($offerInByIds);"
+            entityManager.createNativeQuery(cleanUpTagsQuery).executeUpdate()
+
             val insertTags = "INSERT INTO offer_tags (offer_id, tags, tags_key) VALUES \n"
             val insertedOfferTagsValues = offers.mapIndexed { index, offer ->
                 offer.tags.map { "( ${insertedOfferIds[index]}, '${it.value}', '${it.key}' )" }
@@ -87,6 +93,11 @@ class PostgresOfferRepositoryImpl(
                 val insertOfferTagsQuery = insertTags + insertedOfferTagsValues + ifConflictPartTagsQuery
                 entityManager.createNativeQuery(insertOfferTagsQuery).executeUpdate()
             }
+
+            // cleanup compare for the all offers in the request
+            val cleanUpCompareQuery = "DELETE FROM offer_compare\n" +
+                "WHERE offer_compare.offer_id IN ($offerInByIds);"
+            entityManager.createNativeQuery(cleanUpCompareQuery).executeUpdate()
 
             val insertCompare = "INSERT INTO offer_compare (offer_id, compare, compare_key) VALUES \n"
             val insertedOfferCompareValues = offers.mapIndexed { index, offer ->
@@ -101,6 +112,11 @@ class PostgresOfferRepositoryImpl(
                 entityManager.createNativeQuery(offerCompareQuery).executeUpdate()
             }
 
+            // cleanup rules for the all offers in the request
+            val cleanUpRulesQuery = "DELETE FROM offer_rules\n" +
+                "WHERE offer_rules.offer_id IN ($offerInByIds);"
+            entityManager.createNativeQuery(cleanUpRulesQuery).executeUpdate()
+
             val insertRules = "INSERT INTO offer_rules (offer_id, rules, rules_key) VALUES \n"
             val insertedOfferRulesValues = offers.mapIndexed { index, offer ->
                 offer.rules.map { "( ${insertedOfferIds[index]}, ${it.value.ordinal}, '${it.key}' )" }
@@ -114,6 +130,7 @@ class PostgresOfferRepositoryImpl(
                 entityManager.createNativeQuery(insertOfferRulesQuery).executeUpdate()
             }
 
+            // for proper return data purpose only
             val ids = insertedOfferIds.joinToString(", ")
             val query = "SELECT * FROM offer WHERE offer.id IN ($ids)"
             @Suppress("UNCHECKED_CAST")
