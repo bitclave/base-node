@@ -143,7 +143,7 @@ class PostgresOfferRepositoryImpl(
             val query = "SELECT * FROM offer WHERE offer.id IN ($ids)"
             @Suppress("UNCHECKED_CAST")
             val wrongSortedResult = entityManager.createNativeQuery(query, Offer::class.java).resultList as List<Offer>
-            val wrongSortedResultAsMap = wrongSortedResult.map { it.id to it}.toMap()
+            val wrongSortedResultAsMap = wrongSortedResult.map { it.id to it }.toMap()
             result = insertedOfferIds.map { wrongSortedResultAsMap[it] ?: error("was not find bt ids") }
         }
         return syncElementCollections(result)
