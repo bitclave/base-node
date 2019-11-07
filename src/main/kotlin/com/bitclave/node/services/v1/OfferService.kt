@@ -152,7 +152,8 @@ class OfferService(
             }.flatten()
 
             val saveAllPricesTiming = measureTimeMillis {
-                offerPriceRepository.changeStrategy(strategy).saveAllPrices(prices)
+                val ids = result.map { it.id }
+                offerPriceRepository.changeStrategy(strategy).saveAllPrices(prices, ids)
             }
             Logger.debug(" - save all prices timing $saveAllPricesTiming")
 
@@ -162,7 +163,7 @@ class OfferService(
                     offerSearchService.deleteByOfferIds(offersIdsForCleanupOfferSearches, strategy)
                 }
             }
-            Logger.debug(" - delete all offer searches by offerId timing $deleteOfferSearchTiming")
+//            Logger.debug(" - delete all offer searches by offerId timing $deleteOfferSearchTiming")
 
             result.map { it.id }
         })
