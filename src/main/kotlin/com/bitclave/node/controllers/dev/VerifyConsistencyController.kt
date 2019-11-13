@@ -9,8 +9,11 @@ import com.bitclave.node.repository.entities.OfferSearch
 import com.bitclave.node.repository.entities.SearchRequest
 import com.bitclave.node.repository.entities.Offer
 import com.bitclave.node.services.v1.AccountService
+import com.bitclave.node.services.v1.ClientProfileService
+import com.bitclave.node.services.v1.FileService
 import com.bitclave.node.services.v1.OfferSearchService
 import com.bitclave.node.services.v1.OfferService
+import com.bitclave.node.services.v1.RequestDataService
 import com.bitclave.node.services.v1.SearchRequestService
 import com.bitclave.node.utils.Logger
 import io.swagger.annotations.ApiOperation
@@ -18,11 +21,13 @@ import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.http.HttpStatus
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
+import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
 import java.util.Date
 import java.util.concurrent.CompletableFuture
@@ -33,7 +38,10 @@ class VerifyConsistencyController(
     @Qualifier("v1") private val accountService: AccountService,
     @Qualifier("v1") private val offerSearchService: OfferSearchService,
     @Qualifier("v1") private val searchRequestService: SearchRequestService,
-    @Qualifier("v1") private val offerService: OfferService
+    @Qualifier("v1") private val offerService: OfferService,
+    @Qualifier("v1") private val profileService: ClientProfileService,
+    @Qualifier("v1") private val requestDataService: RequestDataService,
+    @Qualifier("v1") private val fileService: FileService
 ) : AbstractController() {
 
     /**
@@ -460,6 +468,50 @@ class VerifyConsistencyController(
                 )
             }.exceptionally { e ->
                 Logger.error("Request: getOfferInteractionsByOfferIdsAndOwners raised", e)
+                throw e
+            }
+    }
+
+    @ApiOperation(
+        "Delete a user from the system.\n" +
+            "The API is using by healthCheck and will verify that the request is cryptographically signed."
+    )
+    @ApiResponses(
+        value = [
+            ApiResponse(code = 200, message = "Success"),
+            ApiResponse(code = 400, message = "BadArgumentException"),
+            ApiResponse(code = 403, message = "AccessDeniedException")
+        ]
+    )
+    @RequestMapping(method = [RequestMethod.DELETE], value = ["/delete/user"])
+    @ResponseStatus(HttpStatus.OK)
+    fun deleteUser(
+        @ApiParam("where client sends Account and signature of the message.", required = true)
+        @RequestBody
+        request: SignedRequest<String>,
+
+        @ApiParam(
+            "change repository strategy",
+            allowableValues = "POSTGRES, HYBRID",
+            required = false
+        )
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
+    ): CompletableFuture<Void> {
+        val strategyType = getStrategyType(strategy)
+        return accountService.accountBySigMessage(request, strategyType)
+            .thenAcceptAsync {
+
+                accountService.deleteAccount(request.data!!, strategyType).get()
+                profileService.deleteData(request.data!!, strategyType).get()
+                requestDataService.deleteRequestsAndResponses(request.data!!, strategyType).get()
+                offerService.deleteOffers(request.data!!, strategyType).get()
+                offerSearchService.deleteByOwner(request.data!!, strategyType).get()
+                searchRequestService.deleteSearchRequests(request.data!!, strategyType).get()
+                searchRequestService.deleteQuerySearchRequest(request.data!!).get()
+                fileService.deleteFileByPublicKey(request.data!!, strategyType).get()
+            }.exceptionally { e ->
+                Logger.error("Request: verify/delete/user/$request raised", e)
                 throw e
             }
     }
