@@ -28,6 +28,7 @@ apply plugin: 'io.spring.dependency-management'
 apply plugin: 'jacoco'
 apply plugin: 'com.github.kt3k.coveralls'
 apply from: "$rootDir/ktlint.gradle"
+apply from: "$rootDir/bumpVersion.gradle"
 
 group = 'com.bitclave.node'
 version = '0.0.1'
