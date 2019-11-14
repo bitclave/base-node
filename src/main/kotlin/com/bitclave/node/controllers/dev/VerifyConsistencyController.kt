@@ -503,13 +503,13 @@ class VerifyConsistencyController(
             .thenAcceptAsync {
 
                 accountService.deleteAccount(request.data!!, strategyType).get()
-                profileService.deleteData(request.data!!, strategyType).get()
-                requestDataService.deleteRequestsAndResponses(request.data!!, strategyType).get()
-                offerService.deleteOffers(request.data!!, strategyType).get()
-                offerSearchService.deleteByOwner(request.data!!, strategyType).get()
-                searchRequestService.deleteSearchRequests(request.data!!, strategyType).get()
-                searchRequestService.deleteQuerySearchRequest(request.data!!).get()
-                fileService.deleteFileByPublicKey(request.data!!, strategyType).get()
+                profileService.deleteData(request.data, strategyType).get()
+                requestDataService.deleteRequestsAndResponses(request.data, strategyType).get()
+                offerService.deleteOffers(request.data, strategyType).get()
+                offerSearchService.deleteByOwner(request.data, strategyType).get()
+                searchRequestService.deleteSearchRequests(request.data, strategyType).get()
+                searchRequestService.deleteQuerySearchRequest(request.data).get()
+                fileService.deleteFileByPublicKey(request.data, strategyType).get()
             }.exceptionally { e ->
                 Logger.error("Request: verify/delete/user/$request raised", e)
                 throw e
