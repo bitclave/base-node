@@ -1,0 +1,69 @@
+def getVersionName = { getVersionProps()['app.build.version'] }
+ext.filePropsPath = 'src/main/resources/application.properties'
+
+def getVersionProps() {
+    def versionPropsFile = file(filePropsPath)
+    versionPropsFile.setWritable(true, false)
+
+    def versionProps = new Properties()
+    versionProps.load(new FileInputStream(versionPropsFile))
+
+    return versionProps
+}
+
+def getVersionNamePatch = { (getVersionName() =~ /\d+/)[2].toInteger() }
+
+def getVersionNameMinor = { (getVersionName() =~ /\d+/)[1].toInteger() }
+
+def getVersionNameMajor = { (getVersionName() =~ /\d+/)[0].toInteger() }
+
+private void commitAndSetTag(versionName) {
+    Process addChanges = ['git', 'add', filePropsPath].execute(null, project.rootDir)
+    addChanges.waitForProcessOutput(System.out, System.err)
+
+    Process createCommit = ['git', 'commit', "-m ${versionName}"].execute(null, project.rootDir)
+    createCommit.waitForProcessOutput(System.out, System.err)
+
+    Process createTag = ['git', 'tag', "v${versionName}".toString()].execute(null, project.rootDir)
+    createTag.waitForProcessOutput(System.out, System.err)
+}
+
+private void save(major, minor, patch) {
+    save("${major}.${minor}.${patch}".toString())
+}
+
+private void save(versionName) {
+    File propsFile = file(filePropsPath)
+    def versionProps = getVersionProps()
+    def text = propsFile
+            .getText()
+            .replace(
+                'app.build.version='.concat(versionProps.get('app.build.version')),
+                'app.build.version='.concat(versionName)
+            )
+
+    propsFile.setText(text)
+    
+    commitAndSetTag(versionName)
+}
+
+task bumpPatch() {
+    group = 'bumper'
+    doLast {
+        save(getVersionNameMajor(), getVersionNameMinor(), getVersionNamePatch() + 1)
+    }
+}
+
+task bumpMinor() {
+    group = 'bumper'
+    doLast {
+        save(getVersionNameMajor(), getVersionNameMinor() + 1, 0)
+    }
+}
+
+task bumpMajor() {
+    group = 'bumper'
+    doLast {
+        save(getVersionNameMajor() + 1, 0, 0)
+    }
+}
