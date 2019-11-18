@@ -3,6 +3,7 @@ package com.bitclave.node.services.v1
 import com.bitclave.node.repository.RepositoryStrategy
 import com.bitclave.node.repository.RepositoryStrategyType
 import com.bitclave.node.repository.entities.Offer
+import com.bitclave.node.repository.entities.OfferPrice
 import com.bitclave.node.repository.offer.OfferRepository
 import com.bitclave.node.repository.price.OfferPriceRepository
 import com.bitclave.node.repository.rank.OfferRankRepository
@@ -165,6 +166,82 @@ class OfferService(
 //            logger.debug(" - delete all offer searches by offerId timing $deleteOfferSearchTiming")
 
             result.map { it.id }
+        })
+    }
+
+    fun createBulk(
+        owner: String,
+        offers: Array<Offer>,
+        strategy: RepositoryStrategyType
+    ): CompletableFuture<List<Long>> {
+        return supplyAsyncEx(Supplier {
+            val readyForCreateOffers = offers.map {
+                Offer(
+                    0L, owner, it.offerPrices, it.description, it.title, it.imageUrl,
+                    it.worth, it.tags, it.compare, it.rules, it.createdAt
+                )
+            }
+            var result: List<Offer> = listOf()
+            val saveAllTiming = measureTimeMillis {
+                result = offerRepository.changeStrategy(strategy).createAll(readyForCreateOffers)
+            }
+//            Logger.debug(" - create all timing $saveAllTiming")
+
+            val prices = result.mapIndexed { index, offer ->
+                readyForCreateOffers[index].offerPrices.map { offerPrice ->
+                    val price = offerPrice.copy()
+                    price.offer = offer
+                    price
+                }
+            }.flatten()
+
+            val saveAllPricesTiming = measureTimeMillis {
+                offerPriceRepository.changeStrategy(strategy).saveAllPrices(prices)
+            }
+//            Logger.debug(" - save all prices timing $saveAllPricesTiming")
+
+            result.map { it.id }
+        })
+    }
+
+    fun priceUpdateBulk(
+        owner: String,
+        offers: Array<Offer>,
+        strategy: RepositoryStrategyType
+    ): CompletableFuture<List<Long>> {
+        return supplyAsyncEx(Supplier {
+
+            var result: List<Offer> = listOf()
+            val ids = offers.map { it.id }
+            val saveAllTiming = measureTimeMillis {
+                result = offerRepository.changeStrategy(strategy).findByIds(ids)
+            }
+            Logger.debug(" - get all by id $saveAllTiming")
+
+            val prices: List<OfferPrice> = offers.mapIndexed { index, offer ->
+                val oldPrices = offerRepository.changeStrategy(strategy).findById(offer.id)?.offerPrices ?: listOf() ;
+                val newPrices = offers[index].offerPrices
+                println("offer: $index; ${offer.id}")
+
+                newPrices.mapIndexed { i, price ->
+                    val newId = if (i <= oldPrices.size - 1)  {
+                        oldPrices[i].id
+                    } else 0
+                    println("price: ${price.description}; new id is ${newId}")
+                    val price = price.copy(id = newId)
+                    price.offer = offer
+                    price
+                }
+            }.flatten()
+
+            val saveAllPricesTiming = measureTimeMillis {
+                offerPriceRepository.changeStrategy(strategy).saveAllPrices(prices)
+            }
+            Logger.debug(" - save all prices timing $saveAllPricesTiming")
+
+            // update tags here...
+
+            offers.map { it.id }
         })
     }
 

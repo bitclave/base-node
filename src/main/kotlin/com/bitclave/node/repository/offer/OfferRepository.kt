@@ -11,6 +11,8 @@ interface OfferRepository {
 
     fun saveAll(offers: List<Offer>): List<Offer>
 
+    fun createAll(offers: List<Offer>): List<Offer>
+
     fun deleteOffer(id: Long, owner: String): Long
 
     fun deleteOffers(owner: String): Int

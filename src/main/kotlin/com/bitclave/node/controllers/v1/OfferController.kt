@@ -471,4 +471,83 @@ class OfferController(
                 throw e
             }
     }
+
+    @RequestMapping(method = [RequestMethod.POST], value = ["/bulk"])
+    fun createBulkOffers(
+        @ApiParam("public key owner of offer")
+        @PathVariable(value = "owner")
+        owner: String,
+
+        @ApiParam("where client sends Offer and signature of the message.", required = true)
+        @RequestBody
+        request: SignedRequest<Array<Offer>>,
+
+        @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
+    ): CompletableFuture<ResponseEntity<List<Long>>> {
+        return accountService
+            .accountBySigMessage(request, getStrategyType(strategy))
+            .thenCompose { account: Account ->
+                accountService.validateNonce(request, account)
+            }
+            .thenCompose {
+                val start = Date()
+                if (request.pk != owner) {
+                    throw BadArgumentException()
+                }
+                val result = offerService.createBulk(
+                    owner,
+                    request.data!!,
+                    getStrategyType(strategy)
+                ).get()
+                Logger.debug("controller profiling CreateBulk 2) ${(Date().time - start.time)}ms")
+                accountService.incrementNonce(it, getStrategyType(strategy)).get()
+                CompletableFuture.completedFuture(ResponseEntity<List<Long>>(result, HttpStatus.OK))
+            }
+            .exceptionally { e ->
+                Logger.error("Request: create Bulk Offer/$request raised", e)
+                throw e
+            }
+    }
+
+    @RequestMapping(method = [RequestMethod.PUT], value = ["/bulk/price"])
+    fun priceBulkUpdateOffers(
+        @ApiParam("public key owner of offer")
+        @PathVariable(value = "owner")
+        owner: String,
+
+        @ApiParam("where client sends Offer and signature of the message.", required = true)
+        @RequestBody
+        request: SignedRequest<Array<Offer>>,
+
+        @ApiParam("change repository strategy", allowableValues = "POSTGRES, HYBRID", required = false)
+        @RequestHeader("Strategy", required = false)
+        strategy: String?
+    ): CompletableFuture<ResponseEntity<List<Long>>> {
+        return accountService
+            .accountBySigMessage(request, getStrategyType(strategy))
+            .thenCompose { account: Account ->
+                accountService.validateNonce(request, account)
+            }
+            .thenCompose {
+                val start = Date()
+                if (request.pk != owner) {
+                    throw BadArgumentException()
+                }
+                val result = offerService.priceUpdateBulk(
+                    owner,
+                    request.data!!,
+                    getStrategyType(strategy)
+                ).get()
+                Logger.debug("controller profiling price update bulk 2) ${(Date().time - start.time)}ms")
+                accountService.incrementNonce(it, getStrategyType(strategy)).get()
+                CompletableFuture.completedFuture(ResponseEntity<List<Long>>(result, HttpStatus.OK))
+            }
+            .exceptionally { e ->
+                Logger.error("Request: price update Bulk Offer/$request raised", e)
+                throw e
+            }
+    }
+
 }
