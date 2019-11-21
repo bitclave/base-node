@@ -45,7 +45,7 @@ data class Offer(
 
     @ElementCollection(fetch = FetchType.LAZY)
     @MapKeyColumn(length = 256)
-    @Column(length = 512)
+    @Column(length = 1024)
     val tags: Map<String, String> = HashMap(),
 
     @ElementCollection(fetch = FetchType.LAZY)
