@@ -37,12 +37,11 @@ class PostgresOfferRepositoryImpl(
     override fun saveOffer(offer: Offer): Offer {
         repository.save(offer) ?: throw DataNotSavedException()
 
-        val result = syncElementCollections(offer)!!
         val event = if (offer.id > 0) OfferEvent.OnUpdate else OfferEvent.OnCreate
 
-        wsService.sendEvent(event, result)
+        wsService.sendEvent(event, offer)
 
-        return result
+        return syncElementCollections(offer)!!
     }
 
     override fun saveAll(offers: List<Offer>): List<Offer> {
@@ -263,7 +262,9 @@ class PostgresOfferRepositoryImpl(
                 val compare = HashMap<String, String>()
                 val rules = HashMap<String, Offer.CompareAction>()
                 val prices = (mapPrices[it.id] ?: emptyList())
-                    .map { price -> price.copy(rules = mapPricesRules[price.id] ?: emptyList()) }
+                    .map { price ->
+                        price.copy(rules = mapPricesRules[price.id] ?: emptyList())
+                    }
 
                 mapTags[it.id]?.forEach { rawTag -> tags[rawTag[2] as String] = rawTag[1] as String }
                 mapCompare[it.id]?.forEach { rawCompare -> compare[rawCompare[2] as String] = rawCompare[1] as String }
