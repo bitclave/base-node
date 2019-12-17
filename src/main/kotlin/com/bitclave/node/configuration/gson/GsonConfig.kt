@@ -6,6 +6,7 @@ import com.bitclave.node.models.controllers.OffersWithCountersResponse
 import com.bitclave.node.models.services.ServiceCall
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.data.domain.Page
@@ -37,12 +38,21 @@ class GsonConfig {
     }
 
     @Bean
+    @ConditionalOnMissingBean
+    fun gsonMessageConverter(): GsonMessageConverter {
+        return GsonMessageConverter(GSON)
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
     fun gsonHttpMessageConverter(): GsonHttpMessageConverter {
         val converter = GsonHttpMessageConverter()
         converter.gson = GSON
+
         return converter
     }
 
     @Bean
+    @ConditionalOnMissingBean
     fun getGson(): Gson = GSON
 }
