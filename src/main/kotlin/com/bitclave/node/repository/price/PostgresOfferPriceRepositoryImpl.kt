@@ -30,6 +30,10 @@ class PostgresOfferPriceRepositoryImpl(
         return savedPrices.toList()
     }
 
+    override fun deleteAllByOfferIdIn(ids: List<Long>): List<OfferPrice> {
+        return repository.deleteAllByOfferIdIn(ids)
+    }
+
     override fun savePrices(offer: Offer, prices: List<OfferPrice>): List<OfferPrice> {
         val copyPrices = prices.map { it.copy() }
 
