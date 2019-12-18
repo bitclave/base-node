@@ -121,6 +121,7 @@ class OfferService(
         strategy: RepositoryStrategyType
     ): CompletableFuture<List<Long>> {
         return supplyAsyncEx(Supplier {
+            val updatedOfferIds = offers.filter { it.id != 0L }.map { it.id }
             val readyForSaveOffers = offers.map {
                 Offer(
                     it.id,
@@ -136,7 +137,6 @@ class OfferService(
                     it.createdAt
                 )
             }
-
             var result: List<Offer> = listOf()
             val saveAllTiming = measureTimeMillis {
                 result = offerRepository.changeStrategy(strategy).saveAll(readyForSaveOffers)
@@ -152,7 +152,12 @@ class OfferService(
             }.flatten()
 
             val saveAllPricesTiming = measureTimeMillis {
-                offerPriceRepository.changeStrategy(strategy).saveAllPrices(prices)
+                val priceRepository = offerPriceRepository.changeStrategy(strategy)
+
+                if (updatedOfferIds.isNotEmpty()) {
+                    priceRepository.deleteAllByOfferIdIn(updatedOfferIds)
+                }
+                priceRepository.saveAllPrices(prices)
             }
 //            logger.debug(" - save all prices timing $saveAllPricesTiming")
 

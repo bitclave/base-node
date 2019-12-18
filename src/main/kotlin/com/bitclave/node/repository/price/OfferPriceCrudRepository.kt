@@ -8,6 +8,6 @@ import javax.transaction.Transactional
 @Repository
 @Transactional
 interface OfferPriceCrudRepository : CrudRepository<OfferPrice, Long> {
-
     fun findByOfferId(id: Long): List<OfferPrice>
+    fun deleteAllByOfferIdIn(ids: List<Long>): List<OfferPrice>
 }
