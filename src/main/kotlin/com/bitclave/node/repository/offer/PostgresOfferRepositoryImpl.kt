@@ -25,6 +25,8 @@ import java.util.HashMap
 import javax.persistence.EntityManager
 import kotlin.system.measureTimeMillis
 
+private val compareActionValues = Offer.CompareAction.values()
+
 @Component
 @Qualifier("postgres")
 class PostgresOfferRepositoryImpl(
@@ -190,7 +192,7 @@ class PostgresOfferRepositoryImpl(
         var queryResultTags = emptyList<Array<Any>>()
         var queryResultCompare = emptyList<Array<Any>>()
         var queryResultRules = emptyList<Array<Any>>()
-        var queryResultPrices = emptyList<OfferPrice>()
+        var queryResultPrices = emptyList<Array<Any>>()
 
         val step1 = measureTimeMillis {
             @Suppress("UNCHECKED_CAST")
@@ -219,8 +221,9 @@ class PostgresOfferRepositoryImpl(
             @Suppress("UNCHECKED_CAST")
             queryResultPrices = if (syncPrices) {
                 entityManager
-                    .createNativeQuery("SELECT * FROM offer_price WHERE offer_id in ($ids);", OfferPrice::class.java)
-                    .resultList as List<OfferPrice>
+                    .createNativeQuery("SELECT id, description, worth, offer_id " +
+                        "FROM offer_price WHERE offer_id in ($ids);")
+                    .resultList as List<Array<Any>>
             } else {
                 emptyList()
             }
@@ -231,15 +234,15 @@ class PostgresOfferRepositoryImpl(
         var mappedTags = emptyMap<Long, List<Array<Any>>>()
         var mappedCompare = emptyMap<Long, List<Array<Any>>>()
         var mappedRules = emptyMap<Long, List<Array<Any>>>()
-        var mappedPrices = emptyMap<Long, List<OfferPrice>>()
+        var mappedPrices = emptyMap<Long, List<Array<Any>>>()
         var priceIds = emptyList<Long>()
 
         val step2 = measureTimeMillis {
             mappedTags = (queryResultTags).groupBy { (it[0] as BigInteger).toLong() }
             mappedCompare = (queryResultCompare).groupBy { (it[0] as BigInteger).toLong() }
             mappedRules = (queryResultRules).groupBy { (it[0] as BigInteger).toLong() }
-            mappedPrices = (queryResultPrices).groupBy { it.originalOfferId }
-            priceIds = queryResultPrices.map { it.id }.distinct()
+            mappedPrices = (queryResultPrices).groupBy { (it[3] as BigInteger).toLong() }
+            priceIds = queryResultPrices.map { (it[0] as BigInteger).toLong() }.distinct()
         }
         Logger.debug("syncElementCollections mapping ids: $step2", LoggerType.PROFILING)
 
@@ -251,27 +254,43 @@ class PostgresOfferRepositoryImpl(
         mapTags: Map<Long, List<Array<Any>>>,
         mapCompare: Map<Long, List<Array<Any>>>,
         mapRules: Map<Long, List<Array<Any>>>,
-        mapPrices: Map<Long, List<OfferPrice>>,
+        mapPrices: Map<Long, List<Array<Any>>>,
         pricesIds: List<Long>
     ): List<Offer> {
         var result = emptyList<Offer>()
         val mapPricesRules = syncPriceRules(pricesIds)
 
         val mergeResult = measureTimeMillis {
-            result = offers.map {
+            result = offers.map { offer ->
                 val tags = HashMap<String, String>()
                 val compare = HashMap<String, String>()
                 val rules = HashMap<String, Offer.CompareAction>()
-                val prices = (mapPrices[it.id] ?: emptyList())
-                    .map { price -> price.copy(rules = mapPricesRules[price.id] ?: emptyList()) }
+                val prices: List<OfferPrice> = (mapPrices[offer.id] ?: emptyList()).map { price ->
+                    val priceRules: List<OfferPriceRules> =
+                        (mapPricesRules[(price[0] as BigInteger).toLong()] ?: emptyList()).map { priceRule ->
+                        OfferPriceRules(
+                            (priceRule[0] as BigInteger).toLong(),
+                            priceRule[2] as String,
+                            priceRule[3] as String,
+                            compareActionValues[priceRule[1] as Int]
+                            )
+                    }
+                    OfferPrice(
+                        (price[0] as BigInteger).toLong(),
+                        price[1] as String,
+                        price[2] as String,
+                        priceRules)
+                }
 
-                mapTags[it.id]?.forEach { rawTag -> tags[rawTag[2] as String] = rawTag[1] as String }
-                mapCompare[it.id]?.forEach { rawCompare -> compare[rawCompare[2] as String] = rawCompare[1] as String }
-                mapRules[it.id]?.forEach { rawCompare ->
+                mapTags[offer.id]?.forEach { rawTag -> tags[rawTag[2] as String] = rawTag[1] as String }
+                mapCompare[offer.id]?.forEach {
+                        rawCompare -> compare[rawCompare[2] as String] = rawCompare[1] as String
+                }
+                mapRules[offer.id]?.forEach { rawCompare ->
                     rules[rawCompare[2] as String] = Offer.CompareAction.values()[rawCompare[1] as Int]
                 }
 
-                return@map it.copy(tags = tags, compare = compare, rules = rules, offerPrices = prices)
+                return@map offer.copy(tags = tags, compare = compare, rules = rules, offerPrices = prices)
             }
         }
 
@@ -280,9 +299,9 @@ class PostgresOfferRepositoryImpl(
         return result
     }
 
-    private fun syncPriceRules(offerPriceIds: List<Long>): Map<Long, List<OfferPriceRules>> {
+    private fun syncPriceRules(offerPriceIds: List<Long>): Map<Long, List<Array<Any>>> {
         val ids = offerPriceIds.joinToString(",")
-        var result = mapOf<Long, List<OfferPriceRules>>()
+        var result = mapOf<Long, List<Array<Any>>>()
 
         if (offerPriceIds.isEmpty()) {
             return result
@@ -292,10 +311,10 @@ class PostgresOfferRepositoryImpl(
             @Suppress("UNCHECKED_CAST")
             result = (entityManager
                 .createNativeQuery(
-                    "SELECT * FROM offer_price_rules WHERE offer_price_id in ($ids);",
-                    OfferPriceRules::class.java
+                    "SELECT id, rule, rules_key, value, offer_price_id" +
+                        " FROM offer_price_rules WHERE offer_price_id in ($ids);"
                 )
-                .resultList as List<OfferPriceRules>).groupBy { it.originalOfferPriceId }
+                .resultList as List<Array<Any>>).groupBy { (it[4] as BigInteger).toLong() }
         }
         Logger.debug("syncElementCollections syncPriceRules: $loadPrices", LoggerType.PROFILING)
 
