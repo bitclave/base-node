@@ -900,16 +900,23 @@ class OfferSearchService(
         mode: String? = ""
     ): CompletableFuture<EnrichedOffersWithCountersResponse> {
         return supplyAsyncEx(Supplier {
-            val offerIds: Page<Long>
-            val counters: Map<String, Map<String, Int>>
+            var offerIds: Page<Long> = PageImpl(emptyList<Long>(), PageRequest.of(0, 1), 0)
+            var counters: Map<String, Map<String, Int>> = mapOf()
 
-            val searchedData = rtSearchRepository.getOffersIdByQuery(query, pageRequest, filters, mode).get()
-            offerIds = searchedData.getPageableOfferIds()
-            counters = searchedData.counters
+            val step1 = measureTimeMillis {
+                val searchedData = rtSearchRepository.getOffersIdByQuery(query, pageRequest, filters, mode).get()
+                offerIds = searchedData.getPageableOfferIds()
+                counters = searchedData.counters
+            }
+            Logger.debug("1 step) rtSearch getOffersIdByQuery ms: $step1", LoggerType.PROFILING)
 
-            val offers = offerRepository
-                .changeStrategy(strategyType)
-                .findByIds(offerIds.content.distinct())
+            var offers = listOf<Offer>()
+            val step2 = measureTimeMillis {
+                offers = offerRepository
+                    .changeStrategy(strategyType)
+                    .findByIds(offerIds.content.distinct())
+            }
+            Logger.debug("2 step) findByIds ms: $step2", LoggerType.PROFILING)
 
             val resultItems = offers.map {
                 OfferSearchResultItem(
