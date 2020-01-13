@@ -138,11 +138,11 @@ class OfferSearchController(
     ): CompletableFuture<EnrichedOffersWithCountersResponse> {
         val decodedQuery = URLDecoder.decode(query, "UTF-8")
 
-        if (request?.hasSignature() == true) {
+        if (request?.hasSignature() == true && request.data!!.searchRequestId > -1) {
             return accountService.accountBySigMessage(request, getStrategyType(strategy))
                 .thenCompose {
                     offerSearchService.createOfferSearchesByQuery(
-                        request.data!!.searchRequestId,
+                        request.data.searchRequestId,
                         it.publicKey,
                         decodedQuery,
                         PageRequest.of(page, size),
