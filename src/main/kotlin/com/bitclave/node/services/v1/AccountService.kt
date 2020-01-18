@@ -62,12 +62,7 @@ class AccountService(private val accountRepository: RepositoryStrategy<AccountRe
     }
 
     fun validateNonce(request: SignedRequest<*>, account: Account): CompletableFuture<Account> {
-        return supplyAsyncEx(Supplier {
-            if (request.nonce != account.nonce + 1) {
-                throw BadArgumentException()
-            }
-            account
-        })
+        return CompletableFuture.completedFuture(account)
     }
 
     fun incrementNonce(
