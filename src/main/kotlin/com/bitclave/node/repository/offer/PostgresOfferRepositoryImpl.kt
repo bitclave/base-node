@@ -20,6 +20,7 @@ import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 import java.math.BigInteger
 import java.util.HashMap
 import javax.persistence.EntityManager
@@ -94,6 +95,7 @@ class PostgresOfferRepositoryImpl(
         return syncElementCollections(repository.findAllByIdIn(ids, pageable))
     }
 
+    @Transactional(readOnly = true)
     override fun findByIds(ids: List<Long>): List<Offer> {
         return syncElementCollections(repository.findAllById(ids).toList())
     }
@@ -102,10 +104,12 @@ class PostgresOfferRepositoryImpl(
         return syncElementCollections(repository.findByIdAndOwner(id, owner))
     }
 
+    @Transactional(readOnly = true)
     override fun findAll(): List<Offer> {
         return syncElementCollections(repository.findAll().toList())
     }
 
+    @Transactional(readOnly = true)
     override fun findAll(pageable: Pageable): Page<Offer> {
         var result: Page<Offer>? = null
         val step1 = measureTimeMillis {
@@ -117,6 +121,7 @@ class PostgresOfferRepositoryImpl(
         return syncElementCollections(result!!)
     }
 
+    @Transactional(readOnly = true)
     override fun getTotalCount(): Long {
         return repository.count()
     }
@@ -177,6 +182,7 @@ class PostgresOfferRepositoryImpl(
         return SliceImpl(result, pageable, slice.hasNext())
     }
 
+    @Transactional(readOnly = true)
     private fun syncElementCollections(
         offers: List<Offer>,
         syncCompare: Boolean = true,
@@ -299,6 +305,7 @@ class PostgresOfferRepositoryImpl(
         return result
     }
 
+    @Transactional(readOnly = true)
     private fun syncPriceRules(offerPriceIds: List<Long>): Map<Long, List<Array<Any>>> {
         val ids = offerPriceIds.joinToString(",")
         var result = mapOf<Long, List<Array<Any>>>()

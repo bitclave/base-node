@@ -5,6 +5,7 @@ import com.bitclave.node.services.errors.DataNotSavedException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 
 @Component
 @Qualifier("postgres")
@@ -49,6 +50,7 @@ class PostgresRequestDataRepositoryImpl(val repository: RequestDataCrudRepositor
             repository.getReshareByClientsAndKeysAndRootPk(clientsPk, keys, rootPk)
     }
 
+    @Transactional(readOnly = true)
     override fun findById(id: Long): RequestData? {
         return repository.findByIdOrNull(id)
     }

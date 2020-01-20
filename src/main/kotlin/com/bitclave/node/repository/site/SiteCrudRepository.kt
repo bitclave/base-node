@@ -9,5 +9,6 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 interface SiteCrudRepository : CrudRepository<Site, Long> {
 
+    @Transactional(readOnly = true)
     fun findByOrigin(origin: String): Site?
 }

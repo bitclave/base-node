@@ -9,13 +9,16 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 interface FileCrudRepository : CrudRepository<UploadedFile, String> {
 
+    @Transactional(readOnly = true)
     fun findByPublicKey(publicKey: String): List<UploadedFile>
 
+    @Transactional(readOnly = true)
     fun findById(id: Long): UploadedFile?
 
     fun deleteByIdAndPublicKey(id: Long, publicKey: String): Long
 
     fun deleteByPublicKey(publicKey: String): Long
 
+    @Transactional(readOnly = true)
     fun findByIdAndPublicKey(id: Long, publicKey: String): UploadedFile?
 }

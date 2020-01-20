@@ -14,10 +14,13 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 interface SearchRequestCrudRepository : PagingAndSortingRepository<SearchRequest, Long> {
 
+    @Transactional(readOnly = true)
     fun findAllBy(pageable: Pageable): Slice<SearchRequest>
 
+    @Transactional(readOnly = true)
     fun findByOwnerIn(owners: List<String>, pageable: Pageable): Slice<SearchRequest>
 
+    @Transactional(readOnly = true)
     fun findByOwner(owner: String): List<SearchRequest>
 
     fun deleteByIdAndOwner(id: Long, owner: String): Long
@@ -38,8 +41,10 @@ interface SearchRequestCrudRepository : PagingAndSortingRepository<SearchRequest
     )
     fun deleteByIdIn(ids: List<Long>): Int
 
+    @Transactional(readOnly = true)
     fun findByIdAndOwner(id: Long, owner: String): SearchRequest?
 
+    @Transactional(readOnly = true)
     @Query("FROM SearchRequest s JOIN  s.tags t WHERE s.owner = :owner and KEY(t) = :tagKey")
     fun getRequestByOwnerAndTag(
         @Param("owner") owner: String,
@@ -65,6 +70,7 @@ interface SearchRequestCrudRepository : PagingAndSortingRepository<SearchRequest
     )
     fun deleteTagsByIdIn(ids: List<Long>): Int
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             select sr.* from
@@ -81,6 +87,7 @@ interface SearchRequestCrudRepository : PagingAndSortingRepository<SearchRequest
     )
     fun getSearchRequestWithSameTags(): List<SearchRequest>
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             SELECT search_request.* FROM search_request left outer join account on owner = public_key

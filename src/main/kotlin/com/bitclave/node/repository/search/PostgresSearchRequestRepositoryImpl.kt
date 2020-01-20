@@ -12,6 +12,7 @@ import org.springframework.data.domain.Slice
 import org.springframework.data.domain.SliceImpl
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 import java.math.BigInteger
 import java.util.HashMap
 import javax.persistence.EntityManager
@@ -42,10 +43,12 @@ class PostgresSearchRequestRepositoryImpl(
         return repository.deleteByIdIn(ids)
     }
 
+    @Transactional(readOnly = true)
     override fun findById(id: Long): SearchRequest? {
         return syncElementCollections(repository.findByIdOrNull(id))
     }
 
+    @Transactional(readOnly = true)
     override fun findById(ids: List<Long>): List<SearchRequest> {
         return syncElementCollections(repository.findAllById(ids).toList())
     }
@@ -58,10 +61,12 @@ class PostgresSearchRequestRepositoryImpl(
         return syncElementCollections(repository.findByIdAndOwner(id, owner))
     }
 
+    @Transactional(readOnly = true)
     override fun findAll(): List<SearchRequest> {
         return syncElementCollections(repository.findAll().toList())
     }
 
+    @Transactional(readOnly = true)
     override fun findAll(pageable: Pageable): Page<SearchRequest> {
         return syncElementCollections(repository.findAll(pageable))
     }
@@ -73,6 +78,7 @@ class PostgresSearchRequestRepositoryImpl(
     override fun findByOwnerInSlice(owners: List<String>, pageable: Pageable): Slice<SearchRequest> =
         syncElementCollections(repository.findByOwnerIn(owners, pageable))
 
+    @Transactional(readOnly = true)
     override fun getTotalCount(): Long {
         return repository.count()
     }
@@ -112,6 +118,7 @@ class PostgresSearchRequestRepositoryImpl(
         return SliceImpl(result, pageable, slice.hasNext())
     }
 
+    @Transactional(readOnly = true)
     private fun syncElementCollections(searchRequests: List<SearchRequest>): List<SearchRequest> {
         val ids = searchRequests.map { it.id }.distinct().joinToString(",")
 

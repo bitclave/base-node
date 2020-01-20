@@ -3,12 +3,18 @@ spring:
     hibernate:
       ddlAuto: update
 
-  datasource:
-    driverClassName: org.postgresql.Driver
-    platform: postgres
-    url: jdbc:postgresql://localhost:5432/postgres
-    username: postgres
-    password: bitclave
+  primary:
+    datasource:
+      password: bitclave
+      username: postgres
+      driver: org.postgresql.Driver
+      url: jdbc:postgresql://localhost:5432/postgres
+  replica:
+    datasource:
+      password: bitclave
+      username: postgres
+      driver: org.postgresql.Driver
+      url: jdbc:postgresql://localhost:5432/postgres
 
 server:
   port: 8080

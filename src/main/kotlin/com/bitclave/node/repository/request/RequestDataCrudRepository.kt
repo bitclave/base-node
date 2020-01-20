@@ -10,16 +10,22 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 interface RequestDataCrudRepository : CrudRepository<RequestData, Long> {
 
+    @Transactional(readOnly = true)
     fun findByFromPk(from: String): List<RequestData>
 
+    @Transactional(readOnly = true)
     fun findByToPk(to: String): List<RequestData>
 
+    @Transactional(readOnly = true)
     fun findByFromPkAndToPk(from: String, to: String): List<RequestData>
 
+    @Transactional(readOnly = true)
     fun findByFromPkAndToPkAndRequestData(from: String, to: String, requestData: String): RequestData?
 
+    @Transactional(readOnly = true)
     fun findByRequestDataAndRootPk(requestData: String, rootPk: String): List<RequestData>
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             SELECT * FROM request_data WHERE to_pk = ?1 AND from_pk IN ?2 AND request_data IN ?3
@@ -28,6 +34,7 @@ interface RequestDataCrudRepository : CrudRepository<RequestData, Long> {
     )
     fun getByFromAndToAndKeys(to: String, from: List<String>, keys: List<String>): List<RequestData>
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             SELECT * FROM request_data WHERE to_pk = ?1 AND from_pk IN ?2
@@ -36,6 +43,7 @@ interface RequestDataCrudRepository : CrudRepository<RequestData, Long> {
     )
     fun getByFromAndTo(to: String, from: List<String>): List<RequestData>
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             SELECT * FROM request_data WHERE (from_pk IN ?1 OR to_pk IN ?1) AND request_data IN ?2 AND root_pk=?3
@@ -48,6 +56,7 @@ interface RequestDataCrudRepository : CrudRepository<RequestData, Long> {
         rootPk: String
     ): List<RequestData>
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             SELECT * FROM request_data WHERE (from_pk IN ?1 OR to_pk IN ?1) AND root_pk=?2

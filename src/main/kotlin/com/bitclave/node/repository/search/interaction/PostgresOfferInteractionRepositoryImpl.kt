@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageImpl
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 import java.math.BigInteger
 import javax.persistence.EntityManager
 
@@ -74,6 +75,7 @@ class PostgresOfferInteractionRepositoryImpl(
         return PageImpl(result, pageable, page.totalElements)
     }
 
+    @Transactional(readOnly = true)
     private fun syncElementCollections(interactions: List<OfferInteraction>): List<OfferInteraction> {
         val ids = interactions.map { it.id }.distinct().joinToString(",")
 

@@ -3,12 +3,18 @@ spring:
     hibernate:
       ddlAuto: update
 
-  datasource:
-    driverClassName: org.postgresql.Driver
-    platform: postgres
-    url: ${JDBC_DATABASE_URL}?reWriteBatchedInserts=true&sslMode=require
-    username: ${JDBC_DATABASE_USERNAME}
-    password: ${JDBC_DATABASE_PASSWORD}
+  primary:
+    datasource:
+      driver: org.h2.Driver
+      url: ${JDBC_DATABASE_URL}?reWriteBatchedInserts=true
+      username: ${JDBC_DATABASE_USERNAME}
+      password: ${JDBC_DATABASE_PASSWORD}
+  replica:
+    datasource:
+      driver: org.h2.Driver
+      url: ${JDBC_REPLICA_DATABASE_URL}
+      username: ${JDBC_REPLICA_DATABASE_USERNAME}
+      password: ${JDBC_REPLICA_DATABASE_PASSWORD}
 
 logstash:
   endpoint: ${LOGSTASH_ENDPOINT}

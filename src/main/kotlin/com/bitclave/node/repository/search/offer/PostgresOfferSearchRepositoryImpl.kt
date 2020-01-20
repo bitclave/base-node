@@ -11,6 +11,7 @@ import org.springframework.data.domain.Slice
 import org.springframework.data.domain.Sort
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 import kotlin.system.measureTimeMillis
 
 @Component
@@ -42,10 +43,12 @@ class PostgresOfferSearchRepositoryImpl(
 
     override fun save(item: OfferSearch): OfferSearch = repository.save(item)
 
+    @Transactional(readOnly = true)
     override fun findById(id: Long): OfferSearch? {
         return repository.findByIdOrNull(id)
     }
 
+    @Transactional(readOnly = true)
     override fun findById(ids: List<Long>): List<OfferSearch> {
         return repository.findAllById(ids)
             .toList()
@@ -210,10 +213,12 @@ class PostgresOfferSearchRepositoryImpl(
         return repository.findByOwnerAndOfferIdIn(owner, offerIds)
     }
 
+    @Transactional(readOnly = true)
     override fun findAll(pageable: Pageable): Page<OfferSearch> {
         return repository.findAll(pageable)
     }
 
+    @Transactional(readOnly = true)
     override fun findAll(): List<OfferSearch> {
         return repository.findAll()
             .asSequence()
@@ -229,6 +234,7 @@ class PostgresOfferSearchRepositoryImpl(
         return repository.findAllDiff()
     }
 
+    @Transactional(readOnly = true)
     override fun getTotalCount(): Long {
         return repository.count()
     }

@@ -15,24 +15,31 @@ import java.math.BigInteger
 @Transactional
 interface OfferCrudRepository : PagingAndSortingRepository<Offer, Long> {
 
+    @Transactional(readOnly = true)
     fun findAllByIdIn(ids: List<Long>, pageable: Pageable): Page<Offer>
 
+    @Transactional(readOnly = true)
     @Query("SELECT id FROM Offer WHERE owner = :owner", nativeQuery = true)
     fun findIdsByOwner(@Param("owner") owner: String): List<BigInteger>
 
+    @Transactional(readOnly = true)
     fun findByOwner(owner: String): List<Offer>
 
+    @Transactional(readOnly = true)
     fun findByOwner(owner: String, pageable: Pageable): Page<Offer>
 
     fun deleteByIdAndOwner(id: Long, owner: String): Long
 
     fun deleteByOwner(owner: String): List<Offer>
 
+    @Transactional(readOnly = true)
     fun findByIdAndOwner(id: Long, owner: String): Offer?
 
+    @Transactional(readOnly = true)
     @Query("FROM Offer o JOIN  o.tags t WHERE o.owner = :owner and KEY(t) = :tagKey")
     fun getOfferByOwnerAndTag(@Param("owner") owner: String, @Param("tagKey") tagKey: String): List<Offer>
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             select * from offer o
@@ -48,6 +55,7 @@ interface OfferCrudRepository : PagingAndSortingRepository<Offer, Long> {
     )
     fun getAllOffersExceptProducts(@Param("pageable") pageable: Pageable): Page<Offer>
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             select * from offer o
@@ -58,8 +66,10 @@ interface OfferCrudRepository : PagingAndSortingRepository<Offer, Long> {
     )
     fun getAllOffersExceptProductsSlice(pageable: Pageable): Slice<Offer>
 
+    @Transactional(readOnly = true)
     fun getAllOffersBy(pageable: Pageable): Slice<Offer>
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             SELECT o.* FROM offer o

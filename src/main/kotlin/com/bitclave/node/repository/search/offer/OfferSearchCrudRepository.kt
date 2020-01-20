@@ -55,29 +55,40 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     )
     fun deleteAllByOfferId(id: Long): Int
 
+    @Transactional(readOnly = true)
     fun findBySearchRequestId(id: Long): List<OfferSearch>
 
+    @Transactional(readOnly = true)
     fun findBySearchRequestId(id: Long, pageable: Pageable): Page<OfferSearch>
 
+    @Transactional(readOnly = true)
     fun findBySearchRequestIdIn(ids: List<Long>): List<OfferSearch>
 
+    @Transactional(readOnly = true)
     fun findByOfferId(id: Long): List<OfferSearch>
 
+    @Transactional(readOnly = true)
     fun findBySearchRequestIdAndOfferId(searchRequestId: Long, offerId: Long): List<OfferSearch>
 
+    @Transactional(readOnly = true)
     fun findBySearchRequestIdAndOfferIdIn(
         searchRequestId: Long,
         offerIds: List<Long>
     ): List<OfferSearch>
 
+    @Transactional(readOnly = true)
     fun findBySearchRequestIdInAndOwner(searchRequestIds: List<Long>, owner: String): List<OfferSearch>
 
+    @Transactional(readOnly = true)
     fun findByOwner(owner: String): List<OfferSearch>
 
+    @Transactional(readOnly = true)
     fun findAllBy(pageable: Pageable): Slice<OfferSearch>
 
+    @Transactional(readOnly = true)
     fun findBySearchRequestIdIn(ids: List<Long>, pageable: Pageable): Slice<OfferSearch>
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             SELECT * FROM offer_search s
@@ -89,12 +100,16 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     )
     fun findAllByOwnerAndStateIn(@Param("owner") owner: String, @Param("state") state: List<Long>): List<OfferSearch>
 
+    @Transactional(readOnly = true)
     fun findAllByOwnerAndSearchRequestIdIn(owner: String, searchIds: List<Long>): List<OfferSearch>
 
+    @Transactional(readOnly = true)
     fun findByOwnerAndOfferId(owner: String, offerId: Long): List<OfferSearch>
 
+    @Transactional(readOnly = true)
     fun findByOwnerAndOfferIdIn(owner: String, offerIds: List<Long>): List<OfferSearch>
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             SELECT * FROM offer_search s
@@ -110,6 +125,7 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         @Param("state") state: List<Long>
     ): List<OfferSearch>
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank,
@@ -123,6 +139,7 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     )
     fun getOfferSearchByOwnerAndSortByRank(@Param("owner") owner: String): List<OfferSearch>
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             SELECT *,
@@ -136,6 +153,7 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     )
     fun getOfferSearchByOwnerAndSortByUpdatedAt(@Param("owner") owner: String): List<OfferSearch>
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             SELECT DISTINCT
@@ -149,6 +167,7 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     )
     fun getOfferSearchByOwnerAndSortByOfferPriceWorth(@Param("owner") owner: String): List<OfferSearch>
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             SELECT *, CAST( t.tags AS FLOAT ) AS cashback
@@ -160,6 +179,7 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     )
     fun getOfferSearchByOwnersAndSortByCashBack(@Param("owner") owner: String): List<OfferSearch>
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank
@@ -175,6 +195,7 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         @Param("state") state: List<Long>
     ): List<OfferSearch>
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             SELECT *
@@ -189,6 +210,7 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         @Param("state") state: List<Long>
     ): List<OfferSearch>
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             SELECT DISTINCT
@@ -206,6 +228,7 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         @Param("state") state: List<Long>
     ): List<OfferSearch>
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             SELECT *, CAST( t.tags AS FLOAT ) AS cashback
@@ -221,6 +244,7 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         @Param("state") state: List<Long>
     ): List<OfferSearch>
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank,
@@ -237,6 +261,7 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         @Param("ids") searchRequestIds: List<Long>
     ): List<OfferSearch>
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             SELECT *,
@@ -253,6 +278,7 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         @Param("ids") searchRequestIds: List<Long>
     ): List<OfferSearch>
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             SELECT *, CAST( t.tags AS FLOAT ) AS cashback
@@ -271,6 +297,7 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     // by (Owner AND SearchRequests AND States)
     // the differences are only sorting
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             SELECT *
@@ -290,6 +317,7 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         @Param("state") state: List<Long>
     ): List<OfferSearch>
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             SELECT *, CASE WHEN r.rank IS NULL THEN 0 ELSE r.rank END AS united_rank
@@ -306,6 +334,7 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         @Param("state") state: List<Long>
     ): List<OfferSearch>
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             SELECT DISTINCT
@@ -322,6 +351,7 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         @Param("ids") searchRequestIds: List<Long>
     ): List<OfferSearch>
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             SELECT DISTINCT
@@ -340,6 +370,7 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         @Param("state") state: List<Long>
     ): List<OfferSearch>
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             SELECT *, CAST( t.tags AS FLOAT ) AS cashback
@@ -356,6 +387,7 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
         @Param("state") state: List<Long>
     ): List<OfferSearch>
 
+    @Transactional(readOnly = true)
     @Query(
         value = "SELECT s.* from offer_search s, " +
             "( SELECT b.offer_id, b.owner from " +
@@ -385,8 +417,10 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     )
     fun findAllDiff(): List<OfferSearch>
 
+    @Transactional(readOnly = true)
     fun countBySearchRequestId(id: Long): Long
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             SELECT os.* FROM offer_search os
@@ -398,6 +432,7 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     )
     fun findAllWithoutOffer(): List<OfferSearch>
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             SELECT os.* FROM offer_search os
@@ -409,6 +444,7 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     )
     fun findAllWithoutSearchRequest(): List<OfferSearch>
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             SELECT os.* FROM offer_search os
@@ -420,6 +456,7 @@ interface OfferSearchCrudRepository : PagingAndSortingRepository<OfferSearch, Lo
     )
     fun findAllWithoutOwner(): List<OfferSearch>
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             SELECT os.* FROM offer_search os

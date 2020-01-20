@@ -4,6 +4,7 @@ import com.bitclave.node.repository.entities.OfferRank
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 
 @Component
 @Qualifier("postgres")
@@ -23,6 +24,7 @@ class PostgresOfferRankRepositoryImpl(
         return repository.save(rankOffer)
     }
 
+    @Transactional(readOnly = true)
     override fun findById(id: Long): OfferRank? {
         return repository.findByIdOrNull(id)
     }

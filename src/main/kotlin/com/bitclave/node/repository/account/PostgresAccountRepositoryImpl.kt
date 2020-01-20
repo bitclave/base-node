@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 import java.util.Date
 
 @Component
@@ -38,6 +39,7 @@ class PostgresAccountRepositoryImpl(val repository: AccountCrudRepository) : Acc
             .toList()
     }
 
+    @Transactional(readOnly = true)
     override fun getTotalCount(): Long {
         return repository.count()
     }

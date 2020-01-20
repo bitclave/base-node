@@ -12,20 +12,28 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional
 interface OfferInteractionCrudRepository : PagingAndSortingRepository<OfferInteraction, Long> {
 
+    @Transactional(readOnly = true)
     fun findByOwner(owner: String): List<OfferInteraction>
 
+    @Transactional(readOnly = true)
     fun findByOfferIdAndOwner(offerId: Long, owner: String): OfferInteraction?
 
+    @Transactional(readOnly = true)
     fun findByOfferIdInAndOwnerIn(offerIds: List<Long>, owners: List<String>): List<OfferInteraction>
 
+    @Transactional(readOnly = true)
     fun findByOfferIdInAndOwner(offerIds: List<Long>, owner: String): List<OfferInteraction>
 
+    @Transactional(readOnly = true)
     fun findByOfferId(offerId: Long): List<OfferInteraction>
 
+    @Transactional(readOnly = true)
     fun findByOfferIdIn(offerIds: List<Long>): List<OfferInteraction>
 
+    @Transactional(readOnly = true)
     fun findByOwnerAndStateIn(owner: String, states: List<OfferAction>): List<OfferInteraction>
 
+    @Transactional(readOnly = true)
     fun findByOwnerAndOfferIdInAndStateIn(
         owner: String,
         offers: List<Long>,
@@ -48,6 +56,7 @@ interface OfferInteractionCrudRepository : PagingAndSortingRepository<OfferInter
     )
     fun deleteByIdIn(ids: List<Long>): Int
 
+    @Transactional(readOnly = true)
     @Query(
         value = """
             SELECT i FROM OfferInteraction i

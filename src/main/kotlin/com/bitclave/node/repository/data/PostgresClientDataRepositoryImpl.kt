@@ -5,6 +5,7 @@ import com.bitclave.node.services.errors.DataNotSavedException
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 
 @Component
 @Qualifier("postgres")
@@ -16,6 +17,7 @@ class PostgresClientDataRepositoryImpl(
         return emptyList()
     }
 
+    @Transactional(readOnly = true)
     override fun getData(publicKey: String): Map<String, String> {
         return repository.findByIdOrNull(publicKey)?.data ?: emptyMap()
     }
