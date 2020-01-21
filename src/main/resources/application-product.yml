@@ -12,7 +12,7 @@ spring:
   replica:
     datasource:
       driver: org.postgresql.Driver
-      url: ${JDBC_REPLICA_DATABASE_URL}?sslmode=require
+      url: ${JDBC_REPLICA_DATABASE_URL}?sslMode=require
       username: ${JDBC_REPLICA_DATABASE_USERNAME}
       password: ${JDBC_REPLICA_DATABASE_PASSWORD}
 
