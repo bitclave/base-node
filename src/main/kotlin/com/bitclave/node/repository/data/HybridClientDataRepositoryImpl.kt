@@ -1,10 +1,7 @@
 package com.bitclave.node.repository.data
 
-import com.bitclave.node.configuration.properties.HybridProperties
 import com.bitclave.node.extensions.ecPoint
-import com.bitclave.node.repository.Web3Provider
 import com.bitclave.node.solidity.generated.ClientDataContract
-import com.bitclave.node.solidity.generated.NameServiceContract
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Component
 import java.math.BigInteger
@@ -12,34 +9,11 @@ import java.nio.charset.Charset
 
 @Component
 @Qualifier("hybrid")
-class HybridClientDataRepositoryImpl(
-    web3Provider: Web3Provider,
-    hybridProperties: HybridProperties
-) : ClientDataRepository {
+class HybridClientDataRepositoryImpl : ClientDataRepository {
 
     var allKeysArr = emptyList<String>()
 
-    private val nameServiceData = hybridProperties.contracts.nameService
-    private lateinit var nameServiceContract: NameServiceContract
     private lateinit var contract: ClientDataContract
-
-    init {
-        nameServiceContract = NameServiceContract.load(
-            nameServiceData.address,
-            web3Provider.web3,
-            web3Provider.credentials,
-            nameServiceData.gasPrice,
-            nameServiceData.gasLimit
-        )
-
-        contract = ClientDataContract.load(
-            nameServiceContract.addressOfName("clientData").send(),
-            web3Provider.web3,
-            web3Provider.credentials,
-            nameServiceData.gasPrice,
-            nameServiceData.gasLimit
-        )
-    }
 
     override fun allKeys(): List<String> {
         if (allKeysArr.isEmpty()) {
