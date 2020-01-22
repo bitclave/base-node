@@ -2,7 +2,6 @@ package com.bitclave.node
 
 import com.bitclave.node.configuration.properties.HybridContractData
 import com.bitclave.node.configuration.properties.HybridProperties
-import com.bitclave.node.repository.Web3Provider
 import com.bitclave.node.solidity.generated.AccountContract
 import com.bitclave.node.solidity.generated.ClientDataContract
 import com.bitclave.node.solidity.generated.NameServiceContract
@@ -13,11 +12,9 @@ import org.springframework.stereotype.Component
 
 @Component
 @Profile("test", "local", "docker")
-class ContractDeployer(
-    private val web3Provider: Web3Provider,
-    hybridProperties: HybridProperties
-) {
+class ContractDeployer(final val contractLoader: ContractLoader, hybridProperties: HybridProperties) {
 
+    val web3Provider = contractLoader.web3Provider
     private var contractAccount: HybridContractData = hybridProperties.contracts.nameService
 
     init {

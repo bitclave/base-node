@@ -1,5 +1,6 @@
 package com.bitclave.node.repository.data
 
+import com.bitclave.node.ContractLoader
 import com.bitclave.node.extensions.ecPoint
 import com.bitclave.node.solidity.generated.ClientDataContract
 import org.springframework.beans.factory.annotation.Qualifier
@@ -9,11 +10,15 @@ import java.nio.charset.Charset
 
 @Component
 @Qualifier("hybrid")
-class HybridClientDataRepositoryImpl : ClientDataRepository {
+class HybridClientDataRepositoryImpl(
+    contractLoader: ContractLoader
+) : ClientDataRepository {
 
     var allKeysArr = emptyList<String>()
 
-    private lateinit var contract: ClientDataContract
+    private val contract: ClientDataContract by lazy {
+        contractLoader.loadContract<ClientDataContract>("clientData")
+    }
 
     override fun allKeys(): List<String> {
         if (allKeysArr.isEmpty()) {

@@ -1,5 +1,6 @@
 package com.bitclave.node.repository.account
 
+import com.bitclave.node.ContractLoader
 import com.bitclave.node.extensions.ecPoint
 import com.bitclave.node.repository.entities.Account
 import com.bitclave.node.services.errors.BadArgumentException
@@ -13,9 +14,13 @@ import java.util.Date
 
 @Component
 @Qualifier("hybrid")
-class HybridAccountRepositoryImpl : AccountRepository {
+class HybridAccountRepositoryImpl(
+    contractLoader: ContractLoader
+) : AccountRepository {
 
-    private lateinit var contract: AccountContract
+    private val contract: AccountContract by lazy {
+        contractLoader.loadContract<AccountContract>("account")
+    }
 
     override fun saveAccount(account: Account) {
         val ecPoint = ecPoint(account.publicKey)

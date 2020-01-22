@@ -1,5 +1,6 @@
 package com.bitclave.node.repository.request
 
+import com.bitclave.node.ContractLoader
 import com.bitclave.node.extensions.compressedString
 import com.bitclave.node.extensions.ecPoint
 import com.bitclave.node.extensions.hex
@@ -16,9 +17,11 @@ import java.security.spec.ECPoint
 
 @Component
 @Qualifier("hybrid")
-class HybridRequestDataRepositoryImpl : RequestDataRepository {
+class HybridRequestDataRepositoryImpl(contractLoader: ContractLoader) : RequestDataRepository {
 
-    private lateinit var contract: RequestDataContract
+    private val contract: RequestDataContract by lazy {
+        contractLoader.loadContract<RequestDataContract>("requestData")
+    }
 
     override fun getByFrom(from: String): List<RequestData> {
         val ecPointFrom = ecPoint(from)

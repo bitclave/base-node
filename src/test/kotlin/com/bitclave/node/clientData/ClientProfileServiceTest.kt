@@ -1,8 +1,7 @@
 package com.bitclave.node.clientData
 
-import com.bitclave.node.configuration.properties.HybridProperties
+import com.bitclave.node.ContractLoader
 import com.bitclave.node.repository.RepositoryStrategyType
-import com.bitclave.node.repository.Web3Provider
 import com.bitclave.node.repository.data.ClientDataCrudRepository
 import com.bitclave.node.repository.data.ClientDataRepositoryStrategy
 import com.bitclave.node.repository.data.HybridClientDataRepositoryImpl
@@ -26,10 +25,9 @@ class ClientProfileServiceTest {
 
     @Autowired
     private lateinit var clientDataCrudRepository: ClientDataCrudRepository
+
     @Autowired
-    private lateinit var web3Provider: Web3Provider
-    @Autowired
-    private lateinit var hybridProperties: HybridProperties
+    private lateinit var contractLoader: ContractLoader
 
     protected lateinit var clientProfileService: ClientProfileService
 
@@ -41,7 +39,7 @@ class ClientProfileServiceTest {
     @Before
     fun setup() {
         val postgres = PostgresClientDataRepositoryImpl(clientDataCrudRepository)
-        val hybrid = HybridClientDataRepositoryImpl(web3Provider, hybridProperties)
+        val hybrid = HybridClientDataRepositoryImpl(contractLoader)
         val dataClientRepositoryStrategy = ClientDataRepositoryStrategy(postgres, hybrid)
 
         clientProfileService = ClientProfileService(dataClientRepositoryStrategy)

@@ -1,8 +1,7 @@
 package com.bitclave.node.requestData
 
-import com.bitclave.node.configuration.properties.HybridProperties
+import com.bitclave.node.ContractLoader
 import com.bitclave.node.repository.RepositoryStrategyType
-import com.bitclave.node.repository.Web3Provider
 import com.bitclave.node.repository.entities.RequestData
 import com.bitclave.node.repository.request.HybridRequestDataRepositoryImpl
 import com.bitclave.node.repository.request.PostgresRequestDataRepositoryImpl
@@ -32,9 +31,7 @@ class RequestDataServiceTest {
     }
 
     @Autowired
-    private lateinit var web3Provider: Web3Provider
-    @Autowired
-    private lateinit var hybridProperties: HybridProperties
+    private lateinit var contractLoader: ContractLoader
 
     @Autowired
     protected lateinit var requestDataCrudRepository: RequestDataCrudRepository
@@ -49,7 +46,7 @@ class RequestDataServiceTest {
     @Before
     fun setup() {
         val postgres = PostgresRequestDataRepositoryImpl(requestDataCrudRepository)
-        val hybrid = HybridRequestDataRepositoryImpl(web3Provider, hybridProperties)
+        val hybrid = HybridRequestDataRepositoryImpl(contractLoader)
 
         val repositoryStrategy = RequestDataRepositoryStrategy(postgres, hybrid)
         requestDataService = RequestDataService(repositoryStrategy)
