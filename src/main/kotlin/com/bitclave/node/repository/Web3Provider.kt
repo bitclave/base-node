@@ -1,14 +1,12 @@
 package com.bitclave.node.repository
 
 import com.bitclave.node.configuration.properties.HybridProperties
-import org.springframework.stereotype.Component
 import org.web3j.crypto.Credentials
 import org.web3j.protocol.Web3j
 import org.web3j.protocol.core.Request
 import org.web3j.protocol.core.Response
 import org.web3j.protocol.http.HttpService
 
-@Component
 class Web3Provider(hybridProperties: HybridProperties) {
 
     private val service = HttpService(hybridProperties.nodeUrl)

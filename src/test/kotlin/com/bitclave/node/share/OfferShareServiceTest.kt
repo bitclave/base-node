@@ -1,8 +1,7 @@
 package com.bitclave.node.share
 
-import com.bitclave.node.configuration.properties.HybridProperties
+import com.bitclave.node.ContractLoader
 import com.bitclave.node.repository.RepositoryStrategyType
-import com.bitclave.node.repository.Web3Provider
 import com.bitclave.node.repository.account.AccountCrudRepository
 import com.bitclave.node.repository.account.AccountRepositoryStrategy
 import com.bitclave.node.repository.account.HybridAccountRepositoryImpl
@@ -61,9 +60,7 @@ class OfferShareServiceTest {
     }
 
     @Autowired
-    private lateinit var web3Provider: Web3Provider
-    @Autowired
-    private lateinit var hybridProperties: HybridProperties
+    private lateinit var contractLoader: ContractLoader
 
     @Autowired
     protected lateinit var accountCrudRepository: AccountCrudRepository
@@ -130,7 +127,7 @@ class OfferShareServiceTest {
     @Before
     fun setup() {
         val postgres = PostgresAccountRepositoryImpl(accountCrudRepository)
-        val hybrid = HybridAccountRepositoryImpl(web3Provider, hybridProperties)
+        val hybrid = HybridAccountRepositoryImpl(contractLoader)
         val repositoryStrategy = AccountRepositoryStrategy(postgres, hybrid)
         val accountService = AccountService(repositoryStrategy)
         val postgresOfferRepository =

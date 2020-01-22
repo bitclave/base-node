@@ -1,9 +1,9 @@
 package com.bitclave.node.search.offer
 
+import com.bitclave.node.ContractLoader
 import com.bitclave.node.configuration.properties.AppOpticsProperties
-import com.bitclave.node.configuration.properties.HybridProperties
+import com.bitclave.node.models.controllers.OffersWithCountersResponse
 import com.bitclave.node.repository.RepositoryStrategyType
-import com.bitclave.node.repository.Web3Provider
 import com.bitclave.node.repository.account.AccountCrudRepository
 import com.bitclave.node.repository.account.AccountRepositoryStrategy
 import com.bitclave.node.repository.account.HybridAccountRepositoryImpl
@@ -18,7 +18,6 @@ import com.bitclave.node.repository.entities.OfferRank
 import com.bitclave.node.repository.entities.OfferSearch
 import com.bitclave.node.repository.entities.OfferShareData
 import com.bitclave.node.repository.entities.SearchRequest
-import com.bitclave.node.models.controllers.OffersWithCountersResponse
 import com.bitclave.node.repository.offer.OfferCrudRepository
 import com.bitclave.node.repository.offer.OfferRepositoryStrategy
 import com.bitclave.node.repository.offer.PostgresOfferRepositoryImpl
@@ -82,10 +81,7 @@ class OfferSearchServiceTest {
     private lateinit var gson: Gson
 
     @Autowired
-    private lateinit var web3Provider: Web3Provider
-
-    @Autowired
-    private lateinit var hybridProperties: HybridProperties
+    private lateinit var contractLoader: ContractLoader
 
     @Autowired
     protected lateinit var accountCrudRepository: AccountCrudRepository
@@ -183,7 +179,7 @@ class OfferSearchServiceTest {
     @Before
     fun setup() {
         val postgres = PostgresAccountRepositoryImpl(accountCrudRepository)
-        val hybrid = HybridAccountRepositoryImpl(web3Provider, hybridProperties)
+        val hybrid = HybridAccountRepositoryImpl(contractLoader)
         val repositoryStrategy = AccountRepositoryStrategy(postgres, hybrid)
         val accountService = AccountService(repositoryStrategy)
 
@@ -656,8 +652,10 @@ class OfferSearchServiceTest {
         createOfferSearch(createdSearchRequest2, createdOffer1)
         createOfferSearch(createdSearchRequest2, createdOffer2)
 
-        val result = offerSearchService.getOfferSearchesByIds(strategy,
-            mutableListOf(42798414, 42798415, 42798416, 42798417)).get()
+        val result = offerSearchService.getOfferSearchesByIds(
+            strategy,
+            mutableListOf(42798414, 42798415, 42798416, 42798417)
+        ).get()
         assert(result.size == 4)
     }
 
@@ -714,8 +712,10 @@ class OfferSearchServiceTest {
 
         val projectId = offerPrices[0].id
         val offerShareData =
-            OfferShareData(42798414, businessPublicKey, publicKey, "response",
-                BigDecimal.ZERO.toString(), true, projectId)
+            OfferShareData(
+                42798414, businessPublicKey, publicKey, "response",
+                BigDecimal.ZERO.toString(), true, projectId
+            )
 
         offerShareService.grantAccess(
             publicKey,
