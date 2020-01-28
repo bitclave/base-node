@@ -1,10 +1,9 @@
 package com.bitclave.node.services
 
-import com.bitclave.node.configuration.properties.HybridProperties
+import com.bitclave.node.ContractLoader
 import com.bitclave.node.models.services.HttpServiceCall
 import com.bitclave.node.models.services.ServiceCallType
 import com.bitclave.node.repository.RepositoryStrategyType
-import com.bitclave.node.repository.Web3Provider
 import com.bitclave.node.repository.account.AccountCrudRepository
 import com.bitclave.node.repository.account.AccountRepositoryStrategy
 import com.bitclave.node.repository.account.HybridAccountRepositoryImpl
@@ -57,10 +56,7 @@ class ExternalServicesServiceTest {
     protected lateinit var externalServicesService: ExternalServicesService
 
     @Autowired
-    private lateinit var web3Provider: Web3Provider
-
-    @Autowired
-    private lateinit var hybridProperties: HybridProperties
+    private lateinit var contractLoader: ContractLoader
 
     @Autowired
     protected lateinit var accountCrudRepository: AccountCrudRepository
@@ -78,7 +74,7 @@ class ExternalServicesServiceTest {
     @Before
     fun setup() {
         val accountPostgres = PostgresAccountRepositoryImpl(accountCrudRepository)
-        val hybrid = HybridAccountRepositoryImpl(web3Provider, hybridProperties)
+        val hybrid = HybridAccountRepositoryImpl(contractLoader)
         val accountRepositoryStrategy = AccountRepositoryStrategy(accountPostgres, hybrid)
 
         val accountService = AccountService(accountRepositoryStrategy)

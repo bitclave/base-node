@@ -1,15 +1,14 @@
 package com.bitclave.node.account
 
-import com.bitclave.node.configuration.properties.HybridProperties
+import com.bitclave.node.ContractLoader
 import com.bitclave.node.extensions.signMessage
+import com.bitclave.node.models.SignedRequest
 import com.bitclave.node.repository.RepositoryStrategyType
-import com.bitclave.node.repository.Web3Provider
 import com.bitclave.node.repository.account.AccountCrudRepository
 import com.bitclave.node.repository.account.AccountRepositoryStrategy
 import com.bitclave.node.repository.account.HybridAccountRepositoryImpl
 import com.bitclave.node.repository.account.PostgresAccountRepositoryImpl
 import com.bitclave.node.repository.entities.Account
-import com.bitclave.node.models.SignedRequest
 import com.bitclave.node.services.errors.AlreadyRegisteredException
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.services.errors.NotFoundException
@@ -32,9 +31,7 @@ import org.springframework.test.context.junit4.SpringRunner
 class AccountServiceTest {
 
     @Autowired
-    private lateinit var web3Provider: Web3Provider
-    @Autowired
-    private lateinit var hybridProperties: HybridProperties
+    private lateinit var contractLoader: ContractLoader
 
     @Autowired
     private lateinit var accountCrudRepository: AccountCrudRepository
@@ -54,7 +51,7 @@ class AccountServiceTest {
         account = Account(publicKey)
         account2 = Account(publicKey2)
         val postgres = PostgresAccountRepositoryImpl(accountCrudRepository)
-        val hybrid = HybridAccountRepositoryImpl(web3Provider, hybridProperties)
+        val hybrid = HybridAccountRepositoryImpl(contractLoader)
         val repositoryStrategy = AccountRepositoryStrategy(postgres, hybrid)
 
         accountService = AccountService(repositoryStrategy)

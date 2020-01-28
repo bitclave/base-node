@@ -1,12 +1,10 @@
 package com.bitclave.node.repository.account
 
-import com.bitclave.node.configuration.properties.HybridProperties
+import com.bitclave.node.ContractLoader
 import com.bitclave.node.extensions.ecPoint
-import com.bitclave.node.repository.Web3Provider
 import com.bitclave.node.repository.entities.Account
 import com.bitclave.node.services.errors.BadArgumentException
 import com.bitclave.node.solidity.generated.AccountContract
-import com.bitclave.node.solidity.generated.NameServiceContract
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Slice
@@ -17,30 +15,11 @@ import java.util.Date
 @Component
 @Qualifier("hybrid")
 class HybridAccountRepositoryImpl(
-    web3Provider: Web3Provider,
-    hybridProperties: HybridProperties
+    contractLoader: ContractLoader
 ) : AccountRepository {
 
-    private val nameServiceData = hybridProperties.contracts.nameService
-    private lateinit var nameServiceContract: NameServiceContract
-    private lateinit var contract: AccountContract
-
-    init {
-        nameServiceContract = NameServiceContract.load(
-            nameServiceData.address,
-            web3Provider.web3,
-            web3Provider.credentials,
-            nameServiceData.gasPrice,
-            nameServiceData.gasLimit
-        )
-
-        contract = AccountContract.load(
-            nameServiceContract.addressOfName("account").send(),
-            web3Provider.web3,
-            web3Provider.credentials,
-            nameServiceData.gasPrice,
-            nameServiceData.gasLimit
-        )
+    private val contract: AccountContract by lazy {
+        contractLoader.loadContract<AccountContract>("account")
     }
 
     override fun saveAccount(account: Account) {
