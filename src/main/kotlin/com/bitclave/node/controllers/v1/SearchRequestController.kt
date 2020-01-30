@@ -202,7 +202,7 @@ class SearchRequestController(
     ): CompletableFuture<List<SearchRequest>> {
 
         val restTemplate: RestTemplate = RestTemplateBuilder()
-            .rootUri("https://base2-bitclva-com-user.herokuapp.com/").build()
+            .rootUri("https://base2-bitclva-com-eu.herokuapp.com").build()
 
         val foo: ResponseEntity<List<SearchRequest>> = restTemplate.exchange(
             "/v1/client/$owner/search/request/",
