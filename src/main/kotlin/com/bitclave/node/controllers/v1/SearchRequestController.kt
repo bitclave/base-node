@@ -13,11 +13,7 @@ import io.swagger.annotations.ApiParam
 import io.swagger.annotations.ApiResponse
 import io.swagger.annotations.ApiResponses
 import org.springframework.beans.factory.annotation.Qualifier
-import org.springframework.boot.web.client.RestTemplateBuilder
-import org.springframework.core.ParameterizedTypeReference
-import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
@@ -25,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.ResponseStatus
 import org.springframework.web.bind.annotation.RestController
-import org.springframework.web.client.RestTemplate
 import java.util.concurrent.CompletableFuture
 
 @RestController
@@ -201,24 +196,11 @@ class SearchRequestController(
         strategy: String?
     ): CompletableFuture<List<SearchRequest>> {
 
-        val restTemplate: RestTemplate = RestTemplateBuilder()
-            .rootUri("https://base2-bitclva-com-eu.herokuapp.com").build()
-
-        val foo: ResponseEntity<List<SearchRequest>> = restTemplate.exchange(
-            "/v1/client/$owner/search/request/",
-            HttpMethod.GET,
-            null,
-            object : ParameterizedTypeReference<List<SearchRequest>>() {
-            }
-        )
-
-        return CompletableFuture.completedFuture(foo.getBody() as List<SearchRequest>)
-
-/*        return searchRequestService.getSearchRequests(id ?: 0, owner, getStrategyType(strategy))
+        return searchRequestService.getSearchRequests(id ?: 0, owner, getStrategyType(strategy))
             .exceptionally { e ->
                 Logger.error("Request: getSearchRequests/$owner/$id raised", e)
                 throw e
-            }*/
+            }
     }
 
     /**
